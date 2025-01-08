@@ -14,6 +14,6 @@
 # 📝 Convention
 - [Git Convention](https://github.com/DogCatSquare/FE.wiki.git)
 - [Commit Message Convention](https://github.com/DogCatSquare/FE.wiki.git)
-- [Naming Convention](https://github.com/DogCatSquare/FE.wiki.git)
+- [Naming Convention](https://github.com/DogCatSquare/FE/wiki/Naming-Convention)
 - [Coding Detail Convention](https://github.com/DogCatSquare/FE.wiki.git)
 
