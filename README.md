@@ -12,8 +12,8 @@
 - minSDK : 24
 
 # 📝 Convention
-- [Git Convention](https://github.com/DogCatSquare/FE.wiki.git)
-- [Commit Message Convention](https://github.com/DogCatSquare/FE.wiki.git)
+- [Git Convention](https://github.com/DogCatSquare/FE/wiki/Git-Convention)
+- [Commit Message Convention](https://github.com/DogCatSquare/FE/wiki/Commit-Message-Convention)
 - [Naming Convention](https://github.com/DogCatSquare/FE/wiki/Naming-Convention)
-- [Coding Detail Convention](https://github.com/DogCatSquare/FE.wiki.git)
+- [Coding Detail Convention](https://github.com/DogCatSquare/FE/wiki/Naming-Convention)
 
