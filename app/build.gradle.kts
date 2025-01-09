@@ -5,7 +5,7 @@ plugins {
 
 android {
     namespace = "com.example.dogcatsquare"
-    compileSdk = 34
+    compileSdk = 35
 
     defaultConfig {
         applicationId = "com.example.dogcatsquare"
@@ -32,6 +32,12 @@ android {
     }
     kotlinOptions {
         jvmTarget = "1.8"
+    }
+    viewBinding {
+        enable = true
+    }
+    dataBinding {
+        enable = true
     }
 }
 
