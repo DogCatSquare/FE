@@ -21,6 +21,16 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <activity android:name=".ui.map.WalkingStartActivity" />
+        <activity android:name=".ui.map.WalkingMapViewActivity" />
+        <activity android:name=".ui.map.WalkingReviewActivity" />
+        <activity android:name=".ui.map.WalkingReviewTypeActivity" />
+
+        <meta-data
+            android:name="com.naver.maps.map.CLIENT_ID"
+            android:value="l0nxtmsf41" />
+
     </application>
 
 </manifest>
