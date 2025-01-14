@@ -1,4 +1,4 @@
-package com.example.dogcatsquare.ui.map
+package com.example.dogcatsquare.ui.home
 
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -11,31 +11,39 @@ import com.example.dogcatsquare.MapButtonRVAdapter
 import com.example.dogcatsquare.MapPlace
 import com.example.dogcatsquare.MapPlaceRVAdapter
 import com.example.dogcatsquare.R
-import com.example.dogcatsquare.databinding.FragmentMapBinding
-import com.example.dogcatsquare.ui.home.MapFullFragment
-import com.google.android.material.bottomsheet.BottomSheetBehavior
+import com.example.dogcatsquare.databinding.FragmentHomeBinding
+import com.example.dogcatsquare.databinding.FragmentMapFullBinding
+import com.example.dogcatsquare.ui.map.MapFragment
 
-class MapFragment : Fragment() {
-    private var _binding: FragmentMapBinding? = null
-    private val binding get() = _binding!!
+class MapFullFragment : Fragment() {
+    private var _binding: FragmentMapFullBinding? = null
     private var buttonDatas = ArrayList<MapButton>()
     private var placeDatas = ArrayList<MapPlace>()
-    private lateinit var bottomSheetBehavior: BottomSheetBehavior<View>
+    private val binding get() = _binding!!
 
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        _binding = FragmentMapBinding.inflate(inflater, container, false)
+        _binding = FragmentMapFullBinding.inflate(inflater, container, false)
         return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        setupBackButton()
         setupRecyclerView()
-        setupBottomSheet()
+    }
+
+    private fun setupBackButton() {
+        binding.backButton.setOnClickListener {
+            // MainActivity의 FragmentManager를 사용하여 MapFragment로 전환
+            requireActivity().supportFragmentManager.beginTransaction()
+                .replace(R.id.main_frm, MapFragment())
+                .commitAllowingStateLoss()
+        }
     }
 
     private fun setupRecyclerView() {
@@ -69,42 +77,6 @@ class MapFragment : Fragment() {
             adapter = mapPlaceRVAdapter
             layoutManager = LinearLayoutManager(context, LinearLayoutManager.VERTICAL, false)
         }
-    }
-
-    private fun setupBottomSheet() {
-        bottomSheetBehavior = BottomSheetBehavior.from(binding.bottomSheet)
-
-        binding.root.post {
-            val mapButtonBottom = binding.mapButtonRV.bottom +
-                    (binding.mapButtonRV.layoutParams as ViewGroup.MarginLayoutParams).bottomMargin
-
-            bottomSheetBehavior.maxHeight = binding.root.height - mapButtonBottom
-        }
-
-        // 기본 설정
-        bottomSheetBehavior.apply {
-            isDraggable = true
-            isHideable = false
-            state = BottomSheetBehavior.STATE_COLLAPSED
-        }
-
-        // 콜백 설정
-        bottomSheetBehavior.addBottomSheetCallback(object : BottomSheetBehavior.BottomSheetCallback() {
-            override fun onStateChanged(bottomSheet: View, newState: Int) {
-                when (newState) {
-                    BottomSheetBehavior.STATE_EXPANDED -> {
-                        // BottomSheet이 최대로 확장되었을 때 MapFullFragment로 전환
-                        requireActivity().supportFragmentManager.beginTransaction()
-                            .replace(R.id.main_frm, MapFullFragment())
-                            .commitAllowingStateLoss()
-                    }
-                }
-            }
-
-            override fun onSlide(bottomSheet: View, slideOffset: Float) {
-                // 슬라이드 처리
-            }
-        })
     }
 
     override fun onDestroyView() {
