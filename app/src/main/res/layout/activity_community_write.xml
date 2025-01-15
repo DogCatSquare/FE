@@ -1,0 +1,51 @@
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="16dp">
+
+    <!-- 제목 입력 -->
+    <EditText
+        android:id="@+id/etTitle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="제목을 입력해주세요"
+        android:background="@drawable/bg_edittext"
+        android:padding="8dp"
+        android:layout_marginBottom="16dp"
+        android:inputType="text" />
+
+    <!-- 내용 입력 -->
+    <EditText
+        android:id="@+id/etContent"
+        android:layout_width="match_parent"
+        android:layout_height="200dp"
+        android:hint="내용을 입력해주세요"
+        android:background="@drawable/bg_edittext"
+        android:padding="8dp"
+        android:gravity="top"
+        android:layout_marginBottom="16dp"
+        android:inputType="textMultiLine" />
+
+    <!-- 사진 추가 버튼 -->
+    <FrameLayout
+        android:id="@+id/btnAddPhoto"
+        android:layout_width="90dp"
+        android:layout_height="90dp"
+        android:layout_marginBottom="16dp">
+        <include layout="@layout/bt_add_photo" />
+    </FrameLayout>
+
+    <!-- 하단 '다음' 버튼 -->
+    <Button
+        android:id="@+id/btnNext"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@null"
+        android:text="다음"
+        android:textColor="@android:color/white"
+        android:enabled="false"
+        android:layout_marginTop="16dp" />
+
+</LinearLayout>

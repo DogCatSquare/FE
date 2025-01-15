@@ -1,0 +1,52 @@
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="12dp"
+    android:background="@drawable/bg_item"
+    android:layout_marginBottom="8dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical">
+
+        <TextView
+            android:id="@+id/tvBoardName"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="게시판 이름"
+            android:textStyle="bold"
+            android:textSize="16sp"
+            android:textColor="#000000" />
+
+        <ImageView
+            android:id="@+id/ivAddIcon"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:src="@drawable/ic_add"
+            android:contentDescription="추가"
+            android:tint="#FF5722" />
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/tvBoardDescription"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="게시판 설명"
+        android:textSize="14sp"
+        android:textColor="#808080"
+        android:layout_marginTop="4dp" />
+
+    <TextView
+        android:id="@+id/tvBoardHashtags"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="#태그"
+        android:textSize="12sp"
+        android:textColor="#808080"
+        android:layout_marginTop="4dp" />
+</LinearLayout>
