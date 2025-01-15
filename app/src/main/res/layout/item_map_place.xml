@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content">
+
+    <ImageView
+        android:id="@+id/charBox"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="8dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/call"
+        app:srcCompat="@drawable/ic_map_char" />
+
+    <ImageView
+        android:id="@+id/contour2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="32dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/placeImg"
+        app:srcCompat="@drawable/ic_map_contour_place" />
+
+    <ImageView
+        android:id="@+id/placeImg"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="32dp"
+        android:layout_marginEnd="32dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:srcCompat="@drawable/ic_place_img_default" />
+
+    <ImageView
+        android:id="@+id/call"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="11dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/placeDistance"
+        app:srcCompat="@drawable/ic_call" />
+
+    <ImageView
+        android:id="@+id/contour"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        app:layout_constraintBottom_toBottomOf="@+id/placeDistance"
+        app:layout_constraintStart_toEndOf="@+id/placeDistance"
+        app:layout_constraintTop_toTopOf="@+id/placeDistance"
+        app:srcCompat="@drawable/ic_map_contour" />
+
+    <TextView
+        android:id="@+id/placeName"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="16dp"
+        android:text="가나다 동물병원"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+
+        android:textSize="20dp"
+        android:textStyle="bold"/>
+
+    <TextView
+        android:id="@+id/placeType"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:text="동물병원"
+        app:layout_constraintBottom_toBottomOf="@+id/placeName"
+        app:layout_constraintStart_toEndOf="@+id/placeName"
+
+        android:textSize="16dp"
+        android:textColor="#696969"/>
+
+    <TextView
+        android:id="@+id/placeDistance"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="8dp"
+        android:text="0.55km"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/placeName"
+
+        android:textSize="14dp"
+        android:textColor="#696969"/>
+
+    <TextView
+        android:id="@+id/placeLocation"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:text="서울시 성북구 월곡동 77"
+        app:layout_constraintBottom_toBottomOf="@+id/contour"
+        app:layout_constraintStart_toEndOf="@+id/contour"
+        app:layout_constraintTop_toTopOf="@+id/contour"
+
+        android:textSize="14dp"
+        android:textColor="#696969"/>
+
+    <TextView
+        android:id="@+id/placeCall"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:text="02-1234-5678"
+        app:layout_constraintBottom_toBottomOf="@+id/call"
+        app:layout_constraintStart_toEndOf="@+id/call"
+        app:layout_constraintTop_toTopOf="@+id/call"
+
+        android:textSize="14dp"
+        android:textColor="#61646B"/>
+
+    <TextView
+        android:id="@+id/placeChar1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="중성화 수술"
+        app:layout_constraintBottom_toBottomOf="@+id/charBox"
+        app:layout_constraintEnd_toEndOf="@+id/charBox"
+        app:layout_constraintStart_toStartOf="@+id/charBox"
+        app:layout_constraintTop_toTopOf="@+id/charBox"
+
+        android:textSize="12dp"
+        android:textColor="#696969"/>
+
+</androidx.constraintlayout.widget.ConstraintLayout>
