@@ -1,0 +1,319 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/white">
+
+    <View
+        android:id="@+id/bar2"
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:layout_marginTop="25dp"
+        android:background="@color/gray"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/back_btn" />
+
+    <ImageView
+        android:id="@+id/back_btn"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="10dp"
+        android:layout_marginTop="25dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:srcCompat="@drawable/ic_back" />
+
+    <ScrollView
+        android:id="@+id/signup_hs"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/bar2"
+        app:layout_constraintVertical_bias="0.0">
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/signup_hs_cl"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <androidx.constraintlayout.widget.Guideline
+                android:id="@+id/guideline1"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@color/white"
+                android:orientation="vertical"
+                app:layout_constraintGuide_percent="0.05" />
+
+            <androidx.constraintlayout.widget.Guideline
+                android:id="@+id/guideline2"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@color/white"
+                android:orientation="vertical"
+                app:layout_constraintGuide_percent="0.95" />
+
+            <TextView
+                android:id="@+id/signup_tv1"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="15dp"
+                android:text="회원가입을 위해\n기본정보를 입력해주세요"
+                android:textSize="18sp"
+                app:layout_constraintStart_toStartOf="@+id/guideline1"
+                app:layout_constraintTop_toTopOf="@+id/signup_hs_cl" />
+
+            <EditText
+                android:id="@+id/nickname_et"
+                android:layout_width="0dp"
+                android:layout_height="50dp"
+                android:layout_marginTop="30dp"
+                android:backgroundTint="@color/gray"
+                android:ems="10"
+                android:hint="닉네임"
+                android:inputType="text"
+                android:textColorHint="@color/gray"
+                android:textSize="15sp"
+                app:layout_constraintEnd_toStartOf="@+id/guideline2"
+                app:layout_constraintHorizontal_bias="0.0"
+                app:layout_constraintStart_toStartOf="@+id/guideline1"
+                app:layout_constraintTop_toBottomOf="@+id/signup_tv1" />
+
+            <EditText
+                android:id="@+id/email_et"
+                android:layout_width="0dp"
+                android:layout_height="50dp"
+                android:layout_marginTop="15dp"
+                android:backgroundTint="@color/gray"
+                android:ems="10"
+                android:hint="이메일"
+                android:inputType="text"
+                android:textColorHint="@color/gray"
+                android:textSize="15sp"
+                app:layout_constraintEnd_toEndOf="@+id/signup_tv1"
+                app:layout_constraintEnd_toStartOf="@+id/guideline2"
+                app:layout_constraintHorizontal_bias="0.0"
+                app:layout_constraintStart_toStartOf="@+id/guideline1"
+                app:layout_constraintTop_toBottomOf="@+id/nickname_et" />
+
+            <TextView
+                android:id="@+id/signup_email_er_tv"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="5dp"
+                android:layout_marginTop="10dp"
+                android:text="이미 가입되어있는 이메일입니다"
+                android:textColor="@color/gray"
+                android:textSize="10sp"
+                android:visibility="gone"
+                app:layout_constraintEnd_toEndOf="@+id/signup_tv1"
+                app:layout_constraintHorizontal_bias="0.0"
+                app:layout_constraintStart_toStartOf="@+id/email_et"
+                app:layout_constraintTop_toBottomOf="@+id/email_et" />
+
+            <EditText
+                android:id="@+id/pw_et"
+                android:layout_width="0dp"
+                android:layout_height="50dp"
+                android:layout_marginTop="15dp"
+                android:backgroundTint="@color/gray"
+                android:ems="10"
+                android:hint="비밀번호"
+                android:inputType="text"
+                android:textColorHint="@color/gray"
+                android:textSize="15sp"
+                app:layout_constraintEnd_toEndOf="@+id/signup_tv1"
+                app:layout_constraintEnd_toStartOf="@+id/guideline2"
+                app:layout_constraintHorizontal_bias="0.0"
+                app:layout_constraintStart_toStartOf="@+id/guideline1"
+                app:layout_constraintTop_toBottomOf="@+id/signup_email_er_tv" />
+
+            <EditText
+                android:id="@+id/pw_check_et"
+                android:layout_width="0dp"
+                android:layout_height="50dp"
+                android:layout_marginTop="15dp"
+                android:backgroundTint="@color/gray"
+                android:ems="10"
+                android:hint="비밀번호 확인"
+                android:inputType="text"
+                android:textColorHint="@color/gray"
+                android:textSize="15sp"
+                app:layout_constraintEnd_toEndOf="@+id/signup_tv1"
+                app:layout_constraintEnd_toStartOf="@+id/guideline2"
+                app:layout_constraintHorizontal_bias="0.0"
+                app:layout_constraintStart_toStartOf="@+id/guideline1"
+                app:layout_constraintTop_toBottomOf="@+id/pw_et" />
+
+            <EditText
+                android:id="@+id/phone_et"
+                android:layout_width="0dp"
+                android:layout_height="50dp"
+                android:layout_marginTop="15dp"
+                android:backgroundTint="@color/gray"
+                android:ems="10"
+                android:hint="전화번호"
+                android:inputType="text"
+                android:textColorHint="@color/gray"
+                android:textSize="15sp"
+                app:layout_constraintEnd_toEndOf="@+id/signup_tv1"
+                app:layout_constraintEnd_toStartOf="@+id/guideline2"
+                app:layout_constraintHorizontal_bias="0.0"
+                app:layout_constraintStart_toStartOf="@+id/guideline1"
+                app:layout_constraintTop_toBottomOf="@+id/pw_check_et" />
+
+            <CheckBox
+                android:id="@+id/checkBox_all"
+                android:layout_width="15dp"
+                android:layout_height="15dp"
+                android:layout_marginTop="20dp"
+                android:background="@drawable/custom_checkbox_bg"
+                android:button="@null"
+                app:layout_constraintStart_toStartOf="@+id/guideline1"
+                app:layout_constraintTop_toBottomOf="@+id/phone_et" />
+
+            <TextView
+                android:id="@+id/checkBox_all_tv"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="10dp"
+                android:text="약관 전체 동의"
+                android:textSize="13sp"
+                app:layout_constraintBottom_toBottomOf="@+id/checkBox_all"
+                app:layout_constraintStart_toEndOf="@+id/checkBox_all"
+                app:layout_constraintTop_toTopOf="@+id/checkBox_all" />
+
+            <View
+                android:id="@+id/horizontal_line"
+                android:layout_width="0dp"
+                android:layout_height="1dp"
+                android:layout_marginTop="10dp"
+                android:background="@color/gray"
+                app:layout_constraintEnd_toEndOf="@+id/guideline2"
+                app:layout_constraintStart_toStartOf="@+id/guideline1"
+                app:layout_constraintTop_toBottomOf="@+id/checkBox_all_tv" />
+
+            <CheckBox
+                android:id="@+id/checkBox1"
+                android:layout_width="15dp"
+                android:layout_height="15dp"
+                android:layout_marginTop="10dp"
+                android:background="@drawable/custom_checkbox_bg"
+                android:button="@null"
+                app:layout_constraintStart_toStartOf="@+id/guideline1"
+                app:layout_constraintTop_toBottomOf="@+id/horizontal_line" />
+
+            <TextView
+                android:id="@+id/checkBox1_tv"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="10dp"
+                android:text="이용약관에 동의합니다. (필수)"
+                android:textSize="13sp"
+                app:layout_constraintBottom_toBottomOf="@+id/checkBox1"
+                app:layout_constraintStart_toEndOf="@+id/checkBox1"
+                app:layout_constraintTop_toTopOf="@+id/checkBox1" />
+
+            <CheckBox
+                android:id="@+id/checkBox2"
+                android:layout_width="15dp"
+                android:layout_height="15dp"
+                android:layout_marginTop="10dp"
+                android:background="@drawable/custom_checkbox_bg"
+                android:button="@null"
+                app:layout_constraintStart_toStartOf="@+id/guideline1"
+                app:layout_constraintTop_toBottomOf="@+id/checkBox1_tv" />
+
+            <TextView
+                android:id="@+id/checkBox2_tv"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="10dp"
+                android:text="개인정보 수집 및 이용에 동의합니다. (필수)"
+                android:textSize="13sp"
+                app:layout_constraintBottom_toBottomOf="@+id/checkBox2"
+                app:layout_constraintStart_toEndOf="@+id/checkBox2"
+                app:layout_constraintTop_toTopOf="@+id/checkBox2" />
+
+            <CheckBox
+                android:id="@+id/checkBox3"
+                android:layout_width="15dp"
+                android:layout_height="15dp"
+                android:layout_marginTop="10dp"
+                android:background="@drawable/custom_checkbox_bg"
+                android:button="@null"
+                app:layout_constraintStart_toStartOf="@+id/guideline1"
+                app:layout_constraintTop_toBottomOf="@+id/checkBox2_tv" />
+
+            <TextView
+                android:id="@+id/checkBox3_tv"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="개인정보 마케팅 활용에 동의합니다. (선택)"
+                android:textSize="13sp"
+                android:layout_marginStart="10dp"
+                app:layout_constraintBottom_toBottomOf="@+id/checkBox3"
+                app:layout_constraintStart_toEndOf="@+id/checkBox3"
+                app:layout_constraintTop_toTopOf="@+id/checkBox3" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/signup_next_btn"
+                android:layout_width="0dp"
+                android:layout_height="50dp"
+                android:layout_marginTop="30dp"
+                android:backgroundTint="@color/orange"
+                android:elevation="0dp"
+                android:text="다음"
+                app:cornerRadius="10dp"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="@+id/phone_et"
+                app:layout_constraintEnd_toStartOf="@+id/guideline2"
+                app:layout_constraintHorizontal_bias="0.0"
+                app:layout_constraintStart_toStartOf="@+id/guideline1"
+                app:layout_constraintTop_toBottomOf="@+id/checkBox3_tv"
+                app:layout_constraintVertical_bias="0.0" />
+
+            <ImageView
+                android:id="@+id/terms_of_use_btn"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:layout_marginEnd="10dp"
+                android:src="@drawable/img_arrow_right"
+                app:layout_constraintEnd_toStartOf="@+id/guideline2"
+                app:layout_constraintHorizontal_bias="1.0"
+                app:layout_constraintStart_toEndOf="@+id/checkBox1_tv"
+                app:layout_constraintTop_toBottomOf="@+id/horizontal_line" />
+
+            <ImageView
+                android:id="@+id/personal_info_btn"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:layout_marginEnd="10dp"
+                app:layout_constraintEnd_toStartOf="@+id/guideline2"
+                app:layout_constraintHorizontal_bias="1.0"
+                app:layout_constraintStart_toEndOf="@+id/checkBox2_tv"
+                app:layout_constraintTop_toBottomOf="@+id/checkBox1_tv"
+                app:srcCompat="@drawable/img_arrow_right" />
+
+            <ImageView
+                android:id="@+id/personal_info_marketing_btn"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:layout_marginEnd="10dp"
+                app:layout_constraintEnd_toStartOf="@+id/guideline2"
+                app:layout_constraintHorizontal_bias="1.0"
+                app:layout_constraintStart_toEndOf="@+id/checkBox3_tv"
+                app:layout_constraintTop_toBottomOf="@+id/checkBox2_tv"
+                app:srcCompat="@drawable/img_arrow_right" />
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+    </ScrollView>
+</androidx.constraintlayout.widget.ConstraintLayout>

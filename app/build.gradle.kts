@@ -1,6 +1,7 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
+    id("kotlin-kapt")
 }
 
 android {
@@ -55,4 +56,19 @@ dependencies {
 
     // 네이버 지도 SDK
     implementation("com.naver.maps:map-sdk:3.20.0")
+
+    // room
+    implementation(libs.androidx.room.runtime)
+    implementation(libs.androidx.room.ktx)
+    kapt(libs.androidx.room.compiler)
+
+    // json <-> 객체 변환하기 위해 사용
+    implementation(libs.gson)
+
+    //retrofit 네트워크 라이브러리 관련
+    implementation(libs.converter.gson)
+    implementation(libs.retrofit)
+
+    // material design
+    implementation (libs.material.v190)
 }
