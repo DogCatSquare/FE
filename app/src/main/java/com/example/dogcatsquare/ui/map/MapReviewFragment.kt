@@ -14,7 +14,8 @@ import com.example.dogcatsquare.databinding.FragmentMapReviewBinding
 class MapReviewFragment : Fragment() {
     private var _binding: FragmentMapReviewBinding? = null
     private val binding get() = _binding!!
-    private var reviewDatas = ArrayList<MapReview>()
+
+    private val reviewDatas by lazy { ArrayList<MapReview>() }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -40,6 +41,8 @@ class MapReviewFragment : Fragment() {
     }
 
     private fun setupRecyclerView() {
+        reviewDatas.clear()
+
         reviewDatas.apply {
             add(MapReview(R.drawable.ic_profile_img_default, "닉네임", "포메라니안", "강아지 종합접종이랑 중성화했어요 의사선생님이 친절하시고 꼼꼼히 봐주셔서 좋아요. 다음에 건강검진도 이곳에... 더보기", "2024.01.04", R.drawable.ic_place_img_default))
             add(MapReview(R.drawable.ic_profile_img_default, "닉네임", "포메라니안", "두 번째 리뷰 내용...", "2024.01.04", R.drawable.ic_place_img_default))

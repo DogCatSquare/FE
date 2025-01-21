@@ -15,9 +15,10 @@ import com.example.dogcatsquare.databinding.FragmentMapDetailBinding
 
 class MapDetailFragment : Fragment() {
     private var _binding: FragmentMapDetailBinding? = null
-    private var imgDatas = ArrayList<DetailImg>()
-    private var priceDatas = ArrayList<MapPrice>()
     private val binding get() = _binding!!
+
+    private val imgDatas by lazy { ArrayList<DetailImg>() }
+    private val priceDatas by lazy { ArrayList<MapPrice>() }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -64,6 +65,9 @@ class MapDetailFragment : Fragment() {
     }
 
     private fun setupRecyclerView() {
+        imgDatas.clear()
+        priceDatas.clear()
+
         imgDatas.apply {
             add(DetailImg(R.drawable.ic_place_img_default))
             add(DetailImg(R.drawable.ic_place_img_default))
