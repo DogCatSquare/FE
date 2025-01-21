@@ -17,10 +17,11 @@ import com.example.dogcatsquare.databinding.FragmentMapEtcBinding
 
 class MapEtcFragment : Fragment() {
     private var _binding: FragmentMapEtcBinding? = null
-    private var imgDatas = ArrayList<DetailImg>()
-    private var priceDatas = ArrayList<MapPrice>()
-    private var reviewDatas = ArrayList<MapReview>()
     private val binding get() = _binding!!
+
+    private val imgDatas by lazy { ArrayList<DetailImg>() }
+    private val priceDatas by lazy { ArrayList<MapPrice>() }
+    private val reviewDatas by lazy { ArrayList<MapReview>() }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -67,6 +68,10 @@ class MapEtcFragment : Fragment() {
     }
 
     private fun setupRecyclerView() {
+        imgDatas.clear()
+        priceDatas.clear()
+        reviewDatas.clear()
+
         imgDatas.apply {
             add(DetailImg(R.drawable.ic_place_img_default))
             add(DetailImg(R.drawable.ic_place_img_default))
