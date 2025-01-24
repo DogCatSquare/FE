@@ -15,9 +15,10 @@ import com.example.dogcatsquare.databinding.FragmentMapFullBinding
 
 class MapFullFragment : Fragment() {
     private var _binding: FragmentMapFullBinding? = null
-    private var buttonDatas = ArrayList<MapButton>()
-    private var placeDatas = ArrayList<MapPlace>()
     private val binding get() = _binding!!
+
+    private val buttonDatas by lazy { ArrayList<MapButton>() }
+    private val placeDatas by lazy { ArrayList<MapPlace>() }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -42,6 +43,10 @@ class MapFullFragment : Fragment() {
     }
 
     private fun setupRecyclerView() {
+        // 데이터 추가 전에 리스트 초기화
+        buttonDatas.clear()
+        placeDatas.clear()
+
         buttonDatas.apply {
             add(MapButton("전체"))
             add(MapButton("병원"))
@@ -61,6 +66,9 @@ class MapFullFragment : Fragment() {
             add(MapPlace("가나다 동물병원", "동물병원", "0.55km", "서울시 성북구 월곡동 77", "02-1234-5678", "중성화 수술", R.drawable.ic_place_img_default))
             add(MapPlace("서대문 안산자락길", "산책로", "0.55km", "서울시 서대문구 봉원사길 75-66", "02-1234-5678", "쓰레기통", R.drawable.ic_place_img_default))
             add(MapPlace("다나가 동물병원", "동물병원", "0.55km", "서울시 성북구 월곡동 77", "02-1234-5678", "중성화 수술", R.drawable.ic_place_img_default))
+            add(MapPlace("가나다 동물병원", "동물병원", "0.55km", "서울시 성북구 월곡동 77", "02-1234-5678", "중성화 수술", R.drawable.ic_place_img_default))
+            add(MapPlace("서대문 안산자락길", "산책로", "0.55km", "서울시 서대문구 봉원사길 75-66", "02-1234-5678", "쓰레기통", R.drawable.ic_place_img_default))
+            add(MapPlace("가나다 동물병원", "동물병원", "0.55km", "서울시 성북구 월곡동 77", "02-1234-5678", "중성화 수술", R.drawable.ic_place_img_default))
             add(MapPlace("가나다 동물병원", "동물병원", "0.55km", "서울시 성북구 월곡동 77", "02-1234-5678", "중성화 수술", R.drawable.ic_place_img_default))
         }
 
