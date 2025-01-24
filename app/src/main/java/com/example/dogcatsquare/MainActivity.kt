@@ -1,10 +1,8 @@
 package com.example.dogcatsquare
 
 import android.os.Bundle
-import androidx.activity.enableEdgeToEdge
+import androidx.appcompat.widget.Toolbar
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
 import com.example.dogcatsquare.databinding.ActivityMainBinding
 import com.example.dogcatsquare.ui.community.CommunityFragment
 import com.example.dogcatsquare.ui.home.HomeFragment

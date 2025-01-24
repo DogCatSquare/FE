@@ -1,0 +1,400 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/white" >
+
+    <!-- 상단 툴바 -->
+    <androidx.appcompat.widget.Toolbar
+        android:id="@+id/walking_start_toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:titleTextColor="@color/black" />
+
+    <!-- 스크롤 가능 영역 -->
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:fillViewport="true"
+        android:backgroundTint="@color/white"
+        android:layout_marginTop="?attr/actionBarSize"
+        app:layout_constraintTop_toBottomOf="@id/walking_start_toolbar">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="16dp">
+
+            <!-- 프로필 정보 -->
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/profile"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+                <ImageView
+                    android:id="@+id/profile_ig"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:layout_marginStart="20dp"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    android:background="@drawable/circle_background"
+                    app:srcCompat="@drawable/dog_sample" />
+
+                <TextView
+                    android:id="@+id/profile_name_tv"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="10dp"
+                    android:text="닉네임"
+                    android:textSize="18sp"
+                    android:textStyle="bold"
+                    app:layout_constraintStart_toEndOf="@id/profile_ig"
+                    app:layout_constraintTop_toTopOf="@id/profile_ig" />
+
+                <TextView
+                    android:id="@+id/profile_tv"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="10dp"
+                    android:text="포메라니안"
+                    android:textSize="14sp"
+                    app:layout_constraintStart_toEndOf="@id/profile_ig"
+                    app:layout_constraintTop_toBottomOf="@id/profile_name_tv" />
+
+                <ImageButton
+                    android:id="@+id/wish_bt"
+                    android:layout_width="20dp"
+                    android:layout_height="30dp"
+                    android:layout_marginStart="191dp"
+                    android:layout_marginEnd="9dp"
+                    android:layout_marginBottom="8dp"
+                    android:backgroundTint="@color/white"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toEndOf="@+id/profile_tv"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:srcCompat="@drawable/ic_wish" />
+
+
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+            <!-- 지도 -->
+            <androidx.fragment.app.FragmentContainerView
+                android:id="@+id/map_fragment"
+                android:name="com.naver.maps.map.MapFragment"
+                android:layout_width="match_parent"
+                android:layout_height="300dp"
+                android:layout_marginTop="16dp" />
+
+            <!-- 출발점 -->
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="20dp">
+
+                <TextView
+                    android:id="@+id/start_title"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="4dp"
+                    android:text="출발점 주소"
+                    android:textSize="15sp"
+                    android:textStyle="bold"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
+
+                <TextView
+                    android:id="@+id/start_tv"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="서울시 성북구 월곡동 77"
+                    android:textColor="#616161"
+                    app:layout_constraintStart_toEndOf="@id/start_title"
+                    app:layout_constraintTop_toTopOf="@id/start_title"
+                    android:layout_marginStart="17dp" />
+
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+            <!-- 도착점 -->
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="19dp">
+
+                <TextView
+                    android:id="@+id/end_title"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="4dp"
+                    android:text="도착점 주소"
+                    android:textSize="15sp"
+                    android:textStyle="bold"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
+
+                <TextView
+                    android:id="@+id/end_tv"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="서울시 성북구 월곡동 77"
+                    android:textColor="#616161"
+                    app:layout_constraintStart_toEndOf="@id/end_title"
+                    app:layout_constraintTop_toTopOf="@id/end_title"
+                    android:layout_marginStart="17dp" />
+
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+
+            <!-- 산책 정보 -->
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp">
+
+                <!-- 산책로 길이 (왼쪽) -->
+                <TextView
+                    android:id="@+id/length_title"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="산책로 길이"
+                    android:textColor="#FFB200"
+                    android:textSize="12sp"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
+
+                <!-- 소요 시간 (오른쪽) -->
+                <TextView
+                    android:id="@+id/length_tv"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:text="0.5 km"
+                    android:textSize="20sp"
+                    android:textStyle="bold"
+                    app:layout_constraintStart_toStartOf="@id/length_title"
+                    app:layout_constraintTop_toBottomOf="@id/length_title" />
+
+                <TextView
+                    android:id="@+id/time_title"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="128dp"
+                    android:text="소요시간"
+                    android:textColor="#FFB200"
+                    android:textSize="12sp"
+                    app:layout_constraintStart_toEndOf="@id/length_tv"
+                    app:layout_constraintTop_toTopOf="@id/length_title" />
+
+                <TextView
+                    android:id="@+id/time_tv"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="60 분"
+                    android:textSize="20sp"
+                    android:textStyle="bold"
+                    app:layout_constraintStart_toStartOf="@id/time_title"
+                    app:layout_constraintTop_toTopOf="@id/length_tv" />
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+            <!-- 후기 내용 -->
+            <EditText
+                android:id="@+id/review_ed"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="24dp"
+                android:background="#F6F6F6"
+                android:padding="16dp"
+                android:text="한바퀴 돌면 한시간 정도 걸려요. 길도 잘되어 있고 화장실도 깨끗합니다. 대형견이나 소형견 상관없이 즐길 수 있을 것 같아요. 중간 지점쯤 공원 화장실도 있고 음수대도 있어서 좋아요."
+                android:textColor="#616161" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:orientation="horizontal"
+                android:gravity="start"
+                android:paddingStart="16dp">
+
+                <ImageView
+                    android:layout_width="48dp"
+                    android:layout_height="18dp"
+                    android:layout_marginEnd="8dp"
+                    android:src="@drawable/ic__difficulty" />
+
+                <ImageView
+                    android:layout_width="48dp"
+                    android:layout_height="18dp"
+                    android:layout_marginEnd="8dp"
+                    android:src="@drawable/ic__garbage" />
+
+                <ImageView
+                    android:layout_width="48dp"
+                    android:layout_height="18dp"
+                    android:src="@drawable/ic__water" />
+
+            </LinearLayout>
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:layout_marginTop="16dp"
+                android:background="#F6F6F6" />
+
+            <!-- 사진-->
+
+            <TextView
+                android:id="@+id/img_title"
+                android:layout_width="40dp"
+                android:layout_height="28dp"
+                android:text="사진"
+                android:textColor="#0E0E0E"
+                android:textSize="20dp"
+                android:layout_marginTop="24dp"
+                android:textStyle="bold" />
+
+            <GridLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="24dp"
+                android:columnCount="3"
+                android:rowCount="2"
+                android:orientation="horizontal"
+                android:horizontalSpacing="9dp"
+                android:verticalSpacing="7dp"
+                android:padding="8dp">
+
+            <ImageButton
+                android:layout_width="118dp"
+                android:layout_height="118dp"
+                android:layout_margin="4dp"
+                android:src="@drawable/dog_sample"
+                android:background="@drawable/bt_walking_img" />
+
+            <ImageButton
+                android:layout_width="118dp"
+                android:layout_height="118dp"
+                android:layout_margin="4dp"
+                android:src="@drawable/dog_sample"
+                android:background="@drawable/bt_walking_img" /> <!-- 둥근 테두리 -->
+
+            <ImageButton
+                android:layout_width="118dp"
+                android:layout_height="118dp"
+                android:layout_margin="4dp"
+                android:src="@drawable/dog_sample"
+                android:background="@drawable/bt_walking_img" /> <!-- 둥근 테두리 -->
+
+            <ImageButton
+                android:layout_width="118dp"
+                android:layout_height="118dp"
+                android:layout_margin="4dp"
+                android:src="@drawable/cat_sample"
+                android:background="@drawable/bt_walking_img" /> <!-- 둥근 테두리 -->
+
+            <ImageButton
+                android:layout_width="118dp"
+                android:layout_height="118dp"
+                android:layout_margin="4dp"
+                android:src="@drawable/cat_sample"
+                android:background="@drawable/bt_walking_img" /> <!-- 둥근 테두리 -->
+
+            <ImageButton
+                android:layout_width="118dp"
+                android:layout_height="118dp"
+                android:layout_margin="4dp"
+                android:src="@drawable/cat_sample"
+                android:background="@drawable/bt_walking_img" /> <!-- 둥근 테두리 -->
+
+        </GridLayout>
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="11dp"
+                android:layout_marginTop="16dp"
+                android:background="#F6F6F6" />
+
+
+            <!-- 이웃들의 후기-->
+
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+                <TextView
+                    android:id="@+id/review_title"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="이웃들의 후기"
+                    android:textColor="#0E0E0E"
+                    android:textSize="20dp"
+                    android:textStyle="bold"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    android:layout_marginStart="16dp" />
+
+                <TextView
+                    android:id="@+id/review_subtitle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="3"
+                    android:textStyle="bold"
+                    android:textSize="20dp"
+                    android:textColor="#0E0E0E"
+                    app:layout_constraintStart_toEndOf="@id/review_title"
+                    app:layout_constraintTop_toTopOf="@id/review_title"
+                    app:layout_constraintEnd_toStartOf="@id/review_button"
+                    app:layout_constraintBottom_toBottomOf="@id/review_title"
+                    android:layout_marginStart="180dp" />
+
+                <ImageButton
+                    android:id="@+id/review_button"
+                    android:layout_width="35dp"
+                    android:layout_height="50dp"
+                    android:backgroundTint="@color/white"
+                    android:src="@drawable/ic_review_bt"
+                    android:contentDescription="리뷰 버튼"
+                    app:layout_constraintStart_toEndOf="@id/review_subtitle"
+                    app:layout_constraintTop_toTopOf="@id/review_subtitle"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintBottom_toBottomOf="@id/review_subtitle"
+                    android:layout_marginStart="0dp" />
+
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/review_recycler_view"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+                android:orientation="vertical"
+                android:scrollbars="vertical"
+                tools:itemCount="2"
+                tools:listitem="@layout/item_mapwaling_review"/>
+
+            <Button
+                android:id="@+id/ReviewWriting_bt"
+                android:layout_width="match_parent"
+                android:layout_height="68dp"
+                android:layout_marginTop="20dp"
+                android:backgroundTint="#FFFBF1"
+                android:text="산책 시작하기"
+                android:textColor="#FFB200"
+                android:textSize="20sp"
+                android:textStyle="bold" />
+
+        </LinearLayout>
+
+
+    </ScrollView>
+
+</androidx.constraintlayout.widget.ConstraintLayout>
