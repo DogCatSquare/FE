@@ -233,7 +233,7 @@
                     android:layout_width="48dp"
                     android:layout_height="18dp"
                     android:layout_marginEnd="8dp"
-                    android:src="@drawable/ic__garbage" />
+                    android:src="@drawable/ic_garbage" />
 
                 <ImageView
                     android:layout_width="48dp"
