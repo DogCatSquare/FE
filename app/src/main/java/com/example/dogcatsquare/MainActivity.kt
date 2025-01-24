@@ -3,6 +3,7 @@ package com.example.dogcatsquare
 import android.os.Bundle
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import com.example.dogcatsquare.databinding.ActivityMainBinding
@@ -20,16 +21,20 @@ class MainActivity : AppCompatActivity() {
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        // 상단바 색깔
+        window.statusBarColor = ContextCompat.getColor(this, R.color.white)
+
         initBottomNavigation()
     }
 
     // 바텀네비게이션 아이콘 선택 시 각 프래그먼트로 이동하는 함수
     private fun initBottomNavigation(){
-
         // 기본은 홈프래그먼트
         supportFragmentManager.beginTransaction()
             .replace(R.id.main_frm, HomeFragment())
             .commitAllowingStateLoss()
+
+        binding.mainBnv.itemIconTintList = null
 
         binding.mainBnv.setOnItemSelectedListener{ item ->
             when (item.itemId) {

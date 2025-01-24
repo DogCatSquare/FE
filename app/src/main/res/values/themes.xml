@@ -3,7 +3,93 @@
     <style name="Base.Theme.DogCatSquare" parent="Theme.Material3.DayNight.NoActionBar">
         <!-- Customize your light theme here. -->
         <!-- <item name="colorPrimary">@color/my_light_primary</item> -->
+        <item name="android:windowLightStatusBar">true</item>
+        <item name="android:statusBarColor">@color/white</item>
     </style>
 
     <style name="Theme.DogCatSquare" parent="Base.Theme.DogCatSquare" />
+
+    <style name="ThemeOverlay.NumberPicker" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+        <item name="colorControlNormal">@color/main_color1</item>
+        <item name="android:fontFamily">@font/pretendard_semibold</item>
+        <item name="android:textSize">28sp</item>
+        <item name="android:textColorPrimary">@color/main_color1</item>
+    </style>
+
+    <style name="CustomMaterialButton1" parent="Widget.MaterialComponents.Button.OutlinedButton">
+        <item name="backgroundTint">@color/white</item>
+        <item name="strokeWidth">1dp</item>
+        <item name="strokeColor">@color/main_color1</item>
+        <item name="cornerRadius">8dp</item>
+        <item name="android:textColor">@color/main_color1</item>
+        <item name="elevation">0dp</item>
+        <item name="fontFamily">@font/pretendard_medium</item>
+    </style>
+
+    <style name="CustomMaterialButton2" parent="Widget.MaterialComponents.Button.OutlinedButton">
+        <item name="backgroundTint">@color/white</item>
+        <item name="strokeWidth">1dp</item>
+        <item name="strokeColor">@color/gray3</item>
+        <item name="cornerRadius">8dp</item>
+        <item name="android:textColor">@color/gray3</item>
+        <item name="elevation">0dp</item>
+        <item name="fontFamily">@font/pretendard_medium</item>
+    </style>
+
+    <style name="CustomMaterialButton3" parent="Widget.MaterialComponents.Button.OutlinedButton">
+        <item name="backgroundTint">@color/main_color1</item>
+        <item name="strokeWidth">0dp</item>
+        <item name="cornerRadius">8dp</item>
+        <item name="android:textColor">@color/white</item>
+        <item name="elevation">0dp</item>
+        <item name="fontFamily">@font/pretendard_medium</item>
+    </style>
+
+    <style name="CustomMaterialButton4" parent="Widget.MaterialComponents.Button.OutlinedButton">
+        <item name="backgroundTint">@color/gray1</item>
+        <item name="strokeWidth">0dp</item>
+        <item name="cornerRadius">8dp</item>
+        <item name="android:textColor">@color/gray4</item>
+        <item name="elevation">0dp</item>
+        <item name="fontFamily">@font/pretendard_medium</item>
+    </style>
+
+    <style name="CustomMaterialButton5" parent="Widget.MaterialComponents.Button.OutlinedButton">
+        <item name="backgroundTint">@color/white</item>
+        <item name="strokeWidth">1dp</item>
+        <item name="strokeColor">@color/gray4</item>
+        <item name="cornerRadius">8dp</item>
+        <item name="android:textColor">@color/main_color1</item>
+        <item name="elevation">0dp</item>
+        <item name="fontFamily">@font/pretendard_medium</item>
+    </style>
+
+    <style name="CustomMaterialButton6" parent="Widget.MaterialComponents.Button.OutlinedButton">
+        <item name="backgroundTint">@color/orange</item>
+        <item name="strokeWidth">0dp</item>
+        <item name="cornerRadius">8dp</item>
+        <item name="android:textColor">@color/white</item>
+        <item name="elevation">0dp</item>
+        <item name="fontFamily">@font/pretendard_medium</item>
+    </style>
+
+    <style name="CustomMaterialButton7" parent="Widget.MaterialComponents.Button.OutlinedButton">
+        <item name="backgroundTint">@color/white</item>
+        <item name="strokeWidth">1dp</item>
+        <item name="strokeColor">@color/gray1</item>
+        <item name="cornerRadius">8dp</item>
+        <item name="fontFamily">@font/pretendard_medium</item>
+        <item name="android:textColor">@color/gray4</item>
+        <item name="elevation">0dp</item>
+    </style>
+
+    <style name="CustomMaterialButton8" parent="Widget.MaterialComponents.Button.OutlinedButton">
+        <item name="backgroundTint">@color/main_color2</item>
+        <item name="strokeWidth">1dp</item>
+        <item name="strokeColor">@color/main_color1</item>
+        <item name="cornerRadius">8dp</item>
+        <item name="fontFamily">@font/pretendard_medium</item>
+        <item name="android:textColor">@color/main_color1</item>
+        <item name="elevation">0dp</item>
+    </style>
 </resources>

@@ -71,4 +71,8 @@ dependencies {
 
     // material design
     implementation (libs.material.v190)
+
+    // Glide
+    implementation (libs.glide)
+    annotationProcessor (libs.compiler)
 }

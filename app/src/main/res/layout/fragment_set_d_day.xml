@@ -1,0 +1,411 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:background="@color/white">
+
+    <View
+        android:id="@+id/bar2"
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:layout_marginTop="25dp"
+        android:background="@color/gray1"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/back_btn" />
+
+    <ImageView
+        android:id="@+id/back_btn"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="10dp"
+        android:layout_marginTop="25dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:srcCompat="@drawable/ic_back" />
+
+    <TextView
+        android:id="@+id/textView17"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:fontFamily="@font/pretendard_bold"
+        android:text="D-DAY 관리"
+        android:textSize="20sp"
+        app:layout_constraintBottom_toBottomOf="@+id/back_btn"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/back_btn" />
+
+
+    <ScrollView
+        android:id="@+id/set_d_day_fragment"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:scrollbars="none"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/bar2">
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <androidx.constraintlayout.widget.Guideline
+                android:id="@+id/guideline1"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@color/white"
+                android:orientation="vertical"
+                app:layout_constraintGuide_percent="0.05" />
+
+            <androidx.constraintlayout.widget.Guideline
+                android:id="@+id/guideline2"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@color/white"
+                android:orientation="vertical"
+                app:layout_constraintGuide_percent="0.95" />
+
+            <TextView
+                android:id="@+id/my_info_tv2"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="20dp"
+                android:fontFamily="@font/pretendard_medium"
+                android:text="사료 주문"
+                android:textSize="20sp"
+                app:layout_constraintStart_toStartOf="@+id/guideline1"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/feedstuff_buy_date_btn"
+                style="@style/CustomMaterialButton2"
+                android:layout_width="0dp"
+                android:layout_height="50dp"
+                android:layout_marginTop="5dp"
+                android:insetTop="0dp"
+                android:insetBottom="0dp"
+                android:text="구매날짜"
+                android:textAlignment="textStart"
+                app:layout_constraintEnd_toStartOf="@+id/guideline2"
+                app:layout_constraintStart_toStartOf="@+id/guideline1"
+                app:layout_constraintTop_toBottomOf="@+id/my_info_tv2" />
+
+            <LinearLayout
+                android:id="@+id/feedstuff_week_ll"
+                android:layout_width="0dp"
+                android:layout_height="50dp"
+                android:layout_gravity="center"
+                android:layout_marginTop="5dp"
+                android:background="@drawable/custom_linear_layout"
+                android:gravity="center"
+                android:orientation="horizontal"
+                android:radius="8dp"
+                android:shape="rectangle"
+                app:layout_constraintEnd_toEndOf="@id/guideline2"
+                app:layout_constraintStart_toStartOf="@id/guideline1"
+                app:layout_constraintTop_toBottomOf="@+id/feedstuff_buy_date_btn">
+
+                <!-- 감소 버튼 -->
+                <ImageButton
+                    android:id="@+id/decrease_btn"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:background="@null"
+                    android:paddingLeft="15dp"
+                    android:src="@drawable/ic_minus"
+                    android:text="−"
+                    android:textColor="@color/main_color1"
+                    android:textSize="20sp" />
+
+                <!-- 텍스트 (숫자) -->
+                <TextView
+                    android:id="@+id/count_text"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:fontFamily="@font/pretendard_regular"
+                    android:gravity="center"
+                    android:padding="8dp"
+                    android:text="1주"
+                    android:textSize="18sp" />
+
+                <!-- 증가 버튼 -->
+                <ImageButton
+                    android:id="@+id/increase_btn"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:background="@null"
+                    android:paddingRight="15dp"
+                    android:src="@drawable/ic_plus"
+                    android:text="+"
+                    android:textColor="@color/main_color1"
+                    android:textSize="20sp" />
+            </LinearLayout>
+
+            <TextView
+                android:id="@+id/my_info_tv4"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="3dp"
+                android:fontFamily="@font/pretendard_medium"
+                android:text="패드 주문"
+                android:textSize="20sp"
+                app:layout_constraintStart_toStartOf="@+id/guideline1"
+                app:layout_constraintTop_toBottomOf="@+id/feedstuff_buy_alarm_btn" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/pads_buy_date_btn"
+                style="@style/CustomMaterialButton2"
+                android:layout_width="0dp"
+                android:layout_height="50dp"
+                android:layout_marginTop="5dp"
+                android:insetTop="0dp"
+                android:insetBottom="0dp"
+                android:text="구매날짜"
+                android:textAlignment="textStart"
+                app:layout_constraintEnd_toStartOf="@+id/guideline2"
+                app:layout_constraintStart_toStartOf="@+id/guideline1"
+                app:layout_constraintTop_toBottomOf="@id/my_info_tv4" />
+
+            <LinearLayout
+                android:id="@+id/pads_week_ll"
+                android:layout_width="0dp"
+                android:layout_height="50dp"
+                android:layout_gravity="center"
+                android:layout_marginTop="5dp"
+                android:background="@drawable/custom_linear_layout"
+                android:gravity="center"
+                android:orientation="horizontal"
+                app:layout_constraintEnd_toEndOf="@id/guideline2"
+                app:layout_constraintStart_toStartOf="@id/guideline1"
+                app:layout_constraintTop_toBottomOf="@+id/pads_buy_date_btn">
+
+                <!-- 감소 버튼 -->
+                <ImageButton
+                    android:id="@+id/pads_decrease_btn"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:background="@null"
+                    android:paddingLeft="15dp"
+                    android:src="@drawable/ic_minus"
+                    android:text="−"
+                    android:textColor="@color/main_color1"
+                    android:textSize="20sp" />
+
+                <!-- 텍스트 (숫자) -->
+                <TextView
+                    android:id="@+id/pads_count_text"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:fontFamily="@font/pretendard_regular"
+                    android:gravity="center"
+                    android:padding="8dp"
+                    android:text="1주"
+                    android:textSize="18sp" />
+
+                <!-- 증가 버튼 -->
+                <ImageButton
+                    android:id="@+id/pads_increase_btn"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:background="@null"
+                    android:paddingRight="15dp"
+                    android:src="@drawable/ic_plus"
+                    android:textColor="@color/main_color1"
+                    android:textSize="18sp" />
+            </LinearLayout>
+
+            <TextView
+                android:id="@+id/my_info_tv3"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="3dp"
+                android:fontFamily="@font/pretendard_medium"
+                android:text="병원 방문"
+                android:textSize="20sp"
+                app:layout_constraintStart_toStartOf="@+id/guideline1"
+                app:layout_constraintTop_toBottomOf="@+id/pads_buy_alarm_btn" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/select_hospital_date_btn"
+                style="@style/CustomMaterialButton2"
+                android:layout_width="0dp"
+                android:layout_height="50dp"
+                android:layout_marginTop="5dp"
+                android:insetTop="0dp"
+                android:insetBottom="0dp"
+                android:text="병원 방문 날짜"
+                android:textAlignment="textStart"
+                app:layout_constraintEnd_toStartOf="@+id/guideline2"
+                app:layout_constraintStart_toStartOf="@+id/guideline1"
+                app:layout_constraintTop_toBottomOf="@+id/my_info_tv3" />
+
+            <TextView
+                android:id="@+id/textView28"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="5dp"
+                android:fontFamily="@font/pretendard_regular"
+                android:text="시작일과 주기를 설정해주세요"
+                android:textColor="@color/gray4"
+                android:textSize="13sp"
+                app:layout_constraintBottom_toBottomOf="@+id/my_info_tv2"
+                app:layout_constraintStart_toEndOf="@+id/my_info_tv2"
+                app:layout_constraintTop_toTopOf="@+id/my_info_tv2" />
+
+            <TextView
+                android:id="@+id/textView34"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="5dp"
+                android:fontFamily="@font/pretendard_regular"
+                android:text="시작일과 주기를 설정해주세요"
+                android:textColor="@color/gray4"
+                android:textSize="13sp"
+                app:layout_constraintBottom_toBottomOf="@+id/my_info_tv4"
+                app:layout_constraintStart_toEndOf="@+id/my_info_tv4"
+                app:layout_constraintTop_toTopOf="@+id/my_info_tv4" />
+
+            <TextView
+                android:id="@+id/textView37"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+
+                android:layout_marginStart="5dp"
+                android:fontFamily="@font/pretendard_regular"
+                android:text="병원 방문일을 설정해주세요"
+                android:textColor="@color/gray4"
+                android:textSize="13sp"
+                app:layout_constraintBottom_toBottomOf="@+id/my_info_tv3"
+                app:layout_constraintStart_toEndOf="@+id/my_info_tv3"
+                app:layout_constraintTop_toTopOf="@+id/my_info_tv3" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/add_hospital_day_btn"
+                style="@style/CustomMaterialButton2"
+                android:layout_width="0dp"
+                android:layout_height="50dp"
+                android:layout_marginTop="5dp"
+                android:insetTop="0dp"
+                android:insetBottom="0dp"
+                app:icon="@drawable/ic_plus"
+                app:iconGravity="textTop"
+                app:iconSize="20dp"
+                app:iconTint="@color/main_color1"
+                app:layout_constraintEnd_toStartOf="@+id/guideline2"
+                app:layout_constraintStart_toStartOf="@+id/guideline1"
+                app:layout_constraintTop_toBottomOf="@+id/select_hospital_date_btn" />
+
+            <Switch
+                android:id="@+id/feedstuff_buy_alarm_btn"
+                android:layout_width="wrap_content"
+                android:layout_height="24dp"
+                android:layout_marginTop="5dp"
+                android:thumb="@drawable/custom_toggle_thumb"
+                android:track="@drawable/custom_toggle_btn"
+                app:layout_constraintEnd_toStartOf="@+id/guideline2"
+                app:layout_constraintTop_toBottomOf="@+id/feedstuff_week_ll" />
+
+            <TextView
+                android:id="@+id/textView38"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="5dp"
+                android:fontFamily="@font/pretendard_regular"
+                android:text="주기 알람 받기"
+                android:textColor="@color/gray4"
+                android:textSize="13sp"
+                app:layout_constraintBottom_toBottomOf="@+id/feedstuff_buy_alarm_btn"
+                app:layout_constraintEnd_toStartOf="@+id/feedstuff_buy_alarm_btn"
+                app:layout_constraintTop_toTopOf="@+id/feedstuff_buy_alarm_btn" />
+
+            <Switch
+                android:id="@+id/pads_buy_alarm_btn"
+                android:layout_width="wrap_content"
+                android:layout_height="24dp"
+                android:layout_marginTop="5dp"
+                android:thumb="@drawable/custom_toggle_thumb"
+                android:track="@drawable/custom_toggle_btn"
+                app:layout_constraintEnd_toStartOf="@+id/guideline2"
+                app:layout_constraintTop_toBottomOf="@+id/pads_week_ll" />
+
+            <TextView
+                android:id="@+id/textView39"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="5dp"
+                android:fontFamily="@font/pretendard_regular"
+                android:text="주기 알람 받기"
+                android:textColor="@color/gray4"
+                android:textSize="13sp"
+                app:layout_constraintBottom_toBottomOf="@+id/pads_buy_alarm_btn"
+                app:layout_constraintEnd_toStartOf="@+id/pads_buy_alarm_btn"
+                app:layout_constraintTop_toTopOf="@+id/pads_buy_alarm_btn" />
+
+            <Switch
+                android:id="@+id/hospital_alarm_btn"
+                android:layout_width="wrap_content"
+                android:layout_height="24dp"
+                android:layout_marginTop="5dp"
+                android:thumb="@drawable/custom_toggle_thumb"
+                android:track="@drawable/custom_toggle_btn"
+                app:layout_constraintEnd_toStartOf="@+id/guideline2"
+                app:layout_constraintTop_toBottomOf="@+id/add_hospital_day_btn" />
+
+            <TextView
+                android:id="@+id/textView40"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="5dp"
+                android:fontFamily="@font/pretendard_regular"
+                android:text="주기 알람 받기"
+                android:textColor="@color/gray4"
+                android:textSize="13sp"
+                app:layout_constraintBottom_toBottomOf="@+id/hospital_alarm_btn"
+                app:layout_constraintEnd_toStartOf="@+id/hospital_alarm_btn"
+                app:layout_constraintTop_toTopOf="@+id/hospital_alarm_btn" />
+
+            <LinearLayout
+                android:id="@+id/linearLayout"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="25dp"
+                android:layout_marginBottom="20dp"
+                android:gravity="center"
+                android:orientation="horizontal"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toStartOf="@+id/guideline2"
+                app:layout_constraintStart_toStartOf="@id/guideline1"
+                app:layout_constraintTop_toBottomOf="@+id/hospital_alarm_btn"
+                app:layout_constraintVertical_bias="1">
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/add_day_btn"
+                    style="@style/CustomMaterialButton8"
+                    android:layout_width="0dp"
+                    android:layout_height="50dp"
+                    android:layout_weight="1"
+                    android:insetTop="0dp"
+                    android:insetBottom="0dp"
+                    android:text="직접 추가하기" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/set_day_done_btn"
+                    style="@style/CustomMaterialButton3"
+                    android:layout_width="0dp"
+                    android:layout_height="50dp"
+                    android:layout_marginStart="15dp"
+                    android:layout_weight="1"
+                    android:insetTop="0dp"
+                    android:insetBottom="0dp"
+                    android:text="완료" />
+            </LinearLayout>
+        </androidx.constraintlayout.widget.ConstraintLayout>
+    </ScrollView>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

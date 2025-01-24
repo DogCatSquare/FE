@@ -1,0 +1,201 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+    <!-- 날씨 -->
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/home_weather_cl"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:background="@color/light_blue"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <androidx.constraintlayout.widget.Guideline
+            android:id="@+id/guideline1"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            app:layout_constraintGuide_percent="0.05" />
+
+        <androidx.constraintlayout.widget.Guideline
+            android:id="@+id/guideline2"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            app:layout_constraintGuide_percent="0.95" />
+
+        <ImageView
+            android:id="@+id/logo_iv1"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            app:layout_constraintStart_toStartOf="@id/guideline1"
+            app:layout_constraintTop_toTopOf="parent"
+            app:srcCompat="@drawable/logo_img" />
+
+        <ImageView
+            android:id="@+id/logo_iv2"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="10dp"
+            app:layout_constraintBottom_toBottomOf="@+id/logo_iv1"
+            app:layout_constraintStart_toEndOf="@+id/logo_iv1"
+            app:layout_constraintTop_toTopOf="@+id/logo_iv1"
+            app:srcCompat="@drawable/logo_text" />
+
+        <ImageView
+            android:id="@+id/home_bell_iv"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:layout_constraintBottom_toBottomOf="@+id/logo_iv2"
+            app:layout_constraintEnd_toEndOf="@id/guideline2"
+            app:layout_constraintHorizontal_bias="1.0"
+            app:layout_constraintStart_toEndOf="@+id/logo_iv2"
+            app:layout_constraintTop_toTopOf="@+id/logo_iv2"
+            app:srcCompat="@drawable/ic_bell" />
+
+        <TextView
+            android:id="@+id/home_weather_info_tv"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="30dp"
+            android:fontFamily="@font/pretendard_bold"
+            android:text="비 오는 날\n산책에 유의하세요"
+            android:textColor="@color/black"
+            android:textSize="23sp"
+            app:layout_constraintStart_toStartOf="@+id/guideline1"
+            app:layout_constraintTop_toBottomOf="@+id/logo_iv2" />
+
+        <ImageView
+            android:id="@+id/home_weather_iv"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="70dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@+id/guideline2"
+            app:layout_constraintHorizontal_bias="1.0"
+            app:layout_constraintStart_toEndOf="@+id/home_weather_info_tv"
+            app:layout_constraintTop_toTopOf="@+id/home_weather_info_tv"
+            app:srcCompat="@drawable/img_dog_weather_rainy" />
+
+        <TextView
+            android:id="@+id/home_weather_temperature_iv"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="15dp"
+            android:fontFamily="@font/pretendard_medium"
+            android:text="12 °"
+            android:textColor="@color/black"
+            android:textSize="28sp"
+            app:layout_constraintStart_toStartOf="@+id/guideline1"
+            app:layout_constraintTop_toBottomOf="@+id/home_weather_info_tv" />
+
+        <TextView
+            android:id="@+id/home_weather_loc_tv"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="10dp"
+            android:fontFamily="@font/pretendard_medium"
+            android:text="월곡동"
+            android:textColor="@color/black"
+            android:textSize="20sp"
+            app:layout_constraintBottom_toBottomOf="@+id/home_weather_temperature_iv"
+            app:layout_constraintStart_toEndOf="@+id/home_weather_temperature_iv"
+            app:layout_constraintTop_toTopOf="@+id/home_weather_temperature_iv" />
+
+        <TextView
+            android:id="@+id/home_weather_temperatuer_small_tv"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="5dp"
+            android:layout_marginBottom="40dp"
+            android:fontFamily="@font/pretendard_regular"
+            android:text="12"
+            android:textColor="@color/black"
+            android:textSize="13sp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="@+id/guideline1"
+            app:layout_constraintTop_toBottomOf="@+id/home_weather_temperature_iv"
+            app:layout_constraintVertical_bias="0" />
+
+        <TextView
+            android:id="@+id/textView20"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="5dp"
+            android:fontFamily="@font/pretendard_regular"
+            android:text="/"
+            android:textColor="@color/black"
+            android:textSize="13sp"
+            app:layout_constraintBottom_toBottomOf="@+id/home_weather_temperatuer_small_tv"
+            app:layout_constraintStart_toEndOf="@+id/home_weather_temperatuer_small_tv"
+            app:layout_constraintTop_toTopOf="@+id/home_weather_temperatuer_small_tv"
+            app:layout_constraintVertical_bias="0.0" />
+
+        <TextView
+            android:id="@+id/home_weather_perceived_temperature_iv1"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="5dp"
+            android:fontFamily="@font/pretendard_regular"
+            android:text="0"
+            android:textColor="@color/black"
+            android:textSize="13sp"
+            app:layout_constraintBottom_toBottomOf="@+id/textView20"
+            app:layout_constraintStart_toEndOf="@+id/textView20"
+            app:layout_constraintTop_toTopOf="@+id/textView20"
+            app:layout_constraintVertical_bias="0.0" />
+
+        <ImageView
+            android:id="@+id/imageView19"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            app:layout_constraintBottom_toBottomOf="@+id/home_weather_perceived_temperature_iv1"
+            app:layout_constraintStart_toEndOf="@+id/home_weather_perceived_temperature_iv1"
+            app:layout_constraintTop_toTopOf="@+id/home_weather_perceived_temperature_iv1"
+            app:srcCompat="@drawable/img_circle" />
+
+        <TextView
+            android:id="@+id/home_weather_perceived_temperature_iv2"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:fontFamily="@font/pretendard_regular"
+            android:text="체감 온도 0"
+            android:textColor="@color/black"
+            android:textSize="13sp"
+            app:layout_constraintBottom_toBottomOf="@+id/home_weather_perceived_temperature_iv1"
+            app:layout_constraintStart_toEndOf="@+id/imageView19"
+            app:layout_constraintTop_toTopOf="@+id/home_weather_perceived_temperature_iv1" />
+
+        <ImageView
+            android:id="@+id/imageView20"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            app:layout_constraintBottom_toBottomOf="@+id/home_weather_perceived_temperature_iv2"
+            app:layout_constraintStart_toEndOf="@+id/home_weather_perceived_temperature_iv2"
+            app:layout_constraintTop_toTopOf="@+id/home_weather_perceived_temperature_iv2"
+            app:srcCompat="@drawable/img_circle" />
+
+        <TextView
+            android:id="@+id/home_weather_tv"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:fontFamily="@font/pretendard_regular"
+            android:text="비"
+            android:textColor="@color/black"
+            android:textSize="13sp"
+            app:layout_constraintBottom_toBottomOf="@+id/home_weather_perceived_temperature_iv2"
+            app:layout_constraintStart_toEndOf="@+id/imageView20"
+            app:layout_constraintTop_toTopOf="@+id/home_weather_perceived_temperature_iv2" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

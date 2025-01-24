@@ -1,0 +1,171 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@drawable/item_card_bg">
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="@color/white"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.05" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="@color/white"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.95" />
+
+    <CheckBox
+        android:id="@+id/checkBox_all"
+        android:layout_width="15dp"
+        android:layout_height="15dp"
+        android:layout_marginTop="20dp"
+        android:background="@drawable/custom_checkbox_bg"
+        android:button="@null"
+        app:layout_constraintStart_toStartOf="@+id/guideline1"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/checkBox_all_tv"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="10dp"
+        android:text="약관 전체 동의"
+        android:textSize="13sp"
+        app:layout_constraintBottom_toBottomOf="@+id/checkBox_all"
+        app:layout_constraintStart_toEndOf="@+id/checkBox_all"
+        app:layout_constraintTop_toTopOf="@+id/checkBox_all" />
+
+    <View
+        android:id="@+id/horizontal_line"
+        android:layout_width="0dp"
+        android:layout_height="1dp"
+        android:layout_marginTop="10dp"
+        android:background="@color/gray3"
+        app:layout_constraintEnd_toEndOf="@id/guideline2"
+        app:layout_constraintStart_toStartOf="@+id/guideline1"
+        app:layout_constraintTop_toBottomOf="@+id/checkBox_all_tv" />
+
+    <CheckBox
+        android:id="@+id/checkBox1"
+        android:layout_width="15dp"
+        android:layout_height="15dp"
+        android:layout_marginTop="10dp"
+        android:background="@drawable/custom_checkbox_bg"
+        android:button="@null"
+        app:layout_constraintStart_toStartOf="@+id/guideline1"
+        app:layout_constraintTop_toBottomOf="@+id/horizontal_line" />
+
+    <TextView
+        android:id="@+id/checkBox1_tv"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="10dp"
+        android:text="이용약관에 동의합니다. (필수)"
+        android:textSize="13sp"
+        app:layout_constraintBottom_toBottomOf="@+id/checkBox1"
+        app:layout_constraintStart_toEndOf="@+id/checkBox1"
+        app:layout_constraintTop_toTopOf="@+id/checkBox1" />
+
+    <CheckBox
+        android:id="@+id/checkBox2"
+        android:layout_width="15dp"
+        android:layout_height="15dp"
+        android:layout_marginTop="10dp"
+        android:background="@drawable/custom_checkbox_bg"
+        android:button="@null"
+        app:layout_constraintStart_toStartOf="@+id/guideline1"
+        app:layout_constraintTop_toBottomOf="@+id/checkBox1_tv" />
+
+    <TextView
+        android:id="@+id/checkBox2_tv"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="10dp"
+        android:text="개인정보 수집 및 이용에 동의합니다. (필수)"
+        android:textSize="13sp"
+        app:layout_constraintBottom_toBottomOf="@+id/checkBox2"
+        app:layout_constraintStart_toEndOf="@+id/checkBox2"
+        app:layout_constraintTop_toTopOf="@+id/checkBox2" />
+
+    <CheckBox
+        android:id="@+id/checkBox3"
+        android:layout_width="15dp"
+        android:layout_height="15dp"
+        android:layout_marginTop="10dp"
+        android:background="@drawable/custom_checkbox_bg"
+        android:button="@null"
+        app:layout_constraintStart_toStartOf="@+id/guideline1"
+        app:layout_constraintTop_toBottomOf="@+id/checkBox2_tv" />
+
+    <TextView
+        android:id="@+id/checkBox3_tv"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="10dp"
+        android:text="개인정보 마케팅 활용에 동의합니다. (선택)"
+        android:textSize="13sp"
+        app:layout_constraintBottom_toBottomOf="@+id/checkBox3"
+        app:layout_constraintStart_toEndOf="@+id/checkBox3"
+        app:layout_constraintTop_toTopOf="@+id/checkBox3" />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/signup_done_btn"
+        android:layout_width="0dp"
+        android:layout_height="50dp"
+        android:layout_marginTop="30dp"
+        style="@style/CustomMaterialButton4"
+        android:insetTop="0dp"
+        android:insetBottom="0dp"
+        android:text="완료"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="@id/guideline2"
+        app:layout_constraintEnd_toStartOf="@+id/guideline2"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="@+id/guideline1"
+        app:layout_constraintTop_toBottomOf="@+id/checkBox3_tv"
+        app:layout_constraintVertical_bias="0.0" />
+
+    <ImageView
+        android:id="@+id/terms_of_use_btn"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:layout_marginEnd="10dp"
+        android:src="@drawable/img_arrow_right"
+        app:layout_constraintEnd_toStartOf="@+id/guideline2"
+        app:layout_constraintHorizontal_bias="1.0"
+        app:layout_constraintStart_toEndOf="@+id/checkBox1_tv"
+        app:layout_constraintTop_toBottomOf="@+id/horizontal_line" />
+
+    <ImageView
+        android:id="@+id/personal_info_btn"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:layout_marginEnd="10dp"
+        app:layout_constraintEnd_toStartOf="@+id/guideline2"
+        app:layout_constraintHorizontal_bias="1.0"
+        app:layout_constraintStart_toEndOf="@+id/checkBox2_tv"
+        app:layout_constraintTop_toBottomOf="@+id/checkBox1_tv"
+        app:srcCompat="@drawable/img_arrow_right" />
+
+    <ImageView
+        android:id="@+id/personal_info_marketing_btn"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:layout_marginEnd="10dp"
+        app:layout_constraintEnd_toStartOf="@+id/guideline2"
+        app:layout_constraintHorizontal_bias="1.0"
+        app:layout_constraintStart_toEndOf="@+id/checkBox3_tv"
+        app:layout_constraintTop_toBottomOf="@+id/checkBox2_tv"
+        app:srcCompat="@drawable/img_arrow_right" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>
