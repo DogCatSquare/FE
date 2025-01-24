@@ -40,9 +40,9 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="16dp"
-        android:layout_marginTop="11dp"
+        android:layout_marginTop="8dp"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/placeDistance"
+        app:layout_constraintTop_toBottomOf="@+id/placeLocation"
         app:srcCompat="@drawable/ic_call" />
 
     <ImageView
@@ -95,16 +95,16 @@
 
     <TextView
         android:id="@+id/placeLocation"
-        android:layout_width="wrap_content"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
         android:text="서울시 성북구 월곡동 77"
-        app:layout_constraintBottom_toBottomOf="@+id/contour"
-        app:layout_constraintStart_toEndOf="@+id/contour"
-        app:layout_constraintTop_toTopOf="@+id/contour"
-
+        android:textColor="#696969"
         android:textSize="14dp"
-        android:textColor="#696969"/>
+
+        app:layout_constraintEnd_toStartOf="@+id/placeImg"
+        app:layout_constraintStart_toEndOf="@+id/contour"
+        app:layout_constraintTop_toTopOf="@+id/placeDistance" />
 
     <TextView
         android:id="@+id/placeCall"
