@@ -139,28 +139,51 @@ class MapFragment : Fragment(), OnMapReadyCallback {
 
         buttonDatas.apply {
             add(MapButton("전체"))
-            add(MapButton("병원"))
-            add(MapButton("호텔"))
-            add(MapButton("공원"))
-            add(MapButton("카페"))
-            add(MapButton("기타"))
+            add(MapButton("병원", R.drawable.btn_hospital))
+            add(MapButton("산책로", R.drawable.btn_walk))
+            add(MapButton("음식/카페", R.drawable.btn_restaurant))
+            add(MapButton("호텔", R.drawable.btn_hotel))
         }
 
-        val mapButtonRVAdapter = MapButtonRVAdapter(buttonDatas)
+        val mapButtonRVAdapter = MapButtonRVAdapter(buttonDatas, object : MapButtonRVAdapter.OnItemClickListener {
+            override fun onItemClick(position: Int, buttonName: String) {
+                // 각 버튼별 처리
+                when (buttonName) {
+                    "전체" -> {
+                        placeDatas.clear()
+                        placeDatas.addAll(getAllPlaces())
+                        binding.mapPlaceRV.adapter?.notifyDataSetChanged()
+                    }
+                    "병원" -> {
+                        placeDatas.clear()
+                        placeDatas.addAll(getAllPlaces().filter { it.placeType == "동물병원" })
+                        binding.mapPlaceRV.adapter?.notifyDataSetChanged()
+                    }
+                    "산책로" -> {
+                        placeDatas.clear()
+                        placeDatas.addAll(getAllPlaces().filter { it.placeType == "산책로" })
+                        binding.mapPlaceRV.adapter?.notifyDataSetChanged()
+                    }
+                    "음식/카페" -> {
+                        placeDatas.clear()
+                        placeDatas.addAll(getAllPlaces().filter { it.placeType == "음식/카페" })
+                        binding.mapPlaceRV.adapter?.notifyDataSetChanged()
+                    }
+                    "호텔" -> {
+                        placeDatas.clear()
+                        placeDatas.addAll(getAllPlaces().filter { it.placeType == "호텔" })
+                        binding.mapPlaceRV.adapter?.notifyDataSetChanged()
+                    }
+                }
+            }
+        })
+
         binding.mapButtonRV.apply {
             adapter = mapButtonRVAdapter
             layoutManager = LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false)
         }
 
-        placeDatas.apply {
-            add(MapPlace("가나다 동물병원", "동물병원", "0.55km", "서울시 성북구 월곡동 77", "02-1234-5678", "중성화 수술", R.drawable.ic_place_img_default))
-            add(MapPlace("서대문 안산자락길", "산책로", "0.55km", "서울시 서대문구 봉원사길 75-66", "02-1234-5678", "쓰레기통", R.drawable.ic_place_img_default))
-            add(MapPlace("다나가 동물병원", "동물병원", "0.55km", "서울시 성북구 월곡동 77", "02-1234-5678", "중성화 수술", R.drawable.ic_place_img_default))
-            add(MapPlace("가나다 동물병원", "동물병원", "0.55km", "서울시 성북구 월곡동 77", "02-1234-5678", "중성화 수술", R.drawable.ic_place_img_default))
-            add(MapPlace("서대문 안산자락길", "산책로", "0.55km", "서울시 서대문구 봉원사길 75-66", "02-1234-5678", "쓰레기통", R.drawable.ic_place_img_default))
-            add(MapPlace("가나다 동물병원", "동물병원", "0.55km", "서울시 성북구 월곡동 77", "02-1234-5678", "중성화 수술", R.drawable.ic_place_img_default))
-            add(MapPlace("가나다 동물병원", "동물병원", "0.55km", "서울시 성북구 월곡동 77", "02-1234-5678", "중성화 수술", R.drawable.ic_place_img_default))
-        }
+        placeDatas.addAll(getAllPlaces())
 
         val mapPlaceRVAdapter = MapPlaceRVAdapter(placeDatas, object : MapPlaceRVAdapter.OnItemClickListener {
             override fun onItemClick(place: MapPlace) {
@@ -203,6 +226,18 @@ class MapFragment : Fragment(), OnMapReadyCallback {
             adapter = mapPlaceRVAdapter
             layoutManager = LinearLayoutManager(context, LinearLayoutManager.VERTICAL, false)
         }
+    }
+
+    private fun getAllPlaces(): List<MapPlace> {
+        return listOf(
+            MapPlace("가나다 동물병원", "동물병원", "0.55km", "서울시 성북구 월곡동 77", "02-1234-5678", "중성화 수술", R.drawable.ic_place_img_default),
+            MapPlace("서대문 안산자락길", "산책로", "0.55km", "서울시 서대문구 봉원사길 75-66", "02-1234-5678", "쓰레기통", R.drawable.ic_place_img_default),
+            MapPlace("다나가 동물병원", "동물병원", "0.55km", "서울시 성북구 월곡동 77", "02-1234-5678", "중성화 수술", R.drawable.ic_place_img_default),
+            MapPlace("가나다 동물병원", "동물병원", "0.55km", "서울시 성북구 월곡동 77", "02-1234-5678", "중성화 수술", R.drawable.ic_place_img_default),
+            MapPlace("서대문 안산자락길", "산책로", "0.55km", "서울시 서대문구 봉원사길 75-66", "02-1234-5678", "쓰레기통", R.drawable.ic_place_img_default),
+            MapPlace("가나다 동물병원", "동물병원", "0.55km", "서울시 성북구 월곡동 77", "02-1234-5678", "중성화 수술", R.drawable.ic_place_img_default),
+            MapPlace("가나다 동물병원", "동물병원", "0.55km", "서울시 성북구 월곡동 77", "02-1234-5678", "중성화 수술", R.drawable.ic_place_img_default)
+        )
     }
 
     private fun setupBottomSheet() {

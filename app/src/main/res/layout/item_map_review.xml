@@ -78,16 +78,6 @@
         app:tint="#7C7C7C"/>
 
     <ImageView
-        android:id="@+id/likeButton"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginEnd="16dp"
-        android:layout_marginBottom="4dp"
-        app:layout_constraintBottom_toTopOf="@+id/reviewImg"
-        app:layout_constraintEnd_toStartOf="@+id/etcButton"
-        app:srcCompat="@drawable/ic_review_heart" />
-
-    <ImageView
         android:id="@+id/etcButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
