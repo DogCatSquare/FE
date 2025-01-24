@@ -1,0 +1,152 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_gravity="center|top"
+    android:background="@color/white">
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="@color/white"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.75" />
+
+    <TextView
+        android:id="@+id/post_title_tv"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="15dp"
+        android:fontFamily="@font/pretendard_semibold"
+        android:text="2025년! 새해 복 많이 받으세요!!"
+        android:textColor="@color/black"
+        android:textSize="15sp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/post_content_tv"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:maxLines="2"
+        android:text="우리 호두도 올해로 5살이 되었어요 새해 아침부터 터그놀이 하는 중.. 호두랑 놀아주세요..."
+        app:layout_constraintEnd_toStartOf="@+id/guideline2"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/post_title_tv" />
+
+    <ImageView
+        android:id="@+id/imageView11"
+        android:layout_width="80dp"
+        android:layout_height="80dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="1.0"
+        app:layout_constraintStart_toEndOf="@+id/post_content_tv"
+        app:layout_constraintTop_toTopOf="@+id/post_title_tv"
+        app:srcCompat="@drawable/ic_place_img_default" />
+
+    <ImageView
+        android:id="@+id/post_profile_iv"
+        android:layout_width="15dp"
+        android:layout_height="15dp"
+        android:layout_marginTop="20dp"
+        android:layout_marginBottom="10dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/post_content_tv"
+        app:srcCompat="@drawable/ic_profile_img_default" />
+
+    <TextView
+        android:id="@+id/post_nickname_tv"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:text="닉네임"
+        android:textColor="@color/gray5"
+        android:textSize="13sp"
+        android:fontFamily="@font/pretendard_regular"
+        app:layout_constraintBottom_toBottomOf="@+id/post_profile_iv"
+        app:layout_constraintStart_toEndOf="@+id/post_profile_iv"
+        app:layout_constraintTop_toTopOf="@+id/post_profile_iv" />
+
+    <ImageView
+        android:id="@+id/imageView17"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="5dp"
+        app:layout_constraintBottom_toBottomOf="@+id/post_nickname_tv"
+        app:layout_constraintStart_toEndOf="@+id/post_nickname_tv"
+        app:layout_constraintTop_toTopOf="@+id/post_nickname_tv"
+        app:srcCompat="@drawable/img_circle" />
+
+    <TextView
+        android:id="@+id/post_pet_tv"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="5dp"
+        android:text="포메라니안"
+        android:textColor="@color/gray5"
+        android:textSize="13sp"
+        android:fontFamily="@font/pretendard_regular"
+        app:layout_constraintBottom_toBottomOf="@+id/imageView17"
+        app:layout_constraintStart_toEndOf="@+id/imageView17"
+        app:layout_constraintTop_toTopOf="@+id/imageView17" />
+
+    <ImageView
+        android:id="@+id/post_like_iv"
+        android:layout_width="15dp"
+        android:layout_height="15dp"
+        android:layout_marginEnd="3dp"
+        app:layout_constraintBottom_toBottomOf="@+id/post_like_count_tv"
+        app:layout_constraintEnd_toStartOf="@+id/post_like_count_tv"
+        app:layout_constraintTop_toTopOf="@+id/post_like_count_tv"
+        app:srcCompat="@drawable/ic_review_heart" />
+
+    <TextView
+        android:id="@+id/post_like_count_tv"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="10dp"
+        android:text="6"
+        android:textSize="13sp"
+        android:fontFamily="@font/pretendard_regular"
+        app:layout_constraintBottom_toBottomOf="@+id/post_comment_iv"
+        app:layout_constraintEnd_toStartOf="@+id/post_comment_iv"
+        app:layout_constraintTop_toTopOf="@+id/post_comment_iv" />
+
+    <View
+        android:id="@+id/bar2"
+        android:layout_width="match_parent"
+        android:layout_height="0.5dp"
+        android:background="@color/gray3"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <ImageView
+        android:id="@+id/post_comment_iv"
+        android:layout_width="15dp"
+        android:layout_height="15dp"
+        android:layout_marginEnd="3dp"
+        app:layout_constraintBottom_toBottomOf="@+id/post_comment_count_tv"
+        app:layout_constraintEnd_toStartOf="@+id/post_comment_count_tv"
+        app:layout_constraintTop_toTopOf="@+id/post_comment_count_tv"
+        app:srcCompat="@drawable/img_home_hot_post_reply_uncheck" />
+
+    <TextView
+        android:id="@+id/post_comment_count_tv"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        android:layout_marginBottom="10dp"
+        android:text="1"
+        android:textSize="13sp"
+        android:fontFamily="@font/pretendard_regular"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/post_content_tv" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

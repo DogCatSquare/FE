@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:background="@color/white">
+    android:background="@drawable/item_card_bg">
 
     <TextView
         android:id="@+id/textView7"
@@ -14,6 +14,7 @@
         android:gravity="center"
         android:text="생년월일"
         android:textSize="18sp"
+        android:fontFamily="@font/pretendard_medium"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
@@ -23,7 +24,7 @@
         android:layout_width="match_parent"
         android:layout_height="1dp"
         android:layout_marginTop="10dp"
-        android:background="@color/gray"
+        android:background="@color/gray3"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/textView7" />
@@ -66,30 +67,33 @@
                 android:id="@+id/year_picker"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_margin="8dp" />
+                android:layout_margin="8dp"
+                android:theme="@style/ThemeOverlay.NumberPicker" />
 
             <NumberPicker
                 android:id="@+id/month_picker"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_margin="8dp" />
+                android:layout_margin="8dp"
+                android:theme="@style/ThemeOverlay.NumberPicker" />
 
             <NumberPicker
                 android:id="@+id/day_picker"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_margin="8dp" />
+                android:layout_margin="8dp"
+                android:theme="@style/ThemeOverlay.NumberPicker" />
         </LinearLayout>
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/confirm_button"
+            style="@style/CustomMaterialButton3"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
+            android:layout_height="50dp"
             android:layout_marginTop="16dp"
-            android:text="완료"
-            android:backgroundTint="@color/orange"
-            android:elevation="0dp"
-            app:cornerRadius="10dp"/>
+            android:insetTop="0dp"
+            android:insetBottom="0dp"
+            android:text="완료" />
     </LinearLayout>
 
 

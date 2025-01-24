@@ -72,5 +72,9 @@ dependencies {
     // material design
     implementation (libs.material.v190)
 
+    // Glide
+    implementation (libs.glide)
+    annotationProcessor (libs.compiler)
+    
     implementation("com.google.android.gms:play-services-location:21.0.1")
 }
