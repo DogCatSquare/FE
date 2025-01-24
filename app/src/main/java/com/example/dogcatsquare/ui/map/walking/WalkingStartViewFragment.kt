@@ -2,6 +2,7 @@ package com.example.dogcatsquare.ui.map.walking
 
 import android.os.Bundle
 import android.view.LayoutInflater
+import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
@@ -10,6 +11,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentTransaction
 import com.example.dogcatsquare.R
+import com.example.dogcatsquare.ui.map.MapFragment
 
 class WalkingStartViewFragment : Fragment() {
 
@@ -26,6 +28,14 @@ class WalkingStartViewFragment : Fragment() {
             setSupportActionBar(toolbar)
             supportActionBar?.title = "서대문 안산지락길"
             supportActionBar?.setDisplayHomeAsUpEnabled(true)
+
+            // Toolbar의 네비게이션 클릭 리스너 설정
+            toolbar.setNavigationOnClickListener {
+                // MapFragment로 돌아가기
+                parentFragmentManager.beginTransaction()
+                    .replace(R.id.main_frm, MapFragment())
+                    .commit()
+            }
         }
 
         val button: Button = view.findViewById(R.id.ReviewWriting_bt)
@@ -40,4 +50,3 @@ class WalkingStartViewFragment : Fragment() {
         return view
     }
 }
-

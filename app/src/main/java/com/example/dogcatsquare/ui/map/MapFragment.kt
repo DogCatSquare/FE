@@ -18,6 +18,7 @@ import com.example.dogcatsquare.MapPlaceRVAdapter
 import com.example.dogcatsquare.R
 import com.example.dogcatsquare.WalkingStartActivity
 import com.example.dogcatsquare.databinding.FragmentMapBinding
+import com.example.dogcatsquare.ui.map.walking.WalkingStartViewFragment
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.naver.maps.map.LocationTrackingMode
 import com.naver.maps.map.MapFragment
@@ -191,16 +192,12 @@ class MapFragment : Fragment(), OnMapReadyCallback {
             override fun onItemClick(place: MapPlace) {
                 when (place.placeType) {
                     "산책로" -> {
-                        // WalkingStartActivity로 전환
-                        val intent = Intent(requireContext(), WalkingStartActivity::class.java).apply {
-                            // 필요한 데이터를 Intent에 추가
-                            putExtra("placeName", place.placeName)
-                            putExtra("placeLocation", place.placeLocation)
-                            putExtra("placeDistance", place.placeDistance)
-                            putExtra("placeChar1", place.placeChar1)
-                            place.placeImg?.let { putExtra("placeImg", it) }
-                        }
-                        startActivity(intent)
+                        // WalkingStartViewFragment로 전환
+                        val fragment = WalkingStartViewFragment()
+                        requireActivity().supportFragmentManager.beginTransaction()
+                            .replace(R.id.main_frm, fragment)
+                            .addToBackStack(null)
+                            .commit()
                     }
                     "동물병원" -> {
                         val fragment = MapDetailFragment().apply {
