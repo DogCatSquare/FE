@@ -3,30 +3,40 @@
     android:layout_height="wrap_content"
     android:orientation="vertical"
     android:padding="8dp"
-    android:background="@drawable/bg_post_item">
+    android:background="@drawable/bg_post_border">
 
+    <!-- 썸네일 이미지 -->
     <ImageView
         android:id="@+id/ivTipThumbnail"
         android:layout_width="match_parent"
         android:layout_height="160dp"
         android:scaleType="centerCrop"
-        android:src="@drawable/ic_placeholder" />
+        android:background="@drawable/rounded_thumbnail"
+        android:clipToOutline="true"
+        android:src="@drawable/ic_sample_image" />
 
+    <!-- 제목 -->
     <TextView
         android:id="@+id/tvTipTitle"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
+        android:layout_marginTop="12dp"
         android:text="강아지 산책할 때 주의할 점"
         android:textSize="16sp"
-        android:textStyle="bold" />
+        android:textStyle="bold"
+        android:textColor="#000000"
+        android:maxLines="1"
+        android:ellipsize="end" />
 
+    <!-- 내용 -->
     <TextView
         android:id="@+id/tvTipContent"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="4dp"
-        android:text="내용을 입력해주세요"
+        android:layout_marginTop="8dp"
+        android:text="강아지 산책할 때 주의해야 할 점들이 잘 나와있어요 초보 견주님들은 보시고 안전한 산책하세요!"
         android:textSize="14sp"
-        android:textColor="#808080" />
+        android:textColor="#808080"
+        android:maxLines="2"
+        android:ellipsize="end" />
 </LinearLayout>

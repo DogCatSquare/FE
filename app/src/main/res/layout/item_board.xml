@@ -4,7 +4,7 @@
     android:layout_height="wrap_content"
     android:orientation="vertical"
     android:padding="12dp"
-    android:background="@drawable/bg_item"
+    android:background="#F6F6F6"
     android:layout_marginBottom="8dp">
 
     <LinearLayout
@@ -21,15 +21,14 @@
             android:text="게시판 이름"
             android:textStyle="bold"
             android:textSize="16sp"
-            android:textColor="#000000" />
+            android:textColor="#0E0E0E" />
 
         <ImageView
             android:id="@+id/ivAddIcon"
             android:layout_width="24dp"
             android:layout_height="24dp"
             android:src="@drawable/ic_add"
-            android:contentDescription="추가"
-            android:tint="#FF5722" />
+            android:contentDescription="추가" />
     </LinearLayout>
 
     <TextView
@@ -38,7 +37,7 @@
         android:layout_height="wrap_content"
         android:text="게시판 설명"
         android:textSize="14sp"
-        android:textColor="#808080"
+        android:textColor="#757575"
         android:layout_marginTop="4dp" />
 
     <TextView
@@ -47,6 +46,6 @@
         android:layout_height="wrap_content"
         android:text="#태그"
         android:textSize="12sp"
-        android:textColor="#808080"
+        android:textColor="#757575"
         android:layout_marginTop="4dp" />
 </LinearLayout>

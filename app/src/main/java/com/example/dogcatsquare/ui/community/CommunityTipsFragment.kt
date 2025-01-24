@@ -27,15 +27,24 @@ class CommunityTipsFragment : Fragment(R.layout.fragment_community_tips) {
 
         // 더미 데이터 생성
         val tips = listOf(
-            Tip("강아지 산책할 때 주의할 점", "내용을 입력해주세요 내용을 입력해주세요 내용을 입력해주세요..."),
-            Tip("강아지 산책할 때 주의할 점", "내용을 입력해주세요 내용을 입력해주세요 내용을 입력해주세요...")
+            Tip(
+                title = "강아지 산책할 때 주의할 점",
+                content = "내용을 입력해주세요 내용을 입력해주세요 내용을 입력해주세요...",
+                thumbnailResId = R.drawable.ic_sample_image
+            ),
+            Tip(
+                title = "강아지 간식 추천",
+                content = "내용을 입력해주세요 내용을 입력해주세요 내용을 입력해주세요...",
+                thumbnailResId = R.drawable.ic_sample_image
+            )
         )
 
         // RecyclerView 설정
-        tipsAdapter = TipsAdapter(tips)
+        tipsAdapter = TipsAdapter(tips, isCompactView = false)
         binding.rvTips.apply {
             layoutManager = LinearLayoutManager(requireContext())
             adapter = tipsAdapter
         }
+
     }
 }

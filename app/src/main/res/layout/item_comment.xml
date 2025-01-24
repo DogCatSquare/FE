@@ -1,0 +1,173 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="8dp">
+
+    <!-- 댓글 -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:layout_marginBottom="8dp">
+
+        <!-- 프로필 이미지 -->
+        <ImageView
+            android:id="@+id/ivProfile"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:src="@drawable/ic_sample_profile"
+            android:scaleType="centerCrop"
+            android:layout_marginEnd="8dp"
+            android:background="@drawable/bg_rounded_profile"
+            android:clipToOutline="true" />
+
+        <!-- 닉네임과 견종 -->
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
+
+            <!-- 닉네임 -->
+            <TextView
+                android:id="@+id/tvUsername"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="닉네임"
+                android:textSize="14sp"
+                android:textStyle="bold"
+                android:layout_marginEnd="4dp" />
+
+            <!-- 견종 -->
+            <TextView
+                android:id="@+id/tvDogBreed"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="포메라니안"
+                android:textColor="#9E9E9E"
+                android:textSize="12sp" />
+        </LinearLayout>
+
+        <!-- 메뉴 아이콘 -->
+        <ImageView
+            android:id="@+id/ivReplyMenu"
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            android:src="@drawable/ic_reply_menu"
+            android:contentDescription="Menu" />
+    </LinearLayout>
+
+    <!-- 댓글 내용 -->
+    <TextView
+        android:id="@+id/tvCommentContent"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="더 열심히 놀아주세요!"
+        android:textSize="14sp"
+        android:layout_marginBottom="4dp"
+        android:textColor="#616161" />
+
+    <!-- 댓글 작성 시간 -->
+    <TextView
+        android:id="@+id/tvTimestamp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="2021.01.01"
+        android:textSize="12sp"
+        android:textColor="#9E9E9E"
+        android:layout_marginTop="8dp" />
+
+    <!-- 대댓글 -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginTop="16dp"
+        android:paddingStart="16dp">
+
+        <!-- 대댓글 아이콘 -->
+        <ImageView
+            android:id="@+id/ivReplyIcon"
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            android:src="@drawable/ic_reply"
+            android:layout_marginEnd="8dp" />
+
+        <!-- 대댓글 프로필, 닉네임, 견종 -->
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <!-- 프로필과 닉네임/견종 -->
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical">
+
+                <!-- 프로필 이미지 -->
+                <ImageView
+                    android:id="@+id/ivReplyProfile"
+                    android:layout_width="32dp"
+                    android:layout_height="32dp"
+                    android:src="@drawable/ic_profile_placeholder"
+                    android:scaleType="centerCrop"
+                    android:layout_marginEnd="8dp"
+                    android:background="@drawable/bg_rounded_profile"
+                    android:clipToOutline="true" />
+
+                <!-- 닉네임과 견종 -->
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical">
+
+                    <!-- 닉네임 -->
+                    <TextView
+                        android:id="@+id/tvReplyUsername"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="닉네임"
+                        android:textSize="14sp"
+                        android:textStyle="bold"
+                        android:layout_marginEnd="4dp" />
+
+                    <!-- 견종 -->
+                    <TextView
+                        android:id="@+id/tvReplyDogBreed"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="포메라니안"
+                        android:textColor="#9E9E9E"
+                        android:textSize="12sp" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <!-- 대댓글 내용 -->
+            <TextView
+                android:id="@+id/tvReplyContent"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="대댓 내용"
+                android:textSize="14sp"
+                android:layout_marginTop="8dp"
+                android:textColor="#616161" />
+
+            <!-- 대댓글 작성 시간 -->
+            <TextView
+                android:id="@+id/tvReplyTimestamp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="2021.01.01"
+                android:textSize="12sp"
+                android:textColor="#9E9E9E"
+                android:layout_marginTop="8dp" />
+        </LinearLayout>
+    </LinearLayout>
+</LinearLayout>

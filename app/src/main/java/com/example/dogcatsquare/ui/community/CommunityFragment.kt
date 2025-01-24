@@ -1,6 +1,7 @@
 package com.example.dogcatsquare.ui.community
 
 import android.content.Intent
+import android.graphics.Color
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -39,6 +40,10 @@ class CommunityFragment : Fragment(R.layout.fragment_community) {
                 else -> "탭 $position"
             }
         }.attach()
+
+        // TabLayout의 텍스트 색상 및 선택된 색상 설정
+        binding.tabLayout.setTabTextColors(Color.parseColor("#000000"), Color.parseColor("#FFB200"))
+        binding.tabLayout.setSelectedTabIndicatorColor(Color.parseColor("#FFB200"))
 
         // 톱니바퀴 클릭 이벤트 설정
         binding.ivSettings.setOnClickListener {

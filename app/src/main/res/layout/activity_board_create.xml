@@ -1,124 +1,131 @@
-<LinearLayout
+<RelativeLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:padding="16dp"
-    android:background="@color/white">
+    android:background="#FFFFFF">
 
-    <!-- 상단 뒤로가기 및 제목 -->
+    <!-- Toolbar -->
     <RelativeLayout
+        android:id="@+id/toolbar"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="16dp">
+        android:layout_height="56dp"
+        android:background="#FFFFFF"
+        android:layout_alignParentTop="true">
 
         <ImageView
             android:id="@+id/ivBack"
-            android:layout_width="24dp"
-            android:layout_height="24dp"
+            android:layout_width="23dp"
+            android:layout_height="50dp"
+            android:layout_marginStart="20dp"
             android:src="@drawable/ic_back"
-            android:layout_alignParentStart="true"
-            android:contentDescription="뒤로가기" />
+            android:layout_centerVertical="true" />
 
         <TextView
+            android:id="@+id/title"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="게시판 만들기"
             android:textSize="18sp"
-            android:layout_centerHorizontal="true"
-            android:textStyle="bold" />
+            android:textStyle="bold"
+            android:layout_centerInParent="true" />
     </RelativeLayout>
 
-    <!-- 게시판 이름 -->
-    <LinearLayout
+    <!-- 게시판 이름 입력 -->
+    <RelativeLayout
+        android:id="@+id/board_name_input"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:layout_marginBottom="16dp">
-
+        android:layout_height="81dp"
+        android:layout_below="@id/toolbar"
+        android:layout_margin="16dp"
+        android:background="@drawable/bg_input_boardname">
         <EditText
-            android:id="@+id/etBoardName"
+            android:id="@+id/edit_board_name"
             android:layout_width="match_parent"
-            android:layout_height="70dp"
+            android:layout_height="match_parent"
             android:hint="게시판 이름"
-            android:background="@drawable/bg_edittext"
-            android:padding="8dp"
-            android:layout_marginBottom="4dp"
-            android:maxLength="8"
-            android:inputType="text" />
-
+            android:padding="16dp"
+            android:background="@android:color/transparent"
+            android:textSize="14sp"
+            android:gravity="top|start" />
         <TextView
-            android:id="@+id/tvBoardNameCount"
-            android:layout_width="match_parent"
+            android:id="@+id/board_name_count"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:layout_alignParentEnd="true"
+            android:padding="8dp"
             android:text="0/8"
             android:textSize="12sp"
-            android:textColor="#808080"
-            android:gravity="end" />
-    </LinearLayout>
+            android:textColor="#9E9E9E" />
+    </RelativeLayout>
 
-    <!-- 게시판 설명 -->
-    <LinearLayout
+    <!-- 게시판 설명 입력 -->
+    <RelativeLayout
+        android:id="@+id/board_description_input"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:layout_marginBottom="16dp">
-
+        android:layout_height="210dp"
+        android:layout_below="@id/board_name_input"
+        android:layout_marginHorizontal="16dp"
+        android:layout_marginTop="8dp"
+        android:background="@drawable/bg_board_description">
         <EditText
-            android:id="@+id/etBoardDescription"
+            android:id="@+id/edit_board_description"
             android:layout_width="match_parent"
-            android:layout_height="150dp"
+            android:layout_height="match_parent"
             android:hint="게시판 설명"
-            android:background="@drawable/bg_edittext"
-            android:padding="8dp"
-            android:gravity="top" />
-
+            android:padding="16dp"
+            android:background="@android:color/transparent"
+            android:maxLength="300"
+            android:textSize="14sp"
+            android:gravity="top|start" />
         <TextView
-            android:id="@+id/tvBoardDescriptionCount"
-            android:layout_width="match_parent"
+            android:id="@+id/board_description_count"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:layout_alignParentEnd="true"
+            android:padding="8dp"
             android:text="0/300"
             android:textSize="12sp"
-            android:textColor="#808080"
-            android:gravity="end"
-            android:layout_marginTop="4dp" />
-    </LinearLayout>
+            android:textColor="#9E9E9E" />
+    </RelativeLayout>
 
-    <!-- 키워드 추가 -->
-    <LinearLayout
+    <!-- 게시판 키워드 -->
+    <RelativeLayout
+        android:id="@+id/board_keyword_input"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:gravity="center_vertical"
-        android:layout_marginBottom="16dp">
-
+        android:layout_height="56dp"
+        android:layout_below="@id/board_description_input"
+        android:layout_marginHorizontal="16dp"
+        android:layout_marginTop="8dp">
         <EditText
-            android:id="@+id/etBoardKeyword"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
+            android:id="@+id/edit_board_keyword"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
             android:hint="게시판 키워드"
-            android:background="@null"
-            android:padding="8dp" />
-
+            android:padding="16dp"
+            android:background="@android:color/transparent"
+            android:textSize="14sp" />
         <ImageView
-            android:id="@+id/ivAddKeyword"
-            android:layout_width="24dp"
-            android:layout_height="24dp"
-            android:src="@drawable/ic_add"
-            android:contentDescription="키워드 추가"
-            android:layout_marginStart="8dp" />
-    </LinearLayout>
+            android:id="@+id/add_keyword_button"
+            android:layout_width="14dp"
+            android:layout_height="14dp"
+            android:layout_alignParentEnd="true"
+            android:layout_centerVertical="true"
+            android:layout_marginEnd="8dp"
+            android:src="@drawable/ic_add" />
+    </RelativeLayout>
 
     <!-- 완료 버튼 -->
-    <Button
-        android:id="@+id/btnComplete"
+    <ImageView
+        android:id="@+id/btn_complete"
         android:layout_width="match_parent"
-        android:layout_height="48dp"
-        android:background="@drawable/bg_button_complete"
-        android:text="완료"
-        android:textColor="#FFFFFF"
-        android:textSize="16sp"
-        android:enabled="false"
-        android:layout_marginTop="24dp" />
-</LinearLayout>
+        android:layout_height="56dp"
+        android:layout_alignParentBottom="true"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginBottom="40dp"
+        android:src="@drawable/bt_deactivated_complete"
+        android:contentDescription="완료 버튼" />
+
+</RelativeLayout>

@@ -28,30 +28,23 @@ class CommunityLocalFragment : Fragment(R.layout.fragment_community_local) {
 
         // 글쓰기 버튼 클릭 이벤트
         binding.btnAddPost.setOnClickListener {
-            val intent = Intent(requireContext(), CommunityWriteActivity::class.java)
+            val intent = Intent(requireContext(), CreatePostActivity::class.java)
             startActivity(intent)
         }
-        // 더미 데이터 생성
+
+        // 더미 데이터 생성 (LocalPost 타입으로 변경)
         val localPosts = listOf(
-            Post(
-                username = "닉네임1",
-                location = "성북구 하월곡동",
-                title = "우리 동네 맛집 소개",
-                content = "내용을 입력해주세요 내용을 입력해주세요 내용을 입력해주세요...",
-                date = "2024.01.04",
-                thumbnail = null, // null일 경우 회색 배경 사용
-                likeCount = 6,
-                commentCount = 1
+            LocalPost(
+                username = "닉네임",
+                dogbreed = "포메라니안",
+                images = listOf(R.drawable.sample_image1, R.drawable.sample_image2),
+                content = "새로 사준 장난감으로 놀아줬더니 기절한 듯이 잠들었어요. 이제 5개월인데 미친 듯이 놀아서 너무 귀엽네요. 새벽에 우다다만 안하면 정말 좋을 텐데 방법이 없을까..."
             ),
-            Post(
-                username = "닉네임2",
-                location = "강남구 삼성동",
-                title = "새로운 소식 공유",
-                content = "새로운 소식을 공유합니다! 내용을 입력해주세요...",
-                date = "2024.01.05",
-                thumbnail = null, // null일 경우 회색 배경 사용
-                likeCount = 3,
-                commentCount = 2
+            LocalPost(
+                username = "닉네임",
+                dogbreed = "포메라니안",
+                images = emptyList(), // 이미지가 없을 경우 빈 리스트 사용
+                content = "새로 사준 장난감으로 놀아줬더니 기절한 듯이 잠들었어요. 이제 5개월인데 미친 듯이 놀아서 너무 귀엽네요. 새벽에 우다다만 안하면 정말 좋을 텐데 방법이 없을까..."
             )
         )
 

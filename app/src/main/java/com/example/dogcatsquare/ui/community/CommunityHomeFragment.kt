@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.dogcatsquare.R
@@ -34,30 +35,44 @@ class CommunityHomeFragment : Fragment(R.layout.fragment_community_home) {
         )
 
         val tips = listOf(
-            Tip("강아지 산책할 때 주의할 점", "내용을 입력해주세요 내용을 입력해주세요..."),
-            Tip("강아지 간식 추천", "내용을 입력해주세요 내용을 입력해주세요...")
+            Tip("강아지 산책할 때 주의할 점", "내용을 입력해주세요 내용을 입력해주세요...", R.drawable.ic_sample_image),
+            Tip("강아지 간식 추천", "내용을 입력해주세요 내용을 입력해주세요...", R.drawable.ic_sample_image)
         )
 
         val localPosts = listOf(
-            Post("닉네임1", "성북구 하월곡동", "우리 동네 맛집 소개", "내용을 입력해주세요...", "2024.01.04", null, 6, 1),
-            Post("닉네임2", "강남구 삼성동", "새로운 소식 공유", "새로운 소식을 공유합니다...", "2024.01.05", null, 3, 2)
+            LocalPost("닉네임1", "포메라니안", listOf(R.drawable.sample_image1, R.drawable.sample_image2), "새로 사준 장난감으로 놀아줬더니 기절한 듯이 잠들었어요ㅎ\n" +
+                    "이제 5개월인데 미친 듯이 놀아서 너무 귀엽네요 새벽에..."),
+            LocalPost("닉네임2", "말티즈", emptyList(), "새로 사준 장난감으로 놀아줬더니 기절한 듯이 잠들었어요ㅎ\n" +
+                    "이제 5개월인데 미친 듯이 놀아서 너무 귀엽네요 새벽에...")
         )
 
         // RecyclerView 설정
-        postAdapter = PostAdapter(popularPosts)
-        tipsAdapter = TipsAdapter(tips)
-        localPostAdapter = LocalPostAdapter(localPosts)
+        setupPopularPostsRecyclerView(popularPosts)
+        setupTipsRecyclerView(tips)
+        setupLocalPostsRecyclerView(localPosts) // 수정된 List<LocalPost> 전달
+    }
 
+    private fun setupPopularPostsRecyclerView(popularPosts: List<Post>) {
+        postAdapter = PostAdapter(popularPosts)
         binding.rvPopularPosts.apply {
             layoutManager = LinearLayoutManager(requireContext())
             adapter = postAdapter
         }
+    }
 
+    private fun setupTipsRecyclerView(tips: List<Tip>) {
+        tipsAdapter = TipsAdapter(tips, isCompactView = true) { selectedTip ->
+            // 클릭 이벤트 처리
+            Toast.makeText(requireContext(), "${selectedTip.title} 클릭됨", Toast.LENGTH_SHORT).show()
+        }
         binding.rvTips.apply {
             layoutManager = LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false)
             adapter = tipsAdapter
         }
+    }
 
+    private fun setupLocalPostsRecyclerView(localPosts: List<LocalPost>) { // 타입 수정
+        localPostAdapter = LocalPostAdapter(localPosts) // LocalPostAdapter 사용
         binding.rvLocalPosts.apply {
             layoutManager = LinearLayoutManager(requireContext())
             adapter = localPostAdapter
