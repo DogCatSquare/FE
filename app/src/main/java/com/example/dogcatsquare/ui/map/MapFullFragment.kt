@@ -48,10 +48,10 @@ class MapFullFragment : Fragment() {
 
         buttonDatas.apply {
             add(MapButton("전체"))
-            add(MapButton("병원", R.drawable.ic_hospital))
-            add(MapButton("산책로", R.drawable.ic_walk))
-            add(MapButton("음식/카페", R.drawable.ic_restaurant))
-            add(MapButton("호텔", R.drawable.ic_hotel))
+            add(MapButton("병원", R.drawable.btn_hospital))
+            add(MapButton("산책로", R.drawable.btn_walk))
+            add(MapButton("음식/카페", R.drawable.btn_restaurant))
+            add(MapButton("호텔", R.drawable.btn_hotel))
         }
 
         val mapButtonRVAdapter = MapButtonRVAdapter(buttonDatas, object : MapButtonRVAdapter.OnItemClickListener {
