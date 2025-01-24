@@ -20,3 +20,4 @@ class WishFragment : Fragment() {
         return binding.root
     }
 }
+

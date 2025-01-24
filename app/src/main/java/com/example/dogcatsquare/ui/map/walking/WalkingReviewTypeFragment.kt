@@ -122,3 +122,4 @@ class WalkingReviewTypeFragment : Fragment() {
         _binding = null
     }
 }
+

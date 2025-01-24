@@ -40,3 +40,4 @@ class WalkingStartViewFragment : Fragment() {
         return view
     }
 }
+
