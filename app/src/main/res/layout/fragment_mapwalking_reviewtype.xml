@@ -1,0 +1,232 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <androidx.appcompat.widget.Toolbar
+        android:id="@+id/toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:titleTextColor="@color/black" />
+
+    <LinearLayout
+        android:id="@+id/linearLayoutDifficulty"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="200dp"
+        android:gravity="center"
+        android:orientation="horizontal"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/toolbar">
+
+        <Button
+            android:id="@+id/difficulty_bt"
+            android:layout_width="118dp"
+            android:layout_height="48dp"
+            android:backgroundTint="#F6F6F6"
+            android:layout_marginRight="8dp"
+            android:onClick="onDifficultyButtonClick"
+            android:text="상"
+            android:textColor="#9E9E9E"
+            android:textStyle="bold" />
+
+        <Button
+            android:id="@+id/normal_bt"
+            android:layout_width="118dp"
+            android:layout_height="48dp"
+            android:backgroundTint="#F6F6F6"
+            android:layout_marginRight="8dp"
+            android:onClick="onDifficultyButtonClick"
+            android:text="중"
+            android:textColor="#9E9E9E"
+            android:textStyle="bold" />
+
+        <Button
+            android:id="@+id/easy_bt"
+            android:layout_width="118dp"
+            android:layout_height="48dp"
+            android:backgroundTint="#F6F6F6"
+            android:layout_marginRight="8dp"
+            android:onClick="onDifficultyButtonClick"
+            android:text="하"
+            android:textColor="#9E9E9E"
+            android:textStyle="bold" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/address_layout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="20dp"
+        android:layout_marginTop="30dp"
+        android:layout_marginEnd="20dp"
+        android:orientation="vertical"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="1.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/toolbar">
+
+        <TextView
+            android:id="@+id/address_tv"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="서대문구 안산지락길"
+            android:textSize="25dp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/textView8"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="산책은 어떠셨나요?"
+            android:textSize="25dp"
+            android:textStyle="bold" />
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/title2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="20dp"
+        android:layout_marginTop="80dp"
+        android:layout_marginEnd="335dp"
+        android:text="난이도"
+        android:textSize="16dp"
+        android:textStyle="bold"
+        app:layout_constraintBottom_toTopOf="@+id/linearLayoutDifficulty"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/address_layout" />
+
+    <TextView
+        android:id="@+id/title3"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="20dp"
+        android:layout_marginTop="190dp"
+        android:layout_marginEnd="335dp"
+        android:text="특이사항"
+        android:textSize="16dp"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/address_layout" />
+
+    <GridLayout
+        android:id="@+id/buttonGridLayout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="316dp"
+        android:columnCount="3"
+        android:orientation="horizontal"
+        android:rowCount="2"
+        android:layout_marginLeft="20dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/toolbar">
+
+        <Button
+            android:id="@+id/Washroom_bt"
+            android:layout_width="117dp"
+            android:layout_height="49dp"
+            android:layout_row="0"
+            android:layout_column="0"
+            android:backgroundTint="#F6F6F6"
+            android:drawableLeft="@drawable/ic_washroom"
+            android:onClick="onButtonClick"
+            android:text="화장실"
+            android:textColor="#9E9E9E"
+            android:textSize="11dp"
+            android:textStyle="bold" />
+
+        <Button
+            android:id="@+id/parking_bt"
+            android:layout_width="118dp"
+            android:layout_height="48dp"
+            android:backgroundTint="#F6F6F6"
+            android:drawableLeft="@drawable/ic_parking"
+            android:onClick="onButtonClick"
+            android:text="주차 가능"
+            android:textColor="#9E9E9E"
+            android:textSize="11dp"
+            android:textStyle="bold" />
+
+        <Button
+            android:id="@+id/wastebasket_bt"
+            android:layout_width="117dp"
+            android:layout_height="47dp"
+            android:backgroundTint="#F6F6F6"
+            android:drawableLeft="@drawable/ic_trash"
+            android:onClick="onButtonClick"
+            android:text="쓰레기통"
+            android:textColor="#9E9E9E"
+            android:textSize="11dp"
+            android:textStyle="bold" />
+
+        <Button
+            android:id="@+id/stairs_bt"
+            android:layout_width="99dp"
+            android:layout_height="48dp"
+            android:backgroundTint="#F6F6F6"
+            android:drawableLeft="@drawable/ic_stair"
+            android:onClick="onButtonClick"
+            android:text="계단"
+            android:textColor="#9E9E9E"
+            android:textSize="11dp"
+            android:textStyle="bold" />
+
+        <Button
+            android:id="@+id/drinking_bt"
+            android:layout_width="111dp"
+            android:layout_height="48dp"
+            android:backgroundTint="#F6F6F6"
+            android:drawableLeft="@drawable/ic_water"
+            android:onClick="onButtonClick"
+            android:text="음수대"
+            android:textColor="#9E9E9E"
+            android:textSize="11dp"
+            android:textStyle="bold" />
+
+        <Button
+            android:id="@+id/writing_bt"
+            android:layout_width="126dp"
+            android:layout_height="50dp"
+            android:backgroundTint="#F6F6F6"
+            android:onClick="onButtonClick"
+            android:text="직접작성"
+            android:textColor="#9E9E9E"
+            android:textSize="11dp"
+            android:textStyle="bold" />
+
+    </GridLayout>
+
+    <Button
+        android:id="@+id/Completion_bt"
+        android:layout_width="374dp"
+        android:layout_height="56dp"
+        android:layout_marginStart="22dp"
+        android:layout_marginEnd="22dp"
+        android:layout_marginBottom="40dp"
+        android:backgroundTint="#F6F6F6"
+        android:text="완료"
+        android:textColor="#9E9E9E"
+        android:textSize="16dp"
+        android:textStyle="bold"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.285"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/buttonGridLayout"
+        app:layout_constraintVertical_bias="0.964" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>
