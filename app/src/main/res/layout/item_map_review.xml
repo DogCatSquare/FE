@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content">
+
+    <ImageView
+        android:id="@+id/reviewProfileImg"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="16dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:srcCompat="@drawable/ic_profile_img_default" />
+
+    <TextView
+        android:id="@+id/reviewName"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:text="닉네임"
+        app:layout_constraintBottom_toBottomOf="@+id/reviewProfileImg"
+        app:layout_constraintStart_toEndOf="@+id/reviewProfileImg"
+        app:layout_constraintTop_toTopOf="@+id/reviewProfileImg"
+
+        android:textSize="16dp"
+        android:textStyle="bold"/>
+
+    <TextView
+        android:id="@+id/petType"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:text="포메라니안"
+        app:layout_constraintBottom_toBottomOf="@+id/reviewName"
+        app:layout_constraintStart_toEndOf="@+id/reviewName"
+
+        android:textSize="12dp"
+        app:tint="#7C7C7C"/>
+
+    <TextView
+        android:id="@+id/reviewText"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="16dp"
+        android:layout_marginEnd="16dp"
+        android:text="강아지 종합접종이랑 중성화했어요 의사선생님이 친절하시고 꼼꼼히 봐주셔서 좋아요. 다음에 건강검진도 이곳에... 더보기"
+        app:layout_constraintEnd_toStartOf="@+id/reviewImg"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/reviewProfileImg"
+
+        android:textSize="14dp"
+        app:tint="#5B5B5B"/>
+
+    <ImageView
+        android:id="@+id/reviewImg"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:layout_marginEnd="16dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/reviewProfileImg"
+        app:srcCompat="@drawable/ic_place_img_default" />
+
+    <TextView
+        android:id="@+id/reviewDate"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:text="2024.01.04"
+        app:layout_constraintBottom_toBottomOf="@+id/reviewImg"
+        app:layout_constraintStart_toStartOf="parent"
+
+        android:textSize="12dp"
+        app:tint="#7C7C7C"/>
+
+    <ImageView
+        android:id="@+id/likeButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="16dp"
+        android:layout_marginBottom="4dp"
+        app:layout_constraintBottom_toTopOf="@+id/reviewImg"
+        app:layout_constraintEnd_toStartOf="@+id/etcButton"
+        app:srcCompat="@drawable/ic_review_heart" />
+
+    <ImageView
+        android:id="@+id/etcButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
+        app:layout_constraintBottom_toTopOf="@+id/reviewImg"
+        app:layout_constraintEnd_toEndOf="@+id/reviewImg"
+        app:srcCompat="@drawable/icon_etc_button" />
+
+    <ImageView
+        android:id="@+id/imageView13"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/reviewDate"
+        app:srcCompat="@drawable/ic_map_contour_place" />
+</androidx.constraintlayout.widget.ConstraintLayout>

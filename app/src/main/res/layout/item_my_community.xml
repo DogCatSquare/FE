@@ -1,0 +1,127 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="8dp">
+
+    <!-- 프로필 및 정보 -->
+
+    <!-- 제목, 하트 아이콘, 메뉴 아이콘 -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:layout_marginBottom="8dp">
+
+        <!-- 제목 -->
+        <TextView
+            android:id="@+id/tvTitle"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="강아지 산책할 때 주의할 점!"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:textColor="#000000" />
+
+        <!-- 하트 아이콘 -->
+        <ImageView
+            android:id="@+id/ivLike"
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            android:src="@drawable/img_home_post_like_uncheck"
+            android:clickable="false"
+            android:visibility="invisible"
+            android:layout_marginStart="8dp"
+            android:layout_marginEnd="4dp"
+            android:contentDescription="좋아요" />
+
+        <!-- 메뉴 아이콘 -->
+        <ImageView
+            android:id="@+id/ivPostMenu"
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            android:contentDescription="메뉴"
+            android:src="@drawable/icon_etc_button" />
+    </LinearLayout>
+
+    <!-- 본문 내용 -->
+    <TextView
+        android:id="@+id/tvContent"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="강아지 산책할 때 주의해야 할 점들이 잘 나와있어요 초보 견주님들은 보시고 안전한 산책하세요!"
+        android:textSize="14sp"
+        android:textColor="#000000"
+        android:maxLines="3"
+        android:ellipsize="end"
+        android:layout_marginBottom="8dp" />
+
+    <!-- 이미지 -->
+
+    <!-- 날짜 및 좋아요, 댓글 -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:layout_width="match_parent"
+        android:layout_height="200dp"
+        android:layout_marginBottom="8dp">
+
+    </androidx.recyclerview.widget.RecyclerView>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:paddingTop="8dp"
+        android:paddingBottom="8dp">
+
+        <!-- 날짜를 왼쪽 정렬 -->
+        <TextView
+            android:id="@+id/tvDate"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="2024.01.04"
+            android:textSize="12sp"
+            android:textColor="#808080" />
+
+        <!-- 좋아요와 댓글을 오른쪽 정렬 -->
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <ImageView
+                android:id="@+id/ivfavorite"
+                android:layout_width="16dp"
+                android:layout_height="16dp"
+                android:layout_marginEnd="4dp"
+                android:src="@drawable/ic_review_heart" />
+
+            <TextView
+                android:id="@+id/tvLikeCount"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="6"
+                android:textSize="12sp"
+                android:textColor="#808080" />
+
+            <ImageView
+                android:id="@+id/ivComment"
+                android:layout_width="16dp"
+                android:layout_height="16dp"
+                android:layout_marginStart="16dp"
+                android:layout_marginEnd="4dp"
+                android:src="@drawable/img_home_hot_post_reply_uncheck" />
+
+            <TextView
+                android:id="@+id/tvCommentCount"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="1"
+                android:textSize="12sp"
+                android:textColor="#808080" />
+        </LinearLayout>
+    </LinearLayout>
+</LinearLayout>

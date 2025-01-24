@@ -1,4 +1,22 @@
-# 댕냥스퀘어
+# 댕냥스퀘어😺🐶
+‘내 반려동물에게 좋은 것만 주고 싶은데….’ 쉽지 않은 현실,
+보상 리워드 리뷰 체험단, 중구난방 퍼져있는 다양한 정보 홍수에서 벗어나고자 
+<한눈에 접하는 우리 동네 반려동물 지도, 댕냥스퀘어> 등장 !
+반려동물 육아도 스마트하게 시작해요.
+
+0️⃣ 오직 반려동물만을 위한 종합 지도&커뮤니티
+
+1️⃣ 나만의 산책로 저장 및 이웃의 산책로 추천으로 일상이 즐거운 우리 가족 
+
+2️⃣ 반려동물 동반 식당, 호텔 등 함께 할 수 있는 곳만 모아보는 편리한 지도 
+
+3️⃣ 게시판 만들기를 통해 같은 고민을 공유하는 집사&견주 생활
+
+<div style="display: flex; justify-content: center; gap: 50px;">
+  <img src="https://github.com/user-attachments/assets/925b1d13-bdae-4271-ba2b-dd7b8e7c8db5" alt="Group 271" width="200" height="450" />
+  <img src="https://github.com/user-attachments/assets/6eb5f0f2-9f62-4265-8514-81d5e8208d23" width="200" height="450" />
+  <img src="https://github.com/user-attachments/assets/5e85b9d3-ba81-4cea-9281-0d7e3515dd99" width="200" height="450" />
+</div>
 
 # 👤 Contributors
 
