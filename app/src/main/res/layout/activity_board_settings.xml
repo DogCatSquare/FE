@@ -1,0 +1,189 @@
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:gravity="center_horizontal"
+    android:padding="8dp"
+    android:background="@color/white">
+
+    <!-- 상단 뒤로가기 및 제목 -->
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="20dp">
+
+        <ImageView
+            android:id="@+id/ivBack"
+            android:layout_width="23dp"
+            android:layout_height="50dp"
+            android:layout_marginStart="20dp"
+            android:contentDescription="뒤로가기"
+            android:src="@drawable/ic_back"
+            android:layout_centerVertical="true" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true"
+            android:text="게시판 설정"
+            android:textColor="#000000"
+            android:textSize="18sp"
+            android:textStyle="bold" />
+    </RelativeLayout>
+
+    <!-- 게시판 목록 -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
+        android:background="@drawable/bg_item_border"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:padding="12dp">
+
+        <!-- 게시판 아이템 -->
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="고양이 게시판"
+            android:textColor="#0E0E0E"
+            android:textSize="16sp"
+            android:ellipsize="end"
+            android:singleLine="true" />
+
+        <ImageView
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            android:src="@drawable/ic_menu"
+            android:contentDescription="메뉴" />
+    </LinearLayout>
+
+    <!-- 게시판 만들기 버튼 -->
+    <ImageButton
+        android:id="@+id/btnCreateBoard"
+        android:layout_width="180dp"
+        android:layout_height="48dp"
+        android:layout_marginBottom="16dp"
+        android:layout_gravity="center_horizontal"
+        android:src="@drawable/bt_create_board"
+        app:backgroundTint="#FFFBF1"
+        app:cornerRadius="18dp"
+        android:contentDescription="게시판 만들기" />
+
+    <!-- 게시판 검색 -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@drawable/bg_search_board"
+        android:orientation="horizontal"
+        android:padding="8dp"
+        android:gravity="center_vertical">
+
+        <EditText
+            android:id="@+id/etSearchBoard"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:background="@null"
+            android:hint="게시판 검색"
+            android:paddingStart="8dp"
+            android:textColor="#000000"
+            android:textSize="14sp" />
+
+        <ImageView
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:src="@drawable/ic_search"
+            android:contentDescription="검색" />
+    </LinearLayout>
+
+    <!-- 검색 결과 게시판 리스트 -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:layout_marginTop="16dp">
+
+        <!-- 검색 결과 아이템 -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:background="@drawable/bg_before_item_border"
+            android:padding="12dp"
+            android:layout_marginBottom="8dp">
+
+            <!-- 제목과 추가 아이콘 -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical">
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="강아지 게시판 🐶"
+                    android:textColor="#0E0E0E"
+                    android:textSize="16sp"
+                    android:lineHeight="22.4sp"
+                    android:ellipsize="end"
+                    android:singleLine="true" />
+
+                <ImageView
+                    android:layout_width="20dp"
+                    android:layout_height="20dp"
+                    android:src="@drawable/ic_plus"
+                    android:contentDescription="추가" />
+            </LinearLayout>
+
+            <!-- 설명 텍스트 -->
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="견주들이 모여 강아지 이야기를 자유롭게 할 수 있는 게시판"
+                android:textColor="#757575"
+                android:textSize="12sp"
+                android:lineHeight="16.8sp"
+                android:layout_marginTop="4dp" />
+
+            <!-- 태그 목록 -->
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginTop="8dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="#강아지"
+                    android:textColor="#757575"
+                    android:textSize="12sp"
+                    android:lineHeight="16.8sp"
+                    android:layout_marginEnd="8dp" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="#견주"
+                    android:textColor="#757575"
+                    android:textSize="12sp"
+                    android:lineHeight="16.8sp"
+                    android:layout_marginEnd="8dp" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="#일상"
+                    android:textColor="#757575"
+                    android:textSize="12sp"
+                    android:lineHeight="16.8sp" />
+            </LinearLayout>
+        </LinearLayout>
+    </LinearLayout>
+</LinearLayout>

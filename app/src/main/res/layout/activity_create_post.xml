@@ -1,0 +1,125 @@
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#FFFFFF">
+
+    <!-- Toolbar -->
+    <RelativeLayout
+        android:id="@+id/toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="56dp"
+        android:background="#FFFFFF"
+        android:layout_alignParentTop="true">
+
+        <ImageView
+            android:id="@+id/iv_back"
+            android:layout_width="23dp"
+            android:layout_height="50dp"
+            android:layout_marginStart="20dp"
+            android:src="@drawable/ic_back"
+            android:layout_centerVertical="true" />
+
+        <TextView
+            android:id="@+id/title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="게시글 작성하기"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:layout_centerInParent="true" />
+    </RelativeLayout>
+
+    <!-- 제목 입력 -->
+    <RelativeLayout
+        android:id="@+id/title_input"
+        android:layout_width="match_parent"
+        android:layout_height="81dp"
+        android:layout_below="@id/toolbar"
+        android:layout_margin="16dp"
+        android:background="@drawable/bg_input_title">
+        <EditText
+            android:id="@+id/etTitle"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:hint="제목을 입력해주세요 (최소 2자)"
+            android:padding="16dp"
+            android:background="@android:color/transparent"
+            android:textSize="14sp"
+            android:gravity="top|start" />
+    </RelativeLayout>
+
+    <!-- 내용 입력 -->
+    <RelativeLayout
+        android:id="@+id/content_input"
+        android:layout_width="match_parent"
+        android:layout_height="210dp"
+        android:layout_below="@id/title_input"
+        android:layout_marginHorizontal="16dp"
+        android:layout_marginTop="8dp"
+        android:background="@drawable/bg_input_content">
+        <EditText
+            android:id="@+id/etContent"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:hint="내용을 입력해주세요"
+            android:padding="16dp"
+            android:background="@android:color/transparent"
+            android:maxLength="300"
+            android:textSize="14sp"
+            android:gravity="top|start" />
+
+        <TextView
+            android:id="@+id/char_count"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:layout_alignParentEnd="true"
+            android:padding="8dp"
+            android:text="0/300"
+            android:textSize="12sp"
+            android:textColor="#9E9E9E" />
+    </RelativeLayout>
+
+    <!-- 링크 입력 -->
+    <RelativeLayout
+        android:id="@+id/link_input"
+        android:layout_width="match_parent"
+        android:layout_height="56dp"
+        android:layout_below="@id/content_input"
+        android:layout_marginHorizontal="16dp"
+        android:layout_marginTop="8dp"
+        android:background="@drawable/bg_input_link">
+        <EditText
+            android:id="@+id/edit_link"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:hint="링크를 넣어주세요"
+            android:padding="16dp"
+            android:background="@android:color/transparent"
+            android:textSize="14sp"/>
+    </RelativeLayout>
+
+    <!-- 사진 추가 -->
+    <RelativeLayout
+        android:id="@+id/add_photo"
+        android:layout_width="86dp"
+        android:layout_height="86dp"
+        android:layout_below="@id/link_input"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="16dp"
+        android:background="@drawable/bt_add_photo">
+    </RelativeLayout>
+
+    <!-- 완료 버튼 -->
+    <ImageView
+        android:id="@+id/btnComplete"
+        android:layout_width="match_parent"
+        android:layout_height="56dp"
+        android:layout_alignParentBottom="true"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginBottom="40dp"
+        android:src="@drawable/bt_deactivated_complete"
+        android:contentDescription="완료 버튼" />
+</RelativeLayout>

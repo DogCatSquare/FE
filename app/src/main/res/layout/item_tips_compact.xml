@@ -1,0 +1,82 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="8dp"
+    android:background="@drawable/bg_post_border">
+
+    <!-- 썸네일 이미지 -->
+    <ImageView
+        android:id="@+id/ivTipThumbnail"
+        android:layout_width="200dp"
+        android:layout_height="120dp"
+        android:scaleType="centerCrop"
+        android:src="@drawable/ic_sample_image" />
+
+    <!-- 닉네임과 올린 시간 -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginTop="8dp">
+
+        <TextView
+            android:id="@+id/tvTipNickname"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="닉네임"
+            android:textSize="12sp"
+            android:textColor="#000000" />
+
+        <TextView
+            android:id="@+id/tvTipTime"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="1시간 전"
+            android:textSize="12sp"
+            android:textColor="#808080"
+            android:layout_marginStart="8dp" />
+    </LinearLayout>
+
+    <!-- 좋아요와 댓글 -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="end"
+        android:layout_marginTop="4dp">
+
+        <!-- 좋아요 -->
+        <ImageView
+            android:id="@+id/ivTipLike"
+            android:layout_width="16dp"
+            android:layout_height="16dp"
+            android:src="@drawable/ic_like" />
+
+        <TextView
+            android:id="@+id/tvTipLikeCount"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="6"
+            android:textSize="12sp"
+            android:textColor="#808080"
+            android:layout_marginStart="4dp" />
+
+        <!-- 댓글 -->
+        <ImageView
+            android:id="@+id/ivTipComment"
+            android:layout_width="16dp"
+            android:layout_height="16dp"
+            android:src="@drawable/ic_comment"
+            android:layout_marginStart="16dp" />
+
+        <TextView
+            android:id="@+id/tvTipCommentCount"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="1"
+            android:textSize="12sp"
+            android:textColor="#808080"
+            android:layout_marginStart="4dp" />
+    </LinearLayout>
+</LinearLayout>

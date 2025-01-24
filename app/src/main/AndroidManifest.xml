@@ -26,6 +26,12 @@
             </intent-filter>
         </activity>
 
+        <activity android:name=".ui.community.CreatePostActivity" />
+        <activity android:name=".ui.settings.BoardSettingsActivity" />
+        <activity android:name=".ui.board.BoardCreateActivity" />
+        <activity android:name=".ui.community.PostDetailActivity" />
+
+
         <meta-data
             android:name="com.naver.maps.map.CLIENT_ID"
             android:value="hqrbaf0b6w" />
