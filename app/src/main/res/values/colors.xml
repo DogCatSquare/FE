@@ -20,4 +20,5 @@
     <color name="home_gray">#E1E1E1</color>
     <color name="home_blue">#D3DEE3</color>
     <color name="home_yellow">#F6EACC</color>
+    <color name="map_stroke_gray">#E8E8E8</color>
 </resources>
