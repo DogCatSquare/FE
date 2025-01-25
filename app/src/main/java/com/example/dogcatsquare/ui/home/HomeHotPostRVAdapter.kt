@@ -3,12 +3,7 @@ package com.example.dogcatsquare.ui.home
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
-import com.bumptech.glide.Glide
-import com.example.dogcatsquare.MapPlace
-import com.example.dogcatsquare.R
-import com.example.dogcatsquare.data.home.DDay
 import com.example.dogcatsquare.data.post.Post
-import com.example.dogcatsquare.databinding.ItemHomeCardBinding
 import com.example.dogcatsquare.databinding.ItemHomeHotPostBinding
 
 class HomeHotPostRVAdapter(private val hotPostList: ArrayList<Post>) : RecyclerView.Adapter<HomeHotPostRVAdapter.HomeHotPostAdapterViewHolder>() {

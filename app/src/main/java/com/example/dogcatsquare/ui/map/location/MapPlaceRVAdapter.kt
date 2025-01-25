@@ -1,9 +1,9 @@
-package com.example.dogcatsquare
+package com.example.dogcatsquare.ui.map.location
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
-import com.example.dogcatsquare.databinding.ItemMapButtonBinding
+import com.example.dogcatsquare.data.map.MapPlace
 import com.example.dogcatsquare.databinding.ItemMapPlaceBinding
 
 class MapPlaceRVAdapter(private val placeList: ArrayList<MapPlace>, private val listener: OnItemClickListener? = null): RecyclerView.Adapter<MapPlaceRVAdapter.ViewHolder>() {
@@ -11,13 +11,13 @@ class MapPlaceRVAdapter(private val placeList: ArrayList<MapPlace>, private val 
         fun onItemClick(place: MapPlace)
     }
 
-    override fun onCreateViewHolder(viewGroup: ViewGroup, viewType: Int): MapPlaceRVAdapter.ViewHolder {
+    override fun onCreateViewHolder(viewGroup: ViewGroup, viewType: Int): ViewHolder {
         val binding: ItemMapPlaceBinding = ItemMapPlaceBinding.inflate(LayoutInflater.from(viewGroup.context), viewGroup, false)
 
         return ViewHolder(binding)
     }
 
-    override fun onBindViewHolder(holder: MapPlaceRVAdapter.ViewHolder, position: Int) {
+    override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         holder.bind(placeList[position])
     }
 

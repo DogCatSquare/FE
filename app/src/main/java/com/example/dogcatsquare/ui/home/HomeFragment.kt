@@ -1,6 +1,5 @@
 package com.example.dogcatsquare.ui.home
 
-import android.content.Intent
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
@@ -11,18 +10,15 @@ import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.viewpager2.widget.ViewPager2
-import com.example.dogcatsquare.MapPlace
-import com.example.dogcatsquare.MapPlaceRVAdapter
+import com.example.dogcatsquare.data.map.MapPlace
 import com.example.dogcatsquare.R
 import com.example.dogcatsquare.data.home.DDay
 import com.example.dogcatsquare.data.home.Event
-import com.example.dogcatsquare.data.login.DogCat
 import com.example.dogcatsquare.data.post.Pet
 import com.example.dogcatsquare.data.post.Post
 import com.example.dogcatsquare.databinding.FragmentHomeBinding
-import com.example.dogcatsquare.ui.map.MapDetailFragment
-import com.example.dogcatsquare.ui.map.MapEtcFragment
-import com.example.dogcatsquare.ui.mypage.AddPetFragment
+import com.example.dogcatsquare.ui.map.location.MapDetailFragment
+import com.example.dogcatsquare.ui.map.location.MapEtcFragment
 import java.util.Timer
 import java.util.TimerTask
 

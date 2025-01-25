@@ -1,7 +1,6 @@
-package com.example.dogcatsquare.ui.map
+package com.example.dogcatsquare.ui.map.location
 
 import android.Manifest
-import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -11,12 +10,9 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.example.dogcatsquare.MapButton
-import com.example.dogcatsquare.MapButtonRVAdapter
-import com.example.dogcatsquare.MapPlace
-import com.example.dogcatsquare.MapPlaceRVAdapter
+import com.example.dogcatsquare.data.map.MapButton
+import com.example.dogcatsquare.data.map.MapPlace
 import com.example.dogcatsquare.R
-import com.example.dogcatsquare.WalkingStartActivity
 import com.example.dogcatsquare.databinding.FragmentMapBinding
 import com.example.dogcatsquare.ui.map.walking.WalkingStartViewFragment
 import com.google.android.material.bottomsheet.BottomSheetBehavior

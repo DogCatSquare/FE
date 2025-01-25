@@ -1,4 +1,4 @@
-package com.example.dogcatsquare
+package com.example.dogcatsquare.data.map
 
 data class MapPlace(
     var placeName: String? = "",

@@ -2,7 +2,6 @@ package com.example.dogcatsquare.ui.map.walking
 
 import android.os.Bundle
 import android.view.LayoutInflater
-import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
@@ -11,7 +10,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentTransaction
 import com.example.dogcatsquare.R
-import com.example.dogcatsquare.ui.map.MapFragment
+import com.example.dogcatsquare.ui.map.location.MapFragment
 
 class WalkingStartViewFragment : Fragment() {
 

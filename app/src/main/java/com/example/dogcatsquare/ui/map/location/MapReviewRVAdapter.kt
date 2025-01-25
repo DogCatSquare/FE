@@ -1,21 +1,22 @@
-package com.example.dogcatsquare
+package com.example.dogcatsquare.ui.map.location
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import android.widget.PopupMenu
 import androidx.fragment.app.FragmentActivity
 import androidx.recyclerview.widget.RecyclerView
+import com.example.dogcatsquare.R
+import com.example.dogcatsquare.data.map.MapReview
 import com.example.dogcatsquare.databinding.ItemMapReviewBinding
-import com.example.dogcatsquare.ui.map.MapReportFragment
 
 class MapReviewRVAdapter(private val reviewList: ArrayList<MapReview>): RecyclerView.Adapter<MapReviewRVAdapter.ViewHolder>() {
-    override fun onCreateViewHolder(viewGroup: ViewGroup, viewType: Int): MapReviewRVAdapter.ViewHolder {
+    override fun onCreateViewHolder(viewGroup: ViewGroup, viewType: Int): ViewHolder {
         val binding: ItemMapReviewBinding = ItemMapReviewBinding.inflate(LayoutInflater.from(viewGroup.context), viewGroup, false)
 
         return ViewHolder(binding)
     }
 
-    override fun onBindViewHolder(holder: MapReviewRVAdapter.ViewHolder, position: Int) {
+    override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         holder.bind(reviewList[position])
     }
 

@@ -1,20 +1,19 @@
-package com.example.dogcatsquare
+package com.example.dogcatsquare.ui.wish
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
-import com.example.dogcatsquare.databinding.ItemMapButtonBinding
-import com.example.dogcatsquare.databinding.ItemMapPlaceBinding
+import com.example.dogcatsquare.data.wish.WishPlace
 import com.example.dogcatsquare.databinding.ItemWishPlaceBinding
 
 class WishPlaceRVAdapter(private val placeList: ArrayList<WishPlace>): RecyclerView.Adapter<WishPlaceRVAdapter.ViewHolder>() {
-    override fun onCreateViewHolder(viewGroup: ViewGroup, viewType: Int): WishPlaceRVAdapter.ViewHolder {
+    override fun onCreateViewHolder(viewGroup: ViewGroup, viewType: Int): ViewHolder {
         val binding: ItemWishPlaceBinding = ItemWishPlaceBinding.inflate(LayoutInflater.from(viewGroup.context), viewGroup, false)
 
         return ViewHolder(binding)
     }
 
-    override fun onBindViewHolder(holder: WishPlaceRVAdapter.ViewHolder, position: Int) {
+    override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         holder.bind(placeList[position])
     }
 
