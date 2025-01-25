@@ -6,13 +6,28 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content">
 
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline_start"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="@color/white"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.05" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline_end"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="@color/white"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.95" />
+
     <ImageView
         android:id="@+id/placeImg"
         android:layout_width="48dp"
         android:layout_height="48dp"
-        android:layout_marginStart="16dp"
         android:layout_marginTop="16dp"
-        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintStart_toStartOf="@+id/guideline_start"
         app:layout_constraintTop_toTopOf="parent"
         app:srcCompat="@drawable/ic_trail_default" />
 
@@ -44,51 +59,50 @@
         android:id="@+id/placeName"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="80dp"
+        android:layout_marginStart="8dp"
+        android:fontFamily="@font/pretendard_medium"
         android:text="서대문 안산자락길"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="@+id/placeImg"
-
-        android:textStyle="bold"/>
+        android:textColor="@color/black"
+        android:textSize="18dp"
+        app:layout_constraintStart_toEndOf="@+id/placeImg"
+        app:layout_constraintTop_toTopOf="@+id/placeImg" />
 
     <TextView
         android:id="@+id/placeDistance"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="80dp"
+        android:layout_marginTop="5dp"
+        android:fontFamily="@font/pretendard_regular"
         android:text="0.55km"
+        android:textColor="@color/gray5"
+        android:textSize="12dp"
         app:layout_constraintBottom_toBottomOf="@+id/placeImg"
-        app:layout_constraintStart_toStartOf="parent" />
-
-    <ImageView
-        android:id="@+id/imageView23"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="8dp"
-        app:layout_constraintBottom_toBottomOf="@+id/placeDistance"
-        app:layout_constraintStart_toEndOf="@+id/placeDistance"
-        app:layout_constraintTop_toTopOf="@+id/placeDistance"
-        app:srcCompat="@drawable/ic_map_contour" />
+        app:layout_constraintStart_toStartOf="@+id/placeName"
+        app:layout_constraintTop_toBottomOf="@+id/placeName" />
 
     <TextView
         android:id="@+id/placeLocation"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="8dp"
+        android:layout_marginStart="5dp"
         android:text="서울시 서대문구 봉원사길 75-66"
-        app:layout_constraintBottom_toBottomOf="@+id/imageView23"
-        app:layout_constraintStart_toEndOf="@+id/imageView23"
-        app:layout_constraintTop_toTopOf="@+id/imageView23" />
+        android:textSize="12dp"
+        android:textColor="@color/gray5"
+        android:fontFamily="@font/pretendard_regular"
+        app:layout_constraintBottom_toBottomOf="@+id/placeDistance"
+        app:layout_constraintStart_toEndOf="@+id/placeDistance"
+        app:layout_constraintTop_toTopOf="@+id/placeDistance" />
 
     <ImageView
         android:id="@+id/expandButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginEnd="32dp"
         android:rotation="-90"
-        app:layout_constraintBottom_toTopOf="@+id/imageView25"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="@+id/placeName"
+        app:layout_constraintEnd_toStartOf="@+id/guideline_end"
+        app:layout_constraintHorizontal_bias="1.0"
+        app:layout_constraintStart_toEndOf="@+id/placeName"
+        app:layout_constraintTop_toTopOf="@+id/placeName"
         app:srcCompat="@drawable/ic_back" />
 
     <ImageView

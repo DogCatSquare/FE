@@ -5,13 +5,28 @@
     android:layout_width="wrap_content"
     android:layout_height="wrap_content">
 
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="@color/white"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.05" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="@color/white"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.95" />
+
     <ImageView
         android:id="@+id/charBox"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
         android:layout_marginTop="8dp"
-        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintStart_toStartOf="@+id/guideline1"
         app:layout_constraintTop_toBottomOf="@+id/call"
         app:srcCompat="@drawable/ic_map_char" />
 
@@ -19,54 +34,40 @@
         android:id="@+id/contour2"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="32dp"
+        android:layout_marginTop="15dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/placeImg"
+        app:layout_constraintTop_toBottomOf="@+id/charBox"
         app:srcCompat="@drawable/ic_map_contour_place" />
 
     <ImageView
         android:id="@+id/placeImg"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="32dp"
-        android:layout_marginEnd="32dp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
+        android:layout_width="90dp"
+        android:layout_height="90dp"
+        app:layout_constraintEnd_toStartOf="@+id/guideline2"
+        app:layout_constraintTop_toTopOf="@+id/placeName"
         app:srcCompat="@drawable/ic_place_img_default" />
 
     <ImageView
         android:id="@+id/call"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
         android:layout_marginTop="8dp"
-        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintStart_toStartOf="@+id/guideline1"
         app:layout_constraintTop_toBottomOf="@+id/placeLocation"
         app:srcCompat="@drawable/ic_call" />
-
-    <ImageView
-        android:id="@+id/contour"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="8dp"
-        app:layout_constraintBottom_toBottomOf="@+id/placeDistance"
-        app:layout_constraintStart_toEndOf="@+id/placeDistance"
-        app:layout_constraintTop_toTopOf="@+id/placeDistance"
-        app:srcCompat="@drawable/ic_map_contour" />
 
     <TextView
         android:id="@+id/placeName"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
-        android:layout_marginTop="16dp"
+        android:layout_marginTop="15dp"
         android:text="가나다 동물병원"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-
-        android:textSize="20dp"
-        android:textStyle="bold"/>
+        android:textSize="18dp"
+        android:fontFamily="@font/pretendard_semibold"
+        android:textColor="@color/black"
+        app:layout_constraintStart_toStartOf="@+id/guideline1"
+        app:layout_constraintTop_toTopOf="parent" />
 
     <TextView
         android:id="@+id/placeType"
@@ -74,50 +75,52 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
         android:text="동물병원"
+        android:textColor="@color/gray5"
+        android:textSize="14dp"
+        android:fontFamily="@font/pretendard_regular"
         app:layout_constraintBottom_toBottomOf="@+id/placeName"
         app:layout_constraintStart_toEndOf="@+id/placeName"
-
-        android:textSize="16dp"
-        android:textColor="#696969"/>
+        app:layout_constraintTop_toTopOf="@+id/placeName" />
 
     <TextView
         android:id="@+id/placeDistance"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
         android:layout_marginTop="8dp"
+        android:fontFamily="@font/pretendard_regular"
         android:text="0.55km"
-        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintStart_toStartOf="@+id/guideline1"
         app:layout_constraintTop_toBottomOf="@+id/placeName"
-
-        android:textSize="14dp"
-        android:textColor="#696969"/>
+        android:textSize="12dp"
+        android:textColor="@color/gray5"/>
 
     <TextView
         android:id="@+id/placeLocation"
-        android:layout_width="0dp"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="8dp"
+        android:layout_marginStart="5dp"
         android:text="서울시 성북구 월곡동 77"
-        android:textColor="#696969"
-        android:textSize="14dp"
-
+        android:textColor="@color/gray5"
+        android:fontFamily="@font/pretendard_regular"
+        android:textSize="12dp"
+        app:layout_constraintBottom_toBottomOf="@+id/placeDistance"
         app:layout_constraintEnd_toStartOf="@+id/placeImg"
-        app:layout_constraintStart_toEndOf="@+id/contour"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toEndOf="@+id/placeDistance"
         app:layout_constraintTop_toTopOf="@+id/placeDistance" />
 
     <TextView
         android:id="@+id/placeCall"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="8dp"
+        android:layout_marginStart="5dp"
         android:text="02-1234-5678"
+        android:textColor="@color/gray5"
+        android:textSize="12dp"
         app:layout_constraintBottom_toBottomOf="@+id/call"
+        android:fontFamily="@font/pretendard_regular"
         app:layout_constraintStart_toEndOf="@+id/call"
-        app:layout_constraintTop_toTopOf="@+id/call"
-
-        android:textSize="14dp"
-        android:textColor="#61646B"/>
+        app:layout_constraintTop_toTopOf="@+id/call" />
 
     <TextView
         android:id="@+id/placeChar1"
@@ -128,8 +131,8 @@
         app:layout_constraintEnd_toEndOf="@+id/charBox"
         app:layout_constraintStart_toStartOf="@+id/charBox"
         app:layout_constraintTop_toTopOf="@+id/charBox"
-
-        android:textSize="12dp"
-        android:textColor="#696969"/>
+        android:textSize="10dp"
+        android:fontFamily="@font/pretendard_regular"
+        android:textColor="@color/gray5"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

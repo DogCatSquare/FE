@@ -41,11 +41,12 @@
 
     <ImageView
         android:id="@+id/filter"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
         android:layout_marginStart="5dp"
         app:layout_constraintBottom_toBottomOf="@+id/searchBox"
         app:layout_constraintEnd_toEndOf="@id/guideline_end"
+        app:layout_constraintHorizontal_bias="1.0"
         app:layout_constraintStart_toEndOf="@id/guideline_mid"
         app:layout_constraintTop_toTopOf="@+id/searchBox"
         app:srcCompat="@drawable/ic_filter" />

@@ -27,7 +27,7 @@ class WishPlaceRVAdapter(private val placeList: ArrayList<WishPlace>): RecyclerV
             binding.placeDistance.text = place.placeDistance
             binding.placeLocation.text = place.placeLocation
             binding.placeCall.text = place.placeCall
-            binding.placeChar1.text = place.placeChar1
+            binding.placeChar122.text = place.placeChar1
             binding.placeImg.setImageResource(place.placeImg!!)
             binding.placeReview.text = place.placeReview
         }
