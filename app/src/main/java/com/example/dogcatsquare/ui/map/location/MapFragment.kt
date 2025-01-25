@@ -1,4 +1,4 @@
-package com.example.dogcatsquare.ui.map
+package com.example.dogcatsquare.ui.map.location
 
 import android.Manifest
 import android.content.pm.PackageManager
@@ -10,12 +10,11 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.example.dogcatsquare.MapButton
-import com.example.dogcatsquare.MapButtonRVAdapter
-import com.example.dogcatsquare.MapPlace
-import com.example.dogcatsquare.MapPlaceRVAdapter
+import com.example.dogcatsquare.data.map.MapButton
+import com.example.dogcatsquare.data.map.MapPlace
 import com.example.dogcatsquare.R
 import com.example.dogcatsquare.databinding.FragmentMapBinding
+import com.example.dogcatsquare.ui.map.walking.WalkingStartViewFragment
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.naver.maps.map.LocationTrackingMode
 import com.naver.maps.map.MapFragment
@@ -187,38 +186,52 @@ class MapFragment : Fragment(), OnMapReadyCallback {
 
         val mapPlaceRVAdapter = MapPlaceRVAdapter(placeDatas, object : MapPlaceRVAdapter.OnItemClickListener {
             override fun onItemClick(place: MapPlace) {
-                // placeType에 따라 다른 Fragment로 전환
-                val fragment = if (place.placeType == "동물병원") {
-                    MapDetailFragment().apply {
-                        arguments = Bundle().apply {
-                            putString("placeName", place.placeName)
-                            putString("placeType", place.placeType)
-                            putString("placeDistance", place.placeDistance)
-                            putString("placeLocation", place.placeLocation)
-                            putString("placeCall", place.placeCall)
-                            putString("placeChar1", place.placeChar1)
-                            place.placeImg?.let { putInt("placeImg", it) }
-                        }
+                when (place.placeType) {
+                    "산책로" -> {
+                        // WalkingStartViewFragment로 전환
+                        val fragment = WalkingStartViewFragment()
+                        requireActivity().supportFragmentManager.beginTransaction()
+                            .replace(R.id.main_frm, fragment)
+                            .addToBackStack(null)
+                            .commit()
                     }
-                } else {
-                    MapEtcFragment().apply {
-                        arguments = Bundle().apply {
-                            putString("placeName", place.placeName)
-                            putString("placeType", place.placeType)
-                            putString("placeDistance", place.placeDistance)
-                            putString("placeLocation", place.placeLocation)
-                            putString("placeCall", place.placeCall)
-                            putString("placeChar1", place.placeChar1)
-                            place.placeImg?.let { putInt("placeImg", it) }
+                    "동물병원" -> {
+                        val fragment = MapDetailFragment().apply {
+                            arguments = Bundle().apply {
+                                putString("placeName", place.placeName)
+                                putString("placeType", place.placeType)
+                                putString("placeDistance", place.placeDistance)
+                                putString("placeLocation", place.placeLocation)
+                                putString("placeCall", place.placeCall)
+                                putString("placeChar1", place.placeChar1)
+                                place.placeImg?.let { putInt("placeImg", it) }
+                            }
                         }
+                        // Fragment 전환
+                        requireActivity().supportFragmentManager.beginTransaction()
+                            .replace(R.id.main_frm, fragment)
+                            .addToBackStack(null)
+                            .commit()
+                    }
+                    else -> {
+                        val fragment = MapEtcFragment().apply {
+                            arguments = Bundle().apply {
+                                putString("placeName", place.placeName)
+                                putString("placeType", place.placeType)
+                                putString("placeDistance", place.placeDistance)
+                                putString("placeLocation", place.placeLocation)
+                                putString("placeCall", place.placeCall)
+                                putString("placeChar1", place.placeChar1)
+                                place.placeImg?.let { putInt("placeImg", it) }
+                            }
+                        }
+                        // Fragment 전환
+                        requireActivity().supportFragmentManager.beginTransaction()
+                            .replace(R.id.main_frm, fragment)
+                            .addToBackStack(null)
+                            .commit()
                     }
                 }
-
-                // Fragment 전환
-                requireActivity().supportFragmentManager.beginTransaction()
-                    .replace(R.id.main_frm, fragment)
-                    .addToBackStack(null)
-                    .commit()
             }
         })
 
@@ -231,7 +244,7 @@ class MapFragment : Fragment(), OnMapReadyCallback {
     private fun getAllPlaces(): List<MapPlace> {
         return listOf(
             MapPlace("가나다 동물병원", "동물병원", "0.55km", "서울시 성북구 월곡동 77", "02-1234-5678", "중성화 수술", R.drawable.ic_place_img_default),
-            MapPlace("서대문 안산자락길", "산책로", "0.55km", "서울시 서대문구 봉원사길 75-66", "02-1234-5678", "쓰레기통", R.drawable.ic_place_img_default),
+            MapPlace("서대문 안산자락길", "산책로", "0.55km", "서울시 서대문구 봉원사길 75-66 111111111111111111", "02-1234-5678", "쓰레기통", R.drawable.ic_place_img_default),
             MapPlace("다나가 동물병원", "동물병원", "0.55km", "서울시 성북구 월곡동 77", "02-1234-5678", "중성화 수술", R.drawable.ic_place_img_default),
             MapPlace("가나다 동물병원", "동물병원", "0.55km", "서울시 성북구 월곡동 77", "02-1234-5678", "중성화 수술", R.drawable.ic_place_img_default),
             MapPlace("서대문 안산자락길", "산책로", "0.55km", "서울시 서대문구 봉원사길 75-66", "02-1234-5678", "쓰레기통", R.drawable.ic_place_img_default),
@@ -244,34 +257,48 @@ class MapFragment : Fragment(), OnMapReadyCallback {
         bottomSheetBehavior = BottomSheetBehavior.from(binding.bottomSheet)
 
         binding.root.post {
-            val mapButtonBottom = binding.mapButtonRV.bottom + (binding.mapButtonRV.layoutParams as ViewGroup.MarginLayoutParams).bottomMargin
-
+            val mapButtonBottom = binding.mapButtonRV.bottom +
+                    (binding.mapButtonRV.layoutParams as ViewGroup.MarginLayoutParams).bottomMargin
             bottomSheetBehavior.maxHeight = binding.root.height - mapButtonBottom
         }
 
-        // 기본 설정
         bottomSheetBehavior.apply {
             isDraggable = true
             isHideable = false
             state = BottomSheetBehavior.STATE_COLLAPSED
         }
 
-        // 콜백 설정
         bottomSheetBehavior.addBottomSheetCallback(object : BottomSheetBehavior.BottomSheetCallback() {
             override fun onStateChanged(bottomSheet: View, newState: Int) {
                 when (newState) {
                     BottomSheetBehavior.STATE_EXPANDED -> {
-                        // BottomSheet이 최대로 확장되었을 때 MapFullFragment로 전환
-                        requireActivity().supportFragmentManager.beginTransaction()
-                            .replace(R.id.main_frm, MapFullFragment())
-                            .addToBackStack(null)
-                            .commitAllowingStateLoss()
+                        // BottomBar 이미지만 변경
+                        binding.bottomBar.setImageResource(R.drawable.ic_map_contour_place)
+                    }
+                    BottomSheetBehavior.STATE_COLLAPSED -> {
+                        // BottomSheet가 접힐 때 원래 이미지로 복원
+                        binding.bottomBar.setImageResource(R.drawable.ic_bar)
+                        // MapView 표시
+                        binding.mapView.animate()
+                            .alpha(1f)
+                            .setDuration(1000)
+                            .start()
                     }
                 }
             }
 
             override fun onSlide(bottomSheet: View, slideOffset: Float) {
-                // 슬라이드 처리
+                // MapView 페이드아웃 애니메이션
+                binding.mapView.alpha = 1 - slideOffset
+
+                // BottomBar 이미지 전환을 부드럽게 처리
+                if (slideOffset > 0.5 && binding.bottomBar.tag != "changed") {
+                    binding.bottomBar.setImageResource(R.drawable.ic_map_contour_place)
+                    binding.bottomBar.tag = "changed"
+                } else if (slideOffset <= 0.5 && binding.bottomBar.tag == "changed") {
+                    binding.bottomBar.setImageResource(R.drawable.ic_bar)
+                    binding.bottomBar.tag = null
+                }
             }
         })
     }

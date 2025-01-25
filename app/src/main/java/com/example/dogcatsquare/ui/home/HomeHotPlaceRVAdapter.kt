@@ -4,11 +4,9 @@ import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
-import com.example.dogcatsquare.MapPlace
-import com.example.dogcatsquare.MapPlaceRVAdapter.OnItemClickListener
+import com.example.dogcatsquare.data.map.MapPlace
 import com.example.dogcatsquare.R
 import com.example.dogcatsquare.databinding.ItemHomeHotPlaceBinding
-import com.example.dogcatsquare.ui.map.MapDetailFragment
 
 class HomeHotPlaceRVAdapter(private val placeList: ArrayList<MapPlace>) : RecyclerView.Adapter<HomeHotPlaceRVAdapter.HomeHotPlaceAdapterViewHolder>() {
     interface OnItemClickListener {

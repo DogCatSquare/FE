@@ -6,11 +6,10 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.example.dogcatsquare.MapButton
-import com.example.dogcatsquare.MapButtonRVAdapter
+import com.example.dogcatsquare.data.map.MapButton
+import com.example.dogcatsquare.ui.map.location.MapButtonRVAdapter
 import com.example.dogcatsquare.R
-import com.example.dogcatsquare.WishPlace
-import com.example.dogcatsquare.WishPlaceRVAdapter
+import com.example.dogcatsquare.data.wish.WishPlace
 import com.example.dogcatsquare.databinding.FragmentWishPlaceBinding
 
 class WishPlaceFragment : Fragment() {

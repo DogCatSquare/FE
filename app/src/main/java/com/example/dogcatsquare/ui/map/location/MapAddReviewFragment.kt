@@ -1,15 +1,14 @@
-package com.example.dogcatsquare.ui.map
+package com.example.dogcatsquare.ui.map.location
 
 import android.os.Bundle
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import com.example.dogcatsquare.R
-import com.example.dogcatsquare.databinding.FragmentMapReportBinding
+import com.example.dogcatsquare.databinding.FragmentMapAddReviewBinding
 
-class MapReportFragment : Fragment() {
-    private var _binding: FragmentMapReportBinding? = null
+class MapAddReviewFragment : Fragment() {
+    private var _binding: FragmentMapAddReviewBinding? = null
     private val binding get() = _binding!!
 
     override fun onCreateView(
@@ -17,7 +16,7 @@ class MapReportFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        _binding = FragmentMapReportBinding.inflate(inflater, container, false)
+        _binding = FragmentMapAddReviewBinding.inflate(inflater, container, false)
         return binding.root
     }
 
@@ -25,23 +24,12 @@ class MapReportFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         setupBackButton()
-        setupRadioGroup()
     }
 
     private fun setupBackButton() {
         binding.backButton.setOnClickListener {
+            // FragmentManager의 BackStack에서 현재 Fragment를 제거하여 이전 화면으로 돌아감
             requireActivity().supportFragmentManager.popBackStack()
-        }
-    }
-
-    private fun setupRadioGroup() {
-        binding.rgReasons.setOnCheckedChangeListener { group, checkedId ->
-            // "기타" RadioButton이 선택되었는지 확인
-            binding.etOtherReason.visibility = if (checkedId == R.id.rbOther) {
-                View.VISIBLE
-            } else {
-                View.GONE
-            }
         }
     }
 

@@ -1,4 +1,4 @@
-package com.example.dogcatsquare.ui.map
+package com.example.dogcatsquare.ui.map.location
 
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -6,10 +6,8 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.example.dogcatsquare.MapButton
-import com.example.dogcatsquare.MapButtonRVAdapter
-import com.example.dogcatsquare.MapPlace
-import com.example.dogcatsquare.MapPlaceRVAdapter
+import com.example.dogcatsquare.data.map.MapButton
+import com.example.dogcatsquare.data.map.MapPlace
 import com.example.dogcatsquare.R
 import com.example.dogcatsquare.databinding.FragmentMapFullBinding
 

@@ -1,11 +1,13 @@
-package com.example.dogcatsquare
+package com.example.dogcatsquare.ui.map.location
 
-import android.graphics.Color
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.constraintlayout.widget.ConstraintLayout
+import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.RecyclerView
+import com.example.dogcatsquare.R
+import com.example.dogcatsquare.data.map.MapButton
 import com.example.dogcatsquare.databinding.ItemMapButtonBinding
 import com.google.android.material.card.MaterialCardView
 
@@ -35,15 +37,15 @@ class MapButtonRVAdapter(
         val strokeColor = when {
             position == selectedPosition -> {
                 when(buttonList[position].buttonName) {
-                    "전체" -> Color.parseColor("#000000")
-                    "병원" -> Color.parseColor("#4690F5")
-                    "산책로" -> Color.parseColor("#6BAB70")
-                    "음식/카페" -> Color.parseColor("#FFB200")
-                    "호텔" -> Color.parseColor("#F36037")
-                    else -> Color.parseColor("#E8E8E8")
+                    "전체" -> ContextCompat.getColor(holder.itemView.context, R.color.black)
+                    "병원" ->  ContextCompat.getColor(holder.itemView.context, R.color.blue)
+                    "산책로" ->  ContextCompat.getColor(holder.itemView.context, R.color.green)
+                    "음식/카페" ->  ContextCompat.getColor(holder.itemView.context, R.color.main_color1)
+                    "호텔" ->  ContextCompat.getColor(holder.itemView.context, R.color.red)
+                    else -> ContextCompat.getColor(holder.itemView.context, R.color.map_stroke_gray)
                 }
             }
-            else -> Color.parseColor("#E8E8E8")
+            else -> ContextCompat.getColor(holder.itemView.context, R.color.map_stroke_gray)
         }
         (holder.itemView as MaterialCardView).strokeColor = strokeColor
     }
@@ -71,11 +73,12 @@ class MapButtonRVAdapter(
             if (button.buttonImg == null) {
                 binding.buttonImg.visibility = View.GONE
                 (binding.buttonName.layoutParams as ConstraintLayout.LayoutParams).apply {
-                    startToStart = ConstraintLayout.LayoutParams.PARENT_ID
                     startToEnd = ConstraintLayout.LayoutParams.UNSET
+                    startToStart = ConstraintLayout.LayoutParams.PARENT_ID
                     endToEnd = ConstraintLayout.LayoutParams.PARENT_ID
-                    marginStart = 16
+                    marginStart = 24
                 }
+                binding.buttonName.requestLayout() // 레이아웃 갱신
             } else {
                 binding.buttonImg.visibility = View.VISIBLE
                 binding.buttonImg.setImageResource(button.buttonImg!!)

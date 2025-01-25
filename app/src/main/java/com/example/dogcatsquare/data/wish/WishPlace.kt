@@ -1,4 +1,4 @@
-package com.example.dogcatsquare
+package com.example.dogcatsquare.data.wish
 
 data class WishPlace(
     var placeName: String? = "",

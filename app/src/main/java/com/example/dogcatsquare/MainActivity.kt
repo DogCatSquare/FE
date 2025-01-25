@@ -1,15 +1,12 @@
 package com.example.dogcatsquare
 
 import android.os.Bundle
-import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
 import com.example.dogcatsquare.databinding.ActivityMainBinding
 import com.example.dogcatsquare.ui.community.CommunityFragment
 import com.example.dogcatsquare.ui.home.HomeFragment
-import com.example.dogcatsquare.ui.map.MapFragment
+import com.example.dogcatsquare.ui.map.location.MapFragment
 import com.example.dogcatsquare.ui.mypage.MypageFragment
 import com.example.dogcatsquare.ui.wish.WishFragment
 

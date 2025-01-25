@@ -1,4 +1,4 @@
-package com.example.dogcatsquare.adapter
+package com.example.dogcatsquare.ui.wish
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
