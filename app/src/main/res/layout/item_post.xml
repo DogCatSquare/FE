@@ -3,22 +3,28 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    android:layout_gravity="center|top"
     android:background="@color/white">
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="@color/white"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.75" />
 
     <!-- 제목 -->
     <TextView
         android:id="@+id/tvTitle"
-        android:layout_width="0dp"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="15dp"
+        android:fontFamily="@font/pretendard_semibold"
         android:text="2025년! 새해 복 많이 받으세요!!"
-        android:textSize="14sp"
-        android:textStyle="bold"
+        android:textSize="15sp"
         android:textColor="#0E0E0E"
-        android:maxLines="1"
-        android:ellipsize="end"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toStartOf="@+id/ivThumbnail"
         app:layout_constraintTop_toTopOf="parent" />
 
     <!-- 내용 -->
@@ -28,12 +34,10 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
         android:text="우리 호두도 올해로 5살이 됐어요 새해 아침부터 터그놀이 하는 중.. 호두랑 놀아주..."
-        android:textSize="12sp"
         android:textColor="#616161"
         android:maxLines="2"
-        android:ellipsize="end"
+        app:layout_constraintEnd_toStartOf="@+id/guideline2"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toStartOf="@+id/ivThumbnail"
         app:layout_constraintTop_toBottomOf="@id/tvTitle" />
 
     <!-- 썸네일 이미지 -->
@@ -41,14 +45,12 @@
         android:id="@+id/ivThumbnail"
         android:layout_width="80dp"
         android:layout_height="80dp"
-        android:layout_marginStart="8dp"
-        android:layout_marginTop="15dp"
-        android:background="@drawable/rounded_thumbnail"
-        android:clipToOutline="true"
-        android:scaleType="centerCrop"
-        android:src="@drawable/ic_sample_thumbnail"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintHorizontal_bias="1.0"
+        app:layout_constraintStart_toEndOf="@+id/tvContentPreview"
+        app:layout_constraintTop_toTopOf="@+id/tvTitle"
+        android:background="@drawable/rounded_thumbnail"
+        android:src="@drawable/ic_sample_thumbnail" />
 
     <!-- 닉네임 프로필 -->
     <ImageView
@@ -58,6 +60,7 @@
         android:layout_marginTop="20dp"
         android:layout_marginBottom="10dp"
         android:src="@drawable/ic_profile_img_default"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/tvContentPreview" />
 
@@ -68,8 +71,9 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
         android:text="닉네임"
-        android:textSize="10sp"
+        android:textSize="13sp"
         android:textColor="#0E0E0E"
+        android:fontFamily="@font/pretendard_regular"
         app:layout_constraintStart_toEndOf="@id/post_profile_iv"
         app:layout_constraintTop_toTopOf="@id/post_profile_iv"
         app:layout_constraintBottom_toBottomOf="@id/post_profile_iv" />
@@ -79,10 +83,11 @@
         android:id="@+id/tvDogBreed"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="8dp"
+        android:layout_marginStart="5dp"
         android:text="포메라니안"
-        android:textSize="10sp"
+        android:textSize="13sp"
         android:textColor="#9E9E9E"
+        android:fontFamily="@font/pretendard_regular"
         app:layout_constraintStart_toEndOf="@id/tvNickname"
         app:layout_constraintTop_toTopOf="@id/tvNickname"
         app:layout_constraintBottom_toBottomOf="@id/tvNickname" />
