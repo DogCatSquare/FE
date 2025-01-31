@@ -1,16 +1,37 @@
-package com.example.dogcatsquare.data.community
+package com.example.dogcatsquare.api
 
+import com.example.dogcatsquare.data.community.ApiResponse
+import com.example.dogcatsquare.data.community.BoardRequestDto
+import com.example.dogcatsquare.data.community.BoardResponseDto
+import com.example.dogcatsquare.data.community.PostRequest
+import okhttp3.MultipartBody
+import okhttp3.RequestBody
 import retrofit2.Call
-import retrofit2.http.GET
-import retrofit2.http.Path
+import retrofit2.http.*
 
 interface BoardApiService {
+    // 게시판 생성 API
+    @POST("/api/board")
+    fun createBoard(
+        @Header("Authorization") token: String,
+        @Body requestDto: BoardRequestDto
+    ): Call<BoardResponseDto>
 
-    // 게시판 전체 목록 가져오기 (홈 화면에서 사용)
-    @GET("/api/board/posts")
-    fun getAllPosts(): Call<List<BoardResponse>>
+    // 게시글 등록 API
+    @Multipart
+    @POST("api/board/post/users/{userId}")
+    fun createPost(
+        @Path("userId") userId: Long,
+        @Header("Authorization") token: String,
+        @Part("request") requestBody: RequestBody,
+        @Part images: List<MultipartBody.Part>?
+    ): Call<ApiResponse>
 
-    // 특정 게시판 가져오기 (게시판 상세 보기에서 사용)
-    @GET("/api/board/{boardId}")
-    fun getBoard(@Path("boardId") boardId: Long): Call<BoardResponse>
+    // 게시글 수정 API 추가
+    @PUT("api/board/post/{postId}")
+    fun updatePost(
+        @Path("postId") postId: Long,
+        @Header("Authorization") token: String,
+        @Body postRequest: PostRequest
+    ): Call<ApiResponse>
 }
