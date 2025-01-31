@@ -1,5 +1,6 @@
 package com.example.dogcatsquare.ui.community
 
+import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -40,11 +41,22 @@ class CommunityHomeFragment : Fragment(R.layout.fragment_community_home) {
         )
 
         val localPosts = listOf(
-            LocalPost("닉네임1", "포메라니안", listOf(R.drawable.sample_image1, R.drawable.sample_image2), "새로 사준 장난감으로 놀아줬더니 기절한 듯이 잠들었어요ㅎ\n" +
-                    "이제 5개월인데 미친 듯이 놀아서 너무 귀엽네요 새벽에..."),
-            LocalPost("닉네임2", "말티즈", emptyList(), "새로 사준 장난감으로 놀아줬더니 기절한 듯이 잠들었어요ㅎ\n" +
-                    "이제 5개월인데 미친 듯이 놀아서 너무 귀엽네요 새벽에...")
+            LocalPost(
+                id = "post1",
+                username = "닉네임1",
+                dogbreed = "포메라니안",
+                images = listOf(R.drawable.sample_image1, R.drawable.sample_image2),
+                content = "새로 사준 장난감으로 놀아줬더니 기절한 듯이 잠들었어요ㅎ\n이제 5개월인데 미친 듯이 놀아서 너무 귀엽네요 새벽에..."
+            ),
+            LocalPost(
+                id = "post2",
+                username = "닉네임2",
+                dogbreed = "말티즈",
+                images = emptyList(),
+                content = "새로 사준 장난감으로 놀아줬더니 기절한 듯이 잠들었어요ㅎ\n이제 5개월인데 미친 듯이 놀아서 너무 귀엽네요 새벽에..."
+            )
         )
+
 
         // RecyclerView 설정
         setupPopularPostsRecyclerView(popularPosts)
@@ -66,16 +78,33 @@ class CommunityHomeFragment : Fragment(R.layout.fragment_community_home) {
             Toast.makeText(requireContext(), "${selectedTip.title} 클릭됨", Toast.LENGTH_SHORT).show()
         }
         binding.rvTips.apply {
-            layoutManager = LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false)
+            layoutManager =
+                LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false)
             adapter = tipsAdapter
         }
     }
 
-    private fun setupLocalPostsRecyclerView(localPosts: List<LocalPost>) { // 타입 수정
-        localPostAdapter = LocalPostAdapter(localPosts) // LocalPostAdapter 사용
+    private fun setupLocalPostsRecyclerView(localPosts: List<LocalPost>) {
+        localPostAdapter = LocalPostAdapter(
+            requireContext(),
+            localPosts.toMutableList(),
+            onEditPost = { post -> editPost(post) },
+            onDeletePost = { position -> deletePost(position) },
+            isCompactView = true
+        )
         binding.rvLocalPosts.apply {
             layoutManager = LinearLayoutManager(requireContext())
             adapter = localPostAdapter
         }
+    }
+
+    private fun editPost(post: LocalPost) {
+        val intent = Intent(requireContext(), EditPostActivity::class.java)
+        intent.putExtra("POST_ID", post.id)
+        startActivity(intent)
+    }
+
+    private fun deletePost(position: Int) {
+        localPostAdapter.removePost(position)
     }
 }

@@ -48,9 +48,9 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="닉네임"
+                    android:textColor="#0E0E0E"
                     android:textSize="14sp"
-                    android:textStyle="bold"
-                    android:textColor="#0E0E0E" />
+                    android:textStyle="bold" />
 
                 <TextView
                     android:id="@+id/tvBreed"
