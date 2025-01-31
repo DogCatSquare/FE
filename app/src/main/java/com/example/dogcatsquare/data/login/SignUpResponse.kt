@@ -1,15 +1,19 @@
 package com.example.dogcatsquare.data.login
 
+import com.google.gson.annotations.SerializedName
+
 data class SignUpResponse(
-    var isSuccess: Boolean,
-    var code: String,
-    var message: String,
-    var result: SignUpResult
+    @SerializedName("isSuccess") var isSuccess: Boolean,
+    @SerializedName("code") var code: String,
+    @SerializedName("message") var message: String,
+    @SerializedName("result") var result: SignUpResult
 )
 data class SignUpResult(
-    var id: Int,
-    var email: String,
-    var nickname: String,
-    var phoneNumber: String,
-    var regionId: String
+    @SerializedName("id") var id: Int,
+    @SerializedName("email") var email: String,
+    @SerializedName("nickname") var nickname: String,
+    @SerializedName("phoneNumber") var phoneNumber: String,
+    @SerializedName("regionId") var regionId: String,
+    @SerializedName("profileImageUrl") var profileImageUrl: String,
+    @SerializedName("token") var token: String
 )

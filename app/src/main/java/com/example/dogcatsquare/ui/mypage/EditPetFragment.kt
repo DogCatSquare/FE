@@ -248,7 +248,7 @@ class EditPetFragment : Fragment() {
             val month = monthPicker.value
             val day = dayPicker.value
 
-            val selectedDate = "${year}.${month}.${day}"
+            val selectedDate = "${year}-${month}-${day}"
             Toast.makeText(requireContext(), "선택된 날짜: $selectedDate", Toast.LENGTH_SHORT).show()
 
             binding.editBirthSelectBtn.setTextColor(ContextCompat.getColor(requireContext(), R.color.black))

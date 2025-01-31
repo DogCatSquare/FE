@@ -64,7 +64,7 @@ class EditInfoFragment : Fragment() {
             petDatas.clear()
             // 기본 아이템 추가
             petDatas.apply {
-                add(Pet("이름", DogCat.DOG, "포메라니안", "2025-01-23"))
+                add(Pet("이름", DogCat.DOG.toString(), "포메라니안", "2025-01-23"))
             }
             addPetRVAdapter.notifyDataSetChanged() // RecyclerView 업데이트
         }

@@ -7,9 +7,8 @@ data class LoginResponse(
     var result: LoginResponseResult
 )
 data class LoginResponseResult(
-    var id: Int,
+    var token: String,
     var email: String,
     var nickname: String,
-    var phoneNumber: String,
-    var regionId: String
+    var userId: Int
 )

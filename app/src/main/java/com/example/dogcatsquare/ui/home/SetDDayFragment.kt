@@ -225,7 +225,7 @@ class SetDDayFragment : Fragment() {
 
         // 완료 버튼 클릭 이벤트
         confirmButton.setOnClickListener {
-            val selectedDate = "${selectedYear}.${selectedMonth + 1}.${selectedDay}"
+            val selectedDate = "${selectedYear}-${selectedMonth + 1}-${selectedDay}"
             onDateSelected(selectedDate)
             bottomSheetDialog.dismiss()
         }
