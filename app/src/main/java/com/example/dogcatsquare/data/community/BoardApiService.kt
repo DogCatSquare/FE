@@ -21,8 +21,8 @@ interface BoardApiService {
     @Multipart
     @POST("api/board/post/users/{userId}")
     fun createPost(
-        @Path("userId") userId: Long,
         @Header("Authorization") token: String,
+        @Path("userId") userId: Int,
         @Part("request") requestBody: RequestBody,
         @Part images: List<MultipartBody.Part>?
     ): Call<ApiResponse>
