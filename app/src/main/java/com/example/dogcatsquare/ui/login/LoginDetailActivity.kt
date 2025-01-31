@@ -153,7 +153,7 @@ class LoginDetailActivity: AppCompatActivity() {
     private fun saveId(id: Int){
         val sharedPref = getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
         with(sharedPref.edit()){
-            putInt("UserId", id) // 아이디 값 전달
+            putInt("userId", id) // 아이디 값 전달
             apply()
         }
     }

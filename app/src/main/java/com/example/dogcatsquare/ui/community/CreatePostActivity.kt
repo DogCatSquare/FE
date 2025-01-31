@@ -1,20 +1,25 @@
 package com.example.dogcatsquare.ui.community
 
 import android.app.Activity
+import android.content.Context
 import android.content.Intent
+import android.graphics.Bitmap
 import android.net.Uri
 import android.os.Bundle
+import android.provider.MediaStore
 import android.text.Editable
 import android.text.TextWatcher
 import android.util.Log
 import android.widget.*
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
+import com.bumptech.glide.Glide
+import com.bumptech.glide.request.RequestOptions
+import com.bumptech.glide.signature.ObjectKey
 import com.example.dogcatsquare.R
-import com.example.dogcatsquare.api.RetrofitClient
+import com.example.dogcatsquare.RetrofitObj
+import com.example.dogcatsquare.api.BoardApiService
 import com.example.dogcatsquare.data.community.PostRequest
 import com.example.dogcatsquare.data.community.ApiResponse
-import com.example.dogcatsquare.data.community.SharedPrefManager
 import com.google.gson.Gson
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody
@@ -24,6 +29,7 @@ import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
 import java.io.File
+import java.io.FileOutputStream
 
 class CreatePostActivity : AppCompatActivity() {
 
@@ -34,8 +40,20 @@ class CreatePostActivity : AppCompatActivity() {
     private lateinit var ivBack: ImageView
     private lateinit var charCount: TextView
     private lateinit var addPhoto: RelativeLayout
+//    private lateinit var imagePreview: ImageView  // 🔹 선택한 이미지 미리보기 추가
 
     private var selectedImageFile: File? = null
+    private val PICK_IMAGE_REQUEST = 1
+
+    private fun getToken(): String? {
+        val sharedPref = getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
+        return sharedPref?.getString("token", null)
+    }
+
+    private fun getId(): Int? {
+        val sharedPref = getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
+        return sharedPref?.getInt("userId", 0)
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -48,18 +66,13 @@ class CreatePostActivity : AppCompatActivity() {
         ivBack = findViewById(R.id.iv_back)
         charCount = findViewById(R.id.char_count)
         addPhoto = findViewById(R.id.add_photo)
+//        imagePreview = findViewById(R.id.image_preview)  // 🔹 이미지 미리보기
 
-        // 뒤로가기 버튼 클릭
-        ivBack.setOnClickListener {
-            finish()
-        }
+        ivBack.setOnClickListener { finish() }
 
-        // 제목 & 내용 입력 감지
         val textWatcher = object : TextWatcher {
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
-
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
-
             override fun afterTextChanged(s: Editable?) {
                 updateCompleteButtonState()
             }
@@ -68,29 +81,19 @@ class CreatePostActivity : AppCompatActivity() {
         etTitle.addTextChangedListener(textWatcher)
         etContent.addTextChangedListener(textWatcher)
 
-        // 내용 글자 수 제한 표시
         etContent.addTextChangedListener(object : TextWatcher {
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
-
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
-
             override fun afterTextChanged(s: Editable?) {
                 charCount.text = "${etContent.text.length}/300"
             }
         })
 
-        // 사진 추가 버튼 클릭 시 갤러리 열기
-        addPhoto.setOnClickListener {
-            openGallery()
-        }
+        addPhoto.setOnClickListener { openGallery() }
 
-        // 완료 버튼 클릭
-        btnComplete.setOnClickListener {
-            uploadPost()
-        }
+        btnComplete.setOnClickListener { uploadPost() }
     }
 
-    // 완료 버튼 활성화/비활성화
     private fun updateCompleteButtonState() {
         val isTitleNotEmpty = etTitle.text.toString().isNotBlank()
         val isContentNotEmpty = etContent.text.toString().isNotBlank()
@@ -101,34 +104,52 @@ class CreatePostActivity : AppCompatActivity() {
         )
     }
 
-    // 갤러리 열어서 이미지 선택
-    private val galleryLauncher = registerForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
-        uri?.let {
-            selectedImageFile = File(uri.path ?: "")
-            Toast.makeText(this, "이미지 선택 완료", Toast.LENGTH_SHORT).show()
-        }
-    }
-
     private fun openGallery() {
-        galleryLauncher.launch("image/*")
+        val intent = Intent(Intent.ACTION_PICK)
+        intent.type = "image/*"
+        startActivityForResult(intent, PICK_IMAGE_REQUEST)
     }
 
-    // 게시글 업로드 API 호출
-    private fun uploadPost() {
-        val userId = SharedPrefManager.getUserId(this).toLong()
-        val token = SharedPrefManager.getJwtToken(this)
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
 
-        if (userId <= 0 || token.isNullOrEmpty()) {
-            Log.e("AUTH_ERROR", "로그인이 필요합니다. userId: $userId, token: $token")
-            Toast.makeText(this, "로그인이 필요합니다.", Toast.LENGTH_SHORT).show()
-            return
+        if (requestCode == PICK_IMAGE_REQUEST && resultCode == Activity.RESULT_OK && data?.data != null) {
+            val imageUri: Uri = data.data!!
+
+            // 🔹 Uri → File 변환 후 저장
+            selectedImageFile = getCompressedImageFile(imageUri)
+
+            // 🔹 선택한 이미지 미리보기
+//            Glide.with(this)
+//                .load(selectedImageFile)
+//                .apply(RequestOptions.circleCropTransform())
+//                .signature(ObjectKey(System.currentTimeMillis().toString()))
+//                .into(imagePreview)
         }
+    }
+
+    // 🔹 Uri를 File로 변환하는 압축 처리 함수
+    private fun getCompressedImageFile(uri: Uri): File {
+        val bitmap = MediaStore.Images.Media.getBitmap(this.contentResolver, uri)
+        val scaledBitmap = Bitmap.createScaledBitmap(bitmap, bitmap.width / 2, bitmap.height / 2, true)
+
+        val compressedFile = File(this.cacheDir, "compressed_image.jpg")
+        FileOutputStream(compressedFile).use { outputStream ->
+            scaledBitmap.compress(Bitmap.CompressFormat.JPEG, 85, outputStream)
+            outputStream.flush()
+        }
+
+        return compressedFile
+    }
+
+    private fun uploadPost() {
+        val userId = getId()
+        val token = getToken()
 
         val title = etTitle.text.toString().trim()
         val content = etContent.text.toString().trim()
         val videoUrl = etLink.text.toString().trim()
 
-        // 제목, 내용, 링크가 비어있는지 체크
         if (title.isEmpty() || content.isEmpty()) {
             Toast.makeText(this, "제목과 내용을 모두 입력해야 합니다.", Toast.LENGTH_SHORT).show()
             return
@@ -144,7 +165,6 @@ class CreatePostActivity : AppCompatActivity() {
             return
         }
 
-        // PostRequest 객체 생성 (비어있는 값 체크 후 설정)
         val postRequest = PostRequest(
             boardId = 1,
             title = title,
@@ -154,35 +174,30 @@ class CreatePostActivity : AppCompatActivity() {
         )
 
         val json = Gson().toJson(postRequest)
-        Log.d("API_REQUEST", "보낼 JSON: $json")
         val requestBody = json.toRequestBody("application/json".toMediaTypeOrNull())
 
-        // 이미지가 선택되지 않은 경우 null이 아닌 빈 리스트를 보냄
-        val imageParts: List<MultipartBody.Part> = selectedImageFile?.let {
-            val requestFile = it.readBytes().toRequestBody("image/*".toMediaTypeOrNull())
-            listOf(MultipartBody.Part.createFormData("communityImages", it.name, requestFile))
-        } ?: emptyList() // ✅ null 방지
+        val imageParts: List<MultipartBody.Part> = selectedImageFile?.let { file ->
+            val requestFile = file.readBytes().toRequestBody("image/*".toMediaTypeOrNull())
+            listOf(MultipartBody.Part.createFormData("communityImages", file.name, requestFile))
+        } ?: emptyList()
 
-        // Retrofit API 호출
-        val call = RetrofitClient.instance.createPost(userId, "Bearer $token", requestBody, imageParts)
-
-        call.enqueue(object : Callback<ApiResponse> {
-            override fun onResponse(call: Call<ApiResponse>, response: Response<ApiResponse>) {
-                if (response.isSuccessful) {
-                    Toast.makeText(this@CreatePostActivity, "게시글이 등록되었습니다!", Toast.LENGTH_SHORT).show()
-                    finish()
-                } else {
-                    val errorBody = response.errorBody()?.string()
-                    Log.e("API_ERROR", "게시글 등록 실패: ${response.code()} - $errorBody")
-                    Toast.makeText(this@CreatePostActivity, "게시글 등록 실패: ${response.code()}", Toast.LENGTH_SHORT).show()
+        val call = RetrofitObj.getRetrofit().create(BoardApiService::class.java)
+        if (token != null && userId != null) {
+            call.createPost(token, userId, requestBody, imageParts).enqueue(object : Callback<ApiResponse> {
+                override fun onResponse(call: Call<ApiResponse>, response: Response<ApiResponse>) {
+                    if (response.isSuccessful) {
+                        Toast.makeText(this@CreatePostActivity, "게시글이 등록되었습니다!", Toast.LENGTH_SHORT).show()
+                        finish()
+                    } else {
+                        val errorBody = response.errorBody()?.string()
+                        Log.e("API_ERROR", "게시글 등록 실패: ${response.code()} - $errorBody")
+                    }
                 }
-            }
 
-            override fun onFailure(call: Call<ApiResponse>, t: Throwable) {
-                Log.e("API_FAILURE", "네트워크 오류: ${t.message}")
-                Toast.makeText(this@CreatePostActivity, "네트워크 오류: ${t.localizedMessage}", Toast.LENGTH_SHORT).show()
-            }
-        })
+                override fun onFailure(call: Call<ApiResponse>, t: Throwable) {
+                    Log.e("API_FAILURE", "네트워크 오류: ${t.message}")
+                }
+            })
+        }
     }
-
 }
