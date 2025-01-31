@@ -194,6 +194,26 @@ class MapFragment : Fragment(), OnMapReadyCallback {
     private fun setupRecyclerView() {
         buttonDatas.clear()
         placeList.clear()
+        placeDatas.clear()
+
+        val dummyPlace = MapPlace(
+            placeName = "산책로2",
+            placeType = "산책로",
+            placeDistance = "0.5km",
+            placeLocation = "경기도 수원시 영통구 123",
+            placeCall = "031-123-4567",
+            char1Text = "난이도 하",
+            char2Text = null,
+            char3Text = null,
+            placeImg = R.drawable.ic_place_img_default,
+            placeReview = null,
+            longitude = 127.0495556,
+            latitude = 37.6074859,
+            isOpen = "영업중"
+        )
+
+        placeList.add(dummyPlace)
+        placeDatas.add(dummyPlace)
 
         buttonDatas.apply {
             add(MapButton("전체"))
