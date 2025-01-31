@@ -6,28 +6,49 @@
     android:layout_height="match_parent"
     tools:context=".ui.map.location.MapReportFragment" >
 
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline_start"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.05" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline_end"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.95" />
+
     <TextView
         android:id="@+id/textView9"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
+        android:layout_marginTop="25dp"
         android:text="신고하기"
+        android:textSize="20sp"
+        android:fontFamily="@font/pretendard_bold"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-
-        android:textSize="20dp"
-        android:textStyle="bold"/>
+        app:layout_constraintTop_toTopOf="parent" />
 
     <ImageView
         android:id="@+id/backButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
+        android:layout_marginStart="10dp"
         android:src="@drawable/ic_back_button"
         app:layout_constraintBottom_toBottomOf="@+id/textView9"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="@+id/textView9" />
+
+    <View
+        android:id="@+id/divider"
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:layout_marginTop="25dp"
+        android:background="@color/gray1"
+        app:layout_constraintTop_toBottomOf="@+id/backButton" />
 
     <ImageView
         android:id="@+id/imageView15"
@@ -37,71 +58,92 @@
         android:src="@drawable/ic_map_contour_place"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/textView9" />
+        app:layout_constraintTop_toBottomOf="@+id/divider" />
+
+    <TextView
+        android:id="@+id/textView6"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:text="신고 이유를 선택해주세요"
+        android:textSize="20sp"
+        android:fontFamily="@font/pretendard_bold"
+        app:layout_constraintStart_toStartOf="@id/guideline_start"
+        app:layout_constraintTop_toBottomOf="@+id/imageView15" />
 
     <RadioGroup
         android:id="@+id/rgReasons"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="8dp"
-        android:layout_marginEnd="8dp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/imageView15">
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginTop="16dp"
+        app:layout_constraintBottom_toTopOf="@+id/reportButton"
+        app:layout_constraintEnd_toEndOf="@id/guideline_end"
+        app:layout_constraintStart_toStartOf="@id/guideline_start"
+        app:layout_constraintTop_toBottomOf="@+id/textView6">
 
         <RadioButton
             android:id="@+id/rbAdvertising"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="홍보성" />
+            android:text="홍보성"
+            android:fontFamily="@font/pretendard_bold" />
 
         <RadioButton
             android:id="@+id/rbHateSpeech"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="욕설 비방 혐오" />
+            android:text="욕설 비방 혐오"
+            android:fontFamily="@font/pretendard_bold" />
 
         <RadioButton
             android:id="@+id/rbObsceneContent"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="음란 선정성" />
+            android:text="음란 선정성"
+            android:fontFamily="@font/pretendard_bold" />
 
         <RadioButton
             android:id="@+id/rbSpam"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="도배" />
+            android:text="도배"
+            android:fontFamily="@font/pretendard_bold" />
 
         <RadioButton
             android:id="@+id/rbPersonalInfo"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="개인정보 노출" />
+            android:text="개인정보 노출"
+            android:fontFamily="@font/pretendard_bold" />
 
         <RadioButton
             android:id="@+id/rbOther"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="기타" />
+            android:text="기타"
+            android:fontFamily="@font/pretendard_bold" />
 
-        <!-- 기타 사유 입력 -->
-        <EditText
+        <com.example.dogcatsquare.ui.map.location.CustomEditText
             android:id="@+id/etOtherReason"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="기타 사유를 작성해주세요"
-            android:visibility="gone"
-            android:background="@android:drawable/edit_text" />
+            android:layout_marginTop="8dp"
+            app:hint="기타 사유를 입력해주세요(최소 10자)"
+            app:textSize="16sp"
+            app:hintColor="#9E9E9E"
+            app:maxLength="50"
+            app:editTextHeight="150dp"/>
+
     </RadioGroup>
 
     <ImageView
         android:id="@+id/reportButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="16dp"
-        android:src="@drawable/ic_report"
+        android:layout_marginBottom="20dp"
+        android:src="@drawable/bt_deactivated_complete"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent" />
+        app:layout_constraintEnd_toEndOf="@id/guideline_end"
+        app:layout_constraintStart_toStartOf="@id/guideline_start" />
+
 </androidx.constraintlayout.widget.ConstraintLayout>

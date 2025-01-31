@@ -44,6 +44,10 @@ class SearchFragment : Fragment() {
 //            }
 //        })
 
+        binding.backBtn.setOnClickListener {
+            requireActivity().supportFragmentManager.popBackStack()
+        }
+
         return binding.root
     }
 

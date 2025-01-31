@@ -55,59 +55,51 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/backButton" />
 
-    <androidx.cardview.widget.CardView
-        android:id="@+id/cardView3"
+    <com.example.dogcatsquare.ui.map.location.CustomEditText
+        android:id="@+id/etReview"
         android:layout_width="0dp"
-        android:layout_height="250dp"
-        android:layout_marginTop="16dp"
-        app:cardCornerRadius="16dp"
-        app:layout_constraintEnd_toEndOf="@id/guideline_end"
-
-        app:layout_constraintStart_toStartOf="@id/guideline_start"
-        app:layout_constraintTop_toBottomOf="@+id/imageView12">
-
-        <androidx.constraintlayout.widget.ConstraintLayout
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-
-            android:background="#EFEFF0">
-
-            <EditText
-                android:id="@+id/editText"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="16dp"
-                android:layout_marginTop="16dp"
-                android:layout_marginEnd="16dp"
-                android:ems="10"
-                android:inputType="text"
-                android:text="내용을 입력해주세요."
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent" />
-        </androidx.constraintlayout.widget.ConstraintLayout>
-    </androidx.cardview.widget.CardView>
-
-    <ImageView
-        android:id="@+id/imageView14"
-        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
-        android:src="@drawable/ic_add_img"
+        app:hint="내용을 입력해주세요(최소 20자)"
+        app:textSize="16sp"
+        app:hintColor="#9E9E9E"
+        app:maxLength="300"
+        app:editTextHeight="250dp"
+        app:layout_constraintEnd_toEndOf="@id/guideline_end"
         app:layout_constraintStart_toStartOf="@id/guideline_start"
-        app:layout_constraintTop_toBottomOf="@+id/cardView3" />
+        app:layout_constraintTop_toBottomOf="@+id/imageView12" />
 
-    <com.google.android.material.button.MaterialButton
+    <HorizontalScrollView
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        app:layout_constraintStart_toStartOf="@id/guideline_start"
+        app:layout_constraintEnd_toEndOf="@id/guideline_end"
+        app:layout_constraintTop_toBottomOf="@+id/etReview">
+
+        <LinearLayout
+            android:id="@+id/imageContainer"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <ImageView
+                android:id="@+id/imageView14"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/bt_add_photo" />
+
+        </LinearLayout>
+    </HorizontalScrollView>
+
+    <ImageView
         android:id="@+id/doneButton"
         android:layout_width="0dp"
-        android:layout_height="50dp"
-        android:layout_marginBottom="20dp"
-        style="@style/CustomMaterialButton4"
-        android:text="완료"
-        android:insetTop="0dp"
-        android:insetBottom="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="16dp"
+        android:src="@drawable/bt_deactivated_complete"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="@id/guideline_end"
-        app:layout_constraintStart_toStartOf="@id/guideline_start" />
+        app:layout_constraintEnd_toStartOf="@+id/guideline_end"
+        app:layout_constraintStart_toStartOf="@+id/guideline_start" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

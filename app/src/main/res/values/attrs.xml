@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <declare-styleable name="CustomEditText">
+        <attr name="hint" format="string"/>
+        <attr name="textSize" format="dimension"/>
+        <attr name="hintColor" format="color"/>
+        <attr name="maxLength" format="integer"/>
+        <attr name="editTextHeight" format="dimension"/>
+    </declare-styleable>
+</resources>

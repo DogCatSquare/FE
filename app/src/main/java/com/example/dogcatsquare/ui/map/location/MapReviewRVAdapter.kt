@@ -2,7 +2,8 @@ package com.example.dogcatsquare.ui.map.location
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
-import android.widget.PopupMenu
+import android.widget.PopupWindow
+import android.widget.TextView
 import androidx.fragment.app.FragmentActivity
 import androidx.recyclerview.widget.RecyclerView
 import com.example.dogcatsquare.R
@@ -33,27 +34,39 @@ class MapReviewRVAdapter(private val reviewList: ArrayList<MapReview>): Recycler
 
             // etcButton에 클릭 리스너 추가
             binding.etcButton.setOnClickListener { view ->
-                val popup = PopupMenu(view.context, view)
-                popup.menuInflater.inflate(R.menu.menu_review_option, popup.menu)
+                // 커스텀 팝업 레이아웃 inflate
+                val popupView = LayoutInflater.from(view.context).inflate(R.layout.popup_menu_custom, null)
 
-                popup.setOnMenuItemClickListener { menuItem ->
-                    when (menuItem.itemId) {
-                        R.id.menu_report -> {
-                            // FragmentActivity로 캐스팅하여 supportFragmentManager 접근
-                            val activity = view.context as FragmentActivity
-                            val mapReportFragment = MapReportFragment()
+                // PopupWindow 생성
+                val popupWindow = PopupWindow(
+                    popupView,
+                    ViewGroup.LayoutParams.WRAP_CONTENT,
+                    ViewGroup.LayoutParams.WRAP_CONTENT,
+                    true
+                )
 
-                            activity.supportFragmentManager.beginTransaction()
-                                .replace(R.id.main_frm, mapReportFragment)
-                                .addToBackStack(null)
-                                .commit()
-                            true
-                        }
-                        else -> false
-                    }
+                // 팝업 창의 배경 설정
+                popupWindow.setBackgroundDrawable(view.context.getDrawable(R.drawable.custom_popup_background))
+                popupWindow.elevation = 10f
+
+                // 팝업 창 위치 설정
+                popupWindow.showAsDropDown(view, 0, 0)
+
+                // 팝업 메뉴 전체에 클릭 리스너 추가
+                popupView.setOnClickListener {
+                    val activity = view.context as FragmentActivity
+                    val mapReportFragment = MapReportFragment()
+
+                    activity.supportFragmentManager.beginTransaction()
+                        .replace(R.id.main_frm, mapReportFragment)
+                        .addToBackStack(null)
+                        .commit()
+
+                    popupWindow.dismiss()
                 }
-                popup.show()
             }
+
+
         }
     }
 }
