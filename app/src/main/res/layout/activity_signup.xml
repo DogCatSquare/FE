@@ -394,7 +394,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="5dp"
                 android:fontFamily="@font/pretendard_regular"
-                android:text="010-0000-0000 형식"
+                android:text="01000000000 형식"
                 android:textColor="@color/gray4"
                 android:textSize="12sp"
                 app:layout_constraintStart_toStartOf="@+id/guideline1"

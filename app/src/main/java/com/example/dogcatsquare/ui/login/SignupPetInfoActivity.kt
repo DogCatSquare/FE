@@ -24,6 +24,9 @@ import com.bumptech.glide.signature.ObjectKey
 import com.example.dogcatsquare.R
 import com.example.dogcatsquare.databinding.ActivitySignupPetInfoBinding
 import com.google.android.material.bottomsheet.BottomSheetDialog
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
+import okhttp3.MultipartBody
+import okhttp3.RequestBody
 import java.io.File
 import java.io.FileOutputStream
 
@@ -34,7 +37,7 @@ class SignupPetInfoActivity : AppCompatActivity() {
     private var selectedImageUri: Uri? = null // 선택된 이미지의 URI를 저장하기 위한 변수
 
     // 초기 반려동물 선택 상태
-    var selectedAnimal: String? = "dog"
+    var selectedAnimal: String? = "DOG"
 
     var petNameCheck: Boolean = false
     var selectDogCatCheck: Boolean = true // 기본적으로 선택되어 있어서
@@ -75,7 +78,7 @@ class SignupPetInfoActivity : AppCompatActivity() {
 
         // 강아지, 고양이 선택 버튼
         binding.dogSelectBtn.setOnClickListener {
-            selectedAnimal = "dog"
+            selectedAnimal = "DOG"
 
             // 버튼 스타일 업데이트
             binding.dogSelectBtn.setStrokeColorResource(R.color.main_color1)
@@ -88,7 +91,7 @@ class SignupPetInfoActivity : AppCompatActivity() {
         }
 
         binding.catSelectBtn.setOnClickListener {
-            selectedAnimal = "cat"
+            selectedAnimal = "CAT"
 
             // 버튼 스타일 업데이트
             binding.dogSelectBtn.setStrokeColorResource(R.color.gray4)
@@ -96,7 +99,7 @@ class SignupPetInfoActivity : AppCompatActivity() {
             binding.catSelectBtn.setStrokeColorResource(R.color.main_color1)
             binding.catSelectBtn.setTextColor(ContextCompat.getColor(this, R.color.main_color1))
 
-            Toast.makeText(this, "${selectedAnimal}", Toast.LENGTH_SHORT).show()
+//            Toast.makeText(this, "${selectedAnimal}", Toast.LENGTH_SHORT).show()
         }
 
         // 반려동물 이름 글자 수 감지
@@ -168,31 +171,6 @@ class SignupPetInfoActivity : AppCompatActivity() {
         }
     }
 
-    // 파일 가져오는 함수
-    private fun getFileFromUri(uri: Uri): File {
-        val inputStream = this.contentResolver.openInputStream(uri)
-        val tempFile = File.createTempFile("temp_image", ".jpg", this.cacheDir)
-        inputStream.use { input ->
-            tempFile.outputStream().use { output ->
-                input?.copyTo(output)
-            }
-        }
-        Log.d("EditProfileFragment", "Temp file path: ${tempFile.absolutePath}")
-        return tempFile
-    }
-    // Uri를 실제 경로로 변환하는 함수
-    private fun getRealPathFromURI(uri: Uri): String {
-        var path = ""
-        val cursor = this?.contentResolver?.query(uri, null, null, null, null)
-        if (cursor != null){
-            cursor.moveToFirst()
-            val idx = cursor.getColumnIndex(MediaStore.Images.ImageColumns.DATA)
-            path = cursor.getString(idx)
-            cursor.close()
-        }
-        return path
-    }
-
     // 이미지 압축 함수
     private fun getCompressedImageUri(uri: Uri): Uri {
         val bitmap = MediaStore.Images.Media.getBitmap(this.contentResolver, uri)
@@ -245,10 +223,10 @@ class SignupPetInfoActivity : AppCompatActivity() {
         // 완료 버튼 클릭 이벤트
         confirmButton.setOnClickListener {
             val year = yearPicker.value
-            val month = monthPicker.value
-            val day = dayPicker.value
+            val month = String.format("%02d", monthPicker.value) // 01~09 변환
+            val day = String.format("%02d", dayPicker.value)     // 01~09 변환
 
-            val selectedDate = "${year}.${month}.${day}"
+            val selectedDate = "${year}-${month}-${day}"
             Toast.makeText(this, "선택된 날짜: $selectedDate", Toast.LENGTH_SHORT).show()
 
             binding.birthSelectBtn.setTextColor(ContextCompat.getColor(this, R.color.black))
@@ -265,7 +243,26 @@ class SignupPetInfoActivity : AppCompatActivity() {
     // 반려동물 정보 확인하고 넘어가기 -> 추후 수정
     private fun checkPetInfo() {
         if (petNameCheck && petBirthCheck && selectDogCatCheck && breedCheck) {
-            val intent = Intent(this, SignupMyInfoActivity::class.java)
+            val bundle = intent.extras ?: Bundle() // 기존 Bundle 가져오기
+
+//            selectedImageUri?.let { uri ->
+//                bundle.putString("petImageUri", uri.toString()) // Uri를 문자열로 변환하여 저장
+//            }
+
+            Log.d("CHECK_PET_INFO", "selectedImageUri before intent: $selectedImageUri")
+
+            bundle.apply {
+                putString("imageUri", selectedImageUri.toString())
+                putString("petName", binding.petNameEt.text.toString())  // 반려동물 이름
+                putString("dogCat", selectedAnimal)                      // 강아지/고양이 선택
+                putString("birth", binding.birthSelectBtn.text.toString()) // 생일
+                putString("breed", binding.petSpeciesEt.text.toString()) // 반려동물 종
+            }
+
+            val intent = Intent(this, SignupMyInfoActivity::class.java).apply {
+                putExtras(bundle) // Bundle을 Intent에 추가
+            }
+
             startActivity(intent)
         }
     }

@@ -1,26 +1,28 @@
 package com.example.dogcatsquare.data.login
 
+import com.google.gson.annotations.SerializedName
+
 data class SignUpRequest(
-    var email: String,
-    var password: String,
-    var nickname: String,
-    var phoneNumber: String,
-    var doName: String,
-    var gu: String,
-    var si: String,
-    var pets: List<Pet>,
-    var foodDate: String,
-    var foodDuring: Int,
-    var padDate: String,
-    var padDuring: Int,
-    var hospitalDate: String,
-    var adAgree: Boolean
+    @SerializedName("email") var email: String,
+    @SerializedName("password") var password: String,
+    @SerializedName("nickname") var nickname: String,
+    @SerializedName("phoneNumber") var phoneNumber: String,
+    @SerializedName("doName") var doName: String,
+    @SerializedName("gu") var gu: String,
+    @SerializedName("si") var si: String,
+    @SerializedName("pet") var pet: Pet,
+    @SerializedName("foodDate") var foodDate: String,
+    @SerializedName("foodDuring") var foodDuring: Int,
+    @SerializedName("padDate") var padDate: String,
+    @SerializedName("padDuring") var padDuring: Int,
+    @SerializedName("hospitalDate") var hospitalDate: String,
+    @SerializedName("adAgree") var adAgree: Boolean
 )
 data class Pet(
-    var petName: String,
-    var dogCat: Enum<DogCat>,
-    var breed: String,
-    var birth: String
+    @SerializedName("petName") var petName: String,
+    @SerializedName("dogCat") var dogCat: String,
+    @SerializedName("breed") var breed: String,
+    @SerializedName("birth") var birth: String
 )
 enum class DogCat {
     DOG,

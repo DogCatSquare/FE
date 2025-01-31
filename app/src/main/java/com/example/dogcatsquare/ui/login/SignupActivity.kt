@@ -33,6 +33,7 @@ class SignupActivity : AppCompatActivity() {
     private var pw_check: Boolean = false
     private var phone_check: Boolean = false
     private var checkbox_check: Boolean = false
+    private var adAgree: Boolean = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -136,6 +137,7 @@ class SignupActivity : AppCompatActivity() {
 
         // 완료 버튼 클릭 이벤트
         doneButton.setOnClickListener {
+            adAgree = true
             checkSignup()
         }
 
@@ -318,7 +320,7 @@ class SignupActivity : AppCompatActivity() {
     // 전화번호 체크
     private fun validatephone() {
         val phone = binding.phoneEt.text.toString()
-        val phoneRegex ="^01[0-9]-\\d{3,4}-\\d{4}\$".toRegex()
+        val phoneRegex ="^01[0-9]\\d{8}\$".toRegex()
 
         if (phone.matches(phoneRegex)) {
             phone_check = true
@@ -349,12 +351,14 @@ class SignupActivity : AppCompatActivity() {
 
 
     private fun checkSignup() {
-        if (nickname_check && email_verify_check && pw_check && checkbox_check && phone_check) {
+        // && email_verify_check 추가
+        if (nickname_check && pw_check && checkbox_check && phone_check && adAgree) {
             val bundle = Bundle().apply {
                 putString("nickname", binding.nicknameEt.text.toString()) // 닉네임
                 putString("email", binding.emailEt.text.toString())       // 이메일
                 putString("password", binding.pwCheckEt.text.toString()) // 비밀번호
                 putString("phoneNumber", binding.phoneEt.text.toString()) // 전화번호
+                putBoolean("adAgree", adAgree)
             }
 
             val intent = Intent(this, SignupPetInfoActivity::class.java).apply {
