@@ -1,4 +1,4 @@
-package com.example.dogcatsquare.data.community
+package com.example.dogcatsquare.ui.community
 
 import android.os.Bundle
 import android.widget.EditText
