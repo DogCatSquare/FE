@@ -3,6 +3,7 @@ package com.example.dogcatsquare.ui.login
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.MotionEvent
 import android.view.View
@@ -13,8 +14,15 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.core.widget.addTextChangedListener
 import com.example.dogcatsquare.R
+import com.example.dogcatsquare.RetrofitObj
+import com.example.dogcatsquare.data.api.UserRetrofitItf
+import com.example.dogcatsquare.data.login.CheckEmailResponse
+import com.example.dogcatsquare.data.login.CheckNicknameResponse
 import com.example.dogcatsquare.databinding.ActivitySignupBinding
 import com.google.android.material.bottomsheet.BottomSheetDialog
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
 
 class SignupActivity : AppCompatActivity() {
     lateinit var binding: ActivitySignupBinding
@@ -23,7 +31,9 @@ class SignupActivity : AppCompatActivity() {
     private var email_check: Boolean = false
     private var email_verify_check: Boolean = false
     private var pw_check: Boolean = false
+    private var phone_check: Boolean = false
     private var checkbox_check: Boolean = false
+    private var adAgree: Boolean = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -47,14 +57,14 @@ class SignupActivity : AppCompatActivity() {
 
         binding.nicknameCheckBtn.setOnClickListener {
             val nickname = binding.nicknameEt.text.toString()
-            if (isNicknameUsed(nickname)) { // 이미 사용 중인 닉네임
-                binding.signupNicknameCheckTv.text = "이미 사용 중인 닉네임입니다"
-                binding.signupNicknameCheckTv.setTextColor(ContextCompat.getColor(this, R.color.red))
-            }
-            else {
+            if (!isNicknameUsed(nickname)) {
                 binding.signupNicknameCheckTv.text = "사용 가능한 닉네임입니다"
                 binding.signupNicknameCheckTv.setTextColor(ContextCompat.getColor(this, R.color.main_color1))
                 nickname_check = true
+            }
+            else {
+                binding.signupNicknameCheckTv.text = "이미 사용 중인 닉네임입니다"
+                binding.signupNicknameCheckTv.setTextColor(ContextCompat.getColor(this, R.color.red))
             }
         }
 
@@ -127,6 +137,7 @@ class SignupActivity : AppCompatActivity() {
 
         // 완료 버튼 클릭 이벤트
         doneButton.setOnClickListener {
+            adAgree = true
             checkSignup()
         }
 
@@ -171,10 +182,47 @@ class SignupActivity : AppCompatActivity() {
         }
     }
 
-    // 닉네임 중복 체크 (임시 함수)
+    // 닉네임 중복 체크
     private fun isNicknameUsed(nickname: String): Boolean {
-        // 실제 구현에서는 서버와의 통신으로 중복 확인해야 함
-        return nickname == "닉네임"
+        var checkNickname: Boolean = false
+        val checkNicknameService = RetrofitObj.getRetrofit().create(UserRetrofitItf::class.java)
+        checkNicknameService.checkNickname(nickname).enqueue(object : Callback<CheckNicknameResponse>{
+            override fun onResponse(
+                call: Call<CheckNicknameResponse>,
+                response: Response<CheckNicknameResponse>
+            ) {
+                Log.d("CheckNickname/SUCCESS", response.toString())
+
+                when(response.code()) {
+                    200 -> {
+                        val resp: CheckNicknameResponse = response.body()!!
+                        if (resp != null) {
+                            if (resp.isSuccess) {
+                                if (resp.result == false) { // 일치하는 닉네임 없음 -> 중복 x
+                                    checkNickname = true
+                                    Log.d("CheckNickname/SUCCESS", checkNickname.toString())
+                                } else { // 일치하는 닉네임 있음 -> 중복 o
+                                    checkNickname = false
+                                    Log.d("CheckNickname/SUCCESS", checkNickname.toString())
+                                }
+                            } else {
+                                Log.e("CheckNickname/FAILURE", "응답 코드: ${resp.code}, 응답 메시지: ${resp.message}")
+                            }
+                        } else {
+                            Log.d("CheckNickname/FAILURE", "Response body is null")
+                            Log.e("CheckNickname/FAILURE", "응답 코드: ${resp.code}, 응답메시지: ${resp.message}")
+                        }
+                    }
+                }
+            }
+
+            override fun onFailure(call: Call<CheckNicknameResponse>, t: Throwable) {
+                Log.d("RETROFIT/FAILURE", t.message.toString())
+            }
+
+        })
+
+        return checkNickname
     }
 
     // 이메일 체크 -> 인증
@@ -183,10 +231,10 @@ class SignupActivity : AppCompatActivity() {
         val emailCheckTv = binding.signupEmailCheckTv
 
         // 이메일 정규식
-        val idRegex = "^[a-zA-Z0-9]{1,15}$".toRegex()
+        val emailRegex = "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}\$".toRegex()
 
-        if (!email.matches(idRegex)) {
-            emailCheckTv.text = "유효하지 않은 아이디 형식입니다"
+        if (!email.matches(emailRegex)) {
+            emailCheckTv.text = "유효하지 않은 이메일 형식입니다"
             emailCheckTv.setTextColor(ContextCompat.getColor(this, R.color.red))
             binding.emailCheckBtn.isClickable = false
             email_check = false
@@ -197,10 +245,47 @@ class SignupActivity : AppCompatActivity() {
         }
     }
 
-    // 이메일 중복 체크 (임시 함수)
+    // 이메일 중복 체크
     private fun isEmailUsed(email: String): Boolean {
-        // 실제 구현에서는 서버와의 통신으로 중복 확인해야 함
-        return email == "test1234@gmail.com"
+        var checkEmail: Boolean = false
+        val checkEmailService = RetrofitObj.getRetrofit().create(UserRetrofitItf::class.java)
+        checkEmailService.checkEmail(email).enqueue(object : Callback<CheckEmailResponse>{
+            override fun onResponse(
+                call: Call<CheckEmailResponse>,
+                response: Response<CheckEmailResponse>
+            ) {
+                Log.d("CheckEmail/SUCCESS", response.toString())
+
+                when(response.code()) {
+                    200 -> {
+                        val resp: CheckEmailResponse = response.body()!!
+                        if (resp != null) {
+                            if (resp.isSuccess) {
+                                if (resp.result == false) { // 일치하는 닉네임 없음 -> 중복 x
+                                    checkEmail = true
+                                    Log.d("CheckEmail/SUCCESS", checkEmail.toString())
+                                } else { // 일치하는 닉네임 있음 -> 중복 o
+                                    checkEmail = false
+                                    Log.d("CheckEmail/SUCCESS", checkEmail.toString())
+                                }
+                            } else {
+                                Log.e("CheckEmail/FAILURE", "응답 코드: ${resp.code}, 응답 메시지: ${resp.message}")
+                            }
+                        } else {
+                            Log.d("CheckEmail/FAILURE", "Response body is null")
+                            Log.e("CheckEmail/FAILURE", "응답 코드: ${resp.code}, 응답메시지: ${resp.message}")
+                        }
+                    }
+                }
+            }
+
+            override fun onFailure(call: Call<CheckEmailResponse>, t: Throwable) {
+                Log.d("RETROFIT/FAILURE", t.message.toString())
+            }
+
+        })
+
+        return checkEmail
     }
 
     // 이메일 인증
@@ -232,6 +317,16 @@ class SignupActivity : AppCompatActivity() {
         }
     }
 
+    // 전화번호 체크
+    private fun validatephone() {
+        val phone = binding.phoneEt.text.toString()
+        val phoneRegex ="^01[0-9]\\d{8}\$".toRegex()
+
+        if (phone.matches(phoneRegex)) {
+            phone_check = true
+        }
+    }
+
     private fun setupValidation() {
         binding.nicknameEt.addTextChangedListener {
             validateNickname()
@@ -248,12 +343,28 @@ class SignupActivity : AppCompatActivity() {
         binding.pwCheckEt.addTextChangedListener {
             validatePassword()
         }
+
+        binding.phoneEt.addTextChangedListener {
+            validatephone()
+        }
     }
 
 
     private fun checkSignup() {
-        if (nickname_check && email_verify_check && pw_check && checkbox_check) {
-            val intent = Intent(this, SignupPetInfoActivity::class.java)
+        // && email_verify_check 추가
+        if (nickname_check && pw_check && checkbox_check && phone_check && adAgree) {
+            val bundle = Bundle().apply {
+                putString("nickname", binding.nicknameEt.text.toString()) // 닉네임
+                putString("email", binding.emailEt.text.toString())       // 이메일
+                putString("password", binding.pwCheckEt.text.toString()) // 비밀번호
+                putString("phoneNumber", binding.phoneEt.text.toString()) // 전화번호
+                putBoolean("adAgree", adAgree)
+            }
+
+            val intent = Intent(this, SignupPetInfoActivity::class.java).apply {
+                putExtras(bundle) // Bundle을 Intent에 추가
+            }
+
             startActivity(intent)
         }
     }

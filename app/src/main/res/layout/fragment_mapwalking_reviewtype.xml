@@ -33,44 +33,46 @@
     <LinearLayout
         android:id="@+id/linearLayoutDifficulty"
         android:layout_width="0dp"
-        android:layout_height="wrap_content"
+        android:layout_height="50dp"
         android:layout_marginTop="5dp"
         android:gravity="center"
         android:orientation="horizontal"
         app:layout_constraintEnd_toEndOf="@id/guideline_end"
-        app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="@id/guideline_start"
         app:layout_constraintTop_toBottomOf="@+id/title2">
 
         <Button
             android:id="@+id/difficulty_bt"
-            android:layout_width="118dp"
-            android:layout_height="48dp"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
             android:layout_marginRight="8dp"
             android:backgroundTint="#F6F6F6"
             android:onClick="onDifficultyButtonClick"
+            android:layout_gravity="start"
             android:text="상"
             android:textColor="#9E9E9E"
             android:textStyle="bold" />
 
         <Button
             android:id="@+id/normal_bt"
-            android:layout_width="118dp"
-            android:layout_height="48dp"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
             android:layout_marginRight="8dp"
             android:backgroundTint="#F6F6F6"
             android:onClick="onDifficultyButtonClick"
+            android:layout_gravity="center"
             android:text="중"
             android:textColor="#9E9E9E"
             android:textStyle="bold" />
 
         <Button
             android:id="@+id/easy_bt"
-            android:layout_width="118dp"
-            android:layout_height="48dp"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
             android:layout_marginRight="8dp"
             android:backgroundTint="#F6F6F6"
             android:onClick="onDifficultyButtonClick"
+            android:layout_gravity="end"
             android:text="하"
             android:textColor="#9E9E9E"
             android:textStyle="bold" />
@@ -133,89 +135,89 @@
 
     <GridLayout
         android:id="@+id/buttonGridLayout"
-        android:layout_width="0dp"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="5dp"
         android:columnCount="3"
         android:orientation="horizontal"
         android:rowCount="2"
-        android:padding="5dp"
         app:layout_constraintEnd_toStartOf="@+id/guideline_end"
-        app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="@+id/guideline_start"
         app:layout_constraintTop_toBottomOf="@+id/title3">
 
         <Button
             android:id="@+id/Washroom_bt"
-            android:layout_width="117dp"
-            android:layout_height="49dp"
+            android:layout_width="wrap_content"
+            android:layout_height="50dp"
             android:layout_row="0"
             android:layout_column="0"
+            android:layout_marginEnd="10dp"
             android:backgroundTint="#F6F6F6"
             android:drawableLeft="@drawable/ic_washroom"
             android:onClick="onButtonClick"
             android:text="화장실"
             android:textColor="#9E9E9E"
-            android:textSize="11dp"
+            android:textSize="10dp"
             android:textStyle="bold" />
 
         <Button
             android:id="@+id/parking_bt"
-            android:layout_width="118dp"
-            android:layout_height="48dp"
+            android:layout_width="wrap_content"
+            android:layout_height="50dp"
+            android:layout_marginEnd="10dp"
             android:backgroundTint="#F6F6F6"
             android:drawableLeft="@drawable/ic_parking"
             android:onClick="onButtonClick"
             android:text="주차 가능"
             android:textColor="#9E9E9E"
-            android:textSize="11dp"
+            android:textSize="10dp"
             android:textStyle="bold" />
 
         <Button
             android:id="@+id/wastebasket_bt"
-            android:layout_width="117dp"
-            android:layout_height="47dp"
+            android:layout_width="wrap_content"
+            android:layout_height="50dp"
             android:backgroundTint="#F6F6F6"
             android:drawableLeft="@drawable/ic_trash"
             android:onClick="onButtonClick"
             android:text="쓰레기통"
             android:textColor="#9E9E9E"
-            android:textSize="11dp"
+            android:textSize="10dp"
             android:textStyle="bold" />
 
         <Button
             android:id="@+id/stairs_bt"
-            android:layout_width="99dp"
-            android:layout_height="48dp"
+            android:layout_width="wrap_content"
+            android:layout_height="50dp"
             android:backgroundTint="#F6F6F6"
             android:drawableLeft="@drawable/ic_stair"
             android:onClick="onButtonClick"
             android:text="계단"
             android:textColor="#9E9E9E"
-            android:textSize="11dp"
+            android:textSize="10dp"
             android:textStyle="bold" />
 
         <Button
             android:id="@+id/drinking_bt"
-            android:layout_width="111dp"
-            android:layout_height="48dp"
+            android:layout_width="wrap_content"
+            android:layout_height="50dp"
             android:backgroundTint="#F6F6F6"
             android:drawableLeft="@drawable/ic_water"
             android:onClick="onButtonClick"
             android:text="음수대"
             android:textColor="#9E9E9E"
-            android:textSize="11dp"
+            android:textSize="10dp"
             android:textStyle="bold" />
 
         <Button
             android:id="@+id/writing_bt"
-            android:layout_width="126dp"
+            android:layout_width="wrap_content"
             android:layout_height="50dp"
             android:backgroundTint="#F6F6F6"
             android:onClick="onButtonClick"
             android:text="직접작성"
             android:textColor="#9E9E9E"
-            android:textSize="11dp"
+            android:textSize="10dp"
             android:textStyle="bold" />
 
     </GridLayout>

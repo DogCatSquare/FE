@@ -56,13 +56,13 @@
         app:srcCompat="@drawable/img_big_logo" />
 
     <EditText
-        android:id="@+id/login_id_et"
+        android:id="@+id/login_email_et"
         android:layout_width="0dp"
         android:layout_height="50dp"
         android:layout_marginTop="50dp"
         android:ems="10"
-        android:inputType="text"
-        android:hint="아이디"
+        android:inputType="textEmailAddress"
+        android:hint="이메일"
         android:textColorHint="@color/gray3"
         android:textSize="15sp"
         android:fontFamily="@font/pretendard_medium"
@@ -85,7 +85,7 @@
         android:backgroundTint="@color/gray3"
         app:layout_constraintEnd_toStartOf="@+id/guideline_end"
         app:layout_constraintStart_toStartOf="@+id/guideline_start"
-        app:layout_constraintTop_toBottomOf="@+id/login_id_et" />
+        app:layout_constraintTop_toBottomOf="@+id/login_email_et" />
 
     <CheckBox
         android:id="@+id/checkBox_all"
@@ -165,5 +165,18 @@
         app:layout_constraintTop_toTopOf="@+id/kakao_login_btn"
         app:layout_constraintVertical_bias="0.448"
         app:srcCompat="@drawable/kakao_img" />
+
+    <TextView
+        android:id="@+id/error_tv"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="5dp"
+        android:fontFamily="@font/pretendard_regular"
+        android:text="존재하지 않는 이메일입니다"
+        android:textColor="@color/red"
+        android:textSize="12sp"
+        android:visibility="invisible"
+        app:layout_constraintStart_toStartOf="@+id/guideline_start"
+        app:layout_constraintTop_toBottomOf="@+id/login_pw_et" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
