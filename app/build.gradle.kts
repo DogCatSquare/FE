@@ -1,3 +1,5 @@
+import com.android.build.api.dsl.Packaging
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
@@ -17,7 +19,6 @@ android {
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables.useSupportLibrary = true
-
     }
 
     buildTypes {
@@ -42,6 +43,21 @@ android {
     dataBinding {
         enable = true
     }
+
+    packaging {
+        resources {
+            excludes += ("/META-INF/INDEX.LIST")
+            excludes += ("/META-INF/DEPENDENCIES")
+            excludes += ("/META-INF/LICENSE")
+            excludes += ("/META-INF/LICENSE.txt")
+            excludes += ("/META-INF/license.txt")
+            excludes += ("/META-INF/NOTICE")
+            excludes += ("/META-INF/NOTICE.txt")
+            excludes += ("/META-INF/notice.txt")
+            excludes += ("/META-INF/*.kotlin_module")
+        }
+    }
+
 }
 
 dependencies {
@@ -52,6 +68,7 @@ dependencies {
     implementation(libs.androidx.activity)
     implementation(libs.androidx.constraintlayout)
     implementation(libs.play.services.maps)
+    implementation(libs.firebase.appdistribution.gradle)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -79,4 +96,20 @@ dependencies {
     annotationProcessor (libs.compiler)
     
     implementation("com.google.android.gms:play-services-location:21.0.1")
+
+    implementation("com.squareup.okhttp3:okhttp:4.9.0")
+    implementation("com.squareup.retrofit2:retrofit:2.9.0")
+    implementation("com.squareup.retrofit2:converter-gson:2.9.0")
+    implementation("com.squareup.okhttp3:logging-interceptor:4.9.0")
+
+    implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.6.2")
+    implementation("androidx.lifecycle:lifecycle-livedata-ktx:2.6.2")
+    implementation("androidx.fragment:fragment-ktx:1.6.2")
+
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.6.4")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4")
+    implementation("com.jakewharton.retrofit:retrofit2-kotlin-coroutines-adapter:0.9.2")
+    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.6.1")
+    implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.6.1")
+
 }

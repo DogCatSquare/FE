@@ -167,14 +167,49 @@ class HomeFragment : Fragment() {
 
         // 핫플 임시 더미 데이터
         placeDatas.apply {
-            add(MapPlace("가나다 동물병원", "동물병원", "0.55km", "서울시 성북구 월곡동 77", "02-1234-5678", "중성화 수술", R.drawable.ic_place_img_default))
-            add(MapPlace("서대문 안산자락길", "산책로", "0.55km", "서울시 서대문구 봉원사길 75-66", "02-1234-5678", "쓰레기통", R.drawable.ic_place_img_default))
-            add(MapPlace("다나가 동물병원", "동물병원", "0.55km", "서울시 성북구 월곡동 77", "02-1234-5678", "중성화 수술", R.drawable.ic_place_img_default))
-            add(MapPlace("가나다 동물병원", "동물병원", "0.55km", "서울시 성북구 월곡동 77", "02-1234-5678", "중성화 수술", R.drawable.ic_place_img_default))
-            add(MapPlace("서대문 안산자락길", "산책로", "0.55km", "서울시 서대문구 봉원사길 75-66", "02-1234-5678", "쓰레기통", R.drawable.ic_place_img_default))
-            add(MapPlace("가나다 동물병원", "동물병원", "0.55km", "서울시 성북구 월곡동 77", "02-1234-5678", "중성화 수술", R.drawable.ic_place_img_default))
-            add(MapPlace("가나다 동물병원", "동물병원", "0.55km", "서울시 성북구 월곡동 77", "02-1234-5678", "중성화 수술", R.drawable.ic_place_img_default))
-
+            add(MapPlace(
+                "가나다 동물병원",
+                "동물병원",
+                "0.55km",
+                "서울시 성북구 월곡동 77",
+                "02-1234-5678",
+                "중성화 수술",    // char1Text
+                "예방접종",       // char2Text
+                "24시",          // char3Text
+                R.drawable.ic_place_img_default,
+                null))
+            add(MapPlace(
+                "서대문 안산자락길",
+                "산책로",
+                "0.55km",
+                "서울시 서대문구 봉원사길 75-66 111111111111111111",
+                "02-1234-5678",
+                "난이도 하",
+                "쓰레기통",
+                null,
+                R.drawable.ic_place_img_default,
+                "리뷰(18)"))
+            add(MapPlace("고양이호텔",
+                "호텔",
+                "0.55km",
+                "서울시 성북구 월곡동 77",
+                "02-1234-5678",
+                "고양이탁묘",
+                "고양이 보호소",
+                null,
+                R.drawable.ic_place_img_default,
+                "리뷰(18)"))
+            add(MapPlace(
+                "가나다 동물병원",
+                "동물병원",
+                "0.55km",
+                "서울시 성북구 월곡동 77",
+                "02-1234-5678",
+                "중성화 수술",    // char1Text
+                "예방접종",       // char2Text
+                "24시",          // char3Text
+                R.drawable.ic_place_img_default,
+                null))
         }
 
         // hot place recycler view
@@ -194,7 +229,7 @@ class HomeFragment : Fragment() {
                             putString("placeDistance", place.placeDistance)
                             putString("placeLocation", place.placeLocation)
                             putString("placeCall", place.placeCall)
-                            putString("placeChar1", place.placeChar1)
+                            putString("char1Text", place.char1Text)
                             place.placeImg?.let { putInt("placeImg", it) }
                         }
                     }
@@ -206,7 +241,7 @@ class HomeFragment : Fragment() {
                             putString("placeDistance", place.placeDistance)
                             putString("placeLocation", place.placeLocation)
                             putString("placeCall", place.placeCall)
-                            putString("placeChar1", place.placeChar1)
+                            putString("char1Text", place.char1Text)
                             place.placeImg?.let { putInt("placeImg", it) }
                         }
                     }
