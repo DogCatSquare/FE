@@ -6,11 +6,13 @@ import com.example.dogcatsquare.data.login.LoginRequest
 import com.example.dogcatsquare.data.login.LoginResponse
 import com.example.dogcatsquare.data.login.SignUpRequest
 import com.example.dogcatsquare.data.login.SignUpResponse
+import com.example.dogcatsquare.data.mypage.GetUserResponse
 import okhttp3.MultipartBody
 import okhttp3.RequestBody
 import retrofit2.Call
 import retrofit2.http.Body
 import retrofit2.http.GET
+import retrofit2.http.Header
 import retrofit2.http.Headers
 import retrofit2.http.Multipart
 import retrofit2.http.POST
@@ -36,4 +38,7 @@ interface UserRetrofitItf {
 
     @POST("api/users/login")
     fun login(@Body loginRequest: LoginRequest): Call<LoginResponse>
+
+    @GET("api/users/users-inquiry")
+    fun getUser(@Header("Authorization") token: String): Call<GetUserResponse>
 }
