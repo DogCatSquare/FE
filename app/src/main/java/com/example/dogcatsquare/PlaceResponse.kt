@@ -38,11 +38,8 @@ data class Place(
 )
 
 data class RegionRequest(
-    @SerializedName("regionId")
-    val regionId: Int,
-
-    @SerializedName("do")
-    val do_: String,
+    @SerializedName("doName")
+    val doName: String,
 
     @SerializedName("si")
     val si: String,
@@ -74,15 +71,18 @@ data class PlaceRequest(
     val latitude: Double
 )
 
-data class BaseResponse(
-    @SerializedName("status")
-    val status: Int,
+data class BaseResponse<T>(
+    @SerializedName("isSuccess")
+    val isSuccess: Boolean,
+
+    @SerializedName("code")
+    val code: String,
 
     @SerializedName("message")
     val message: String,
 
-    @SerializedName("data")
-    val data: Any?
+    @SerializedName("result")
+    val result: T?
 )
 
 data class SearchPlacesRequest(
