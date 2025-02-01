@@ -45,15 +45,21 @@ class CommunityHomeFragment : Fragment(R.layout.fragment_community_home) {
                 id = "post1",
                 username = "닉네임1",
                 dogbreed = "포메라니안",
-                images = listOf(R.drawable.sample_image1, R.drawable.sample_image2),
-                content = "새로 사준 장난감으로 놀아줬더니 기절한 듯이 잠들었어요ㅎ\n이제 5개월인데 미친 듯이 놀아서 너무 귀엽네요 새벽에..."
+                title = "강아지와 놀기", // 🔹 추가된 필드
+                content = "새로 사준 장난감으로 놀아줬더니 기절한 듯이 잠들었어요ㅎ\n이제 5개월인데 미친 듯이 놀아서 너무 귀엽네요 새벽에...",
+                video_URL = null, // 🔹 추가된 필드
+                thumbnail_URL = null, // 🔹 추가된 필드
+                images = listOf(R.drawable.sample_image1, R.drawable.sample_image2)
             ),
             LocalPost(
                 id = "post2",
                 username = "닉네임2",
                 dogbreed = "말티즈",
-                images = emptyList(),
-                content = "새로 사준 장난감으로 놀아줬더니 기절한 듯이 잠들었어요ㅎ\n이제 5개월인데 미친 듯이 놀아서 너무 귀엽네요 새벽에..."
+                title = "새로운 애완동물 용품 추천", // 🔹 추가된 필드
+                content = "새로 사준 장난감으로 놀아줬더니 기절한 듯이 잠들었어요ㅎ\n이제 5개월인데 미친 듯이 놀아서 너무 귀엽네요 새벽에...",
+                video_URL = null,
+                thumbnail_URL = null,
+                images = emptyList()
             )
         )
 

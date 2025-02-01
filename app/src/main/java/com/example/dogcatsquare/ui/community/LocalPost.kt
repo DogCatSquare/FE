@@ -5,5 +5,8 @@ data class LocalPost(
     val username: String,
     val dogbreed: String,
     val images: List<Int>,
-    val content: String
+    val content: String,
+    val title: String,         // 🔹 게시글 제목 추가
+    val video_URL: String?,    // 🔹 동영상 URL 추가
+    val thumbnail_URL: String? // 🔹 썸네일 이미지 URL 추가
 )

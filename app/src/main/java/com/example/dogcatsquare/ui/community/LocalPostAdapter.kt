@@ -1,6 +1,7 @@
 package com.example.dogcatsquare.ui.community
 
 import android.content.Context
+import android.content.Intent
 import android.view.LayoutInflater
 import android.view.MenuInflater
 import android.view.MenuItem
@@ -14,9 +15,9 @@ import com.example.dogcatsquare.R
 
 class LocalPostAdapter(
     private val context: Context,
-    private val localPosts: MutableList<LocalPost>, // 게시글 삭제를 위해 MutableList 사용
-    private val onEditPost: (LocalPost) -> Unit, // 게시글 수정 이벤트
-    private val onDeletePost: (Int) -> Unit, // 게시글 삭제 이벤트
+    private val localPosts: MutableList<LocalPost>,
+    private val onEditPost: (LocalPost) -> Unit, // 🔹 추가
+    private val onDeletePost: (Int) -> Unit,
     private val isCompactView: Boolean
 ) : RecyclerView.Adapter<LocalPostAdapter.ViewHolder>() {
 
@@ -26,7 +27,7 @@ class LocalPostAdapter(
         val content: TextView = itemView.findViewById(R.id.tvContent)
         val image1: ImageView? = itemView.findViewById(R.id.ivPostImage1)
         val image2: ImageView? = itemView.findViewById(R.id.ivPostImage2)
-        val postMenu: ImageView? = itemView.findViewById(R.id.ivPostMenu) // 메뉴 버튼 추가
+        val postMenu: ImageView? = itemView.findViewById(R.id.ivPostMenu)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
@@ -42,8 +43,11 @@ class LocalPostAdapter(
         holder.dogBreed.text = post.dogbreed
         holder.content.text = post.content
 
-        holder.content.maxLines = if (isCompactView) 2 else 3
-        holder.content.ellipsize = android.text.TextUtils.TruncateAt.END
+        // 🛠 홈 탭에서는 2줄, 동네이야기 탭에서는 3줄 표시
+        holder.content.apply {
+            maxLines = if (isCompactView) 2 else 3
+            ellipsize = android.text.TextUtils.TruncateAt.END
+        }
 
         if (post.images.isNotEmpty()) {
             holder.image1?.setImageResource(post.images[0])
@@ -64,18 +68,17 @@ class LocalPostAdapter(
         holder.postMenu?.setOnClickListener { showPopupMenu(it, post, position) }
     }
 
+
     override fun getItemCount(): Int = localPosts.size
 
-    // PopupMenu 생성 및 처리
     private fun showPopupMenu(view: View, post: LocalPost, position: Int) {
         val popup = PopupMenu(context, view)
-        val inflater: MenuInflater = popup.menuInflater
-        inflater.inflate(R.menu.post_menu, popup.menu)
+        popup.menuInflater.inflate(R.menu.post_menu, popup.menu)
 
-        popup.setOnMenuItemClickListener { item: MenuItem ->
+        popup.setOnMenuItemClickListener { item ->
             when (item.itemId) {
                 R.id.menu_edit -> {
-                    onEditPost(post)
+                    onEditPost(post) // 🔹 수정 기능 연결
                     true
                 }
                 R.id.menu_delete -> {

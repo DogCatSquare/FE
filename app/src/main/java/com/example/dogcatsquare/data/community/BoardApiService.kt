@@ -28,10 +28,11 @@ interface BoardApiService {
     ): Call<ApiResponse>
 
     // 게시글 수정 API 추가
-    @PUT("api/board/post/{postId}")
+    @Multipart
+    @PUT("/api/board/post/{postId}")
     fun updatePost(
         @Path("postId") postId: Long,
-        @Header("Authorization") token: String,
-        @Body postRequest: PostRequest
+        @Part("request") request: RequestBody,
+        @Part communityImages: List<MultipartBody.Part>?
     ): Call<ApiResponse>
 }
