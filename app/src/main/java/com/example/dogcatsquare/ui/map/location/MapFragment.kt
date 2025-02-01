@@ -34,7 +34,6 @@ import com.example.dogcatsquare.BaseResponse
 import com.example.dogcatsquare.PlaceRequest
 import com.example.dogcatsquare.RegionRequest
 import com.example.dogcatsquare.SearchPlacesRequest
-import com.example.dogcatsquare.data.community.SharedPrefManager.getUserId
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
