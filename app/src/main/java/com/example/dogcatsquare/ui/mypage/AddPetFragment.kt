@@ -24,8 +24,21 @@ import com.bumptech.glide.Glide
 import com.bumptech.glide.request.RequestOptions
 import com.bumptech.glide.signature.ObjectKey
 import com.example.dogcatsquare.R
+import com.example.dogcatsquare.RetrofitObj
+import com.example.dogcatsquare.data.api.PetRetrofitItf
+import com.example.dogcatsquare.data.login.Pet
+import com.example.dogcatsquare.data.pet.AddPetRequest
+import com.example.dogcatsquare.data.pet.AddPetResponse
 import com.example.dogcatsquare.databinding.FragmentAddPetBinding
 import com.google.android.material.bottomsheet.BottomSheetDialog
+import com.google.gson.Gson
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
+import okhttp3.MultipartBody
+import okhttp3.RequestBody
+import okhttp3.RequestBody.Companion.toRequestBody
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
 import java.io.File
 import java.io.FileOutputStream
 
@@ -37,6 +50,16 @@ class AddPetFragment : Fragment() {
 
     // 초기 반려동물 선택 상태
     var selectedAnimal: String? = "dog"
+
+    private fun getToken(): String? {
+        val sharedPref = activity?.getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
+        return sharedPref?.getString("token", null)
+    }
+
+    private fun getUserId(): Int {
+        val sharedPref = requireActivity().getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
+        return sharedPref.getInt("userId", -1)
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -73,7 +96,7 @@ class AddPetFragment : Fragment() {
         }
 
         binding.editPetDoneBtn.setOnClickListener {
-            addPetDone()
+
         }
 
         // 강아지, 고양이 선택 버튼
@@ -179,6 +202,7 @@ class AddPetFragment : Fragment() {
         Log.d("EditProfileFragment", "Temp file path: ${tempFile.absolutePath}")
         return tempFile
     }
+
     // Uri를 실제 경로로 변환하는 함수
     private fun getRealPathFromURI(uri: Uri): String {
         var path = ""
@@ -261,33 +285,77 @@ class AddPetFragment : Fragment() {
         bottomSheetDialog.show()
     }
 
+    private fun addPetDataFromServer(adapter: AddPetRVAdapter) {
+        val BEARER_TOKEN = getToken()
+        val memberId = getUserId()
+
+        val addPetRequest = AddPetRequest(
+            petName = binding.addPetNameEt.text.toString(),
+            dogCat = selectedAnimal.toString(),
+            breed = binding.addPetSpeciesEt.text.toString(),
+            birth = binding.addBirthSelectBtn.toString()
+        )
+
+        val gson = Gson()
+        val requestJson = gson.toJson(addPetRequest)
+
+        // JSON 문자열을 RequestBody로 변환
+        val requestBody = requestJson.toRequestBody("application/json".toMediaTypeOrNull())
+
+        val petImage: MultipartBody.Part? = selectedImageUri?.let { uri ->
+            val file = getFileFromUri(uri)
+            val requestFile = RequestBody.create("image/*".toMediaTypeOrNull(), file)
+            Log.d("AddPetImage", "File Path: ${file.absolutePath}")
+            Log.d("AddPetImage", "File Exists: ${file.exists()}") // 파일이 존재하는지 확인
+            MultipartBody.Part.createFormData("petImage", file.name, requestFile)
+        } ?: run {
+            Log.d("AddPetImage", "No profile image provided")
+            null
+        }
+
+        val addPetService = RetrofitObj.getRetrofit().create(PetRetrofitItf::class.java)
+        addPetService.addPet("Bearer $BEARER_TOKEN", requestBody, petImage).enqueue(object : Callback<AddPetResponse> {
+            override fun onResponse(call: Call<AddPetResponse>, response: Response<AddPetResponse>) {
+                Log.d("AddPet/SUCCESS", response.toString())
+
+                if (response.isSuccessful) {
+                    val userResponse = response.body()
+                    userResponse?.let { resp ->
+                        if (resp.isSuccess) {
+                            addPetDone()
+                        } else {
+                            Log.e("AddPet/ERROR", "반려동물 불러오기 실패: ${resp.message}")
+                        }
+                    }
+                } else {
+                    Log.e("AddPet/ERROR", "응답 코드: ${response.code()}")
+                }
+            }
+
+            override fun onFailure(call: Call<AddPetResponse>, t: Throwable) {
+                Log.d("RETROFIT/FAILURE", t.message.toString())
+            }
+
+        })
+    }
+
     private fun addPetDone() {
         val petName = binding.addPetNameEt.text.toString()
         val petBreed = binding.addPetSpeciesEt.text.toString()
         val petBirth = binding.addBirthSelectBtn.text.toString()
 
-//        if (petName.isNotBlank() && petBreed.isNotBlank() && petBirth.isNotBlank()) {
-////            val newPet = Pet(name = petName, breed = petBreed, birthDate = petBirth)
-//
-//            // 데이터 반환
-//            val targetFragment = targetFragment
-//            if (targetFragment is EditInfoFragment) {
-//                val bundle = Bundle()
-//                bundle.putString("pet", "추가") // 데이터 추가
-//                targetFragment.onActivityResult(
-//                    EditInfoFragment.ADD_PET_REQUEST_CODE,
-//                    Activity.RESULT_OK,
-//                    Intent().apply { putExtras(bundle) }
-//                )
-//            }
-//
-//            requireActivity().supportFragmentManager.popBackStack() // 뒤로가기
-//        } else {
-//            Toast.makeText(requireContext(), "모든 정보를 입력해주세요.", Toast.LENGTH_SHORT).show()
-//        }
+        val resultBundle = Bundle().apply {
+            putString("petName", petName)
+            putString("dogCat", selectedAnimal)
+            putString("petBreed", petBreed)
+            putString("petBirth", petBirth)
+            putString("petImage", selectedImageUri.toString())
+        }
+
+        Log.d("petImageTest", "$selectedImageUri")
 
         // 결과 전달 (데이터는 전달하지 않음)
-        parentFragmentManager.setFragmentResult("addPetInfoResult", Bundle())
+        parentFragmentManager.setFragmentResult("addPetInfoResult", resultBundle)
 
         // 이전 프래그먼트로 돌아가기
         parentFragmentManager.popBackStack()

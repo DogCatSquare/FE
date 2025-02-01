@@ -6,6 +6,7 @@ import com.example.dogcatsquare.data.login.LoginRequest
 import com.example.dogcatsquare.data.login.LoginResponse
 import com.example.dogcatsquare.data.login.SignUpRequest
 import com.example.dogcatsquare.data.login.SignUpResponse
+import com.example.dogcatsquare.data.mypage.FetchUserResponse
 import com.example.dogcatsquare.data.mypage.GetUserResponse
 import okhttp3.MultipartBody
 import okhttp3.RequestBody
@@ -16,6 +17,7 @@ import retrofit2.http.Header
 import retrofit2.http.Headers
 import retrofit2.http.Multipart
 import retrofit2.http.POST
+import retrofit2.http.PUT
 import retrofit2.http.Part
 import retrofit2.http.Query
 
@@ -41,4 +43,8 @@ interface UserRetrofitItf {
 
     @GET("api/users/users-inquiry")
     fun getUser(@Header("Authorization") token: String): Call<GetUserResponse>
+
+    @Multipart
+    @PUT("api/users/update")
+    fun fetchUser(@Header("Authorization") token: String, @Part("request") requestBody: RequestBody, @Part profileImage: MultipartBody.Part?): Call<FetchUserResponse>
 }

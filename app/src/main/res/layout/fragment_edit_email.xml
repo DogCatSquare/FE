@@ -112,7 +112,7 @@
         android:fontFamily="@font/pretendard_regular"
         android:textColor="@color/gray4"
         android:textSize="12sp"
-        app:layout_constraintStart_toStartOf="@+id/guideline1"
+        app:layout_constraintStart_toStartOf="@+id/guideline_start"
         app:layout_constraintTop_toBottomOf="@+id/email_et" />
 
     <TextView
@@ -138,9 +138,23 @@
         android:inputType="textPassword"
         android:textColorHint="@color/gray3"
         android:textSize="15sp"
-        app:layout_constraintEnd_toStartOf="@+id/guideline_end"
+        app:layout_constraintEnd_toStartOf="@+id/guideline3"
         app:layout_constraintStart_toStartOf="@+id/guideline_start"
         app:layout_constraintTop_toBottomOf="@+id/textView41" />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/verify_btn"
+        style="@style/CustomMaterialButton1"
+        android:layout_width="0dp"
+        android:layout_height="50dp"
+        android:layout_marginStart="5dp"
+        android:insetTop="0dp"
+        android:insetBottom="0dp"
+        android:text="확인"
+        app:layout_constraintBottom_toBottomOf="@+id/verify_email_et"
+        app:layout_constraintEnd_toEndOf="@+id/guideline_end"
+        app:layout_constraintStart_toEndOf="@+id/guideline3"
+        app:layout_constraintTop_toTopOf="@+id/verify_email_et" />
 
     <com.google.android.material.button.MaterialButton
         android:id="@+id/verify_email_btn"

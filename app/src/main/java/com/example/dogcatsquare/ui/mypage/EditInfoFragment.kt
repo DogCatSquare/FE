@@ -18,19 +18,24 @@ import androidx.core.widget.addTextChangedListener
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.bumptech.glide.Glide
-import com.bumptech.glide.request.RequestOptions
 import com.bumptech.glide.signature.ObjectKey
 import com.example.dogcatsquare.R
 import com.example.dogcatsquare.RetrofitObj
+import com.example.dogcatsquare.data.api.PetRetrofitItf
 import com.example.dogcatsquare.data.api.UserRetrofitItf
 import com.example.dogcatsquare.data.login.CheckNicknameResponse
-import com.example.dogcatsquare.data.login.DogCat
 import com.example.dogcatsquare.data.login.Pet
+import com.example.dogcatsquare.data.login.SignUpResponse
+import com.example.dogcatsquare.data.mypage.FetchUserRequest
+import com.example.dogcatsquare.data.mypage.FetchUserResponse
 import com.example.dogcatsquare.data.mypage.GetUserResponse
+import com.example.dogcatsquare.data.pet.GetAllPetResponse
 import com.example.dogcatsquare.databinding.FragmentEditInfoBinding
+import com.google.gson.Gson
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody
 import okhttp3.RequestBody
+import okhttp3.RequestBody.Companion.toRequestBody
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -50,13 +55,9 @@ class EditInfoFragment : Fragment() {
     private var nickname_check: Boolean = false
     private var pw_check: Boolean = false
     private var phone_check: Boolean = false
+    private var isEmailUpdate = false // 이메일 변경 여부를 추적
 
     private val PICK_IMAGE_REQUEST = 1
-    private var nickname: String = ""
-    private var email: String = ""
-    private var password: String = ""
-    private var password_check: String = ""
-    private var phoneNumber: String = ""
     private var selectedImageUri: Uri? = null
 
     private fun getToken(): String? {
@@ -83,6 +84,8 @@ class EditInfoFragment : Fragment() {
             val imm = activity?.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
             imm.hideSoftInputFromWindow(binding.root.windowToken, 0)
         }
+
+        getUser()
 
         binding.nicknameCheckBtn.setOnClickListener {
             val nickname = binding.myNicknameEt.text.toString()
@@ -116,25 +119,57 @@ class EditInfoFragment : Fragment() {
                 .commitAllowingStateLoss()
         }
 
+        // 이메일 인증 화면에서 결과 받기
+        parentFragmentManager.setFragmentResultListener("emailResult", this) { _, bundle ->
+            val updatedEmail = bundle.getString("email", "")
+            if (!updatedEmail.isNullOrEmpty()) {
+                binding.myEmailEt.setText(updatedEmail.lowercase(Locale.getDefault()))
+                binding.myEmailEt.setAllCaps(false)
+                binding.myEmailEt.filters = arrayOf()
+                isEmailUpdate = true
+            }
+        }
+
         val imagePart: MultipartBody.Part? = selectedImageUri?.let { uri ->
-//                val file = File(getRealPathFromURI(uri))
-//                val requestFile = RequestBody.create("image/*".toMediaTypeOrNull(), file)
             val file = getFileFromUri(uri)
             val requestFile = RequestBody.create("image/*".toMediaTypeOrNull(), file)
             MultipartBody.Part.createFormData("image", file.name, requestFile)
         }
 
-
         setupValidation()
 
+        val fetchUserRequest = FetchUserRequest(
+            nickname = binding.myNicknameEt.text.toString().takeIf { it.isNotBlank() },
+            phoneNumber = binding.myPhoneEt.text.toString().takeIf { it.isNotBlank() },
+            password = binding.pwCheckEt.text.toString().takeIf { it.isNotBlank() }
+        )
+
+        val gson = Gson()
+        val requestJson = gson.toJson(fetchUserRequest)
+
+        // JSON 문자열을 RequestBody로 변환
+        val requestBody = requestJson.toRequestBody("application/json".toMediaTypeOrNull())
+
+        Log.d("JSON_REQUEST", requestJson)
+
         binding.editDoneBtn.setOnClickListener {
-//            requireActivity().supportFragmentManager.beginTransaction()
-//                .replace(R.id.main_frm, MypageFragment())
-//                .commitAllowingStateLoss()
-            checkSignup()
+            updateProfile(imagePart, requestBody)
         }
 
         return binding.root
+    }
+
+    override fun onResume() {
+        super.onResume()
+
+        // 🔥 이메일 변경 결과 수신 후 UI 업데이트 (이중 체크)
+        parentFragmentManager.setFragmentResultListener("emailResult", this) { _, bundle ->
+            val updatedEmail = bundle.getString("email", "")
+            if (!updatedEmail.isNullOrEmpty()) {
+                binding.myEmailEt.text = updatedEmail  // ✅ 이메일 버튼 텍스트 변경
+                isEmailUpdate = true // 이메일 변경 여부를 추적
+            }
+        }
     }
 
     private fun openGallery(){
@@ -162,7 +197,6 @@ class EditInfoFragment : Fragment() {
 
             Glide.with(this)
                 .load(compressedUri)
-                .apply(RequestOptions.circleCropTransform())
                 .signature(ObjectKey(System.currentTimeMillis().toString())) // 캐시 무효화
                 .into(binding.myProfileIv)
 
@@ -213,14 +247,16 @@ class EditInfoFragment : Fragment() {
         binding.petInfoRv.adapter = addPetRVAdapter
         binding.petInfoRv.layoutManager = LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false)
 
-        parentFragmentManager.setFragmentResultListener("addPetInfoResult", this) { _, _ ->
-            petDatas.clear()
-            // 기본 아이템 추가
-            petDatas.apply {
-                add(Pet("이름", DogCat.DOG.toString(), "포메라니안", "2025-01-23"))
-            }
-            addPetRVAdapter.notifyDataSetChanged() // RecyclerView 업데이트
-        }
+        getAllPetsFromServer(addPetRVAdapter)
+
+//        parentFragmentManager.setFragmentResultListener("addPetInfoResult", this) { _, _ ->
+//            petDatas.clear()
+//            // 기본 아이템 추가
+//            petDatas.apply {
+//                add(Pet("이름", DogCat.DOG.toString(), "포메라니안", "2025-01-23"))
+//            }
+//            addPetRVAdapter.notifyDataSetChanged() // RecyclerView 업데이트
+//        }
 
         addPetRVAdapter.setMyItemClickListener(object : AddPetRVAdapter.OnItemClickListener {
             override fun onItemClick(pet: Pet) {
@@ -231,6 +267,45 @@ class EditInfoFragment : Fragment() {
             }
         })
     }
+
+    // 전체 반려동물 조회
+    private fun getAllPetsFromServer(adapter: AddPetRVAdapter) {
+        val BEARER_TOKEN = getToken()
+
+        if (BEARER_TOKEN == null) {
+            Log.e("GetPets/ERROR", "토큰이 없습니다.")
+            return
+        }
+
+        val petService = RetrofitObj.getRetrofit().create(PetRetrofitItf::class.java)
+        petService.getAllPet("Bearer $BEARER_TOKEN").enqueue(object : Callback<GetAllPetResponse> {
+            override fun onResponse(call: Call<GetAllPetResponse>, response: Response<GetAllPetResponse>) {
+                Log.d("GetPets/SUCCESS", response.toString())
+
+                if (response.isSuccessful) {
+                    val petResponse = response.body()
+                    petResponse?.let { resp ->
+                        if (resp.isSuccess) {
+//                            val petList = resp.result
+//                            petDatas.clear()
+//                            petDatas.addAll(petList)
+                            adapter.notifyDataSetChanged()
+                            Log.d("GetPets/SUCCESS", "반려동물 정보 업데이트 완료")
+                        } else {
+                            Log.e("GetPets/ERROR", "반려동물 불러오기 실패: ${resp.message}")
+                        }
+                    }
+                } else {
+                    Log.e("GetPets/ERROR", "응답 코드: ${response.code()}")
+                }
+            }
+
+            override fun onFailure(call: Call<GetAllPetResponse>, t: Throwable) {
+                Log.d("RETROFIT/FAILURE", t.message.toString())
+            }
+        })
+    }
+
 
     // 닉네임 체크
     private fun validateNickname() {
@@ -328,112 +403,90 @@ class EditInfoFragment : Fragment() {
     }
 
     // onResume 메서드는 프래그먼트가 사용자와 상호작용을 재개할 때 호출 됨. 즉, 마이페이지 조회 시 최신 정보를 불러옴
-    override fun onResume() {
-        super.onResume()
-        val token = getToken()
-        val userId = getUserId()
-        if (userId != -1 && token != null) {
-            checkSignup() // 마이페이지 조회 API 연동 함수 호출
-        }
+//    override fun onResume() {
+//        super.onResume()
+//        val token = getToken()
+//        val userId = getUserId()
+//        if (userId != -1 && token != null) {
+//            checkSignup() // 마이페이지 조회 API 연동 함수 호출
+//        }
+//    }
+
+    private fun updateProfile(imagePart: MultipartBody.Part?, requestBody: RequestBody) {
+        val BEARER_TOKEN = getToken()
+
+        val editProfileService = RetrofitObj.getRetrofit().create(UserRetrofitItf::class.java)
+        editProfileService.fetchUser("Bearer $BEARER_TOKEN", requestBody, imagePart).enqueue(object: Callback<FetchUserResponse> {
+                override fun onResponse(call: Call<FetchUserResponse>, response: Response<FetchUserResponse>) {
+                    Log.d("RETROFIT/SUCCESS", response.toString())
+                    Log.e("Response code: ", "${response.code()}")
+                    Log.e("Error body: ", "${response.errorBody()?.string()}")
+
+                    when(response.code()) {
+                        200 -> {
+                            val resp: FetchUserResponse = response.body()!!
+                            if (resp != null) {
+                                if (resp.isSuccess) {
+                                    if(resp.code == "COMMON200") {
+                                        Log.d("FetchUser/SUCCESS", response.toString())
+                                        Toast.makeText(context, "프로필 수정 완료", Toast.LENGTH_SHORT)
+                                            .show()
+                                        parentFragmentManager.popBackStack()
+                                    } else {
+                                        Log.e("FetchUser/FAILURE", "응답 코드: ${resp.code}, 응답 메시지: ${resp.message}")
+                                        Toast.makeText(context, "프로필 수정 실패", Toast.LENGTH_SHORT).show()
+                                    }
+                                } else {
+                                    Log.e("FetchUser/FAILURE", "응답 코드: ${resp.code}, 응답 메시지: ${resp.message}")
+                                    Toast.makeText(context, "프로필 수정 실패", Toast.LENGTH_SHORT).show()
+                                }
+                            } else {
+                                Log.d("FetchUser/FAILURE", "Response body is null")
+                                Log.e("FetchUser/FAILURE", "응답 코드: ${resp.code}, 응답메시지: ${resp.message}")
+                            }
+                        }
+                    }
+                }
+
+                override fun onFailure(call: Call<FetchUserResponse>, t: Throwable) {
+                    Log.d("RETROFIT/FAILURE", t.message.toString())
+                }
+            })
     }
 
-    private fun checkSignup() { // imagePart: MultipartBody.Part?){ //, requestBody: RequestBody){
+    private fun getUser() {
         val BEARER_TOKEN = getToken()
-        val memberId = getUserId()
 
-//        if (token != null && memberId != null){
-//
-//            // 서비스 객체 생성
-//            val editProfileService = RetrofitObj.getRetrofit().create(UserRetrofitItf::class.java)
-//            editProfileService.getUser("Bearer $token").enqueue(object: Callback<GetUserResponse> {
-//                override fun onResponse(
-//                    call: Call<GetUserResponse>,
-//                    response: Response<GetUserResponse>
-//                ) {
-//                    Log.d("RETROFIT/SUCCESS", response.toString())
-//                    val resp: GetUserResponse = response.body()!!
-//                    if (resp != null){
-//                        if(resp.isSuccess){ // 응답 성공 시
-////                    when (response.code()){
-////                        200 -> {
-////                            // 프로필 편집 성공 시
-////                            val resp: GetUserResponse = response.body()!!
-////                            if (resp != null){
-////
-////                                Log.d("MYPAGE_UPDATE/SUCCESS", response.toString())
-////                                Toast.makeText(context, "프로필 수정 완료", Toast.LENGTH_SHORT).show()
-////                                parentFragmentManager.popBackStack()
-////
-////                            } else {
-////                                Log.e("실패", response.message())
-////                                Log.e("MYPAGE_UPDATE/FAILURE", "응답 코드: ${resp.code}, 응답메시지: ${resp.message}")
-////
-////                                Toast.makeText(context, "프로필 수정 실패", Toast.LENGTH_SHORT).show()
-////                            }
-//
-//                            // 일단 텍스트만 보이게
-//                            binding.myNicknameEt.setText(resp.result.nickname)
-//                            binding.myEmailEt.text = resp.result.email
-//                            binding.myPhoneEt.setText(resp.result.phoneNumber)
-//                            Glide.with(requireContext())
-//                                .load(resp.result.profileImageUrl)
-//                                .into(binding.myProfileIv)
-//                        } else {
-//                            Log.e("MYPAGE/FAILURE", "응답 코드: ${resp.code}, 응답메시지: ${resp.message}")
-//                        }
-////                        400 -> {
-////                            // 프로필 수정 실패 이유: 동일한 닉네임 입력
-////                            Toast.makeText(context, "이미 닉네임이 존재합니다", Toast.LENGTH_SHORT).show()
-////                        }
-////                        else -> {
-////                            Log.e("Error", "응답 코드: ${response.code()}, 응답 메시지: ${response.message()}")
-////                            Toast.makeText(context, "프로필 수정 실패", Toast.LENGTH_SHORT).show()
-////                        }
-//                    } else {
-//                        Log.d("MYPAGE/FAILURE", "Response body is null")
-//                    }
-//                }
-//
-//                override fun onFailure(call: Call<GetUserResponse>, t: Throwable) {
-//                    Log.d("RETROFIT/FAILURE", t.message.toString())
-//                }
-//
-//            })
-//        }
-
-        val authService = RetrofitObj.getRetrofit().create(UserRetrofitItf::class.java)
-        authService.getUser("Bearer $BEARER_TOKEN").enqueue(object: Callback<GetUserResponse> {
+        val getUserService = RetrofitObj.getRetrofit().create(UserRetrofitItf::class.java)
+        getUserService.getUser("Bearer $BEARER_TOKEN").enqueue(object: Callback<GetUserResponse> {
             override fun onResponse(
                 call: Call<GetUserResponse>,
                 response: Response<GetUserResponse>
             ) {
-                Log.d("RETROFIT/SUCCESS", response.toString())
-                val resp: GetUserResponse = response.body()!!
+                Log.d("FetchUser/SUCCESS", response.toString())
+
+                val resp: GetUserResponse? = response.body()
                 if (resp != null){
                     if(resp.isSuccess){ // 응답 성공 시
+                        binding.myNicknameEt.setText(resp.result.nickname)
 
-                        Log.d("MYPAGE/SUCCESS", response.toString())
+                        if (!isEmailUpdate) {
+                            binding.myEmailEt.setText(resp.result.email.lowercase(Locale.getDefault()))
+                            binding.myEmailEt.setAllCaps(false)
+                            binding.myEmailEt.filters = arrayOf()
+                        }
+                        binding.myPhoneEt.setText(resp.result.phoneNumber)
 
-                        // 응답 값 확인
-                        Log.d("nickname", resp.result.nickname)
-                        Log.d("email", resp.result.email)
-                        Log.d("profileUrl", resp.result.profileImageUrl)
-
-                        // UI 적용
-                        binding.myNicknameEt.setHint(resp.result.nickname)
-                        binding.myEmailEt.text = resp.result.email.lowercase(Locale.getDefault())
-                        binding.myEmailEt.isAllCaps = false
-                        binding.myEmailEt.filters = arrayOf()
-                        binding.myPhoneEt.setHint(resp.result.phoneNumber)
                         Glide.with(requireContext())
                             .load(resp.result.profileImageUrl)
+                            .signature(ObjectKey(System.currentTimeMillis().toString())) // 캐시 무효화
                             .into(binding.myProfileIv)
 
                     } else {
-                        Log.e("MYPAGE/FAILURE", "응답 코드: ${resp.code}, 응답메시지: ${resp.message}")
+                        Log.e("FetchUser/FAILURE", "응답 코드: ${resp.code}, 응답메시지: ${resp.message}")
                     }
                 } else {
-                    Log.d("MYPAGE/FAILURE", "Response body is null")
+                    Log.d("FetchUser/FAILURE", "Response body is null")
                 }
             }
 
