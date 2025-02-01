@@ -14,7 +14,15 @@ interface PlacesApiService {
 
     @POST("api/regions/{regionId}/places")
     suspend fun createPlace(
+        @Header("Authorization") token: String,
         @Path("regionId") regionId: Int,
         @Body place: PlaceRequest
-    ): BaseResponse<Unit>
+    ): BaseResponse<Int>
+
+    @POST("api/regions/{regionId}/places/search")
+    suspend fun searchPlaces(
+        @Header("Authorization") token: String,
+        @Path("regionId") regionId: Int,
+        @Body request: SearchPlacesRequest
+    ): BaseResponse<List<PlaceItem>>
 }

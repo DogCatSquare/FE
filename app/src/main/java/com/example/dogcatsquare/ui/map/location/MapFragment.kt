@@ -8,13 +8,11 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.view.WindowInsetsAnimation
 import android.widget.TextView
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.example.dogcatsquare.PlacesResponse
 import com.example.dogcatsquare.data.map.MapButton
 import com.example.dogcatsquare.data.map.MapPlace
 import com.example.dogcatsquare.R
@@ -36,6 +34,7 @@ import com.example.dogcatsquare.BaseResponse
 import com.example.dogcatsquare.PlaceRequest
 import com.example.dogcatsquare.RegionRequest
 import com.example.dogcatsquare.SearchPlacesRequest
+import com.example.dogcatsquare.data.community.SharedPrefManager.getUserId
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -88,7 +87,7 @@ class MapFragment : Fragment(), OnMapReadyCallback {
         setupRecyclerView()
         setupBottomSheet()
         setupNaverMap()
-        createRegion()
+//        createRegion()
 //        createRegionAndPlace()
 
         // Set up filter button click listener
@@ -149,6 +148,8 @@ class MapFragment : Fragment(), OnMapReadyCallback {
         } else {
             requestLocationPermission()
         }
+
+//        loadPlaces()
     }
 
     private fun hasLocationPermission(): Boolean {
@@ -197,27 +198,87 @@ class MapFragment : Fragment(), OnMapReadyCallback {
 
     private fun setupRecyclerView() {
         buttonDatas.clear()
-        placeList.clear()
         placeDatas.clear()
 
-        val dummyPlace = MapPlace(
-            placeName = "산책로2",
-            placeType = "산책로",
-            placeDistance = "0.5km",
-            placeLocation = "경기도 수원시 영통구 123",
-            placeCall = "031-123-4567",
-            char1Text = "난이도 하",
-            char2Text = null,
-            char3Text = null,
-            placeImg = R.drawable.ic_place_img_default,
-            placeReview = null,
-            longitude = 127.0495556,
-            latitude = 37.6074859,
-            isOpen = "영업중"
+        val dummyPlaces = listOf(
+            MapPlace(
+                placeName = "가나다 동물병원",
+                placeType = "동물병원",
+                placeDistance = "0.55km",
+                placeLocation = "서울시 성북구 월곡동 77",
+                placeCall = "02-1234-5678",
+                char1Text = "중성화 수술",
+                char2Text = "예방접종",
+                char3Text = "24시",
+                placeImg = R.drawable.ic_place_img_default,
+                placeReview = null,
+                longitude = 127.0495556,  // 적절한 값으로 수정
+                latitude = 37.6074859,    // 적절한 값으로 수정
+                isOpen = "영업중"
+            ),
+            MapPlace(
+                placeName = "서대문 안산자락길",
+                placeType = "산책로",
+                placeDistance = "0.55km",
+                placeLocation = "서울시 서대문구 봉원사길 75-66",
+                placeCall = "02-1234-5678",
+                char1Text = "난이도 하",
+                char2Text = "쓰레기통",
+                char3Text = null,
+                placeImg = R.drawable.ic_place_img_default,
+                placeReview = "리뷰(18)",
+                longitude = 127.0495556,
+                latitude = 37.6074859,
+                isOpen = "영업중"
+            ),
+            MapPlace(
+                placeName = "고양이호텔",
+                placeType = "호텔",
+                placeDistance = "0.55km",
+                placeLocation = "서울시 성북구 월곡동 77",
+                placeCall = "02-1234-5678",
+                char1Text = "고양이탁묘",
+                char2Text = "고양이 보호소",
+                char3Text = null,
+                placeImg = R.drawable.ic_place_img_default,
+                placeReview = "리뷰(18)",
+                longitude = 127.0495556,
+                latitude = 37.6074859,
+                isOpen = "영업중"
+            ),
+            MapPlace(
+                placeName = "반려동물 카페",
+                placeType = "카페",
+                placeDistance = "0.55km",
+                placeLocation = "서울시 성북구 월곡동 77",
+                placeCall = "02-1234-5678",
+                char1Text = "중성화 수술",
+                char2Text = "예방접종",
+                char3Text = "24시",
+                placeImg = R.drawable.ic_place_img_default,
+                placeReview = "리뷰(7)",
+                longitude = 127.0495556,
+                latitude = 37.6074859,
+                isOpen = "영업중"
+            ),
+            MapPlace(
+                placeName = "반려동물 식당",
+                placeType = "식당",
+                placeDistance = "0.55km",
+                placeLocation = "서울시 성북구 월곡동 77",
+                placeCall = "02-1234-5678",
+                char1Text = "중성화 수술",
+                char2Text = "예방접종",
+                char3Text = "24시",
+                placeImg = R.drawable.ic_place_img_default,
+                placeReview = "리뷰(7)",
+                longitude = 127.0495556,
+                latitude = 37.6074859,
+                isOpen = "영업중"
+            )
         )
 
-        placeList.add(dummyPlace)
-        placeDatas.add(dummyPlace)
+        placeDatas.addAll(dummyPlaces)
 
         buttonDatas.apply {
             add(MapButton("전체"))
@@ -229,34 +290,16 @@ class MapFragment : Fragment(), OnMapReadyCallback {
 
         val mapButtonRVAdapter = MapButtonRVAdapter(buttonDatas, object : MapButtonRVAdapter.OnItemClickListener {
             override fun onItemClick(position: Int, buttonName: String) {
-                // 각 버튼별 처리
-                when (buttonName) {
-//                    "전체" -> {
-//                        placeDatas.clear()
-//                        placeDatas.addAll(getAllPlaces())
-//                        binding.mapPlaceRV.adapter?.notifyDataSetChanged()
-//                    }
-//                    "병원" -> {
-//                        placeDatas.clear()
-//                        placeDatas.addAll(getAllPlaces().filter { it.placeType == "동물병원" })
-//                        binding.mapPlaceRV.adapter?.notifyDataSetChanged()
-//                    }
-//                    "산책로" -> {
-//                        placeDatas.clear()
-//                        placeDatas.addAll(getAllPlaces().filter { it.placeType == "산책로" })
-//                        binding.mapPlaceRV.adapter?.notifyDataSetChanged()
-//                    }
-//                    "음식/카페" -> {
-//                        placeDatas.clear()
-//                        placeDatas.addAll(getAllPlaces().filter { it.placeType == "식당" || it.placeType == "카페" })
-//                        binding.mapPlaceRV.adapter?.notifyDataSetChanged()
-//                    }
-//                    "호텔" -> {
-//                        placeDatas.clear()
-//                        placeDatas.addAll(getAllPlaces().filter { it.placeType == "호텔" })
-//                        binding.mapPlaceRV.adapter?.notifyDataSetChanged()
-//                    }
+                // 각 버튼별 필터링 처리
+                val filteredPlaces = when (buttonName) {
+                    "전체" -> dummyPlaces
+                    "병원" -> dummyPlaces.filter { it.placeType == "동물병원" }
+                    "산책로" -> dummyPlaces.filter { it.placeType == "산책로" }
+                    "음식/카페" -> dummyPlaces.filter { it.placeType in listOf("카페", "식당") }
+                    "호텔" -> dummyPlaces.filter { it.placeType == "호텔" }
+                    else -> dummyPlaces
                 }
+                (binding.mapPlaceRV.adapter as? MapPlaceRVAdapter)?.updateList(filteredPlaces)
             }
         })
 
@@ -269,7 +312,6 @@ class MapFragment : Fragment(), OnMapReadyCallback {
             override fun onItemClick(place: MapPlace) {
                 when (place.placeType) {
                     "산책로" -> {
-                        // WalkingStartViewFragment로 전환
                         val fragment = WalkingStartViewFragment()
                         requireActivity().supportFragmentManager.beginTransaction()
                             .replace(R.id.main_frm, fragment)
@@ -290,7 +332,6 @@ class MapFragment : Fragment(), OnMapReadyCallback {
                                 place.placeImg?.let { putInt("placeImg", it) }
                             }
                         }
-                        // Fragment 전환
                         requireActivity().supportFragmentManager.beginTransaction()
                             .replace(R.id.main_frm, fragment)
                             .addToBackStack(null)
@@ -310,7 +351,6 @@ class MapFragment : Fragment(), OnMapReadyCallback {
                                 place.placeImg?.let { putInt("placeImg", it) }
                             }
                         }
-                        // Fragment 전환
                         requireActivity().supportFragmentManager.beginTransaction()
                             .replace(R.id.main_frm, fragment)
                             .addToBackStack(null)
@@ -344,8 +384,8 @@ class MapFragment : Fragment(), OnMapReadyCallback {
             try {
                 val regionRequest = RegionRequest(
                     doName = "경기도",
-                    si = "수원시",
-                    gu = "영통구"
+                    si = "성남시",
+                    gu = "분당구"
                 )
 
                 withContext(Dispatchers.IO) {
@@ -365,8 +405,11 @@ class MapFragment : Fragment(), OnMapReadyCallback {
                                     Toast.LENGTH_SHORT
                                 ).show()
 
-                                // 성공 시 지역 ID를 SharedPreferences에 저장
-                                saveRegionId(regionId ?: -1)
+
+                                regionId?.let {
+                                    saveRegionId(it) // 성공 시 지역 ID를 SharedPreferences에 저장
+                                    createPlace(it)  // 지역 생성 성공 후 장소 생성 호출
+                                }
                             }
                             else -> {
                                 Log.e("MapFragment", "지역 생성 실패: ${response.message}")
@@ -401,117 +444,201 @@ class MapFragment : Fragment(), OnMapReadyCallback {
         }
     }
 
-//    private fun createRegionAndPlace() {
-//        lifecycleScope.launch(Dispatchers.IO) {
-//            try {
-//                val regionRequest = RegionRequest(
-//                    doName = "경기도",
-//                    si = "수원시",
-//                    gu = "영통구"
-//                )
-//
-//                Log.d("MapFragment", "지역 생성 요청: $regionRequest")
-//
-//                val token = getToken()
-//
-//                // suspend 함수 직접 호출
-//                val response = withContext(Dispatchers.IO) {
-//                    try {
-//                        if (token != null) {
-//                            RetrofitClient.placesApiService.createRegion(token, regionRequest)
-//                        } else {
-//                        }
-//                    } catch (e: IOException) {
-//                        Log.e("MapFragment", "네트워크 연결 오류: ${e.message}")
-//                        null
-//                    } catch (e: EOFException) {
-//                        Log.e("MapFragment", "서버 응답 처리 오류: ${e.message}")
-//                        null
-//                    }
-//                }
-//
-//                withContext(Dispatchers.Main) {
-//                    when {
-//                        response == null -> {
-//                            Toast.makeText(
-//                                requireContext(),
-//                                "서버 연결에 실패했습니다. 다시 시도해주세요.",
-//                                Toast.LENGTH_SHORT
-//                            ).show()
-//                        }
-//                        else -> {
-//                            Toast.makeText(
-//                                requireContext(),
-//                                "지역 생성에 실패했습니다.",
-//                                Toast.LENGTH_SHORT
-//                            ).show()
-//                        }
-//                    }
-//                }
-//            } catch (e: Exception) {
-//                withContext(Dispatchers.Main) {
-//                    Log.e("MapFragment", "API 오류", e)
-//                    Toast.makeText(
-//                        requireContext(),
-//                        "네트워크 오류: ${e.message}",
-//                        Toast.LENGTH_SHORT
-//                    ).show()
-//                }
-//            }
-//        }
-//    }
-//
-//    private fun createPlace() {
-//        lifecycleScope.launch(Dispatchers.IO) {
-//            try {
-//                val placeRequest = PlaceRequest(
-//                    name = "멍냥동물병원",
-//                    address = "경기도 수원시 영통구 123",
-//                    category = "hospital",
-//                    phoneNum = "031-123-4567",
-//                    open = true,
-//                    longitude = 127.0495556,
-//                    latitude = 37.6074859
-//                )
-//
-//                Log.d("MapFragment", "장소 생성 요청: $placeRequest")
-//
-//                val response = RetrofitClient.placesApiService.createPlace(
-//                    regionId = 1,
-//                    place = placeRequest
-//                )
-//
-//                withContext(Dispatchers.Main) {
-//                    when {
-//                        response.isSuccess -> {
-//                            Log.d("MapFragment", "장소 생성 성공")
-//                            Toast.makeText(requireContext(),
-//                                "장소가 성공적으로 생성되었습니다.",
-//                                Toast.LENGTH_SHORT
-//                            ).show()
-//                        }
-//                        else -> {
-//                            val errorMessage = response.message ?: "알 수 없는 오류가 발생했습니다."
-//                            Log.e("MapFragment", "장소 생성 실패: $errorMessage")
-//                            Toast.makeText(requireContext(),
-//                                "장소 생성에 실패했습니다.",
-//                                Toast.LENGTH_SHORT
-//                            ).show()
-//                        }
-//                    }
-//                }
-//            } catch (e: Exception) {
-//                withContext(Dispatchers.Main) {
-//                    Log.e("MapFragment", "API 오류", e)
-//                    Toast.makeText(
-//                        requireContext(),
-//                        "네트워크 오류: ${e.message}",
-//                        Toast.LENGTH_SHORT
-//                    ).show()
-//                }
-//            }
-//        }
-//    }
+    private fun createPlace(regionId: Int) {
+        val token = getToken()
+        if (token == null) {
+            Toast.makeText(requireContext(), "로그인이 필요합니다.", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        lifecycleScope.launch {
+            try {
+                val placeRequest = PlaceRequest(
+                    name = "탄천1234",
+                    address = "경기도 성남시 분당구 정자1동",
+                    category = "PARK",
+                    phoneNumber = "031-729-4344",
+                    open = true,
+                    longitude = 127.0495556,
+                    latitude = 37.6074859,
+                    businessHours = "24시",  // 더 짧은 형식으로 변경
+                    homepageUrl = "null",
+                    description = "산책로",  // 설명도 간단하게 수정
+                    facilities = listOf("주차장")  // 시설 목록도 단순화
+                )
+
+                Log.d("MapFragment", "장소 생성 요청 데이터: $placeRequest")
+
+                withContext(Dispatchers.IO) {
+                    val response = RetrofitClient.placesApiService.createPlace(
+                        token = "Bearer $token",
+                        regionId = regionId,
+                        place = placeRequest
+                    )
+
+                    withContext(Dispatchers.Main) {
+                        when {
+                            response.isSuccess -> {  // status 대신 isSuccess 사용
+                                val placeId = response.result
+                                Log.d("MapFragment", "장소 생성 성공. Place ID: $placeId")
+                                Toast.makeText(
+                                    requireContext(),
+                                    "장소가 성공적으로 생성되었습니다.",
+                                    Toast.LENGTH_SHORT
+                                ).show()
+                            }
+                            else -> {
+                                Log.e("MapFragment", "장소 생성 실패: ${response.message}")
+                                Toast.makeText(
+                                    requireContext(),
+                                    "장소 생성 실패: ${response.message}",
+                                    Toast.LENGTH_SHORT
+                                ).show()
+                            }
+                        }
+                    }
+                }
+            } catch (e: Exception) {
+                withContext(Dispatchers.Main) {
+                    Log.e("MapFragment", "API 오류", e)
+                    val errorMessage = when (e) {
+                        is HttpException -> {
+                            val errorBody = e.response()?.errorBody()?.string()
+                            Log.e("MapFragment", "HTTP 에러 상세: $errorBody")
+                            "서버 오류: ${e.response()?.message() ?: e.message()}"
+                        }
+                        is IOException -> "네트워크 연결을 확인해주세요."
+                        else -> "알 수 없는 오류가 발생했습니다: ${e.message}"
+                    }
+                    Toast.makeText(requireContext(), errorMessage, Toast.LENGTH_SHORT).show()
+                }
+            }
+        }
+    }
+
+    private fun loadPlaces() {
+        val token = getToken()
+        if (token == null) {
+            Toast.makeText(requireContext(), "로그인이 필요합니다.", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        if (!::naverMap.isInitialized) {
+            Log.d("MapFragment", "지도가 아직 초기화되지 않았습니다.")
+            return
+        }
+
+        val regionId = getRegionId()
+        if (regionId == -1) {
+            Toast.makeText(requireContext(), "지역 정보가 없습니다.", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        lifecycleScope.launch {
+            try {
+                val currentLocation = naverMap.locationOverlay.position
+
+                val searchRequest = SearchPlacesRequest(
+                    userId = getUserId(),
+                    longitude = currentLocation.longitude,
+                    latitude = currentLocation.latitude
+                )
+
+                Log.d("MapFragment", "요청 데이터: $searchRequest")
+                Log.d("MapFragment", "regionId: $regionId")
+
+                val response = withContext(Dispatchers.IO) {
+                    RetrofitClient.placesApiService.searchPlaces(
+                        token = "Bearer $token",
+                        regionId = regionId,
+                        request = searchRequest
+                    )
+                }
+
+                when {
+                    response.isSuccess -> {
+                        Log.d("MapFragment", "장소 목록 로드 성공: ${response.result}")
+                        Toast.makeText(
+                            requireContext(),
+                            "장소 목록을 성공적으로 불러왔습니다.",
+                            Toast.LENGTH_SHORT
+                        ).show()
+
+                        // PlaceItem을 MapPlace로 변환하여 리스트 생성
+                        val mapPlaces = response.result?.map { place ->
+                            MapPlace(
+                                placeName = place.name,
+                                placeType = place.category,
+                                placeDistance = "${place.distance}km",
+                                placeLocation = place.address,
+                                placeCall = place.phoneNumber,
+                                char1Text = null,    // 필요한 경우 추가 정보 설정
+                                char2Text = null,    // 필요한 경우 추가 정보 설정
+                                char3Text = if (place.open) "영업중" else "영업종료",
+                                placeImg = R.drawable.ic_place_img_default,
+                                placeReview = null,  // 리뷰 데이터가 있는 경우 추가
+                                isOpen = if (place.open) "영업중" else "영업종료"
+                            )
+                        } ?: emptyList()
+
+                        // RecyclerView 어댑터 업데이트
+                        (binding.mapPlaceRV.adapter as? MapPlaceRVAdapter)?.updateList(mapPlaces)
+
+                        response.result?.forEach { place ->
+                            Log.d("MapFragment", """
+                            장소 정보:
+                            - ID: ${place.id}
+                            - 이름: ${place.name}
+                            - 주소: ${place.address}
+                            - 카테고리: ${place.category}
+                            - 전화번호: ${place.phoneNumber}
+                            - 영업상태: ${if (place.open) "영업중" else "영업종료"}
+                            - 거리: ${place.distance}
+                            - 지역ID: ${place.regionId}
+                        """.trimIndent())
+                        }
+                    }
+                    else -> {
+                        Log.e("MapFragment", "장소 목록 로드 실패: ${response.message}")
+                        Toast.makeText(
+                            requireContext(),
+                            "장소 목록을 불러오는데 실패했습니다: ${response.message}",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    }
+                }
+            } catch (e: Exception) {
+                handleError(e)
+            }
+        }
+    }
+
+    private fun getUserId(): Int {
+        return activity?.getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
+            ?.getInt("user_id", -1) ?: -1
+    }
+
+    private fun getRegionId(): Int {
+        return activity?.getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
+            ?.getInt("region_id", -1) ?: -1
+    }
+
+    private fun handleError(e: Exception) {
+        val errorMessage = when (e) {
+            is HttpException -> {
+                when (e.code()) {
+                    401 -> "로그인이 필요합니다."
+                    403 -> "권한이 없습니다."
+                    404 -> "데이터를 찾을 수 없습니다."
+                    else -> "서버 오류가 발생했습니다. (${e.code()})"
+                }
+            }
+            is IOException -> "네트워크 연결을 확인해주세요."
+            else -> "알 수 없는 오류가 발생했습니다: ${e.message}"
+        }
+        Toast.makeText(requireContext(), errorMessage, Toast.LENGTH_SHORT).show()
+        Log.e("MapFragment", "API 오류", e)
+    }
 
 
     private fun setupBottomSheet() {
