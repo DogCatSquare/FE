@@ -1,8 +1,10 @@
 package com.example.dogcatsquare.ui.board
 
+import android.content.Context
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
+import android.util.Log
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.example.dogcatsquare.R
@@ -10,6 +12,9 @@ import com.example.dogcatsquare.api.RetrofitClient
 import com.example.dogcatsquare.data.community.BoardRequestDto
 import com.example.dogcatsquare.data.community.BoardResponseDto
 import com.example.dogcatsquare.databinding.ActivityBoardCreateBinding
+import com.google.gson.Gson
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
+import okhttp3.RequestBody
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -17,7 +22,6 @@ import retrofit2.Response
 class BoardCreateActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityBoardCreateBinding
-    private val jwtToken = "Bearer YOUR_JWT_TOKEN" // JWT 토큰 설정
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -95,24 +99,46 @@ class BoardCreateActivity : AppCompatActivity() {
             }
         }
 
-        // API 요청
-        createBoard(BoardRequestDto(boardName, content, keywords))
+        // 수정된 API 요청
+        createBoard(boardName, content, keywords)
     }
 
-    private fun createBoard(request: BoardRequestDto) {
-        RetrofitClient.instance.createBoard(jwtToken, request).enqueue(object : Callback<BoardResponseDto> {
-            override fun onResponse(call: Call<BoardResponseDto>, response: Response<BoardResponseDto>) {
-                if (response.isSuccessful) {
-                    Toast.makeText(this@BoardCreateActivity, "게시판이 성공적으로 등록되었습니다!", Toast.LENGTH_SHORT).show()
-                    finish() // 등록 후 액티비티 종료
-                } else {
-                    Toast.makeText(this@BoardCreateActivity, "등록 실패: ${response.code()}", Toast.LENGTH_SHORT).show()
+
+    // SharedPreferences에서 JWT 토큰 가져오기
+    private fun getToken(): String? {
+        val sharedPref = getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
+        return sharedPref.getString("token", null)
+    }
+
+    private fun createBoard(boardName: String, content: String, keywords: List<String>) {
+        val token = getToken()
+        if (token.isNullOrEmpty()) {
+            Toast.makeText(this@BoardCreateActivity, "로그인이 필요합니다.", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        Log.d("BoardRequest", "보내는 데이터: boardName=$boardName, content=$content, keywords=$keywords")
+
+        RetrofitClient.instance.createBoard("Bearer $token", boardName, content, keywords)
+            .enqueue(object : Callback<BoardResponseDto> {
+                override fun onResponse(call: Call<BoardResponseDto>, response: Response<BoardResponseDto>) {
+                    Log.d("Board/Response", "응답 코드: ${response.code()}")
+                    Log.d("Board/Response", "응답 메시지: ${response.message()}")
+                    Log.d("Board/Response", "응답 바디: ${response.errorBody()?.string()}")
+
+                    if (response.isSuccessful) {
+                        Toast.makeText(this@BoardCreateActivity, "게시판이 성공적으로 등록되었습니다!", Toast.LENGTH_SHORT).show()
+                        finish()
+                    } else {
+                        Toast.makeText(this@BoardCreateActivity, "등록 실패: ${response.code()}", Toast.LENGTH_SHORT).show()
+                    }
                 }
-            }
 
-            override fun onFailure(call: Call<BoardResponseDto>, t: Throwable) {
-                Toast.makeText(this@BoardCreateActivity, "네트워크 오류: ${t.message}", Toast.LENGTH_SHORT).show()
-            }
-        })
+                override fun onFailure(call: Call<BoardResponseDto>, t: Throwable) {
+                    Log.e("BoardCreate", "네트워크 오류: ${t.message}")
+                    Toast.makeText(this@BoardCreateActivity, "네트워크 오류: ${t.message}", Toast.LENGTH_SHORT).show()
+                }
+            })
     }
+
 }

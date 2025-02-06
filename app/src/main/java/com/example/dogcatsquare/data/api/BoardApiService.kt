@@ -1,9 +1,8 @@
-package com.example.dogcatsquare.api
+package com.example.dogcatsquare.data.api
 
 import com.example.dogcatsquare.data.community.ApiResponse
 import com.example.dogcatsquare.data.community.BoardRequestDto
 import com.example.dogcatsquare.data.community.BoardResponseDto
-import com.example.dogcatsquare.data.community.PostRequest
 import okhttp3.MultipartBody
 import okhttp3.RequestBody
 import retrofit2.Call
@@ -14,8 +13,11 @@ interface BoardApiService {
     @POST("/api/board")
     fun createBoard(
         @Header("Authorization") token: String,
-        @Body requestDto: BoardRequestDto
+        @Query("boardName") boardName: String,
+        @Query("content") content: String,
+        @Query("keywords") keywords: List<String>
     ): Call<BoardResponseDto>
+
 
     // 게시글 등록 API
     @Multipart
