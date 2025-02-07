@@ -1,6 +1,7 @@
 package com.example.dogcatsquare.ui.map.location
 
 import android.graphics.Color
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -29,6 +30,7 @@ class MapPlaceRVAdapter(private val placeList: ArrayList<MapPlace>, private val 
     fun updateList(newList: List<MapPlace>) {
         placeList.clear()
         placeList.addAll(newList)
+        Log.d("MapPlaceRVAdapter", "리스트 업데이트: ${placeList.size}개 항목")
         notifyDataSetChanged()
     }
 
