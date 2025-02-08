@@ -11,11 +11,10 @@ import androidx.core.content.ContextCompat
 import androidx.core.widget.addTextChangedListener
 import com.example.dogcatsquare.MainActivity
 import com.example.dogcatsquare.R
-import com.example.dogcatsquare.RetrofitObj
+import com.example.dogcatsquare.data.network.RetrofitObj
 import com.example.dogcatsquare.data.api.UserRetrofitItf
-import com.example.dogcatsquare.data.login.CheckNicknameResponse
-import com.example.dogcatsquare.data.login.LoginRequest
-import com.example.dogcatsquare.data.login.LoginResponse
+import com.example.dogcatsquare.data.model.login.LoginRequest
+import com.example.dogcatsquare.data.model.login.LoginResponse
 import com.example.dogcatsquare.databinding.ActivityLoginDetailBinding
 import retrofit2.Call
 import retrofit2.Callback
@@ -33,10 +32,10 @@ class LoginDetailActivity: AppCompatActivity() {
         window.statusBarColor = ContextCompat.getColor(this, R.color.white)
 
         // 로그인 상태 확인
-//        if (isLoggedIn()) {
-//            navigateToMain()
-//            return
-//        }
+        if (isLoggedIn()) {
+            navigateToMainWithToken()
+            return
+        }
 
         // EditText 값 변경 감지
         setupTextWatchers()
@@ -68,9 +67,9 @@ class LoginDetailActivity: AppCompatActivity() {
         }
 
         // 자동 로그인 체크박스
-//        binding.checkBoxAll.setOnCheckedChangeListener { _, isChecked ->
-//            saveLoginState(isChecked)
-//        }
+        binding.checkBoxAll.setOnCheckedChangeListener { _, isChecked ->
+            saveLoginState(isChecked)
+        }
     }
 
     private fun setupTextWatchers() {
@@ -118,6 +117,9 @@ class LoginDetailActivity: AppCompatActivity() {
                         val resp: LoginResponse = response.body()!!
                         if (resp != null) {
                             if (resp.isSuccess) {
+                                if (binding.checkBoxAll.isChecked) {
+                                    saveLoginState(true)
+                                }
                                 navigateToMain(resp)
                             } else {
                                 Log.e("Login/FAILURE", "응답 코드: ${resp.code}, 응답 메시지: ${resp.message}")
@@ -129,6 +131,7 @@ class LoginDetailActivity: AppCompatActivity() {
                     }
                     500 -> {
                         binding.errorTv.visibility = View.VISIBLE
+                        binding.errorTv.text = "로그인 정보가 일치하지 않습니다"
                         Log.d("Login/FAILURE", "존재하지 않는 이메일")
                     }
                 }
@@ -205,4 +208,16 @@ class LoginDetailActivity: AppCompatActivity() {
         startActivity(intent)
         finish() // 로그인 화면 종료
     }
+
+    private fun navigateToMainWithToken() {
+        val sharedPref = getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
+        val token = sharedPref.getString("token", null)
+
+        if (token != null) {
+            val intent = Intent(this, MainActivity::class.java)
+            startActivity(intent)
+            finish()
+        }
+    }
+
 }

@@ -27,23 +27,15 @@ import com.naver.maps.map.MapFragment
 import com.naver.maps.map.NaverMap
 import com.naver.maps.map.OnMapReadyCallback
 import com.naver.maps.map.util.FusedLocationSource
-import org.json.JSONObject
 import android.widget.Toast
 import androidx.lifecycle.lifecycleScope
-import com.example.dogcatsquare.BaseResponse
-import com.example.dogcatsquare.PlaceRequest
-import com.example.dogcatsquare.RegionRequest
-import com.example.dogcatsquare.SearchPlacesRequest
-import kotlinx.coroutines.CoroutineScope
+import com.example.dogcatsquare.data.map.PlaceRequest
+import com.example.dogcatsquare.data.map.RegionRequest
+import com.example.dogcatsquare.data.map.SearchPlacesRequest
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import retrofit2.Call
-import retrofit2.Callback
 import retrofit2.HttpException
-import retrofit2.Response
-import retrofit2.await
-import java.io.EOFException
 import java.io.IOException
 
 class MapFragment : Fragment(), OnMapReadyCallback {

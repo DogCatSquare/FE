@@ -6,7 +6,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.example.dogcatsquare.data.mypage.MyReview
+import com.example.dogcatsquare.data.model.mypage.MyReview
 import com.example.dogcatsquare.databinding.FragmentMyReviewBinding
 
 class MyReviewFragment : Fragment() {

@@ -14,7 +14,7 @@ import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
 import com.bumptech.glide.Glide
 import com.example.dogcatsquare.R
-import com.example.dogcatsquare.RetrofitObj
+import com.example.dogcatsquare.data.network.RetrofitObj
 import com.example.dogcatsquare.api.BoardApiService
 import com.example.dogcatsquare.data.community.PostRequest
 import com.example.dogcatsquare.data.community.ApiResponse

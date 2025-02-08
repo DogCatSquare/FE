@@ -1,13 +1,17 @@
 package com.example.dogcatsquare.data.api
 
-import com.example.dogcatsquare.data.login.CheckEmailResponse
-import com.example.dogcatsquare.data.login.CheckNicknameResponse
-import com.example.dogcatsquare.data.login.LoginRequest
-import com.example.dogcatsquare.data.login.LoginResponse
-import com.example.dogcatsquare.data.login.SignUpRequest
-import com.example.dogcatsquare.data.login.SignUpResponse
-import com.example.dogcatsquare.data.mypage.FetchUserResponse
-import com.example.dogcatsquare.data.mypage.GetUserResponse
+import com.example.dogcatsquare.data.model.login.CheckEmailResponse
+import com.example.dogcatsquare.data.model.login.CheckNicknameResponse
+import com.example.dogcatsquare.data.model.login.LoginRequest
+import com.example.dogcatsquare.data.model.login.LoginResponse
+import com.example.dogcatsquare.data.model.login.SendVerficationRequest
+import com.example.dogcatsquare.data.model.login.SendVerficationResponse
+import com.example.dogcatsquare.data.model.login.SignUpRequest
+import com.example.dogcatsquare.data.model.login.SignUpResponse
+import com.example.dogcatsquare.data.model.login.VerifyRequest
+import com.example.dogcatsquare.data.model.login.VerifyResponse
+import com.example.dogcatsquare.data.model.mypage.FetchUserResponse
+import com.example.dogcatsquare.data.model.mypage.GetUserResponse
 import okhttp3.MultipartBody
 import okhttp3.RequestBody
 import retrofit2.Call
@@ -32,11 +36,11 @@ interface UserRetrofitItf {
     @GET("api/users/check-email")
     fun checkEmail(@Query("email") email: String): Call<CheckEmailResponse>
 
-//    @POST
-//    fun verifyEmail(): Call<>
-//
-//    @POST
-//    fun sendVerification(): Call<>
+    @POST("api/email/send-verification")
+    fun sendVerification(@Body sendVerficationRequest: SendVerficationRequest): Call<SendVerficationResponse>
+
+    @POST("api/email/verify")
+    fun verifyEmail(@Body verifyRequest: VerifyRequest): Call<VerifyResponse>
 
     @POST("api/users/login")
     fun login(@Body loginRequest: LoginRequest): Call<LoginResponse>
@@ -46,5 +50,5 @@ interface UserRetrofitItf {
 
     @Multipart
     @PUT("api/users/update")
-    fun fetchUser(@Header("Authorization") token: String, @Part("request") requestBody: RequestBody, @Part profileImage: MultipartBody.Part?): Call<FetchUserResponse>
+    fun fetchUser(@Header("Authorization") token: String, @Part("request") request: RequestBody, @Part profileImage: MultipartBody.Part?): Call<FetchUserResponse>
 }

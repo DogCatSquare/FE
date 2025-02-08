@@ -3,7 +3,6 @@ package com.example.dogcatsquare.ui.login
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
-import android.provider.MediaStore
 import android.util.Log
 import android.view.LayoutInflater
 import android.widget.Button
@@ -14,13 +13,12 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import com.example.dogcatsquare.R
-import com.example.dogcatsquare.RetrofitObj
+import com.example.dogcatsquare.data.network.RetrofitObj
 import com.example.dogcatsquare.data.api.UserRetrofitItf
-import com.example.dogcatsquare.data.login.DogCat
-import com.example.dogcatsquare.data.login.Pet
-import com.example.dogcatsquare.data.login.RegionData
-import com.example.dogcatsquare.data.login.SignUpRequest
-import com.example.dogcatsquare.data.login.SignUpResponse
+import com.example.dogcatsquare.data.model.login.Pet
+import com.example.dogcatsquare.data.model.login.RegionData
+import com.example.dogcatsquare.data.model.login.SignUpRequest
+import com.example.dogcatsquare.data.model.login.SignUpResponse
 import com.example.dogcatsquare.databinding.ActivitySignupMyInfoBinding
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.button.MaterialButton
@@ -374,16 +372,22 @@ class SignupMyInfoActivity : AppCompatActivity() {
                         // 선택된 날짜 업데이트
                         selectedDay = day
 
+                        if (selectedDate.after(today)) {
+                            Toast.makeText(this@SignupMyInfoActivity, "구매했던 이전 날짜룰 선택해주세요.", Toast.LENGTH_SHORT).show()
+                            return@setOnClickListener
+                        }
+
                         // 이전 선택된 날짜 초기화
                         for (i in 0 until calendarGrid.childCount) {
                             val child = calendarGrid.getChildAt(i)
                             if (child is TextView) {
+                                child.setBackgroundColor(ContextCompat.getColor(this, R.color.white))
                                 child.setTextColor(ContextCompat.getColor(this, R.color.gray3))
                             }
                         }
 
-                        dateView.setTextColor(ContextCompat.getColor(this, R.color.main_color1))
-
+                        dateView.setBackgroundColor(ContextCompat.getColor(this, R.color.main_color1))
+                        dateView.setTextColor(ContextCompat.getColor(this, R.color.white))
                         Toast.makeText(this, "${year}년 ${month + 1}월 ${day}일 선택됨", Toast.LENGTH_SHORT).show()
                     }
                 }
@@ -498,16 +502,23 @@ class SignupMyInfoActivity : AppCompatActivity() {
                         // 선택된 날짜 업데이트
                         selectedDay = day
 
+                        if (selectedDate.before(today)) {
+                            Toast.makeText(this@SignupMyInfoActivity, "다음 병원 방문일을 선택해주세요.", Toast.LENGTH_SHORT).show()
+                            return@setOnClickListener
+                        }
+
                         // 이전 선택된 날짜 초기화
                         for (i in 0 until calendarGrid.childCount) {
                             val child = calendarGrid.getChildAt(i)
                             if (child is TextView) {
+                                child.setBackgroundColor(ContextCompat.getColor(this, R.color.white))
                                 child.setTextColor(ContextCompat.getColor(this, R.color.gray3))
                             }
                         }
 
-                        // 선택된 날짜 강조
-                        dateView.setTextColor(ContextCompat.getColor(this, R.color.main_color1))
+                        // 선택된 날짜 강조-
+                        dateView.setBackgroundColor(ContextCompat.getColor(this, R.color.main_color1))
+                        dateView.setTextColor(ContextCompat.getColor(this, R.color.white))
                         Toast.makeText(this, "${year}년 ${month + 1}월 ${day}일 선택됨", Toast.LENGTH_SHORT).show()
                     }
                 }

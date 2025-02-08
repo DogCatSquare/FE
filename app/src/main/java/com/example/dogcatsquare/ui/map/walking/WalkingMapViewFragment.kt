@@ -21,7 +21,7 @@ import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentTransaction
 import com.example.dogcatsquare.LocationService
-import com.example.dogcatsquare.LocationUpdateInterface
+import com.example.dogcatsquare.data.api.LocationUpdateInterface
 import com.example.dogcatsquare.R
 import com.naver.maps.geometry.LatLng
 import com.naver.maps.map.*

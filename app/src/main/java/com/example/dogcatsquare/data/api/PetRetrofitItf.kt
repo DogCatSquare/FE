@@ -1,10 +1,10 @@
 package com.example.dogcatsquare.data.api
 
-import com.example.dogcatsquare.data.pet.AddPetResponse
-import com.example.dogcatsquare.data.pet.DeletePetResponse
-import com.example.dogcatsquare.data.pet.FetchPetResponse
-import com.example.dogcatsquare.data.pet.GetAllPetResponse
-import com.example.dogcatsquare.data.pet.GetPetInfoResponse
+import com.example.dogcatsquare.data.model.pet.AddPetResponse
+import com.example.dogcatsquare.data.model.pet.DeletePetResponse
+import com.example.dogcatsquare.data.model.pet.FetchPetResponse
+import com.example.dogcatsquare.data.model.pet.GetAllPetResponse
+import com.example.dogcatsquare.data.model.pet.GetPetInfoResponse
 import okhttp3.MultipartBody
 import okhttp3.RequestBody
 import retrofit2.Call
@@ -23,10 +23,10 @@ interface PetRetrofitItf {
 
     @Multipart
     @PUT("api/pets/{petId}")
-    fun fetchPet(@Path("petId") petId: Int, @Part("request") requestBody: RequestBody, @Part petImage: MultipartBody.Part?): Call<FetchPetResponse>
+    fun fetchPet(@Header("Authorization") token: String, @Path("petId") petId: Int, @Part("request") requestBody: RequestBody, @Part petImage: MultipartBody.Part?): Call<FetchPetResponse>
 
     @DELETE("api/pets/{petId}")
-    fun deletePet(@Path("petId") petId: Int): Call<DeletePetResponse>
+    fun deletePet(@Header("Authorization") token: String, @Path("petId") petId: Int): Call<DeletePetResponse>
 
     @GET("api/pets")
     fun getAllPet(@Header("Authorization") token: String): Call<GetAllPetResponse>

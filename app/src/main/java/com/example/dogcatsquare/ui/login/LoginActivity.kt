@@ -4,13 +4,8 @@ import android.content.Intent
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
-import com.example.dogcatsquare.MainActivity
 import com.example.dogcatsquare.R
-import com.example.dogcatsquare.RetrofitObj
-import com.example.dogcatsquare.data.api.UserRetrofitItf
-import com.example.dogcatsquare.data.login.LoginResponse
 import com.example.dogcatsquare.databinding.ActivityLoginBinding
-import retrofit2.Callback
 
 class LoginActivity : AppCompatActivity() {
     lateinit var binding: ActivityLoginBinding
