@@ -7,6 +7,11 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.recyclerview.widget.RecyclerView
+import com.bumptech.glide.Glide
+import com.bumptech.glide.load.resource.bitmap.CenterCrop
+import com.bumptech.glide.load.MultiTransformation
+import com.bumptech.glide.load.resource.bitmap.RoundedCorners
+import com.example.dogcatsquare.R
 import com.example.dogcatsquare.data.map.MapPlace
 import com.example.dogcatsquare.databinding.ItemMapPlaceBinding
 
@@ -17,7 +22,6 @@ class MapPlaceRVAdapter(private val placeList: ArrayList<MapPlace>, private val 
 
     override fun onCreateViewHolder(viewGroup: ViewGroup, viewType: Int): ViewHolder {
         val binding: ItemMapPlaceBinding = ItemMapPlaceBinding.inflate(LayoutInflater.from(viewGroup.context), viewGroup, false)
-
         return ViewHolder(binding)
     }
 
@@ -41,7 +45,24 @@ class MapPlaceRVAdapter(private val placeList: ArrayList<MapPlace>, private val 
             binding.placeDistance.text = place.placeDistance
             binding.placeLocation.text = place.placeLocation
             binding.placeCall.text = place.placeCall
-            binding.placeImg.setImageResource(place.placeImg!!)
+
+            // 이미지 처리 수정
+            if (place.placeImgUrl != null) {
+                // 이미지 URL이 있는 경우 Glide 등을 사용해 이미지 로드
+                 Glide.with(binding.placeImg.context)
+                     .load(place.placeImgUrl)
+                     .override(300, 300)
+                     .transform(
+                         MultiTransformation(
+                             CenterCrop(),
+                             RoundedCorners((8 * binding.root.resources.displayMetrics.density).toInt())
+                         )
+                     )
+                     .placeholder(R.drawable.ic_place_img_default)
+                     .into(binding.placeImg)
+            } else {
+                binding.placeImg.setImageResource(R.drawable.ic_place_img_default)
+            }
 
             // placeReview가 null인 경우 관련 뷰들을 숨김
             if (place.placeReview == null) {
@@ -129,21 +150,7 @@ class MapPlaceRVAdapter(private val placeList: ArrayList<MapPlace>, private val 
                         binding.char3Text.setTextColor(Color.parseColor("#3E7C43"))
                     }
                 }
-                "식당" -> {
-                    if (place.char1Text != null) {
-                        binding.char1.setCardBackgroundColor(Color.parseColor("#FFFBF1"))
-                        binding.char1Text.setTextColor(Color.parseColor("#FF8D41"))
-                    }
-                    if (place.char2Text != null) {
-                        binding.char2.setCardBackgroundColor(Color.parseColor("#FFFBF1"))
-                        binding.char2Text.setTextColor(Color.parseColor("#FF8D41"))
-                    }
-                    if (place.char3Text != null) {
-                        binding.char3.setCardBackgroundColor(Color.parseColor("#FFFBF1"))
-                        binding.char3Text.setTextColor(Color.parseColor("#FF8D41"))
-                    }
-                }
-                "카페" -> {
+                "식당", "카페" -> {
                     if (place.char1Text != null) {
                         binding.char1.setCardBackgroundColor(Color.parseColor("#FFFBF1"))
                         binding.char1Text.setTextColor(Color.parseColor("#FF8D41"))
@@ -165,5 +172,4 @@ class MapPlaceRVAdapter(private val placeList: ArrayList<MapPlace>, private val 
             }
         }
     }
-
 }

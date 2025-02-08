@@ -208,10 +208,11 @@ class MapFragment : Fragment(), OnMapReadyCallback {
                 char1Text = "중성화 수술",
                 char2Text = "예방접종",
                 char3Text = "24시",
-                placeImg = R.drawable.ic_place_img_default,
+                placeImg = null,
+                placeImgUrl = null,
                 placeReview = null,
-                longitude = 127.0495556,  // 적절한 값으로 수정
-                latitude = 37.6074859,    // 적절한 값으로 수정
+                longitude = 127.0495556,
+                latitude = 37.6074859,
                 isOpen = "영업중"
             ),
             MapPlace(
@@ -223,7 +224,8 @@ class MapFragment : Fragment(), OnMapReadyCallback {
                 char1Text = "난이도 하",
                 char2Text = "쓰레기통",
                 char3Text = null,
-                placeImg = R.drawable.ic_place_img_default,
+                placeImg = null,
+                placeImgUrl = null,
                 placeReview = "리뷰(18)",
                 longitude = 127.0495556,
                 latitude = 37.6074859,
@@ -238,7 +240,8 @@ class MapFragment : Fragment(), OnMapReadyCallback {
                 char1Text = "고양이탁묘",
                 char2Text = "고양이 보호소",
                 char3Text = null,
-                placeImg = R.drawable.ic_place_img_default,
+                placeImg = null,
+                placeImgUrl = null,
                 placeReview = "리뷰(18)",
                 longitude = 127.0495556,
                 latitude = 37.6074859,
@@ -253,7 +256,8 @@ class MapFragment : Fragment(), OnMapReadyCallback {
                 char1Text = "중성화 수술",
                 char2Text = "예방접종",
                 char3Text = "24시",
-                placeImg = R.drawable.ic_place_img_default,
+                placeImg = null,
+                placeImgUrl = null,
                 placeReview = "리뷰(7)",
                 longitude = 127.0495556,
                 latitude = 37.6074859,
@@ -268,7 +272,8 @@ class MapFragment : Fragment(), OnMapReadyCallback {
                 char1Text = "중성화 수술",
                 char2Text = "예방접종",
                 char3Text = "24시",
-                placeImg = R.drawable.ic_place_img_default,
+                placeImg = null,
+                placeImgUrl = null,
                 placeReview = "리뷰(7)",
                 longitude = 127.0495556,
                 latitude = 37.6074859,
@@ -414,7 +419,7 @@ class MapFragment : Fragment(), OnMapReadyCallback {
     }
 
 
-    private fun loadPlaces() {
+    private fun loadPlaces(keyword: String = "") {
         val token = getToken()
         if (token == null) {
             Toast.makeText(requireContext(), "로그인이 필요합니다.", Toast.LENGTH_SHORT).show()
@@ -426,27 +431,58 @@ class MapFragment : Fragment(), OnMapReadyCallback {
             return
         }
 
-        val regionId = 2
+//        val regionId = 10000
 
-//        val regionId = getRegionId()
-//        if (regionId == -1) {
-//            Toast.makeText(requireContext(), "지역 정보가 없습니다.", Toast.LENGTH_SHORT).show()
-//            return
-//        }
+        val regionId = getRegionId()
+        if (regionId == -1) {
+            Toast.makeText(requireContext(), "지역 정보가 없습니다.", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        Log.d("MapFragment", "API 호출 - regionId: $regionId")
 
         lifecycleScope.launch {
             try {
-                val currentLocation = naverMap.locationOverlay.position
+                // 현재 지도의 중심 좌표 사용
+                val mapCenter = naverMap.cameraPosition.target
+
+                // 또는 현재 지도의 보이는 영역의 중심 좌표 사용
+                val visibleRegion = naverMap.contentBounds
+                val centerLatitude = (visibleRegion.northLatitude + visibleRegion.southLatitude) / 2
+                val centerLongitude = (visibleRegion.eastLongitude + visibleRegion.westLongitude) / 2
+
+                // 위치 정보 로깅
+                Log.d("MapFragment", """
+                ===== 위치 정보 =====
+                지도 중심 좌표:
+                - 위도: ${mapCenter.latitude}
+                - 경도: ${mapCenter.longitude}
+                
+                보이는 영역 중심:
+                - 위도: $centerLatitude
+                - 경도: $centerLongitude
+                
+                현재 Region ID: $regionId
+                ==================
+            """.trimIndent())
 
                 val searchRequest = SearchPlacesRequest(
                     userId = getUserId(),
-                    longitude = currentLocation.longitude,
-                    latitude = currentLocation.latitude
+                    // 지도의 현재 중심 좌표 사용
+                    latitude = mapCenter.latitude,
+                    longitude = mapCenter.longitude,
+                    keyword = keyword
                 )
 
-                // 요청 데이터 로깅
-                Log.d("MapFragment", "검색 요청: userId=${searchRequest.userId}, " +
-                        "longitude=${searchRequest.longitude}, latitude=${searchRequest.latitude}")
+                // API 요청 정보 로깅
+                Log.d("MapFragment", """
+                ===== API 요청 정보 =====
+                Region ID: $regionId
+                위도: ${searchRequest.latitude}
+                경도: ${searchRequest.longitude}
+                키워드: ${searchRequest.keyword}
+                ====================
+            """.trimIndent())
 
                 val response = withContext(Dispatchers.IO) {
                     RetrofitClient.placesApiService.searchPlaces(
@@ -455,6 +491,15 @@ class MapFragment : Fragment(), OnMapReadyCallback {
                         request = searchRequest
                     )
                 }
+
+                Log.d("MapFragment", """
+                ===== API 응답 정보 =====
+                성공 여부: ${response.isSuccess}
+                응답 코드: ${response.code}
+                메시지: ${response.message}
+                데이터 개수: ${response.result?.size ?: 0}
+                ====================
+            """.trimIndent())
 
                 when {
                     response.isSuccess -> {
@@ -465,7 +510,8 @@ class MapFragment : Fragment(), OnMapReadyCallback {
                                     "이름=${place.name}, " +
                                     "카테고리=${place.category}, " +
                                     "주소=${place.address}, " +
-                                    "거리=${place.distance}")
+                                    "거리=${place.distance}, " +
+                                    "이미지URL=${place.imgUrl}")
                         }
 
                         val mapPlaces = response.result?.map { place ->
@@ -478,10 +524,11 @@ class MapFragment : Fragment(), OnMapReadyCallback {
                                 char1Text = null,
                                 char2Text = null,
                                 char3Text = if (place.open) "영업중" else "영업종료",
-                                placeImg = R.drawable.ic_place_img_default,
+                                placeImg = null,  // 서버에서 제공하는 이미지 URL 사용
+                                placeImgUrl = place.imgUrl,  // 이미지 URL 추가
                                 placeReview = null,
-                                longitude = currentLocation.longitude,
-                                latitude = currentLocation.latitude,
+                                longitude = place.longitude,
+                                latitude = place.latitude,
                                 isOpen = if (place.open) "영업중" else "영업종료"
                             )
                         } ?: emptyList()
@@ -533,8 +580,12 @@ class MapFragment : Fragment(), OnMapReadyCallback {
     }
 
     private fun getRegionId(): Int {
-        return activity?.getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
-            ?.getInt("region_id", -1) ?: -1
+        val sharedPref = activity?.getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
+        val regionId = sharedPref?.getInt("region_id", -1) ?: -1
+
+        Log.d("MapFragment", "Retrieved regionId from SharedPreferences: $regionId")
+
+        return regionId
     }
 
     private fun handleError(e: Exception) {
