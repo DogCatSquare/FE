@@ -26,11 +26,12 @@ object RetrofitClient {
                 .build()
 
             Log.d("RetrofitClient", """
-                API 요청:
-                - URL: ${request.url}
-                - Method: ${request.method}
-                - Headers: ${request.headers}
-            """.trimIndent())
+            API 요청 상세:
+            - URL: ${request.url}
+            - Path Segments: ${request.url.pathSegments}  // Path 세그먼트 확인
+            - Method: ${request.method}
+            - Headers: ${request.headers}
+        """.trimIndent())
 
             chain.proceed(request)
         }

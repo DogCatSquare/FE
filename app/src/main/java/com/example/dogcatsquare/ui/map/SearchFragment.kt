@@ -4,18 +4,21 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import com.example.dogcatsquare.databinding.FragmentSearchBinding
+import com.example.dogcatsquare.ui.map.location.MapFragment
 
 class SearchFragment : Fragment() {
-    lateinit var binding: FragmentSearchBinding
+    private var _binding: FragmentSearchBinding? = null
+    private val binding get() = _binding!!
 
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        binding = FragmentSearchBinding.inflate(inflater, container, false)
+        _binding = FragmentSearchBinding.inflate(inflater, container, false)
 
         // 최근검색어 로직인데 xml에서 searchview로 안하고 edittext로 구현해놔서 알맞게 수정하시면 될 거 같습니다
         // 최신 검색어
@@ -82,4 +85,46 @@ class SearchFragment : Fragment() {
 //        editor.putStringSet(KEY_SEARCHES, searchSet)
 //        editor.apply()
 //    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
+        setupBackButton()
+        // 배경을 불투명하게 설정
+        view.setBackgroundColor(ContextCompat.getColor(requireContext(), android.R.color.white))
+    }
+
+    private fun setupBackButton() {
+        binding.backBtn.setOnClickListener {
+            // 이전 Fragment를 보이게 하고 현재 Fragment를 제거
+            requireActivity().supportFragmentManager.popBackStack()
+        }
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        // 이전 Fragment를 다시 보이게 함
+        requireActivity().supportFragmentManager.fragments
+            .filterIsInstance<MapFragment>()
+            .firstOrNull()?.let { mapFragment ->
+                requireActivity().supportFragmentManager.beginTransaction()
+                    .show(mapFragment)
+                    .commit()
+            }
+        _binding = null
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        // 현재 검색어나 다른 상태를 저장
+        // outState.putString("searchQuery", binding.searchEditText.text.toString())
+    }
+
+    override fun onViewStateRestored(savedInstanceState: Bundle?) {
+        super.onViewStateRestored(savedInstanceState)
+        // 저장된 상태 복원
+        savedInstanceState?.let { bundle ->
+            // binding.searchEditText.setText(bundle.getString("searchQuery", ""))
+        }
+    }
 }

@@ -4,7 +4,8 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".ui.map.location.MapEtcFragment">
+    tools:context=".ui.map.location.MapEtcFragment"
+    android:background="@color/white">
 
     <androidx.constraintlayout.widget.Guideline
         android:id="@+id/guideline_start"
