@@ -10,7 +10,10 @@ data class PlaceItem(
     @SerializedName("phoneNumber") val phoneNumber: String,
     @SerializedName("distance") val distance: Double,
     @SerializedName("open") val open: Boolean,
-    @SerializedName("regionId") val regionId: Int
+    @SerializedName("regionId") val regionId: Int,
+    @SerializedName("imgUrl") val imgUrl: String,
+    @SerializedName("longitude") val longitude: Double,
+    @SerializedName("latitude") val latitude: Double
 )
 
 data class RegionRequest(
@@ -55,5 +58,6 @@ data class BaseResponse<T>(
 data class SearchPlacesRequest(
     @SerializedName("userId") val userId: Int,
     @SerializedName("longitude") val longitude: Double,
-    @SerializedName("latitude") val latitude: Double
+    @SerializedName("latitude") val latitude: Double,
+    @SerializedName("keyword") val keyword: String
 )

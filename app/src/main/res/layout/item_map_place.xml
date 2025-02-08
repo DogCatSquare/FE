@@ -77,14 +77,13 @@
 
     <TextView
         android:id="@+id/placeLocation"
-        android:layout_width="wrap_content"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="5dp"
+        android:fontFamily="@font/pretendard_regular"
         android:text="서울시 성북구 월곡동 77"
         android:textColor="@color/gray5"
-        android:fontFamily="@font/pretendard_regular"
         android:textSize="12dp"
-        app:layout_constraintBottom_toBottomOf="@+id/placeDistance"
         app:layout_constraintEnd_toStartOf="@+id/placeImg"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toEndOf="@+id/placeDistance"
@@ -207,7 +206,7 @@
         android:layout_marginTop="16dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/char1"
+        app:layout_constraintTop_toBottomOf="@+id/char3"
         app:srcCompat="@drawable/ic_map_contour_place" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

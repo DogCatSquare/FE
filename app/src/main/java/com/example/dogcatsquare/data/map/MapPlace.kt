@@ -9,7 +9,8 @@ data class MapPlace(
     var char1Text: String? = null,
     var char2Text: String? = null,
     var char3Text: String? = null,
-    var placeImg: Int? = null,
+    val placeImg: Int?,                 // 로컬 리소스 이미지 ID
+    val placeImgUrl: String?,           // 서버에서 제공하는 이미지 URL
     var placeReview: String? = null,
     var longitude: Double? = null,
     var latitude: Double? = null,

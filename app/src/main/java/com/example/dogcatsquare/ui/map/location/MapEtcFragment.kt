@@ -228,6 +228,14 @@ class MapEtcFragment : Fragment() {
 
     override fun onDestroyView() {
         super.onDestroyView()
+        // 이전 Fragment를 다시 보이게 함
+        requireActivity().supportFragmentManager.fragments
+            .filterIsInstance<MapFragment>()
+            .firstOrNull()?.let { mapFragment ->
+                requireActivity().supportFragmentManager.beginTransaction()
+                    .show(mapFragment)
+                    .commit()
+            }
         _binding = null
     }
 }
