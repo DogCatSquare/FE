@@ -3,12 +3,15 @@ package com.example.dogcatsquare.ui.mypage
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
-import com.example.dogcatsquare.data.login.Pet
+import com.bumptech.glide.Glide
+import com.bumptech.glide.signature.ObjectKey
+import com.example.dogcatsquare.R
+import com.example.dogcatsquare.data.model.pet.PetList
 import com.example.dogcatsquare.databinding.ItemAddPetBinding
 
-class AddPetRVAdapter(private val petList: ArrayList<Pet>) : RecyclerView.Adapter<AddPetRVAdapter.AddPetAdapterViewHolder>() {
+class AddPetRVAdapter(private val petList: ArrayList<PetList>) : RecyclerView.Adapter<AddPetRVAdapter.AddPetAdapterViewHolder>() {
     interface OnItemClickListener {
-        fun onItemClick(pet: Pet)
+        fun onItemClick(pet: PetList)
     }
 
     private lateinit var mItemClickListener: OnItemClickListener
@@ -36,8 +39,15 @@ class AddPetRVAdapter(private val petList: ArrayList<Pet>) : RecyclerView.Adapte
     override fun getItemCount(): Int = petList.size
 
     inner class AddPetAdapterViewHolder(val binding: ItemAddPetBinding) : RecyclerView.ViewHolder(binding.root) {
-        fun bind(pet: Pet) {
-
+        fun bind(pet: PetList) {
+            binding.petNameTv.text = pet.petName
+            binding.petBreedTv.text = pet.breed
+            binding.petBirthTv.text = pet.birth
+            Glide.with(this.itemView)
+                .load(pet.petImageUrl)
+                .signature(ObjectKey(System.currentTimeMillis().toString())) // 캐시 무효화
+                .placeholder(R.drawable.ic_profile_default)
+                .into(binding.petIv)
         }
     }
 }

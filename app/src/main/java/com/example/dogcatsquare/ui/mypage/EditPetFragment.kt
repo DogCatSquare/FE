@@ -24,19 +24,45 @@ import com.bumptech.glide.Glide
 import com.bumptech.glide.request.RequestOptions
 import com.bumptech.glide.signature.ObjectKey
 import com.example.dogcatsquare.R
+import com.example.dogcatsquare.data.api.PetRetrofitItf
+import com.example.dogcatsquare.data.model.pet.DeletePetResponse
+import com.example.dogcatsquare.data.network.RetrofitObj
+import com.example.dogcatsquare.data.model.pet.FetchPetRequest
+import com.example.dogcatsquare.data.model.pet.FetchPetResponse
 import com.example.dogcatsquare.databinding.FragmentEditPetBinding
 import com.google.android.material.bottomsheet.BottomSheetDialog
+import com.google.gson.Gson
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
+import okhttp3.MultipartBody
+import okhttp3.RequestBody
+import okhttp3.RequestBody.Companion.toRequestBody
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
+import retrofit2.create
 import java.io.File
 import java.io.FileOutputStream
 
 class EditPetFragment : Fragment() {
     lateinit var binding: FragmentEditPetBinding
 
+    private var petId: Int = -1
+    private var petName: String = ""
+    private var dogCat: String = ""
+    private var petBirth: String = ""
+    private var petBreed: String = ""
+    private var petImage: String = ""
+
     private val PICK_IMAGE_REQUEST = 1
     private var selectedImageUri: Uri? = null // 선택된 이미지의 URI를 저장하기 위한 변수
 
     // 초기 반려동물 선택 상태
-    var selectedAnimal: String? = "dog"
+    var selectedAnimal: String? = "DOG"
+
+    private fun getToken(): String? {
+        val sharedPref = activity?.getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
+        return sharedPref?.getString("token", null)
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -60,6 +86,32 @@ class EditPetFragment : Fragment() {
             false // 터치 이벤트를 소비하지 않음
         }
 
+        arguments?.let {
+            petId = it.getInt("petId", -1) // 기본값 -1 설정
+            petName = it.getString("petName", null)
+            dogCat = it.getString("dogCat", null)
+            petBirth = it.getString("petBirth", null)
+            petBreed = it.getString("petBreed", null)
+            petImage = (it.getString("petImage") ?: R.drawable.ic_profile_default).toString()
+        }
+
+        // 초기 세팅
+        binding.editPetNameEt.setText(petName)
+        binding.editBirthSelectBtn.text = petBirth
+        binding.editPetSpeciesEt.setText(petBreed)
+        if (dogCat == "DOG") {
+            selectedAnimal = "DOG"
+            binding.editDogSelectBtn.performClick()
+        } else {
+            selectedAnimal = "CAT"
+            binding.editCatSelectBtn.performClick()
+        }
+        Glide.with(this)
+            .load(petImage)
+            .signature(ObjectKey(System.currentTimeMillis().toString())) // 캐시 무효화
+            .placeholder(R.drawable.ic_profile_default)
+            .into(binding.editPetIv)
+
         // 이미지 가져오기
         binding.editPetIv.setOnClickListener {
             openGallery()
@@ -72,13 +124,9 @@ class EditPetFragment : Fragment() {
             }
         }
 
-        binding.editPetDoneBtn.setOnClickListener {
-            editPetDone()
-        }
-
         // 강아지, 고양이 선택 버튼
         binding.editDogSelectBtn.setOnClickListener {
-            selectedAnimal = "dog"
+            selectedAnimal = "DOG"
 
             // 버튼 스타일 업데이트
             binding.editDogSelectBtn.setStrokeColorResource(R.color.main_color1)
@@ -91,7 +139,7 @@ class EditPetFragment : Fragment() {
         }
 
         binding.editCatSelectBtn.setOnClickListener {
-            selectedAnimal = "cat"
+            selectedAnimal = "CAT"
 
             // 버튼 스타일 업데이트
             binding.editDogSelectBtn.setStrokeColorResource(R.color.gray4)
@@ -134,6 +182,14 @@ class EditPetFragment : Fragment() {
             override fun afterTextChanged(s: Editable?) {}
         })
 
+        binding.deletePetDoneBtn.setOnClickListener {
+            deletePetDone()
+        }
+
+        binding.editPetDoneBtn.setOnClickListener {
+            editPetDone()
+        }
+
         return binding.root
     }
 
@@ -160,7 +216,6 @@ class EditPetFragment : Fragment() {
             // Glide를 사용하여 원본 이미지 첨부
             Glide.with(this)
                 .load(compressedUri)
-                .apply(RequestOptions.circleCropTransform())
                 .signature(ObjectKey(System.currentTimeMillis().toString())) // 캐시 무효화
                 .into(binding.editPetIv)
 
@@ -245,8 +300,8 @@ class EditPetFragment : Fragment() {
         // 완료 버튼 클릭 이벤트
         confirmButton.setOnClickListener {
             val year = yearPicker.value
-            val month = monthPicker.value
-            val day = dayPicker.value
+            val month = String.format("%02d", monthPicker.value) // 01~09 변환
+            val day = String.format("%02d", dayPicker.value)     // 01~09 변환
 
             val selectedDate = "${year}-${month}-${day}"
             Toast.makeText(requireContext(), "선택된 날짜: $selectedDate", Toast.LENGTH_SHORT).show()
@@ -262,35 +317,89 @@ class EditPetFragment : Fragment() {
         bottomSheetDialog.show()
     }
 
+    private fun deletePetDone() {
+        val token = getToken()
+
+        val deletePetService = RetrofitObj.getRetrofit().create(PetRetrofitItf::class.java)
+        deletePetService.deletePet("Bearer $token", petId).enqueue(object: Callback<DeletePetResponse> {
+            override fun onResponse(call: Call<DeletePetResponse>, response: Response<DeletePetResponse>) {
+                Log.d("RETROFIT/SUCCESS", response.toString())
+
+                if (response.isSuccessful) {
+                    response.body()?.let { resp ->
+                        if (resp.isSuccess) {
+                            Log.d("DeletePet/SUCCESS", "Delete Pet")
+
+                            Toast.makeText(context, "반려동물 정보 삭제 완료", Toast.LENGTH_SHORT).show()
+                            parentFragmentManager.popBackStack()
+                        } else {
+                            Log.e(
+                                "DeletePet/FAILURE",
+                                "응답 코드: ${resp.code}, 응답 메시지: ${resp.message}"
+                            )
+                            Toast.makeText(context, "반려동물 정보 삭제 실패", Toast.LENGTH_SHORT).show()
+                        }
+                    }
+                }
+            }
+
+            override fun onFailure(call: Call<DeletePetResponse>, t: Throwable) {
+                Log.d("RETROFIT/FAILURE", t.message.toString())
+            }
+
+        })
+    }
+
     private fun editPetDone() {
-        val petName = binding.editPetNameEt.text.toString()
-        val petBreed = binding.editPetSpeciesEt.text.toString()
-        val petBirth = binding.editBirthSelectBtn.text.toString()
+        val token = getToken()
 
-//        if (petName.isNotBlank() && petBreed.isNotBlank() && petBirth.isNotBlank()) {
-////            val newPet = Pet(name = petName, breed = petBreed, birthDate = petBirth)
-//
-//            // 데이터 반환
-//            val targetFragment = targetFragment
-//            if (targetFragment is EditInfoFragment) {
-//                val bundle = Bundle()
-//                bundle.putString("pet", "추가") // 데이터 추가
-//                targetFragment.onActivityResult(
-//                    EditInfoFragment.ADD_PET_REQUEST_CODE,
-//                    Activity.RESULT_OK,
-//                    Intent().apply { putExtras(bundle) }
-//                )
-//            }
-//
-//            requireActivity().supportFragmentManager.popBackStack() // 뒤로가기
-//        } else {
-//            Toast.makeText(requireContext(), "모든 정보를 입력해주세요.", Toast.LENGTH_SHORT).show()
-//        }
+        val fetchPetRequest = FetchPetRequest(
+            petName = binding.editPetNameEt.text.toString(),
+            dogCat = selectedAnimal.toString(),
+            breed =  binding.editPetSpeciesEt.text.toString(),
+            birth = binding.editBirthSelectBtn.text.toString()
+        )
 
-        // 결과 전달 (데이터는 전달하지 않음)
-//        parentFragmentManager.setFragmentResult("addPetInfoResult", Bundle())
+        val gson = Gson()
+        val requestJson = gson.toJson(fetchPetRequest)
 
-        // 이전 프래그먼트로 돌아가기
-        parentFragmentManager.popBackStack()
+        // JSON 문자열을 RequestBody로 변환
+        val requestBody = requestJson.toRequestBody("application/json".toMediaTypeOrNull())
+
+        val imagePart: MultipartBody.Part? = selectedImageUri?.let { uri ->
+            val file = getFileFromUri(uri)
+            val requestFile = RequestBody.create("image/*".toMediaTypeOrNull(), file)
+            MultipartBody.Part.createFormData("petImage", file.name, requestFile)
+        }
+
+        Log.d("JSON_REQUEST", requestJson)
+
+        val editPetService = RetrofitObj.getRetrofit().create(PetRetrofitItf::class.java)
+        editPetService.fetchPet("Bearer $token", petId, requestBody, imagePart).enqueue(object: Callback<FetchPetResponse> {
+            override fun onResponse(call: Call<FetchPetResponse>, response: Response<FetchPetResponse>) {
+                Log.d("RETROFIT/SUCCESS", response.toString())
+
+                if (response.isSuccessful) {
+                    response.body()?.let { resp ->
+                        if (resp.isSuccess) {
+                            Log.d("FetchPet/SUCCESS", "Pet updated successfully")
+
+                            Toast.makeText(context, "반려동물 정보 수정 완료", Toast.LENGTH_SHORT).show()
+                            parentFragmentManager.popBackStack()
+                        } else {
+                            Log.e("FetchPet/FAILURE", "응답 코드: ${resp.code}, 응답 메시지: ${resp.message}")
+                            Toast.makeText(context, "반려동물 정보 수정 실패", Toast.LENGTH_SHORT).show()
+                        }
+                    }
+                } else {
+                    Log.e("FetchPet/ERROR", "응답 코드: ${response.code()}, 에러 메시지: ${response.errorBody()?.string()}")
+                }
+            }
+
+            override fun onFailure(call: Call<FetchPetResponse>, t: Throwable) {
+                Log.d("RETROFIT/FAILURE", t.message.toString())
+            }
+
+        })
     }
 }

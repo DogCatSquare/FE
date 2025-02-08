@@ -90,7 +90,7 @@
         android:layout_marginTop="10dp"
         android:insetTop="0dp"
         android:insetBottom="0dp"
-        android:text="생년월일"
+        android:text="날짜선택"
         android:textAlignment="textStart"
         android:textSize="15sp"
         app:layout_constraintEnd_toStartOf="@+id/guideline2"

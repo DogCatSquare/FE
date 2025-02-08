@@ -3,7 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/item_root_cl"
-    android:layout_width="180dp"
+    android:layout_width="150dp"
     android:layout_height="80dp"
     android:layout_gravity="center|top"
     android:background="@color/white"
@@ -24,11 +24,11 @@
         app:layout_constraintGuide_percent="0.95" />
 
     <androidx.constraintlayout.widget.ConstraintLayout
-        android:layout_width="0dp"
+        android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:background="@drawable/bg_rounded_btn"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="@id/guideline4"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
 
@@ -52,19 +52,19 @@
             android:id="@+id/pet_iv"
             android:layout_width="35dp"
             android:layout_height="35dp"
-            android:layout_marginStart="30dp"
+            android:layout_marginStart="18dp"
             android:scaleType="fitXY"
             app:layout_constraintBottom_toTopOf="@+id/guideline2"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="@+id/guideline1"
-            app:srcCompat="@drawable/ic_profile_img_default" />
+            app:srcCompat="@drawable/ic_profile_placeholder" />
 
         <TextView
             android:id="@+id/pet_name_tv"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="3dp"
-            android:layout_marginEnd="30dp"
+            android:layout_marginStart="10dp"
+            android:layout_marginEnd="20dp"
             android:fontFamily="@font/pretendard_medium"
             android:text="반려동물 이름"
             android:textColor="@color/gray4"

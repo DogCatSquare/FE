@@ -1,8 +1,12 @@
 package com.example.dogcatsquare.ui.home
 
+import android.content.Context
+import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -12,13 +16,26 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.viewpager2.widget.ViewPager2
 import com.example.dogcatsquare.data.map.MapPlace
 import com.example.dogcatsquare.R
-import com.example.dogcatsquare.data.home.DDay
-import com.example.dogcatsquare.data.home.Event
+import com.example.dogcatsquare.data.api.DDayRetrofitItf
+import com.example.dogcatsquare.data.api.EventRetrofitItf
+import com.example.dogcatsquare.data.model.home.DDay
+import com.example.dogcatsquare.data.model.home.Event
+import com.example.dogcatsquare.data.model.home.GetAllDDayResponse
+import com.example.dogcatsquare.data.model.home.GetAllEventsResponse
+import com.example.dogcatsquare.data.model.pet.GetAllPetResponse
+import com.example.dogcatsquare.data.model.pet.PetList
+import com.example.dogcatsquare.data.network.RetrofitObj
 import com.example.dogcatsquare.data.post.Pet
 import com.example.dogcatsquare.data.post.Post
 import com.example.dogcatsquare.databinding.FragmentHomeBinding
 import com.example.dogcatsquare.ui.map.location.MapDetailFragment
 import com.example.dogcatsquare.ui.map.location.MapEtcFragment
+import com.example.dogcatsquare.ui.mypage.HorizontalSpacingItemDecoration
+import com.google.gson.annotations.SerializedName
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
+import retrofit2.create
 import java.util.Timer
 import java.util.TimerTask
 
@@ -32,6 +49,11 @@ class HomeFragment : Fragment() {
     private var placeDatas = ArrayList<MapPlace>()
     private var hotPostDatas = ArrayList<Post>()
     private var eventDatas = ArrayList<Event>()
+
+    private fun getToken(): String? {
+        val sharedPref = activity?.getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
+        return sharedPref?.getString("token", null)
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -109,53 +131,64 @@ class HomeFragment : Fragment() {
     private fun setupDDayRecyclerView() {
         dDayDatas.clear()
 
-        // 디데이 임시 더미 데이터
-        dDayDatas.apply {
-            add(DDay("병원 방문까지", "D-35", R.drawable.ic_hospital))
-            add(DDay("사료 주문까지", "D-35", R.drawable.ic_food))
-            add(DDay("패드 주문까지", "D-35", R.drawable.ic_pad))
-            add(DDay("", "", R.drawable.ic_set_d_day, isAddButton = true)) // 추가 버튼
-        }
-
         // d-day recycler view
         val dDayRVAdapter = HomeDDayRVAdapter(dDayDatas)
         binding.homeDdayRv.adapter = dDayRVAdapter
-        val layoutManager = LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false)
-        layoutManager.isAutoMeasureEnabled = true
-        binding.homeDdayRv.layoutManager = layoutManager
+        binding.homeDdayRv.layoutManager = LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false)
 
-        requireActivity().supportFragmentManager.setFragmentResultListener("addDDayResult", this) { _, _ ->
-            // 새 아이템 추가
-//            dDayDatas.add(DDay("디데이까지", "D-35", R.drawable.ic_d_day))
-//            dDayRVAdapter.notifyItemInserted(dDayDatas.size - 1) // 새 아이템만 추가
-//            dDayRVAdapter.notifyDataSetChanged() // RecyclerView 업데이트
+        binding.homeDdayRv.addItemDecoration(HorizontalSpacingItemDecoration(15))
+        binding.homeDdayRv.setHasFixedSize(true)
 
-            // 추가 버튼의 위치를 찾음
-            val addButtonPosition = dDayDatas.indexOfFirst { it.isAddButton }
-
-            if (addButtonPosition != -1) {
-                // 새 아이템을 추가 버튼 앞에 삽입
-                dDayDatas.add(addButtonPosition, DDay("디데이까지", "D-35", R.drawable.ic_d_day))
-                dDayRVAdapter.notifyItemInserted(addButtonPosition) // 새 아이템 추가
-            }
-        }
+        getAllDDay(dDayRVAdapter)
 
         // 클릭 인터페이스
         dDayRVAdapter.setMyItemClickListener(object: HomeDDayRVAdapter.OnItemClickListener {
             override fun onItemClick(d_day: DDay) {
-                if (d_day.isAddButton) {
-                    // "디데이 추가하기" 버튼 클릭 시
-                    requireActivity().supportFragmentManager.beginTransaction()
-                        .replace(R.id.main_frm, AddDDayFragment())
-                        .addToBackStack("HomeFragment")
-                        .commitAllowingStateLoss()
+                parentFragmentManager.beginTransaction()
+                    .replace(R.id.main_frm, SetDDayFragment())
+                    .addToBackStack(null)
+                    .commitAllowingStateLoss()
+            }
+        })
+    }
+
+    private fun getAllDDay(adapter: HomeDDayRVAdapter) {
+        val BEARER_TOKEN = getToken()
+
+        val getAllDDayService = RetrofitObj.getRetrofit().create(DDayRetrofitItf::class.java)
+        getAllDDayService.getAllDDays("Bearer $BEARER_TOKEN").enqueue(object: Callback<GetAllDDayResponse> {
+            override fun onResponse(call: Call<GetAllDDayResponse>, response: Response<GetAllDDayResponse>) {
+                Log.d("GetDDay/SUCCESS", response.toString())
+                val resp: GetAllDDayResponse = response.body()!!
+
+                if (resp != null) {
+                    if (resp.isSuccess) {
+                        Log.d("GetDDay", "디데이 전체 조회 성공")
+
+                        val ddays = resp.result.map { dday ->
+                            DDay (
+                                id = dday.id,
+                                title = dday.title,
+                                day = dday.day,
+                                term  = dday.term,
+                                daysLeft = dday.daysLeft,
+                                ddayText = dday.ddayText,
+                                ddayImageUrl = dday.ddayImageUrl
+                            )
+                        }.toList()
+
+                        dDayDatas.addAll(ddays)
+                        Log.d("DDayList", dDayDatas.toString())
+                        adapter.notifyDataSetChanged()
+                    }
+
                 } else {
-                    // 일반 디데이 아이템 클릭 시
-                    requireActivity().supportFragmentManager.beginTransaction()
-                        .replace(R.id.main_frm, SetDDayFragment())
-                        .addToBackStack(null)
-                        .commitAllowingStateLoss()
+                    Log.e("GetDDay/ERROR", "응답 코드: ${response.code()}")
                 }
+            }
+
+            override fun onFailure(call: Call<GetAllDDayResponse>, t: Throwable) {
+                Log.d("RETROFIT/FAILURE", t.message.toString())
             }
         })
     }
@@ -317,21 +350,57 @@ class HomeFragment : Fragment() {
     private fun setupEventRecyclerView() {
         eventDatas.clear()
 
-        // 이벤트 임시 더미 데이터
-        eventDatas.apply {
-            add(Event("2025 케이펫페어 수원 시즌1", "2025.02.21 ~ 2025.02.23", R.drawable.img_event1))
-            add(Event("2025 케이펫페어 수원 시즌1", "2025.02.21 ~ 2025.02.23", R.drawable.img_event2))
-        }
-
         // 이벤트 recycler view
         val homePetEventRVAdapter = HomePetEventRVAdapter(eventDatas)
         binding.homePetEventRv.adapter = homePetEventRVAdapter
         binding.homePetEventRv.layoutManager = LinearLayoutManager(context, LinearLayoutManager.VERTICAL, false)
 
+        getAllEvents(homePetEventRVAdapter)
+
         // 클릭 인터페이스
         homePetEventRVAdapter.setMyItemClickListener(object : HomePetEventRVAdapter.OnItemClickListener {
             override fun onItemClick(event: Event) {
                 // event 연결
+                val uri = Uri.parse(event.eventUrl);
+                val it = Intent(Intent.ACTION_VIEW, uri);
+                startActivity(it)
+            }
+        })
+    }
+
+    private fun getAllEvents(adapter: HomePetEventRVAdapter) {
+        val getAllEventsService = RetrofitObj.getRetrofit().create(EventRetrofitItf::class.java)
+        getAllEventsService.getAllEvents().enqueue(object: Callback<GetAllEventsResponse> {
+            override fun onResponse(call: Call<GetAllEventsResponse>, response: Response<GetAllEventsResponse>) {
+                Log.d("GetEvent/SUCCESS", response.toString())
+                val resp: GetAllEventsResponse = response.body()!!
+
+                if (resp != null) {
+                    if (resp.isSuccess) {
+                        Log.d("GetEvent", "디데이 전체 조회 성공")
+
+                        val events = resp.result.map { event ->
+                            Event (
+                                id = event.id,
+                                title = event.title,
+                                period = event.period,
+                                bannerImageUrl = event.bannerImageUrl,
+                                eventUrl = event.eventUrl
+                            )
+                        }.take(2)
+
+                        eventDatas.addAll(events)
+                        Log.d("EventList", eventDatas.toString())
+                        adapter.notifyDataSetChanged()
+                    }
+
+                } else {
+                    Log.e("GetEvent/ERROR", "응답 코드: ${response.code()}")
+                }
+            }
+
+            override fun onFailure(call: Call<GetAllEventsResponse>, t: Throwable) {
+                Log.d("RETROFIT/FAILURE", t.message.toString())
             }
         })
     }

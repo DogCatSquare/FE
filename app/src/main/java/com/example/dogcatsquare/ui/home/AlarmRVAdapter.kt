@@ -3,7 +3,7 @@ package com.example.dogcatsquare.ui.home
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
-import com.example.dogcatsquare.data.home.Alarm
+import com.example.dogcatsquare.data.model.home.Alarm
 import com.example.dogcatsquare.databinding.ItemAlarmBinding
 
 class AlarmRVAdapter(private val alarmList: List<Alarm>) : RecyclerView.Adapter<AlarmRVAdapter.AlarmAdapterViewHolder>()  {

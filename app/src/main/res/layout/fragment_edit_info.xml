@@ -81,11 +81,11 @@
                 android:layout_width="90dp"
                 android:layout_height="90dp"
                 android:layout_marginTop="15dp"
-                android:scaleType="centerCrop"
+                android:scaleType="fitCenter"
                 app:layout_constraintEnd_toStartOf="@+id/guideline_end"
                 app:layout_constraintStart_toStartOf="@+id/guideline_start"
                 app:layout_constraintTop_toTopOf="parent"
-                app:srcCompat="@drawable/ic_place_img_default" />
+                app:srcCompat="@drawable/ic_profile_default" />
 
             <TextView
                 android:id="@+id/textView18"
@@ -160,7 +160,7 @@
                 android:layout_marginTop="10dp"
                 android:insetTop="0dp"
                 android:insetBottom="0dp"
-                android:text="이메일"
+                android:text="이메일 인증"
                 android:textAlignment="textStart"
                 android:textSize="15sp"
                 app:layout_constraintEnd_toStartOf="@+id/guideline_end"
@@ -238,10 +238,9 @@
                 android:layout_height="50dp"
                 android:layout_marginTop="10dp"
                 android:background="@drawable/bg_rounded_et"
-                android:ems="10"
                 android:hint="전화번호"
-                android:inputType="text"
-                android:maxLength="10"
+                android:inputType="number"
+                android:maxLength="11"
                 android:textColorHint="@color/gray4"
                 android:textSize="15sp"
                 app:layout_constraintEnd_toStartOf="@+id/guideline_end"
@@ -261,6 +260,54 @@
                 app:layout_constraintStart_toStartOf="@+id/guideline_start"
                 app:layout_constraintTop_toBottomOf="@+id/my_phone_et" />
 
+            <TextView
+                android:id="@+id/textView10"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="20dp"
+                android:text="추가 정보"
+                app:layout_constraintStart_toStartOf="@+id/guideline_start"
+                app:layout_constraintTop_toBottomOf="@+id/textView3" />
+
+            <LinearLayout
+                android:id="@+id/linearLayout"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:gravity="center"
+                android:orientation="horizontal"
+                app:layout_constraintEnd_toStartOf="@+id/guideline_end"
+                app:layout_constraintStart_toStartOf="@id/guideline_start"
+                app:layout_constraintTop_toBottomOf="@+id/textView10"
+                app:layout_constraintVertical_bias="1">
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/add_day_btn"
+                    style="@style/CustomMaterialButton8"
+                    android:layout_width="0dp"
+                    android:layout_height="50dp"
+                    android:layout_weight="1"
+                    app:icon="@drawable/ic_d_day"
+                    app:iconSize="30dp"
+                    app:iconTint="@null"
+                    android:insetTop="0dp"
+                    android:insetBottom="0dp"
+                    android:text="디데이 추가" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/add_pet_btn"
+                    style="@style/CustomMaterialButton8"
+                    android:layout_width="0dp"
+                    android:layout_height="50dp"
+                    android:layout_marginStart="15dp"
+                    android:layout_weight="1"
+                    android:insetTop="0dp"
+                    android:insetBottom="0dp"
+                    android:text="반려동물 추가"
+                    app:icon="@drawable/ic_food"
+                    app:iconSize="30dp"
+                    app:iconTint="@null" />
+            </LinearLayout>
 
             <View
                 android:id="@+id/bar2"
@@ -271,7 +318,7 @@
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintHorizontal_bias="0.0"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/textView3" />
+                app:layout_constraintTop_toBottomOf="@+id/linearLayout" />
 
             <TextView
                 android:id="@+id/textView22"
@@ -285,50 +332,19 @@
                 app:layout_constraintStart_toStartOf="@+id/guideline_start"
                 app:layout_constraintTop_toBottomOf="@+id/bar2" />
 
-            <HorizontalScrollView
-                android:id="@+id/horizontalScrollView"
-                android:layout_width="0dp"
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/pet_info_rv"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="10dp"
                 android:clipToPadding="false"
-                android:orientation="horizontal"
                 android:paddingLeft="15dp"
                 android:paddingRight="15dp"
-                android:scrollbars="none"
                 app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintHorizontal_bias="0.263"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/textView22">
 
-                <androidx.constraintlayout.widget.ConstraintLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent">
-
-                    <androidx.recyclerview.widget.RecyclerView
-                        android:id="@+id/pet_info_rv"
-                        android:layout_width="wrap_content"
-                        android:layout_height="match_parent"
-                        app:layout_constraintStart_toStartOf="parent"
-                        app:layout_constraintTop_toTopOf="parent">
-
-                    </androidx.recyclerview.widget.RecyclerView>
-
-                    <com.google.android.material.button.MaterialButton
-                        android:id="@+id/add_pet_btn"
-                        style="@style/CustomMaterialButton4"
-                        android:layout_width="180dp"
-                        android:layout_height="80dp"
-                        android:insetTop="0dp"
-                        android:insetBottom="0dp"
-                        android:text="반려동물 추가하기"
-                        app:layout_constraintEnd_toEndOf="parent"
-                        app:layout_constraintHorizontal_bias="1.0"
-                        app:layout_constraintStart_toEndOf="@id/pet_info_rv"
-                        app:layout_constraintTop_toTopOf="parent" />
-
-                </androidx.constraintlayout.widget.ConstraintLayout>
-
-            </HorizontalScrollView>
+            </androidx.recyclerview.widget.RecyclerView>
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/edit_done_btn"
@@ -343,7 +359,7 @@
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toStartOf="@+id/guideline_end"
                 app:layout_constraintStart_toStartOf="@+id/guideline_start"
-                app:layout_constraintTop_toBottomOf="@+id/horizontalScrollView" />
+                app:layout_constraintTop_toBottomOf="@+id/pet_info_rv" />
 
         </androidx.constraintlayout.widget.ConstraintLayout>
 

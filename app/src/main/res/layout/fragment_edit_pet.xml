@@ -76,9 +76,10 @@
 
     <ImageButton
         android:id="@+id/edit_pet_iv"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="90dp"
+        android:layout_height="90dp"
         android:layout_marginTop="30dp"
+        android:scaleType="fitCenter"
         android:background="@color/white"
         app:layout_constraintEnd_toStartOf="@+id/guideline2"
         app:layout_constraintStart_toStartOf="@+id/guideline1"
@@ -180,20 +181,40 @@
     <!--            app:layout_constraintTop_toBottomOf="@+id/pet_species_et" />-->
 
 
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/edit_pet_done_btn"
-        style="@style/CustomMaterialButton3"
+    <LinearLayout
+        android:id="@+id/linearLayout2"
         android:layout_width="0dp"
-        android:layout_height="50dp"
-        android:layout_marginBottom="30dp"
-        android:insetTop="0dp"
-        android:insetBottom="0dp"
-        android:text="확인"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="20dp"
+        android:gravity="center"
+        android:orientation="horizontal"
+        app:layout_constraintVertical_bias="1"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toStartOf="@+id/guideline2"
         app:layout_constraintStart_toStartOf="@+id/guideline1"
-        app:layout_constraintTop_toBottomOf="@+id/edit_pet_species_et"
-        app:layout_constraintVertical_bias="1" />
+        app:layout_constraintTop_toBottomOf="@+id/edit_pet_species_et">
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/edit_pet_done_btn"
+            style="@style/CustomMaterialButton3"
+            android:layout_width="0dp"
+            android:layout_height="50dp"
+            android:layout_weight="2"
+            android:insetTop="0dp"
+            android:insetBottom="0dp"
+            android:text="확인" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/delete_pet_done_btn"
+            style="@style/CustomMaterialButton7"
+            android:layout_width="0dp"
+            android:layout_height="50dp"
+            android:layout_marginStart="15dp"
+            android:layout_weight="1"
+            android:insetTop="0dp"
+            android:insetBottom="0dp"
+            android:text="삭제" />
+    </LinearLayout>
 
     <TextView
         android:id="@+id/char_count_tv"

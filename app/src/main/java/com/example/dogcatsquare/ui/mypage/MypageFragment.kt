@@ -1,6 +1,7 @@
 package com.example.dogcatsquare.ui.mypage
 
 import android.content.Context
+import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
@@ -9,17 +10,23 @@ import android.view.ViewGroup
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import com.bumptech.glide.Glide
+import com.bumptech.glide.signature.ObjectKey
 import com.example.dogcatsquare.R
-import com.example.dogcatsquare.RetrofitObj
+import com.example.dogcatsquare.data.network.RetrofitObj
 import com.example.dogcatsquare.data.api.UserRetrofitItf
-import com.example.dogcatsquare.data.mypage.GetUserResponse
+import com.example.dogcatsquare.data.model.mypage.GetUserResponse
 import com.example.dogcatsquare.databinding.FragmentMypageBinding
+import com.example.dogcatsquare.ui.login.LoginDetailActivity
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
 
 class MypageFragment : Fragment() {
     lateinit var binding: FragmentMypageBinding
+
+    var name: String = ""
+    var phone: String = ""
+    var profileImg: String = ""
 
     private fun getToken(): String? {
         val sharedPref = activity?.getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
@@ -37,15 +44,6 @@ class MypageFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
         binding = FragmentMypageBinding.inflate(inflater, container, false)
-
-        // 내 정보 수정
-        binding.goEditInfoIv.setOnClickListener {
-            // Fragment 전환
-            requireActivity().supportFragmentManager.beginTransaction()
-                .replace(R.id.main_frm, EditInfoFragment())
-                .addToBackStack(null)
-                .commitAllowingStateLoss()
-        }
 
         // 내 커뮤니티 모아보기
         binding.goMyCommunityIv.setOnClickListener {
@@ -77,7 +75,33 @@ class MypageFragment : Fragment() {
 
         // 로그아웃 버튼 클릭
         binding.logoutBtn.setOnClickListener {
+            val sharedPref = activity?.getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
+            sharedPref?.edit()?.apply {
+                remove("token")
+                remove("userId")
+                apply()
+            }
 
+            val autoLoginPref = activity?.getSharedPreferences("AutoLoginPrefs", Context.MODE_PRIVATE)
+            autoLoginPref?.edit()?.apply {
+                putBoolean("isLoggedIn", false)
+                apply()
+            }
+
+            val intent = Intent(requireContext(), LoginDetailActivity::class.java)
+            intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+            startActivity(intent)
+
+            requireActivity().finish()
+        }
+
+
+        // 내 정보 수정
+        binding.goEditInfoIv.setOnClickListener {
+            val token = getToken()
+            if (token != null) {
+                fetchProfileAndNavigate(token)
+            }
         }
 
         return binding.root
@@ -100,13 +124,14 @@ class MypageFragment : Fragment() {
         super.onResume()
         val token = getToken()
         val userId = getUserId()
+
         if (userId != -1 && token != null) {
-            fetchMyProfile() // 마이페이지 조회 API 연동 함수 호출
+            fetchMyProfile(token) // 마이페이지 조회 API 연동 함수 호출
         }
     }
 
-    private fun fetchMyProfile(){
-        val BEARER_TOKEN = getToken()
+    private fun fetchMyProfile(token: String){
+        val BEARER_TOKEN = token
 
         // 회원정보 조회 API 연동
         val authService = RetrofitObj.getRetrofit().create(UserRetrofitItf::class.java)
@@ -122,16 +147,17 @@ class MypageFragment : Fragment() {
 
                         Log.d("MYPAGE/SUCCESS", response.toString())
 
-                        // 응답 값 확인
-                        Log.d("nickname", resp.result.nickname)
-                        Log.d("email", resp.result.email)
-                        Log.d("profileUrl", resp.result.profileImageUrl)
-
                         // UI 적용
                         binding.nicknameTv.text = resp.result.nickname
-                        Glide.with(requireContext())
+                        Glide.with(this@MypageFragment)
                             .load(resp.result.profileImageUrl)
+                            .signature(ObjectKey(System.currentTimeMillis().toString())) // 캐시 무효화
+                            .placeholder(R.drawable.ic_profile_default)
                             .into(binding.profileIv)
+
+                        name = resp.result.nickname
+                        phone = resp.result.phoneNumber
+                        profileImg = resp.result.profileImageUrl.toString()
 
                     } else {
                         Log.e("MYPAGE/FAILURE", "응답 코드: ${resp.code}, 응답메시지: ${resp.message}")
@@ -145,6 +171,33 @@ class MypageFragment : Fragment() {
                 Log.d("RETROFIT/FAILURE", t.message.toString())
             }
 
+        })
+    }
+
+    private fun fetchProfileAndNavigate(token: String) {
+        val authService = RetrofitObj.getRetrofit().create(UserRetrofitItf::class.java)
+        authService.getUser("Bearer $token").enqueue(object : Callback<GetUserResponse> {
+            override fun onResponse(call: Call<GetUserResponse>, response: Response<GetUserResponse>) {
+                val resp = response.body()
+                if (resp != null && resp.isSuccess) {
+                    val fragment = EditInfoFragment().apply {
+                        arguments = Bundle().apply {
+                            putString("nickname", resp.result.nickname)
+                            putString("phone", resp.result.phoneNumber)
+                            putString("profileImg", resp.result.profileImageUrl)
+                        }
+                    }
+
+                    parentFragmentManager.beginTransaction()
+                        .replace(R.id.main_frm, fragment)
+                        .addToBackStack(null)
+                        .commitAllowingStateLoss()
+                }
+            }
+
+            override fun onFailure(call: Call<GetUserResponse>, t: Throwable) {
+                Log.e("FETCH/FAILURE", t.message.toString())
+            }
         })
     }
 }

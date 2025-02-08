@@ -91,7 +91,7 @@
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="@+id/guideline1"
             app:layout_constraintTop_toTopOf="parent"
-            app:srcCompat="@drawable/ic_place_img_default" />
+            app:srcCompat="@drawable/ic_profile_placeholder" />
 
         <TextView
             android:id="@+id/nickname_tv"
@@ -110,8 +110,9 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="10dp"
-            android:text="내 정보 수정"
+            android:layout_marginTop="5dp"
             android:fontFamily="@font/pretendard_medium"
+            android:text="내 정보 수정"
             android:textColor="#616161"
             android:textSize="13sp"
             app:layout_constraintBottom_toBottomOf="@+id/profile_iv"

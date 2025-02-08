@@ -150,7 +150,7 @@ class AddDDayFragment : Fragment() {
                     set(year, month, day)
                 }
 
-                if (selectedDate.after(today)) {
+                if (selectedDate.before(today)) {
                     // 미래 날짜는 비활성화
                     dateView.isClickable = false // 클릭 불가
                 } else {
@@ -162,11 +162,13 @@ class AddDDayFragment : Fragment() {
                         for (i in 0 until calendarGrid.childCount) {
                             val child = calendarGrid.getChildAt(i)
                             if (child is TextView) {
+                                child.setBackgroundColor(ContextCompat.getColor(requireContext(), R.color.white))
                                 child.setTextColor(ContextCompat.getColor(requireContext(), R.color.gray3))
                             }
                         }
 
-                        dateView.setTextColor(ContextCompat.getColor(requireContext(), R.color.main_color1))
+                        dateView.setBackgroundColor(ContextCompat.getColor(requireContext(), R.color.main_color1))
+                        dateView.setTextColor(ContextCompat.getColor(requireContext(), R.color.white))
 
                         Toast.makeText(requireContext(), "${year}년 ${month + 1}월 ${day}일 선택됨", Toast.LENGTH_SHORT).show()
                     }

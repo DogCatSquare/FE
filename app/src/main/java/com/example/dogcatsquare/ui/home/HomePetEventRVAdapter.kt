@@ -5,11 +5,10 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.example.dogcatsquare.R
-import com.example.dogcatsquare.data.home.Event
+import com.example.dogcatsquare.data.model.home.Event
 import com.example.dogcatsquare.databinding.ItemPetEventBinding
 
 class HomePetEventRVAdapter (private val eventList: ArrayList<Event>) : RecyclerView.Adapter<HomePetEventRVAdapter.HomePetEventAdapterViewHolder>() {
-//    private var d_days: List<DDay> = listOf()
     interface OnItemClickListener {
         fun onItemClick(event: Event)
     }
@@ -40,18 +39,16 @@ class HomePetEventRVAdapter (private val eventList: ArrayList<Event>) : Recycler
     inner class HomePetEventAdapterViewHolder(val binding: ItemPetEventBinding) : RecyclerView.ViewHolder(binding.root) {
         fun bind(event: Event) {
             // 이벤트 제목
-            binding.eventTitleTv.text = event.e_title
+            binding.eventTitleTv.text = event.title
 
             // 이벤트 날짜
-            binding.eventDateTv.text = event.e_when
+            binding.eventDateTv.text = event.period
 
             // 이벤트 이미지
-            event.e_image?.let {
-                Glide.with(binding.root.context)
-                    .load(it)
-                    .placeholder(R.drawable.img_event_default)
-                    .into(binding.eventIv)
-            }
+            Glide.with(this.itemView)
+                .load(event.bannerImageUrl)
+                .placeholder(R.drawable.img_event_default)
+                .into(binding.eventIv)
         }
     }
 }

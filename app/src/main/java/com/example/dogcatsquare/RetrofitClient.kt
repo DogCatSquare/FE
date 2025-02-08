@@ -1,6 +1,7 @@
 package com.example.dogcatsquare
 
 import android.util.Log
+import com.example.dogcatsquare.data.api.PlacesApiService
 import com.jakewharton.retrofit2.adapter.kotlin.coroutines.CoroutineCallAdapterFactory
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor

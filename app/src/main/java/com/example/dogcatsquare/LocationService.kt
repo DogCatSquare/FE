@@ -22,6 +22,7 @@ import java.time.LocalDateTime
 import android.Manifest.permission
 import android.os.Build
 import androidx.annotation.RequiresApi
+import com.example.dogcatsquare.data.api.LocationUpdateInterface
 
 class LocationService : Service() {
 
