@@ -55,7 +55,8 @@ data class PlaceDetailResponse(
     @SerializedName("facilities") val facilities: List<String>?,
     @SerializedName("imageUrls") val imageUrls: List<String>?,
     @SerializedName("distance") val distance: Double,
-    @SerializedName("wished") val wished: Boolean
+    @SerializedName("wished") val wished: Boolean,
+    @SerializedName("recentReviews") val recentReviews: List<MapReview>?
 )
 
 data class PlaceDetailRequest(

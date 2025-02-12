@@ -318,15 +318,12 @@ class MapFragment : Fragment(), OnMapReadyCallback {
                             .commit()
                     }
                     else -> {
+                        val (currentLat, currentLng) = getMapCurrentPosition()
                         val fragment = MapEtcFragment().apply {
                             arguments = Bundle().apply {
-                                putString("placeName", place.placeName)
-                                putString("placeType", place.placeType)
-                                putString("placeDistance", place.placeDistance)
-                                putString("placeLocation", place.placeLocation)
-                                putString("placeCall", place.placeCall)
-                                putString("placeImgUrl", place.placeImgUrl)
-                                putString("isOpen", place.isOpen)
+                                putInt("placeId", place.id)
+                                putDouble("latitude", currentLat)
+                                putDouble("longitude", currentLng)
                             }
                         }
                         requireActivity().supportFragmentManager.beginTransaction()
