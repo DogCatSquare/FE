@@ -44,7 +44,7 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="15dp"
         android:text="가나다 동물병원"
-        android:textSize="18dp"
+        android:textSize="16dp"
         android:fontFamily="@font/pretendard_semibold"
         android:textColor="@color/black"
         app:layout_constraintStart_toStartOf="@+id/guideline1"
@@ -55,13 +55,12 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
+        android:fontFamily="@font/pretendard_regular"
         android:text="동물병원"
         android:textColor="@color/gray5"
         android:textSize="14dp"
-        android:fontFamily="@font/pretendard_regular"
         app:layout_constraintBottom_toBottomOf="@+id/placeName"
-        app:layout_constraintStart_toEndOf="@+id/placeName"
-        app:layout_constraintTop_toTopOf="@+id/placeName" />
+        app:layout_constraintStart_toEndOf="@+id/placeName" />
 
     <TextView
         android:id="@+id/placeDistance"
@@ -80,6 +79,7 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="5dp"
+        android:layout_marginEnd="5dp"
         android:fontFamily="@font/pretendard_regular"
         android:text="서울시 성북구 월곡동 77"
         android:textColor="@color/gray5"
@@ -112,14 +112,13 @@
         android:text="리뷰(18)"
         android:textColor="@color/gray5"
         android:textSize="12dp"
-        app:layout_constraintStart_toEndOf="@+id/review"
+        app:layout_constraintStart_toEndOf="@+id/ImageView"
         app:layout_constraintTop_toBottomOf="@+id/call" />
 
     <ImageView
-        android:id="@+id/review"
+        android:id="@+id/ImageView"
         android:layout_width="12dp"
         android:layout_height="12dp"
-
         app:layout_constraintBottom_toBottomOf="@+id/placeReview"
         app:layout_constraintStart_toStartOf="@+id/guideline1"
         app:layout_constraintTop_toTopOf="@+id/placeReview"
@@ -131,7 +130,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
-        android:layout_marginTop="6dp"
+        android:layout_marginTop="5dp"
         android:background="#EAF2FE"
         app:cardCornerRadius="8dp"
         app:layout_constraintStart_toEndOf="@+id/placeReview"
@@ -151,54 +150,6 @@
 
     </androidx.cardview.widget.CardView>
 
-    <androidx.cardview.widget.CardView
-        android:id="@+id/char2"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="8dp"
-        android:layout_marginTop="6dp"
-        android:background="#EAF2FE"
-        app:cardCornerRadius="8dp"
-        app:layout_constraintStart_toEndOf="@+id/char1"
-        app:layout_constraintTop_toBottomOf="@+id/placeCall">
-
-        <TextView
-            android:id="@+id/char2Text"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="8dp"
-            android:layout_marginTop="1dp"
-            android:layout_marginEnd="8dp"
-            android:layout_marginBottom="1dp"
-            android:text="예방접종"
-            android:textColor="#276CCB"
-            android:textSize="12dp" />
-    </androidx.cardview.widget.CardView>
-
-    <androidx.cardview.widget.CardView
-        android:id="@+id/char3"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="8dp"
-        android:layout_marginTop="6dp"
-        android:background="#EAF2FE"
-        app:cardCornerRadius="8dp"
-        app:layout_constraintStart_toEndOf="@+id/char2"
-        app:layout_constraintTop_toBottomOf="@+id/placeCall">
-
-        <TextView
-            android:id="@+id/char3Text"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="8dp"
-            android:layout_marginTop="1dp"
-            android:layout_marginEnd="8dp"
-            android:layout_marginBottom="1dp"
-            android:text="24시"
-            android:textColor="#276CCB"
-            android:textSize="12dp" />
-    </androidx.cardview.widget.CardView>
-
     <ImageView
         android:id="@+id/contour2"
         android:layout_width="wrap_content"
@@ -206,7 +157,7 @@
         android:layout_marginTop="16dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/char3"
+        app:layout_constraintTop_toBottomOf="@+id/char1"
         app:srcCompat="@drawable/ic_map_contour_place" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

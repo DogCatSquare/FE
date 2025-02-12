@@ -22,24 +22,21 @@ object RetrofitClient {
             val original = chain.request()
             val request = original.newBuilder()
                 .header("Content-Type", "application/json")
-                .header("Accept", "application/json")  // Accept 헤더 추가
+                .header("Accept", "application/json")
                 .method(original.method, original.body)
                 .build()
 
-            Log.d("RetrofitClient", """
-            API 요청 상세:
-            - URL: ${request.url}
-            - Path Segments: ${request.url.pathSegments}  // Path 세그먼트 확인
-            - Method: ${request.method}
-            - Headers: ${request.headers}
-        """.trimIndent())
-
-            chain.proceed(request)
+            try {
+                chain.proceed(request)
+            } catch (e: Exception) {
+                Log.e("RetrofitClient", "Network request failed", e)
+                throw e
+            }
         }
-        .connectTimeout(30, TimeUnit.SECONDS)
-        .readTimeout(30, TimeUnit.SECONDS)
-        .writeTimeout(30, TimeUnit.SECONDS)
-        .retryOnConnectionFailure(true)
+        .connectTimeout(15, TimeUnit.SECONDS)      // 연결 타임아웃 감소
+        .readTimeout(15, TimeUnit.SECONDS)         // 읽기 타임아웃 감소
+        .writeTimeout(15, TimeUnit.SECONDS)        // 쓰기 타임아웃 감소
+        .retryOnConnectionFailure(true)           // 연결 실패시 재시도
         .build()
 
     private val retrofit: Retrofit = Retrofit.Builder()
@@ -49,5 +46,7 @@ object RetrofitClient {
         .addCallAdapterFactory(CoroutineCallAdapterFactory())
         .build()
 
-    val placesApiService: PlacesApiService = retrofit.create(PlacesApiService::class.java)
+    val placesApiService: PlacesApiService by lazy {
+        retrofit.create(PlacesApiService::class.java)
+    }
 }

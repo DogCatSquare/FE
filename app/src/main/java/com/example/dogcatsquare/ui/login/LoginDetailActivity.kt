@@ -32,10 +32,10 @@ class LoginDetailActivity: AppCompatActivity() {
         window.statusBarColor = ContextCompat.getColor(this, R.color.white)
 
         // 로그인 상태 확인
-        if (isLoggedIn()) {
-            navigateToMainWithToken()
-            return
-        }
+//        if (isLoggedIn()) {
+//            navigateToMainWithToken()
+//            return
+//        }
 
         // EditText 값 변경 감지
         setupTextWatchers()
