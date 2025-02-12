@@ -4,6 +4,7 @@ import android.content.Context
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.MotionEvent
 import android.view.View
@@ -16,13 +17,31 @@ import android.widget.Toast
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import com.example.dogcatsquare.R
+import com.example.dogcatsquare.data.api.DDayRetrofitItf
+import com.example.dogcatsquare.data.model.home.AddDDayRequest
+import com.example.dogcatsquare.data.model.home.AddDDayResponse
+import com.example.dogcatsquare.data.network.RetrofitObj
 import com.example.dogcatsquare.databinding.FragmentAddDDayBinding
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.button.MaterialButton
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
 import java.util.Calendar
+import java.util.Objects
 
 class AddDDayFragment : Fragment() {
     lateinit var binding: FragmentAddDDayBinding
+
+    var ddayCount = 3
+
+    private var date: String = ""
+    private var during: Int = 1
+
+    private fun getToken(): String? {
+        val sharedPref = activity?.getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
+        return sharedPref?.getString("token", null)
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -56,7 +75,7 @@ class AddDDayFragment : Fragment() {
 
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
                 val currentLength = s?.length ?: 0
-                charCountTV.text = "$currentLength/10"
+                charCountTV.text = "$currentLength/7"
             }
 
             override fun afterTextChanged(s: Editable?) {}
@@ -64,9 +83,10 @@ class AddDDayFragment : Fragment() {
 
         // 캘린더 설정
         binding.daySelectBtn.setOnClickListener { // 원하는 버튼 ID로 변경
-            showCustomCalendarBottomSheet { selectedpadDate ->
-                Toast.makeText(requireContext(), "선택한 날짜: $selectedpadDate", Toast.LENGTH_SHORT).show()
-                binding.daySelectBtn.text = selectedpadDate
+            showCustomCalendarBottomSheet { selectedDate ->
+                Toast.makeText(requireContext(), "선택한 날짜: $selectedDate", Toast.LENGTH_SHORT).show()
+                binding.daySelectBtn.text = selectedDate
+                date = selectedDate
             }
         }
 
@@ -74,13 +94,8 @@ class AddDDayFragment : Fragment() {
         setDayWeek()
 
         binding.setDayDoneBtn.setOnClickListener {
-            // 결과 전달 (데이터는 전달하지 않음)
-            requireActivity().supportFragmentManager.setFragmentResult("addDDayResult", Bundle())
-
-            // 이전 프래그먼트로 돌아가기
-            requireActivity().supportFragmentManager.beginTransaction()
-                .replace(R.id.main_frm, HomeFragment())
-                .commitAllowingStateLoss()
+            val title = binding.dayNameEt.text.toString()
+            addDDay(title, date, during)
         }
 
         return binding.root
@@ -169,8 +184,6 @@ class AddDDayFragment : Fragment() {
 
                         dateView.setBackgroundColor(ContextCompat.getColor(requireContext(), R.color.main_color1))
                         dateView.setTextColor(ContextCompat.getColor(requireContext(), R.color.white))
-
-                        Toast.makeText(requireContext(), "${year}년 ${month + 1}월 ${day}일 선택됨", Toast.LENGTH_SHORT).show()
                     }
                 }
 
@@ -203,7 +216,9 @@ class AddDDayFragment : Fragment() {
 
         // 완료 버튼 클릭 이벤트
         confirmButton.setOnClickListener {
-            val selectedDate = "${selectedYear}.${selectedMonth + 1}.${selectedDay}"
+            val formattedMonth = String.format("%02d", selectedMonth + 1) // 01~09 변환
+            val formattedDay = selectedDay?.let { String.format("%02d", it) } ?: "01" // 01~09 변환 (선택된 날짜 없을 때 기본값 01)
+            val selectedDate = "${selectedYear}-${formattedMonth}-${formattedDay}"
             onDateSelected(selectedDate)
             bottomSheetDialog.dismiss()
         }
@@ -238,5 +253,36 @@ class AddDDayFragment : Fragment() {
                 binding.dayCountText.text = "${count}주"
             }
         }
+
+        during = count
+    }
+
+    private fun addDDay(title: String, day: String, term: Int) {
+        val token = getToken()
+
+        val addDDayService = RetrofitObj.getRetrofit().create(DDayRetrofitItf::class.java)
+        addDDayService.addDDay("Bearer $token", AddDDayRequest(title, day, term)).enqueue(object : Callback<AddDDayResponse> {
+            override fun onResponse(call: Call<AddDDayResponse>, response: Response<AddDDayResponse>) {
+                Log.d("AddDDay/Response", response.toString())
+
+                if (response.isSuccessful) {
+                    val resp = response.body()
+                    resp?.let { resp ->
+                        if (resp.isSuccess) {
+                            ddayCount++
+                            parentFragmentManager.popBackStack()
+                        } else {
+                            Log.e("AddDDay/ERROR", "디데이 불러오기 실패: ${resp.message}")
+                        }
+                    }
+                } else {
+                    Log.e("AddDDay/ERROR", "응답 코드: ${response.code()}")
+                }
+            }
+
+            override fun onFailure(call: Call<AddDDayResponse>, t: Throwable) {
+                Log.d("RETROFIT/FAILURE", t.message.toString())            }
+
+        })
     }
 }

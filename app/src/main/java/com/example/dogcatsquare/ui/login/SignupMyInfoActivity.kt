@@ -112,8 +112,8 @@ class SignupMyInfoActivity : AppCompatActivity() {
                 nickname = intent.getStringExtra("nickname") ?: "",
                 phoneNumber = intent.getStringExtra("phoneNumber") ?: "",
                 doName = this.doName,
-                gu = this.gu,
                 si = this.si,
+                gu = this.gu,
                 foodDate = this.foodDate,
                 foodDuring = this.foodDuring,
                 padDate = this.padDate,
@@ -146,23 +146,13 @@ class SignupMyInfoActivity : AppCompatActivity() {
             val profileImage: MultipartBody.Part? = imageUri?.let { uri ->
                 val file = getFileFromUri(uri)
                 val requestFile = RequestBody.create("image/*".toMediaTypeOrNull(), file)
-                Log.d("ProfileImage", "File Path: ${file.absolutePath}")
-                Log.d("ProfileImage", "File Exists: ${file.exists()}") // 파일이 존재하는지 확인
                 MultipartBody.Part.createFormData("profileImage", file.name, requestFile)
-            } ?: run {
-                Log.d("ProfileImage", "No profile image provided")
-                null
             }
 
             val petImage: MultipartBody.Part? = imageUri?.let { uri ->
                 val file = getFileFromUri(uri)
                 val requestFile = RequestBody.create("image/*".toMediaTypeOrNull(), file)
-                Log.d("ProfileImage", "File Path: ${file.absolutePath}")
-                Log.d("ProfileImage", "File Exists: ${file.exists()}") // 파일이 존재하는지 확인
                 MultipartBody.Part.createFormData("petImage", file.name, requestFile)
-            } ?: run {
-                Log.d("PetImage", "No profile image provided")
-                null
             }
 
             signupService.signup(requestBody, profileImage, petImage).enqueue(object : Callback<SignUpResponse>{
@@ -277,12 +267,12 @@ class SignupMyInfoActivity : AppCompatActivity() {
         confirmBtn.setOnClickListener {
             doName = regions[selectedFirst].name
             si = if (selectedSecond != -1) {
-                regions.flatMap { it.subRegions.map { sub -> sub.name } }[selectedSecond]
+                regions[selectedFirst].subRegions[selectedSecond].name
             } else {
                 "" // 선택되지 않은 경우 빈 문자열
             }
             gu = if (selectedThird != -1) {
-            regions[selectedFirst].subRegions.flatMap { it.districts }[selectedThird]
+                regions[selectedFirst].subRegions[selectedSecond].districts[selectedThird]
             } else {
                 "" // 선택되지 않은 경우 빈 문자열
             }

@@ -14,6 +14,7 @@ data class GetAllDDayResult(
     @SerializedName("day") var day: String,
     @SerializedName("term") var term: Int?,
     @SerializedName("daysLeft") var daysLeft: Int,
+    @SerializedName("isAlarm") var isAlarm: Boolean,
     @SerializedName("ddayText") var ddayText: String,
     @SerializedName("ddayImageUrl") var ddayImageUrl: String
 )

@@ -93,6 +93,7 @@ class SignupActivity : AppCompatActivity() {
                 binding.verifyEmailCheckTv.visibility = View.VISIBLE
 
                 sendEmail(email)
+                startTimer()
             }
         }
 
@@ -308,7 +309,7 @@ class SignupActivity : AppCompatActivity() {
             override fun onResponse(call: Call<SendVerficationResponse>, response: Response<SendVerficationResponse>) {
                 Log.d("SendEmailResult", response.toString())
                 Toast.makeText(this@SignupActivity, "인증 코드가 발송되었습니다.", Toast.LENGTH_SHORT).show()
-                startTimer()
+//                startTimer()
             }
 
             override fun onFailure(call: Call<SendVerficationResponse>, t: Throwable) {
@@ -326,9 +327,14 @@ class SignupActivity : AppCompatActivity() {
                 if (resp != null) {
                     if (resp.verified) {
                         binding.verifyEmailCheckTv.text = "이메일 인증이 완료되었습니다"
+                        binding.verifyEmailCheckTv.setTextColor(ContextCompat.getColor(this@SignupActivity, R.color.main_color1))
+
+                        countDownTimer?.cancel() // 타이머 중지
+                        binding.verifyEmailTimeTv.visibility = View.GONE // 타이머 숨기기
                         email_verify_check = true
                     } else {
                         binding.verifyEmailCheckTv.text = "이메일 인증을 다시 진행해주세요"
+                        binding.verifyEmailCheckTv.setTextColor(ContextCompat.getColor(this@SignupActivity, R.color.red))
                     }
                 } else {
                     Log.d("CheckEmail/FAILURE", "Response body is null")
@@ -342,25 +348,36 @@ class SignupActivity : AppCompatActivity() {
     }
 
     private fun startTimer() {
-        countDownTimer?.cancel() // 이전 타이머가 있으면 취소
-        val totalTime = 5 * 60 * 1000L // 5분 = 300,000ms
+        countDownTimer?.cancel() // 기존 타이머가 있으면 취소
+        val totalTime = 5 * 60 * 1000L // 5분 (300,000ms)
+
+        // 타이머 텍스트 초기화
+        binding.verifyEmailTimeTv.text = "05:00"
+        binding.verifyEmailTimeTv.visibility = View.VISIBLE
 
         countDownTimer = object : CountDownTimer(totalTime, 1000) {
             override fun onTick(millisUntilFinished: Long) {
                 val minutes = (millisUntilFinished / 1000) / 60
                 val seconds = (millisUntilFinished / 1000) % 60
-                binding.verifyEmailTimeTv.text = String.format("%02d:%02d", minutes, seconds)
+
+                // UI 스레드에서 강제로 업데이트
+                runOnUiThread {
+                    binding.verifyEmailTimeTv.text = String.format("%02d:%02d", minutes, seconds)
+                }
             }
 
             override fun onFinish() {
-                binding.verifyEmailTimeTv.text = "00:00"
-                Toast.makeText(this@SignupActivity, "인증 시간이 만료되었습니다. 다시 요청하세요.", Toast.LENGTH_SHORT).show()
-                binding.verifyEmailTimeTv.isEnabled = false // 인증 버튼 비활성화
+                runOnUiThread {
+                    binding.verifyEmailTimeTv.text = "00:00"
+                    binding.verifyEmailCheckTv.text = "인증 시간이 만료되었습니다"
+                    binding.verifyEmailBtn.isEnabled = false // 인증 버튼 비활성화
+                }
             }
         }.start()
 
         binding.verifyEmailBtn.isEnabled = true // 타이머 시작 시 인증 버튼 활성화
     }
+
 
     // 비밀번호 체크
     private fun validatePassword() {

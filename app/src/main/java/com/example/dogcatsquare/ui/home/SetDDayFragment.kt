@@ -16,13 +16,25 @@ import android.widget.Toast
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import com.example.dogcatsquare.R
+import com.example.dogcatsquare.data.api.DDayRetrofitItf
+import com.example.dogcatsquare.data.model.home.FetchDDayRequest
+import com.example.dogcatsquare.data.model.home.FetchDDayResponse
+import com.example.dogcatsquare.data.network.RetrofitObj
 import com.example.dogcatsquare.databinding.FragmentSetDDayBinding
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.button.MaterialButton
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
 import java.util.Calendar
 
 class SetDDayFragment : Fragment() {
     lateinit var binding: FragmentSetDDayBinding
+
+    private fun getToken(): String? {
+        val sharedPref = activity?.getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
+        return sharedPref?.getString("token", null)
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -283,7 +295,57 @@ class SetDDayFragment : Fragment() {
         }
     }
 
+    private fun setAddDDayRecyclerView() {
+//        val getAll
+    }
+
     private fun switchToggle() {
         // 알람 설정
+        binding.padsBuyAlarmBtn.setOnCheckedChangeListener { _, isChecked ->
+            if (isChecked) {
+                // 패드 구매 알람 활성화
+                Toast.makeText(requireContext(), "패드 구매 알람이 설정되었습니다.", Toast.LENGTH_SHORT).show()
+            } else {
+                // 패드 구매 알람 비활성화
+                Toast.makeText(requireContext(), "패드 구매 알람이 해제되었습니다.", Toast.LENGTH_SHORT).show()
+            }
+        }
+
+        binding.feedstuffBuyAlarmBtn.setOnCheckedChangeListener { _, isChecked ->
+            if (isChecked) {
+                // 사료 구매 알람 활성화
+                Toast.makeText(requireContext(), "사료 구매 알람이 설정되었습니다.", Toast.LENGTH_SHORT).show()
+            } else {
+                // 사료 구매 알람 비활성화
+                Toast.makeText(requireContext(), "사료 구매 알람이 해제되었습니다.", Toast.LENGTH_SHORT).show()
+            }
+        }
+
+        binding.hospitalAlarmBtn.setOnCheckedChangeListener { _, isChecked ->
+            if (isChecked) {
+                // 병원 방문 알람 활성화
+                Toast.makeText(requireContext(), "병원 방문 알람이 설정되었습니다.", Toast.LENGTH_SHORT).show()
+            } else {
+                // 병원 방문 알람 비활성화
+                Toast.makeText(requireContext(), "병원 방문 알람이 해제되었습니다.", Toast.LENGTH_SHORT).show()
+            }
+        }
     }
+
+    private fun setDDay(id: Int, day: String, term: Int,  isAlarm: Boolean) {
+        val token = getToken()
+
+        val fetchDDayService = RetrofitObj.getRetrofit().create(DDayRetrofitItf::class.java)
+        fetchDDayService.fetchDDay("Bearer $token", id, FetchDDayRequest(day, term, isAlarm)).enqueue(object: Callback<FetchDDayResponse>{
+            override fun onResponse(call: Call<FetchDDayResponse>, response: Response<FetchDDayResponse>) {
+                TODO("Not yet implemented")
+            }
+
+            override fun onFailure(call: Call<FetchDDayResponse>, t: Throwable) {
+                TODO("Not yet implemented")
+            }
+
+        })
+    }
+
 }

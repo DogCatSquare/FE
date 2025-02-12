@@ -144,6 +144,8 @@ class HomeFragment : Fragment() {
         // 클릭 인터페이스
         dDayRVAdapter.setMyItemClickListener(object: HomeDDayRVAdapter.OnItemClickListener {
             override fun onItemClick(d_day: DDay) {
+                // id, title, day, term, isAlarm
+
                 parentFragmentManager.beginTransaction()
                     .replace(R.id.main_frm, SetDDayFragment())
                     .addToBackStack(null)
@@ -172,6 +174,7 @@ class HomeFragment : Fragment() {
                                 day = dday.day,
                                 term  = dday.term,
                                 daysLeft = dday.daysLeft,
+                                isAlarm = dday.isAlarm,
                                 ddayText = dday.ddayText,
                                 ddayImageUrl = dday.ddayImageUrl
                             )

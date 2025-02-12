@@ -13,6 +13,9 @@ data class SignUpResult(
     @SerializedName("email") var email: String,
     @SerializedName("nickname") var nickname: String,
     @SerializedName("phoneNumber") var phoneNumber: String,
+    @SerializedName("doName") var doName: String,
+    @SerializedName("si") var siName: String,
+    @SerializedName("gu") var guName: String,
     @SerializedName("regionId") var regionId: String,
     @SerializedName("profileImageUrl") var profileImageUrl: String?,
     @SerializedName("token") var token: String
