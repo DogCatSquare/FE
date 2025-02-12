@@ -1,9 +1,11 @@
 package com.example.dogcatsquare.data.community
 
+import com.google.gson.annotations.SerializedName
+
 data class PostRequest(
-    val boardId: Int,
+    val boardId: Long,
     val title: String,
     val content: String,
-    val video_URL: String,
-    val created_at: String
+    @SerializedName("videoUrl") val video_URL: String,
+    @SerializedName("createdAt") val created_at: String
 )
