@@ -76,17 +76,10 @@ class MypageFragment : Fragment() {
         // 로그아웃 버튼 클릭
         binding.logoutBtn.setOnClickListener {
             val sharedPref = activity?.getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
-            sharedPref?.edit()?.apply {
-                remove("token")
-                remove("userId")
-                apply()
-            }
+            val editor = sharedPref?.edit()
 
-            val autoLoginPref = activity?.getSharedPreferences("AutoLoginPrefs", Context.MODE_PRIVATE)
-            autoLoginPref?.edit()?.apply {
-                putBoolean("isLoggedIn", false)
-                apply()
-            }
+            editor?.clear()
+            editor?.commit()
 
             val intent = Intent(requireContext(), LoginDetailActivity::class.java)
             intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK

@@ -60,13 +60,13 @@
         android:layout_width="0dp"
         android:layout_height="50dp"
         android:layout_marginTop="50dp"
+        android:backgroundTint="@color/gray3"
         android:ems="10"
-        android:inputType="textEmailAddress"
+        android:fontFamily="@font/pretendard_medium"
         android:hint="이메일"
+        android:inputType="textEmailAddress"
         android:textColorHint="@color/gray3"
         android:textSize="15sp"
-        android:fontFamily="@font/pretendard_medium"
-        android:backgroundTint="@color/gray3"
         app:layout_constraintEnd_toStartOf="@+id/guideline_end"
         app:layout_constraintStart_toStartOf="@+id/guideline_start"
         app:layout_constraintTop_toBottomOf="@+id/imageView16" />
@@ -111,34 +111,17 @@
 
     <com.google.android.material.button.MaterialButton
         android:id="@+id/login_btn"
+        style="@style/CustomMaterialButton4"
         android:layout_width="0dp"
         android:layout_height="50dp"
-        android:layout_marginTop="50dp"
+        android:layout_marginTop="80dp"
         android:insetTop="0dp"
         android:insetBottom="0dp"
         android:text="로그인"
-        style="@style/CustomMaterialButton4"
         app:layout_constraintEnd_toStartOf="@+id/guideline_end"
         app:layout_constraintHorizontal_bias="1.0"
         app:layout_constraintStart_toStartOf="@+id/guideline_start"
         app:layout_constraintTop_toTopOf="@+id/guideline_medium" />
-
-    <Button
-        android:id="@+id/kakao_login_btn"
-        android:layout_width="0dp"
-        android:layout_height="50dp"
-        android:layout_marginTop="5dp"
-        android:backgroundTint="#FEE601"
-        android:fontFamily="@font/pretendard_medium"
-        android:text="카카오톡으로 로그인"
-        android:textColor="@color/black"
-        app:cornerRadius="10dp"
-        android:insetTop="0dp"
-        android:insetBottom="0dp"
-        app:layout_constraintEnd_toStartOf="@+id/guideline_end"
-        app:layout_constraintHorizontal_bias="0.0"
-        app:layout_constraintStart_toStartOf="@id/guideline_start"
-        app:layout_constraintTop_toBottomOf="@+id/login_btn" />
 
     <com.google.android.material.button.MaterialButton
         android:id="@+id/signup_btn"
@@ -149,22 +132,11 @@
         android:insetTop="0dp"
         android:insetBottom="0dp"
         android:text="회원가입"
+        app:layout_constraintVertical_bias="0"
         app:layout_constraintBottom_toTopOf="@+id/guideline_bottom"
         app:layout_constraintEnd_toStartOf="@+id/guideline_end"
         app:layout_constraintStart_toStartOf="@+id/guideline_start"
-        app:layout_constraintTop_toBottomOf="@+id/kakao_login_btn"
-        app:layout_constraintVertical_bias="0" />
-
-    <ImageView
-        android:id="@+id/imageView18"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="10dp"
-        app:layout_constraintBottom_toBottomOf="@+id/kakao_login_btn"
-        app:layout_constraintStart_toStartOf="@+id/guideline_start"
-        app:layout_constraintTop_toTopOf="@+id/kakao_login_btn"
-        app:layout_constraintVertical_bias="0.448"
-        app:srcCompat="@drawable/kakao_img" />
+        app:layout_constraintTop_toBottomOf="@+id/login_btn" />
 
     <TextView
         android:id="@+id/error_tv"
