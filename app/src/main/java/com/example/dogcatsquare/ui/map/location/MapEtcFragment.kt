@@ -390,12 +390,6 @@ class MapEtcFragment : Fragment(), OnMapReadyCallback {
             layoutManager = LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false)
         }
 
-        val mapPriceRVAdapter = MapPriceRVAdapter(priceDatas)
-        binding.mapPriceRV.apply {
-            adapter = mapPriceRVAdapter
-            layoutManager = LinearLayoutManager(context, LinearLayoutManager.VERTICAL, false)
-        }
-
         binding.reviewPlus.setOnClickListener {
             val mapReviewFragment = MapReviewFragment()
             requireActivity().supportFragmentManager.beginTransaction()

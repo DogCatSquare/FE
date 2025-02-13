@@ -1,6 +1,7 @@
 package com.example.dogcatsquare
 
 import android.os.Bundle
+import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import com.example.dogcatsquare.databinding.ActivityMainBinding
@@ -12,6 +13,7 @@ import com.example.dogcatsquare.ui.wish.WishFragment
 
 class MainActivity : AppCompatActivity() {
     lateinit var binding: ActivityMainBinding
+    private val locationViewModel: LocationViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

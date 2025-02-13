@@ -4,6 +4,7 @@ import android.Manifest
 import android.content.Context
 import android.content.pm.PackageManager
 import android.os.Bundle
+import android.os.Looper
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -28,8 +29,19 @@ import com.naver.maps.map.NaverMap
 import com.naver.maps.map.OnMapReadyCallback
 import com.naver.maps.map.util.FusedLocationSource
 import android.widget.Toast
+import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope
+import com.example.dogcatsquare.LocationViewModel
 import com.example.dogcatsquare.data.map.SearchPlacesRequest
+import com.google.android.gms.location.LocationCallback
+import com.google.android.gms.location.LocationRequest
+import com.google.android.gms.location.LocationResult
+import com.google.android.gms.location.LocationServices
+import com.naver.maps.geometry.LatLng
+import com.naver.maps.map.CameraAnimation
+import com.naver.maps.map.CameraUpdate
+import com.naver.maps.map.overlay.Marker
+import com.naver.maps.map.overlay.OverlayImage
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
@@ -37,6 +49,8 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import retrofit2.HttpException
 import java.io.IOException
+import java.util.concurrent.TimeUnit
+
 
 class MapFragment : Fragment(), OnMapReadyCallback {
     private var _binding: FragmentMapBinding? = null
@@ -47,6 +61,7 @@ class MapFragment : Fragment(), OnMapReadyCallback {
     private val buttonDatas by lazy { ArrayList<MapButton>() }
     private val originalPlaceDatas = ArrayList<MapPlace>()  // 원본 데이터 저장용
     private val placeDatas by lazy { ArrayList<MapPlace>() }
+    private val markers = mutableListOf<Marker>()
 
     // 위치 관련 변수
     private lateinit var locationSource: FusedLocationSource
@@ -56,9 +71,14 @@ class MapFragment : Fragment(), OnMapReadyCallback {
     private lateinit var sortTextView: TextView
     private var currentSortType = "주소기준"
 
+    private var currentLocation: LatLng? = null
+    private lateinit var locationCallback: LocationCallback
+    private val locationViewModel: LocationViewModel by activityViewModels()
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         locationSource = FusedLocationSource(this, LOCATION_PERMISSION_REQUEST_CODE)
+        setupLocationCallback()
     }
 
     override fun onCreateView(
@@ -108,6 +128,58 @@ class MapFragment : Fragment(), OnMapReadyCallback {
         }
     }
 
+    private fun setupLocationCallback() {
+        locationCallback = object : LocationCallback() {
+            override fun onLocationResult(locationResult: LocationResult) {
+                locationResult.lastLocation?.let { location ->
+                    val newLocation = LatLng(location.latitude, location.longitude)
+                    currentLocation = newLocation
+                    // ViewModel을 통해 위치 정보 공유
+                    locationViewModel.updateLocation(newLocation)
+                }
+            }
+        }
+    }
+
+    private fun startLocationUpdates() {
+        if (!hasLocationPermission()) {
+            requestLocationPermission()
+            return
+        }
+
+        try {
+            val locationRequest = LocationRequest.create().apply {
+                priority = LocationRequest.PRIORITY_HIGH_ACCURACY
+                interval = TimeUnit.SECONDS.toMillis(10) // 10초마다 업데이트
+                fastestInterval = TimeUnit.SECONDS.toMillis(5)
+            }
+
+            val fusedLocationClient = LocationServices.getFusedLocationProviderClient(requireActivity())
+            fusedLocationClient.requestLocationUpdates(
+                locationRequest,
+                locationCallback,
+                Looper.getMainLooper()
+            )
+
+            // 최초 위치 가져오기
+            fusedLocationClient.lastLocation.addOnSuccessListener { location ->
+                location?.let {
+                    currentLocation = LatLng(it.latitude, it.longitude)
+                    // 초기 위치로 지도 이동
+                    if (::naverMap.isInitialized) {
+                        naverMap.moveCamera(
+                            CameraUpdate.scrollTo(currentLocation!!)
+                                .animate(CameraAnimation.Easing)
+                        )
+                    }
+                }
+            }
+        } catch (e: SecurityException) {
+            Log.e("MapFragment", "위치 권한이 없습니다.", e)
+            Toast.makeText(requireContext(), "위치 권한이 필요합니다.", Toast.LENGTH_SHORT).show()
+        }
+    }
+
     private fun showSearchOptions() {
         val bottomSheetDialog = BottomSheetDialog(requireContext())
         val bottomSheetView = layoutInflater.inflate(R.layout.bottom_sheet_search_option, null)
@@ -128,22 +200,18 @@ class MapFragment : Fragment(), OnMapReadyCallback {
     override fun onMapReady(map: NaverMap) {
         naverMap = map
 
-        // 위치 소스 지정
         naverMap.locationSource = locationSource
-
-        // 현재 위치 버튼 활성화
         naverMap.uiSettings.isLocationButtonEnabled = true
 
-        // 위치 추적 모드 설정
-        naverMap.locationTrackingMode = LocationTrackingMode.Follow
-
-        // 위치 권한 확인
+        // 위치 권한 확인 및 위치 업데이트 시작
         if (hasLocationPermission()) {
             enableCurrentLocation()
+            startLocationUpdates()
         } else {
             requestLocationPermission()
         }
 
+        // 초기 장소 검색 수행 (선택적)
         lifecycleScope.launch {
             loadAllCategories()
         }
@@ -180,13 +248,12 @@ class MapFragment : Fragment(), OnMapReadyCallback {
         permissions: Array<String>,
         grantResults: IntArray
     ) {
-        if (locationSource.onRequestPermissionsResult(
-                requestCode, permissions, grantResults
-            )) {
-            if (!locationSource.isActivated) {
-                naverMap.locationTrackingMode = LocationTrackingMode.None
-            } else {
+        if (locationSource.onRequestPermissionsResult(requestCode, permissions, grantResults)) {
+            if (locationSource.isActivated) {
+                startLocationUpdates()
                 naverMap.locationTrackingMode = LocationTrackingMode.Follow
+            } else {
+                naverMap.locationTrackingMode = LocationTrackingMode.None
             }
             return
         }
@@ -310,7 +377,14 @@ class MapFragment : Fragment(), OnMapReadyCallback {
                             .commit()
                     }
                     "산책로" -> {
-                        val fragment = WalkingStartViewFragment()
+                        val (currentLat, currentLng) = getMapCurrentPosition()
+                        val fragment = WalkingStartViewFragment().apply {
+                            arguments = Bundle().apply {
+                                putInt("placeId", place.id)
+                                putDouble("latitude", currentLat)
+                                putDouble("longitude", currentLng) // 이건 필요한 정보들에 따라 수정
+                            }
+                        }
                         requireActivity().supportFragmentManager.beginTransaction()
                             .setCustomAnimations(
                                 R.anim.slide_in_right,
@@ -318,7 +392,7 @@ class MapFragment : Fragment(), OnMapReadyCallback {
                                 R.anim.slide_in_left,
                                 R.anim.slide_out_right
                             )
-                            .hide(this@MapFragment)  // 현재 Fragment 숨기기
+                            .hide(this@MapFragment)
                             .add(R.id.main_frm, fragment)
                             .addToBackStack(null)
                             .commit()
@@ -375,94 +449,6 @@ class MapFragment : Fragment(), OnMapReadyCallback {
             ?.getInt("city_id", -1) ?: -1
     }
 
-    private fun loadPlaces(keyword: String = "") {
-        val token = getToken()
-        if (token == null) {
-            Toast.makeText(requireContext(), "로그인이 필요합니다.", Toast.LENGTH_SHORT).show()
-            return
-        }
-
-        if (!::naverMap.isInitialized) {
-            Log.d("MapFragment", "지도가 아직 초기화되지 않았습니다.")
-            return
-        }
-
-        val cityId = 1 // cityId 가져오기
-        if (cityId == -1) {
-            Toast.makeText(requireContext(), "도시 정보가 필요합니다.", Toast.LENGTH_SHORT).show()
-            return
-        }
-
-        lifecycleScope.launch {
-            try {
-                val mapCenter = naverMap.cameraPosition.target
-
-                val searchRequest = SearchPlacesRequest(
-                    latitude = mapCenter.latitude,
-                    longitude = mapCenter.longitude
-                )
-
-                val response = withContext(Dispatchers.IO) {
-                    RetrofitClient.placesApiService.searchPlaces(
-                        token = "Bearer $token",
-                        cityId = cityId,
-                        keyword = keyword,
-                        request = searchRequest
-                    )
-                }
-
-                when {
-                    response.isSuccess -> {
-                        // 성공 처리 로직
-                        val pageResponse = response.result
-                        val mapPlaces = pageResponse?.content?.map { place ->
-                            MapPlace(
-                                id = place.id,
-                                placeName = place.name,
-                                placeType = convertCategory(place.category),
-                                placeDistance = "${String.format("%.2f", place.distance)}km",
-                                placeLocation = place.address,
-                                placeCall = place.phoneNumber,
-                                isOpen = if (place.open) "영업중" else "영업종료",
-                                placeImgUrl = place.imgUrl
-                            )
-                        } ?: emptyList()
-
-                        withContext(Dispatchers.Main) {
-//                            originalPlaceDatas.clear()
-                            originalPlaceDatas.addAll(mapPlaces)
-
-//                            placeDatas.clear()
-                            placeDatas.addAll(mapPlaces)
-                            binding.mapPlaceRV.adapter?.notifyDataSetChanged()
-
-                            val totalElements = pageResponse?.totalElements ?: 0
-                            val currentPage = pageResponse?.number?.plus(1) ?: 0
-                            val totalPages = pageResponse?.totalPages ?: 0
-
-                            Toast.makeText(
-                                requireContext(),
-                                "총 ${mapPlaces.size}개의 장소를 불러왔습니다.",
-                                Toast.LENGTH_SHORT
-                            ).show()
-                        }
-                    }
-                    else -> {
-                        withContext(Dispatchers.Main) {
-                            Toast.makeText(
-                                requireContext(),
-                                response.message ?: "데이터를 불러오는데 실패했습니다.",
-                                Toast.LENGTH_SHORT
-                            ).show()
-                        }
-                    }
-                }
-            } catch (e: Exception) {
-                handleError(e)
-            }
-        }
-    }
-
     private suspend fun loadAllCategories() {
         val token = getToken()
         if (token == null) {
@@ -476,15 +462,17 @@ class MapFragment : Fragment(), OnMapReadyCallback {
         }
 
         val cityId = 1
+//        val cityId = getCityId()
         if (cityId == -1) {
             Toast.makeText(requireContext(), "도시 정보가 필요합니다.", Toast.LENGTH_SHORT).show()
             return
         }
 
-        val mapCenter = naverMap.cameraPosition.target
+        // 사용자의 실제 위치 사용
+        val userLocation = currentLocation ?: naverMap.cameraPosition.target
         val searchRequest = SearchPlacesRequest(
-            latitude = mapCenter.latitude,
-            longitude = mapCenter.longitude
+            latitude = userLocation.latitude,
+            longitude = userLocation.longitude
         )
 
         val categories = listOf(" ", "PARK", "CAFE", "RESTAURANT", "HOTEL")
@@ -525,7 +513,9 @@ class MapFragment : Fragment(), OnMapReadyCallback {
                                     placeCall = place.phoneNumber,
                                     isOpen = if (place.open) "영업중" else "영업종료",
                                     placeImgUrl = place.imgUrl,
-                                    reviewCount = place.reviewCount
+                                    reviewCount = place.reviewCount,
+                                    latitude = place.latitude,
+                                    longitude = place.longitude
                                 )
                             }?.let { allPlaces.addAll(it) }
                         }
@@ -534,12 +524,18 @@ class MapFragment : Fragment(), OnMapReadyCallback {
 
             // UI 업데이트는 한 번만 수행
             withContext(Dispatchers.Main) {
+                clearMarkers()
+
 //                originalPlaceDatas.clear()
                 originalPlaceDatas.addAll(allPlaces)
 
 //                placeDatas.clear()
                 placeDatas.addAll(allPlaces)
                 binding.mapPlaceRV.adapter?.notifyDataSetChanged()
+
+                allPlaces.forEach { place ->
+                    createMarker(place)
+                }
 
                 Toast.makeText(
                     requireContext(),
@@ -549,6 +545,59 @@ class MapFragment : Fragment(), OnMapReadyCallback {
             }
         } catch (e: Exception) {
             handleError(e)
+        }
+    }
+
+    // 카테고리별 마커 아이콘 설정
+    private fun getMarkerIconForCategory(placeType: String?): Int {
+        return when (placeType) {
+            "동물병원" -> R.drawable.ic_marker// 병원 마커 아이콘
+            "산책로" -> R.drawable.ic_marker // 공원 마커 아이콘
+            "카페" -> R.drawable.ic_marker // 카페 마커 아이콘
+            "식당" -> R.drawable.ic_marker // 식당 마커 아이콘
+            "호텔" -> R.drawable.ic_marker // 호텔 마커 아이콘
+            else -> R.drawable.ic_marker // 기본 마커 아이콘
+        }
+    }
+
+    // 마커 생성 함수
+    private fun createMarker(place: MapPlace) {
+        val marker = Marker().apply {
+            position = LatLng(place.latitude ?: 0.0, place.longitude ?: 0.0)
+            map = naverMap
+
+            // 마커 아이콘 설정
+            icon = OverlayImage.fromResource(getMarkerIconForCategory(place.placeType))
+
+            // 마커 크기 설정
+            width = 50
+            height = 50
+
+            // 마커 클릭 이벤트
+            setOnClickListener { overlay ->
+                // 마커 클릭시 해당 장소 정보를 보여주는 로직
+                showPlaceInfo(place)
+                true
+            }
+        }
+        markers.add(marker)
+    }
+
+    // 모든 마커 제거
+    private fun clearMarkers() {
+        markers.forEach { it.map = null }
+        markers.clear()
+    }
+
+    // 장소 정보 표시
+    private fun showPlaceInfo(place: MapPlace) {
+        // BottomSheet를 확장하고 해당 장소 정보를 표시
+        bottomSheetBehavior.state = BottomSheetBehavior.STATE_EXPANDED
+
+        // RecyclerView에서 해당 아이템으로 스크롤
+        val position = placeDatas.indexOf(place)
+        if (position != -1) {
+            binding.mapPlaceRV.scrollToPosition(position)
         }
     }
 
@@ -662,8 +711,13 @@ class MapFragment : Fragment(), OnMapReadyCallback {
         return Pair(37.5665, 126.9780) // 서울 시청 기본값
     }
 
+
+
     override fun onDestroyView() {
         super.onDestroyView()
+        // 위치 업데이트 중지
+        LocationServices.getFusedLocationProviderClient(requireActivity())
+            .removeLocationUpdates(locationCallback)
         _binding = null
     }
 

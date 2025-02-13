@@ -126,7 +126,7 @@
                 app:layout_constraintStart_toStartOf="@id/guideline1"
                 app:layout_constraintTop_toBottomOf="@id/time_distance_layout" />
 
-            <ImageButton
+            <androidx.appcompat.widget.AppCompatImageButton
                 android:id="@+id/addImg_bt"
                 android:layout_width="86dp"
                 android:layout_height="86dp"
@@ -135,6 +135,18 @@
                 app:layout_constraintBottom_toTopOf="@id/Completion_bt"
                 app:layout_constraintStart_toStartOf="@id/guideline1"
                 app:layout_constraintTop_toBottomOf="@id/introduction_tv" />
+
+            <ImageView
+                android:id="@+id/addedImageView"
+                android:layout_width="86dp"
+                android:layout_height="86dp"
+                android:layout_marginStart="12dp"
+                android:layout_marginBottom="11dp"
+                android:src="@drawable/dog_sample"
+                app:layout_constraintBottom_toTopOf="@id/Completion_bt"
+                app:layout_constraintStart_toEndOf="@id/addImg_bt"
+                app:layout_constraintTop_toBottomOf="@id/introduction_tv"
+                app:layout_constraintVertical_bias="0.733" />
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/Completion_bt"

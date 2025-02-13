@@ -14,8 +14,10 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.viewpager2.widget.ViewPager2
+import com.example.dogcatsquare.LocationViewModel
 import com.example.dogcatsquare.data.map.MapPlace
 import com.example.dogcatsquare.R
 import com.example.dogcatsquare.data.api.DDayRetrofitItf
@@ -39,6 +41,8 @@ import com.example.dogcatsquare.ui.map.location.MapDetailFragment
 import com.example.dogcatsquare.ui.map.location.MapEtcFragment
 import com.example.dogcatsquare.ui.mypage.HorizontalSpacingItemDecoration
 import com.google.android.gms.location.LocationServices
+import com.google.gson.annotations.SerializedName
+import com.naver.maps.geometry.LatLng
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -56,6 +60,9 @@ class HomeFragment : Fragment() {
     private var hotPostDatas = ArrayList<Post>()
     private var eventDatas = ArrayList<Event>()
 
+    private val locationViewModel: LocationViewModel by activityViewModels()
+    private var currentLocation: LatLng? = null
+
     private fun getToken(): String? {
         val sharedPref = activity?.getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
         return sharedPref?.getString("token", null)
@@ -70,6 +77,9 @@ class HomeFragment : Fragment() {
 
         // 상단바 색깔
         requireActivity().window.statusBarColor = ContextCompat.getColor(requireContext(), R.color.light_blue)
+
+        // 위치 정보 관찰 설정
+        setupLocationObserver()
 
         fetchWeatherData()
         setupDDayRecyclerView()
@@ -474,4 +484,5 @@ class HomeFragment : Fragment() {
             null // 위치 정보가 없는 경우
         }
     }
+
 }
