@@ -362,6 +362,12 @@ class MapFragment : Fragment(), OnMapReadyCallback {
                     adapter.updateList(filtered)
                     Log.d("MapFragment", "어댑터 업데이트 완료")
                 }
+
+                // 마커 업데이트
+                clearMarkers() // 기존 마커 모두 제거
+                filtered.forEach { place -> // 필터링된 장소들에 대해서만 마커 생성
+                    createMarker(place)
+                }
             }
         })
 
