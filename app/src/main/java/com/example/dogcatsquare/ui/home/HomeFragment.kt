@@ -79,8 +79,6 @@ class HomeFragment : Fragment() {
         requireActivity().window.statusBarColor = ContextCompat.getColor(requireContext(), R.color.light_blue)
 
         // 위치 정보 관찰 설정
-        setupLocationObserver()
-
         fetchWeatherData()
         setupDDayRecyclerView()
         setupHotPlaceRecyclerView()

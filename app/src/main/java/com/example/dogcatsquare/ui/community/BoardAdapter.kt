@@ -4,12 +4,14 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
+import androidx.recyclerview.widget.DiffUtil
+import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.example.dogcatsquare.R
 import com.example.dogcatsquare.data.community.BoardItem
 
-class BoardAdapter(private var boardList: List<BoardItem>) :
-    RecyclerView.Adapter<BoardAdapter.BoardViewHolder>() {
+class BoardAdapter(emptyList: List<Any>) :
+    ListAdapter<BoardItem, BoardAdapter.BoardViewHolder>(BoardDiffCallback()) {
 
     class BoardViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         val boardName: TextView = view.findViewById(R.id.tvBoardName)
@@ -23,15 +25,18 @@ class BoardAdapter(private var boardList: List<BoardItem>) :
     }
 
     override fun onBindViewHolder(holder: BoardViewHolder, position: Int) {
-        val board = boardList[position]
+        val board = getItem(position)
         holder.boardName.text = board.boardName
         holder.boardContent.text = board.content
     }
 
-    override fun getItemCount(): Int = boardList.size
+    class BoardDiffCallback : DiffUtil.ItemCallback<BoardItem>() {
+        override fun areItemsTheSame(oldItem: BoardItem, newItem: BoardItem): Boolean {
+            return oldItem.id == newItem.id
+        }
 
-    fun updateData(newList: List<BoardItem>) {
-        boardList = newList
-        notifyDataSetChanged()
+        override fun areContentsTheSame(oldItem: BoardItem, newItem: BoardItem): Boolean {
+            return oldItem == newItem
+        }
     }
 }
