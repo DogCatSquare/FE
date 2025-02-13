@@ -10,5 +10,8 @@ data class LoginResponseResult(
     var token: String,
     var email: String,
     var nickname: String,
-    var userId: Int
+    var userId: Int,
+    var city: String,
+    var cityId: Long,
+    var districtId: Long
 )

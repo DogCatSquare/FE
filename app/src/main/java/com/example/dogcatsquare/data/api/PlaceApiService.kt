@@ -38,5 +38,5 @@ interface PlacesApiService {
     ): BaseResponse<Boolean>
 
     @POST("api/places/hot/{cityId}")
-    fun getHotPlace(@Header("Authorization") token: String, @Path("cityId") cityId: Int, @Body hotPlaceRequest: GetHotPlaceRequest): Call<GetHotPlaceResponse>
+    fun getHotPlace(@Header("Authorization") token: String, @Path("cityId") cityId: Long?, @Body hotPlaceRequest: GetHotPlaceRequest): Call<GetHotPlaceResponse>
 }

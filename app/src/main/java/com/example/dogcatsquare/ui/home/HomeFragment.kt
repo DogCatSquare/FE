@@ -1,7 +1,6 @@
 package com.example.dogcatsquare.ui.home
 
 import PostApiService
-import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
@@ -14,11 +13,8 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.activityViewModels
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.viewpager2.widget.ViewPager2
-import com.example.dogcatsquare.LocationViewModel
-import com.example.dogcatsquare.data.map.MapPlace
 import com.example.dogcatsquare.R
 import com.example.dogcatsquare.data.api.DDayRetrofitItf
 import com.example.dogcatsquare.data.api.EventRetrofitItf
@@ -37,12 +33,10 @@ import com.example.dogcatsquare.data.network.RetrofitObj
 import com.example.dogcatsquare.data.model.post.PopularPostResponse
 import com.example.dogcatsquare.data.model.post.Post
 import com.example.dogcatsquare.databinding.FragmentHomeBinding
+import com.example.dogcatsquare.ui.community.PostDetailActivity
 import com.example.dogcatsquare.ui.map.location.MapDetailFragment
 import com.example.dogcatsquare.ui.map.location.MapEtcFragment
 import com.example.dogcatsquare.ui.mypage.HorizontalSpacingItemDecoration
-import com.google.android.gms.location.LocationServices
-import com.google.gson.annotations.SerializedName
-import com.naver.maps.geometry.LatLng
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -60,12 +54,14 @@ class HomeFragment : Fragment() {
     private var hotPostDatas = ArrayList<Post>()
     private var eventDatas = ArrayList<Event>()
 
-    private val locationViewModel: LocationViewModel by activityViewModels()
-    private var currentLocation: LatLng? = null
-
     private fun getToken(): String? {
         val sharedPref = activity?.getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
         return sharedPref?.getString("token", null)
+    }
+
+    private fun getCityId(): Long? {
+        val sharedPref = activity?.getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
+        return sharedPref?.getLong("cityId", 0)
     }
 
     override fun onCreateView(
@@ -78,7 +74,6 @@ class HomeFragment : Fragment() {
         // 상단바 색깔
         requireActivity().window.statusBarColor = ContextCompat.getColor(requireContext(), R.color.light_blue)
 
-        // 위치 정보 관찰 설정
         fetchWeatherData()
         setupDDayRecyclerView()
         setupHotPlaceRecyclerView()
@@ -293,11 +288,12 @@ class HomeFragment : Fragment() {
 
     private fun getHotPlace(adapter: HomeHotPlaceRVAdapter) {
         val token = getToken()
+        val cityId = getCityId()
         val savedLocation = getSavedLocation()
 
         val getPopularPlaceService = RetrofitObj.getRetrofit().create(PlacesApiService::class.java)
         if (savedLocation != null) {
-            getPopularPlaceService.getHotPlace("Bearer $token", 1, GetHotPlaceRequest(savedLocation.first, savedLocation.second)).enqueue(object : Callback<GetHotPlaceResponse> {
+            getPopularPlaceService.getHotPlace("Bearer $token", cityId, GetHotPlaceRequest(savedLocation.first, savedLocation.second)).enqueue(object : Callback<GetHotPlaceResponse> {
                 override fun onResponse(call: Call<GetHotPlaceResponse>, response: Response<GetHotPlaceResponse>) {
                     Log.d("GetHotPlace/SUCCESS", response.toString())
                     val resp: GetHotPlaceResponse = response.body()!!
@@ -362,6 +358,16 @@ class HomeFragment : Fragment() {
         val homeHotPostRVAdapter = HomeHotPostRVAdapter(hotPostDatas)
         binding.homeHotPostRv.adapter = homeHotPostRVAdapter
         binding.homeHotPostRv.layoutManager = LinearLayoutManager(context, LinearLayoutManager.VERTICAL, false)
+
+        // 클릭 인터페이스
+        homeHotPostRVAdapter.setMyItemClickListener(object : HomeHotPostRVAdapter.OnItemClickListener {
+            override fun onItemClick(post: Post) {
+                val intent = Intent(requireContext(), PostDetailActivity::class.java).apply {
+                    putExtra("postId", post.id)
+                }
+                startActivity(intent)
+            }
+        })
 
         getPopularPost(homeHotPostRVAdapter)
     }
