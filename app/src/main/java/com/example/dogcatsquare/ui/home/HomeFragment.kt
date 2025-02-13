@@ -13,8 +13,10 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.viewpager2.widget.ViewPager2
+import com.example.dogcatsquare.LocationViewModel
 import com.example.dogcatsquare.data.map.MapPlace
 import com.example.dogcatsquare.R
 import com.example.dogcatsquare.data.api.DDayRetrofitItf
@@ -37,6 +39,7 @@ import com.example.dogcatsquare.ui.map.location.MapDetailFragment
 import com.example.dogcatsquare.ui.map.location.MapEtcFragment
 import com.example.dogcatsquare.ui.mypage.HorizontalSpacingItemDecoration
 import com.google.gson.annotations.SerializedName
+import com.naver.maps.geometry.LatLng
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -55,6 +58,9 @@ class HomeFragment : Fragment() {
     private var hotPostDatas = ArrayList<Post>()
     private var eventDatas = ArrayList<Event>()
 
+    private val locationViewModel: LocationViewModel by activityViewModels()
+    private var currentLocation: LatLng? = null
+
     private fun getToken(): String? {
         val sharedPref = activity?.getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
         return sharedPref?.getString("token", null)
@@ -69,6 +75,9 @@ class HomeFragment : Fragment() {
 
         // 상단바 색깔
         requireActivity().window.statusBarColor = ContextCompat.getColor(requireContext(), R.color.light_blue)
+
+        // 위치 정보 관찰 설정
+        setupLocationObserver()
 
         fetchWeatherData()
         setupDDayRecyclerView()
@@ -477,5 +486,31 @@ class HomeFragment : Fragment() {
                 Log.d("RETROFIT/FAILURE", t.message.toString())
             }
         })
+    }
+
+    private fun setupLocationObserver() {
+        locationViewModel.currentLocation.observe(viewLifecycleOwner) { location ->
+            currentLocation = location
+            Log.d("HomeFragment", "위치 업데이트 - 위도: ${location.latitude}, 경도: ${location.longitude}")
+
+            // 위치 정보가 업데이트될 때마다 필요한 작업 수행
+            updateHomeWithLocation(location)
+        }
+    }
+
+    private fun updateHomeWithLocation(location: LatLng) {
+        // 현재는 로그만 출력
+        Log.d("HomeFragment", "위치 기반 업데이트 - 위도: ${location.latitude}, 경도: ${location.longitude}")
+
+        // 추후 이 위치에서 실제 기능 구현
+        // 1. 날씨 업데이트
+        // 2. 주변 장소 검색
+        // 3. 기타 위치 기반 서비스 구현
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        // 메모리 누수 방지를 위해 Observer 제거
+        locationViewModel.currentLocation.removeObservers(viewLifecycleOwner)
     }
 }

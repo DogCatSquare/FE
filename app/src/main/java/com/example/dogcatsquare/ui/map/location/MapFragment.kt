@@ -4,6 +4,7 @@ import android.Manifest
 import android.content.Context
 import android.content.pm.PackageManager
 import android.os.Bundle
+import android.os.Looper
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -28,9 +29,17 @@ import com.naver.maps.map.NaverMap
 import com.naver.maps.map.OnMapReadyCallback
 import com.naver.maps.map.util.FusedLocationSource
 import android.widget.Toast
+import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope
+import com.example.dogcatsquare.LocationViewModel
 import com.example.dogcatsquare.data.map.SearchPlacesRequest
+import com.google.android.gms.location.LocationCallback
+import com.google.android.gms.location.LocationRequest
+import com.google.android.gms.location.LocationResult
+import com.google.android.gms.location.LocationServices
 import com.naver.maps.geometry.LatLng
+import com.naver.maps.map.CameraAnimation
+import com.naver.maps.map.CameraUpdate
 import com.naver.maps.map.overlay.Marker
 import com.naver.maps.map.overlay.OverlayImage
 import kotlinx.coroutines.Dispatchers
@@ -40,6 +49,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import retrofit2.HttpException
 import java.io.IOException
+import java.util.concurrent.TimeUnit
 
 
 class MapFragment : Fragment(), OnMapReadyCallback {
@@ -61,9 +71,14 @@ class MapFragment : Fragment(), OnMapReadyCallback {
     private lateinit var sortTextView: TextView
     private var currentSortType = "주소기준"
 
+    private var currentLocation: LatLng? = null
+    private lateinit var locationCallback: LocationCallback
+    private val locationViewModel: LocationViewModel by activityViewModels()
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         locationSource = FusedLocationSource(this, LOCATION_PERMISSION_REQUEST_CODE)
+        setupLocationCallback()
     }
 
     override fun onCreateView(
@@ -113,6 +128,58 @@ class MapFragment : Fragment(), OnMapReadyCallback {
         }
     }
 
+    private fun setupLocationCallback() {
+        locationCallback = object : LocationCallback() {
+            override fun onLocationResult(locationResult: LocationResult) {
+                locationResult.lastLocation?.let { location ->
+                    val newLocation = LatLng(location.latitude, location.longitude)
+                    currentLocation = newLocation
+                    // ViewModel을 통해 위치 정보 공유
+                    locationViewModel.updateLocation(newLocation)
+                }
+            }
+        }
+    }
+
+    private fun startLocationUpdates() {
+        if (!hasLocationPermission()) {
+            requestLocationPermission()
+            return
+        }
+
+        try {
+            val locationRequest = LocationRequest.create().apply {
+                priority = LocationRequest.PRIORITY_HIGH_ACCURACY
+                interval = TimeUnit.SECONDS.toMillis(10) // 10초마다 업데이트
+                fastestInterval = TimeUnit.SECONDS.toMillis(5)
+            }
+
+            val fusedLocationClient = LocationServices.getFusedLocationProviderClient(requireActivity())
+            fusedLocationClient.requestLocationUpdates(
+                locationRequest,
+                locationCallback,
+                Looper.getMainLooper()
+            )
+
+            // 최초 위치 가져오기
+            fusedLocationClient.lastLocation.addOnSuccessListener { location ->
+                location?.let {
+                    currentLocation = LatLng(it.latitude, it.longitude)
+                    // 초기 위치로 지도 이동
+                    if (::naverMap.isInitialized) {
+                        naverMap.moveCamera(
+                            CameraUpdate.scrollTo(currentLocation!!)
+                                .animate(CameraAnimation.Easing)
+                        )
+                    }
+                }
+            }
+        } catch (e: SecurityException) {
+            Log.e("MapFragment", "위치 권한이 없습니다.", e)
+            Toast.makeText(requireContext(), "위치 권한이 필요합니다.", Toast.LENGTH_SHORT).show()
+        }
+    }
+
     private fun showSearchOptions() {
         val bottomSheetDialog = BottomSheetDialog(requireContext())
         val bottomSheetView = layoutInflater.inflate(R.layout.bottom_sheet_search_option, null)
@@ -133,22 +200,18 @@ class MapFragment : Fragment(), OnMapReadyCallback {
     override fun onMapReady(map: NaverMap) {
         naverMap = map
 
-        // 위치 소스 지정
         naverMap.locationSource = locationSource
-
-        // 현재 위치 버튼 활성화
         naverMap.uiSettings.isLocationButtonEnabled = true
 
-        // 위치 추적 모드 설정
-        naverMap.locationTrackingMode = LocationTrackingMode.Follow
-
-        // 위치 권한 확인
+        // 위치 권한 확인 및 위치 업데이트 시작
         if (hasLocationPermission()) {
             enableCurrentLocation()
+            startLocationUpdates()
         } else {
             requestLocationPermission()
         }
 
+        // 초기 장소 검색 수행 (선택적)
         lifecycleScope.launch {
             loadAllCategories()
         }
@@ -185,13 +248,12 @@ class MapFragment : Fragment(), OnMapReadyCallback {
         permissions: Array<String>,
         grantResults: IntArray
     ) {
-        if (locationSource.onRequestPermissionsResult(
-                requestCode, permissions, grantResults
-            )) {
-            if (!locationSource.isActivated) {
-                naverMap.locationTrackingMode = LocationTrackingMode.None
-            } else {
+        if (locationSource.onRequestPermissionsResult(requestCode, permissions, grantResults)) {
+            if (locationSource.isActivated) {
+                startLocationUpdates()
                 naverMap.locationTrackingMode = LocationTrackingMode.Follow
+            } else {
+                naverMap.locationTrackingMode = LocationTrackingMode.None
             }
             return
         }
@@ -400,15 +462,17 @@ class MapFragment : Fragment(), OnMapReadyCallback {
         }
 
         val cityId = 1
+//        val cityId = getCityId()
         if (cityId == -1) {
             Toast.makeText(requireContext(), "도시 정보가 필요합니다.", Toast.LENGTH_SHORT).show()
             return
         }
 
-        val mapCenter = naverMap.cameraPosition.target
+        // 사용자의 실제 위치 사용
+        val userLocation = currentLocation ?: naverMap.cameraPosition.target
         val searchRequest = SearchPlacesRequest(
-            latitude = mapCenter.latitude,
-            longitude = mapCenter.longitude
+            latitude = userLocation.latitude,
+            longitude = userLocation.longitude
         )
 
         val categories = listOf(" ", "PARK", "CAFE", "RESTAURANT", "HOTEL")
@@ -645,8 +709,13 @@ class MapFragment : Fragment(), OnMapReadyCallback {
         return Pair(37.5665, 126.9780) // 서울 시청 기본값
     }
 
+
+
     override fun onDestroyView() {
         super.onDestroyView()
+        // 위치 업데이트 중지
+        LocationServices.getFusedLocationProviderClient(requireActivity())
+            .removeLocationUpdates(locationCallback)
         _binding = null
     }
 }
