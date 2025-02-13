@@ -37,6 +37,7 @@ import com.example.dogcatsquare.data.network.RetrofitObj
 import com.example.dogcatsquare.data.model.post.PopularPostResponse
 import com.example.dogcatsquare.data.model.post.Post
 import com.example.dogcatsquare.databinding.FragmentHomeBinding
+import com.example.dogcatsquare.ui.community.PostDetailActivity
 import com.example.dogcatsquare.ui.map.location.MapDetailFragment
 import com.example.dogcatsquare.ui.map.location.MapEtcFragment
 import com.example.dogcatsquare.ui.mypage.HorizontalSpacingItemDecoration
@@ -77,9 +78,6 @@ class HomeFragment : Fragment() {
 
         // 상단바 색깔
         requireActivity().window.statusBarColor = ContextCompat.getColor(requireContext(), R.color.light_blue)
-
-        // 위치 정보 관찰 설정
-        setupLocationObserver()
 
         fetchWeatherData()
         setupDDayRecyclerView()
@@ -364,6 +362,16 @@ class HomeFragment : Fragment() {
         val homeHotPostRVAdapter = HomeHotPostRVAdapter(hotPostDatas)
         binding.homeHotPostRv.adapter = homeHotPostRVAdapter
         binding.homeHotPostRv.layoutManager = LinearLayoutManager(context, LinearLayoutManager.VERTICAL, false)
+
+        // 클릭 인터페이스
+        homeHotPostRVAdapter.setMyItemClickListener(object : HomeHotPostRVAdapter.OnItemClickListener {
+            override fun onItemClick(post: Post) {
+                val intent = Intent(requireContext(), PostDetailActivity::class.java).apply {
+                    putExtra("postId", post.id)
+                }
+                startActivity(intent)
+            }
+        })
 
         getPopularPost(homeHotPostRVAdapter)
     }

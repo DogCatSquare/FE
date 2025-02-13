@@ -12,6 +12,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.dogcatsquare.R
 import com.example.dogcatsquare.data.community.PostDetailResponse
 import com.example.dogcatsquare.data.network.RetrofitObj
+import com.example.dogcatsquare.ui.map.location.MapEtcFragment
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -28,6 +29,8 @@ class PostDetailActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_post_detail)
+
+        val postId: Int = intent.getIntExtra("postId", -1)
 
         // 뷰 초기화
         val ivBack = findViewById<ImageView>(R.id.ivBack)
@@ -60,9 +63,8 @@ class PostDetailActivity : AppCompatActivity() {
         }
 
         // 전달받은 postId 확인
-        val postId = intent.getLongExtra("postId", -1L)
         Log.d("PostDetailActivity", "Received postId: $postId")
-        if (postId != -1L) {
+        if (postId != -1) {
             loadPostDetail(postId)
         } else {
             Toast.makeText(this, "게시글 ID가 전달되지 않았습니다.", Toast.LENGTH_SHORT).show()
@@ -70,7 +72,7 @@ class PostDetailActivity : AppCompatActivity() {
         }
     }
 
-    private fun loadPostDetail(postId: Long) {
+    private fun loadPostDetail(postId: Int) {
         val boardApiService = RetrofitObj.getRetrofit().create(
             com.example.dogcatsquare.data.api.BoardApiService::class.java
         )
