@@ -23,7 +23,7 @@ interface DDayRetrofitItf {
     fun getAllDDays(@Header("Authorization") token: String): Call<GetAllDDayResponse>
 
     @DELETE("api/ddays/{ddayId}")
-    fun deleteDDay(@Header("Authorization") token: String): Call<DeleteDDayResponse>
+    fun deleteDDay(@Header("Authorization") token: String, @Path("ddayId") ddayId: Int): Call<DeleteDDayResponse>
 
     @PUT("api/ddays/{ddayId}")
     fun fetchDDay(@Header("Authorization") token: String, @Path("ddayId") ddayId: Int, @Body fetchDDayRequest: FetchDDayRequest): Call<FetchDDayResponse>

@@ -1,5 +1,6 @@
 package com.example.dogcatsquare.ui.mypage
 
+import android.content.Context
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -13,6 +14,12 @@ class MyReviewFragment : Fragment() {
     lateinit var binding: FragmentMyReviewBinding
 
     private var myReviewDatas = ArrayList<MyReview>()
+    var currentPage = 1 // 현재 페이지 번호를 관리하는 변수
+
+    private fun getToken(): String?{
+        val sharedPref = activity?.getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
+        return sharedPref?.getString("token", null)
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -40,5 +47,10 @@ class MyReviewFragment : Fragment() {
         val myReviewRVAdapter = MyReviewRVAdapter(myReviewDatas)
         binding.myReviewRv.adapter = myReviewRVAdapter
         binding.myReviewRv.layoutManager = LinearLayoutManager(context, LinearLayoutManager.VERTICAL, false)
+    }
+
+    private fun getMyReview(page: Int) {
+        val token = getToken()
+
     }
 }

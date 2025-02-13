@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content">
 
@@ -108,7 +109,7 @@
             app:layout_constraintTop_toTopOf="@+id/home_weather_temperature_iv" />
 
         <TextView
-            android:id="@+id/home_weather_temperatuer_small_tv"
+            android:id="@+id/max_temp_tv"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="5dp"
@@ -131,13 +132,13 @@
             android:text="/"
             android:textColor="@color/black"
             android:textSize="13sp"
-            app:layout_constraintBottom_toBottomOf="@+id/home_weather_temperatuer_small_tv"
-            app:layout_constraintStart_toEndOf="@+id/home_weather_temperatuer_small_tv"
-            app:layout_constraintTop_toTopOf="@+id/home_weather_temperatuer_small_tv"
+            app:layout_constraintBottom_toBottomOf="@+id/max_temp_tv"
+            app:layout_constraintStart_toEndOf="@+id/max_temp_tv"
+            app:layout_constraintTop_toTopOf="@+id/max_temp_tv"
             app:layout_constraintVertical_bias="0.0" />
 
         <TextView
-            android:id="@+id/home_weather_perceived_temperature_iv1"
+            android:id="@+id/min_temp_tv"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="5dp"
@@ -155,36 +156,13 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="8dp"
-            app:layout_constraintBottom_toBottomOf="@+id/home_weather_perceived_temperature_iv1"
-            app:layout_constraintStart_toEndOf="@+id/home_weather_perceived_temperature_iv1"
-            app:layout_constraintTop_toTopOf="@+id/home_weather_perceived_temperature_iv1"
+            app:layout_constraintBottom_toBottomOf="@+id/min_temp_tv"
+            app:layout_constraintStart_toEndOf="@+id/min_temp_tv"
+            app:layout_constraintTop_toTopOf="@+id/min_temp_tv"
             app:srcCompat="@drawable/img_circle" />
 
         <TextView
-            android:id="@+id/home_weather_perceived_temperature_iv2"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="8dp"
-            android:fontFamily="@font/pretendard_regular"
-            android:text="체감 온도 0"
-            android:textColor="@color/black"
-            android:textSize="13sp"
-            app:layout_constraintBottom_toBottomOf="@+id/home_weather_perceived_temperature_iv1"
-            app:layout_constraintStart_toEndOf="@+id/imageView19"
-            app:layout_constraintTop_toTopOf="@+id/home_weather_perceived_temperature_iv1" />
-
-        <ImageView
-            android:id="@+id/imageView20"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="8dp"
-            app:layout_constraintBottom_toBottomOf="@+id/home_weather_perceived_temperature_iv2"
-            app:layout_constraintStart_toEndOf="@+id/home_weather_perceived_temperature_iv2"
-            app:layout_constraintTop_toTopOf="@+id/home_weather_perceived_temperature_iv2"
-            app:srcCompat="@drawable/img_circle" />
-
-        <TextView
-            android:id="@+id/home_weather_tv"
+            android:id="@+id/rain_tv"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="8dp"
@@ -192,9 +170,9 @@
             android:text="비"
             android:textColor="@color/black"
             android:textSize="13sp"
-            app:layout_constraintBottom_toBottomOf="@+id/home_weather_perceived_temperature_iv2"
-            app:layout_constraintStart_toEndOf="@+id/imageView20"
-            app:layout_constraintTop_toTopOf="@+id/home_weather_perceived_temperature_iv2" />
+            app:layout_constraintBottom_toBottomOf="@+id/imageView19"
+            app:layout_constraintStart_toEndOf="@+id/imageView19"
+            app:layout_constraintTop_toTopOf="@+id/imageView19" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 

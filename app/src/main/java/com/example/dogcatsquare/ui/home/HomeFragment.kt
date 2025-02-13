@@ -1,5 +1,6 @@
 package com.example.dogcatsquare.ui.home
 
+import PostApiService
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
@@ -18,14 +19,18 @@ import com.example.dogcatsquare.data.map.MapPlace
 import com.example.dogcatsquare.R
 import com.example.dogcatsquare.data.api.DDayRetrofitItf
 import com.example.dogcatsquare.data.api.EventRetrofitItf
+import com.example.dogcatsquare.data.api.WeatherRetrofitItf
 import com.example.dogcatsquare.data.model.home.DDay
 import com.example.dogcatsquare.data.model.home.Event
 import com.example.dogcatsquare.data.model.home.GetAllDDayResponse
 import com.example.dogcatsquare.data.model.home.GetAllEventsResponse
+import com.example.dogcatsquare.data.model.home.WeatherResponse
+import com.example.dogcatsquare.data.model.home.WeatherResult
 import com.example.dogcatsquare.data.model.pet.GetAllPetResponse
 import com.example.dogcatsquare.data.model.pet.PetList
 import com.example.dogcatsquare.data.network.RetrofitObj
-import com.example.dogcatsquare.data.post.Pet
+import com.example.dogcatsquare.data.post.HotPost
+import com.example.dogcatsquare.data.post.PopularPostResponse
 import com.example.dogcatsquare.data.post.Post
 import com.example.dogcatsquare.databinding.FragmentHomeBinding
 import com.example.dogcatsquare.ui.map.location.MapDetailFragment
@@ -65,7 +70,7 @@ class HomeFragment : Fragment() {
         // 상단바 색깔
         requireActivity().window.statusBarColor = ContextCompat.getColor(requireContext(), R.color.light_blue)
 
-        setupWeatherViewPager()
+        fetchWeatherData()
         setupDDayRecyclerView()
         setupHotPlaceRecyclerView()
         setupAdViewPager()
@@ -114,17 +119,37 @@ class HomeFragment : Fragment() {
     }
 
     // weather viewpager
-    private fun setupWeatherViewPager() {
+    private fun fetchWeatherData() {
+        val token = getToken()
+
+        val weatherService = RetrofitObj.getRetrofit().create(WeatherRetrofitItf::class.java)
+        weatherService.getWeather("Bearer $token").enqueue(object : Callback<WeatherResponse> {
+            override fun onResponse(call: Call<WeatherResponse>, response: Response<WeatherResponse>) {
+                if (response.isSuccessful) {
+                    response.body()?.let { weatherResponse ->
+                        if (weatherResponse.isSuccess) {
+                            val weatherResult = weatherResponse.result
+                            setupWeatherViewPager(weatherResult)
+                        } else {
+                            Log.e("Weather API", "API 응답 오류: ${weatherResponse.message}")
+                        }
+                    }
+                }
+            }
+
+            override fun onFailure(call: Call<WeatherResponse>, t: Throwable) {
+                Log.e("Weather API", "API 요청 실패: ${t.message}")
+            }
+        })
+    }
+
+    private fun setupWeatherViewPager(weatherResult: WeatherResult) {
         // ad view pager
         val homeWeatherAdapter = HomeWeatherVPAdapter(this)
-        homeWeatherAdapter.addFragment(HomeWeatherFragment())
-        homeWeatherAdapter.addFragment(HomeWeatherFragment())
+        homeWeatherAdapter.addFragment(HomeWeatherFragment.newInstance(weatherResult, 0))
 
         binding.homeWeatherVp.adapter = homeWeatherAdapter
         binding.homeWeatherVp.orientation = ViewPager2.ORIENTATION_HORIZONTAL
-
-        // 자동 넘기기
-        weatherAutoSlide(homeWeatherAdapter)
     }
 
     // d_day rv
@@ -145,11 +170,37 @@ class HomeFragment : Fragment() {
         dDayRVAdapter.setMyItemClickListener(object: HomeDDayRVAdapter.OnItemClickListener {
             override fun onItemClick(d_day: DDay) {
                 // id, title, day, term, isAlarm
+                if (d_day.title.equals("사료 구매") || d_day.title.equals("패드/모래 구매") || d_day.title.equals("병원 방문일")) {
+                    val fragment = SetDDayDefaultFragment().apply {
+                        arguments = Bundle().apply {
+                            putInt("ddayId", d_day.id)
+                            putString("ddayTitle", d_day.title)
+                            putString("ddayDay", d_day.day)
+                            putInt("ddayTerm", d_day.term ?: 0)
+                            putBoolean("isAlarm", d_day.isAlarm)
+                        }
+                    }
 
-                parentFragmentManager.beginTransaction()
-                    .replace(R.id.main_frm, SetDDayFragment())
-                    .addToBackStack(null)
-                    .commitAllowingStateLoss()
+                    parentFragmentManager.beginTransaction()
+                        .replace(R.id.main_frm, fragment)
+                        .addToBackStack(null)
+                        .commitAllowingStateLoss()
+                } else {
+                    val fragment = SetDDayPersonalFragment().apply {
+                        arguments = Bundle().apply {
+                            putInt("ddayId", d_day.id)
+                            putString("ddayTitle", d_day.title)
+                            putString("ddayDay", d_day.day)
+                            putInt("ddayTerm", d_day.term ?: 0)
+                            putBoolean("isAlarm", d_day.isAlarm)
+                        }
+                    }
+
+                    parentFragmentManager.beginTransaction()
+                        .replace(R.id.main_frm, fragment)
+                        .addToBackStack(null)
+                        .commitAllowingStateLoss()
+                }
             }
         })
     }
@@ -172,7 +223,7 @@ class HomeFragment : Fragment() {
                                 id = dday.id,
                                 title = dday.title,
                                 day = dday.day,
-                                term  = dday.term,
+                                term  = dday.term ?: 0,
                                 daysLeft = dday.daysLeft,
                                 isAlarm = dday.isAlarm,
                                 ddayText = dday.ddayText,
@@ -310,36 +361,12 @@ class HomeFragment : Fragment() {
     private fun setupHotPostRecyclerView() {
         hotPostDatas.clear()
 
-        // 인기 게시물 임시 더미 데이터
-        hotPostDatas.apply {
-            add(Post(
-                1,
-                "2025년! 새해 복 많이 받으세요!!",
-                "우리 호두도 올해로 5살이 되었어요. 새해 아침부터 터그놀이 하는 중.. 호두랑 놀아주세요!",
-                "닉네임1",
-                listOf(
-                    Pet(name = "호두", breed = "포메라니안")
-                ),
-                10,
-                5
-            ))
-            add(Post(
-                1,
-                "2025년! 새해 복 많이 받으세요!!",
-                "우리 호두도 올해로 5살이 되었어요. 새해 아침부터 터그놀이 하는 중.. 호두랑 놀아주세요!",
-                "닉네임1",
-                listOf(
-                    Pet(name = "호두", breed = "포메라니안")
-                ),
-                10,
-                5
-            ))
-        }
-
         // 인기 게시물 recycler view
         val homeHotPostRVAdapter = HomeHotPostRVAdapter(hotPostDatas)
         binding.homeHotPostRv.adapter = homeHotPostRVAdapter
         binding.homeHotPostRv.layoutManager = LinearLayoutManager(context, LinearLayoutManager.VERTICAL, false)
+
+        getPopularPost(homeHotPostRVAdapter)
 
         // 클릭 인터페이스
         homeHotPostRVAdapter.setMyItemClickListener(object : HomeHotPostRVAdapter.OnItemClickListener {
@@ -348,6 +375,53 @@ class HomeFragment : Fragment() {
             }
         })
 
+    }
+
+    private fun getPopularPost(adapter: HomeHotPostRVAdapter) {
+        val token = getToken()
+
+        val getPopularPostService = RetrofitObj.getRetrofit().create(PostApiService::class.java)
+        getPopularPostService.getPopularPost("Bearer $token").enqueue(object : Callback<PopularPostResponse> {
+            override fun onResponse(call: Call<PopularPostResponse>, response: Response<PopularPostResponse>) {
+                Log.d("PopularPost/SUCCESS", response.toString())
+                val resp: PopularPostResponse = response.body()!!
+
+                if (resp != null) {
+                    if (resp.isSuccess) {
+                        Log.d("PopularPost", "인기게시물 전체 조회 성공")
+
+                        val posts = resp.result.map { post ->
+                            Post (
+                                id = post.id,
+                                board = post.board,
+                                title = post.title,
+                                username = post.username,
+                                content = post.content,
+                                like_count = post.like_count,
+                                comment_count = post.comment_count,
+                                video_URL = post.video_URL,
+                                thumbnail_URL = post.thumbnail_URL,
+                                images = post.images,
+                                createdAt = post.createdAt,
+                                profileImage_URL = post.profuleImage_URL
+                            )
+                        }.take(2)
+
+                        hotPostDatas.addAll(posts)
+                        Log.d("HotPostList", hotPostDatas.toString())
+                        adapter.notifyDataSetChanged()
+                    }
+
+                } else {
+                    Log.e("GetEvent/ERROR", "응답 코드: ${response.code()}")
+                }
+            }
+
+            override fun onFailure(call: Call<PopularPostResponse>, t: Throwable) {
+                Log.d("RETROFIT/FAILURE", t.message.toString())
+            }
+
+        })
     }
 
     private fun setupEventRecyclerView() {
@@ -407,6 +481,4 @@ class HomeFragment : Fragment() {
             }
         })
     }
-
-    // d_day 설정 창
 }

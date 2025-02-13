@@ -40,8 +40,8 @@ class MyCommunityRVAdpater(private val myPostList: ArrayList<Post>) : RecyclerVi
         fun bind(myPost: Post) {
             binding.tvTitle.text = myPost.title
             binding.tvContent.text = myPost.content
-            binding.tvLikeCount.text = myPost.likeCount.toString()
-            binding.tvCommentCount.text = myPost.commentCount.toString()
+            binding.tvLikeCount.text = myPost.like_count.toString()
+            binding.tvCommentCount.text = myPost.comment_count.toString()
         }
     }
 }
