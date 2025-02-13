@@ -30,7 +30,7 @@ interface BoardApiService {
         @Part images: List<MultipartBody.Part>?
     ): Call<ApiResponse>
 
-    // 게시글 수정 API 추가
+    // 게시글 수정 API
     @Multipart
     @PUT("/api/board/post/{postId}")
     fun updatePost(
@@ -45,8 +45,11 @@ interface BoardApiService {
         @Path("postId") postId: Int
     ): Call<PostDetailResponse>
 
-    // 게시판 검색 API 추가
+    // 모든 게시판 조회 API
+    @GET("/api/board/all")
+    fun getAllBoards(): Call<BoardSearchResponseDto>
+
+    // 게시판 검색 API
     @GET("/api/board/search")
     fun searchBoard(@Query("boardName") boardName: String): Call<BoardSearchResponseDto>
-    abstract fun createPost(token: RequestBody, userId: List<MultipartBody.Part>?): Call<ApiResponse>
 }
