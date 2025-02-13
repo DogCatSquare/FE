@@ -66,8 +66,8 @@
 
                 <TextView
                     android:id="@+id/profile_name_tv"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
+                    android:layout_width="56dp"
+                    android:layout_height="35dp"
                     android:layout_marginStart="10dp"
                     android:text="닉네임"
                     android:textSize="18sp"
@@ -182,7 +182,6 @@
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toTopOf="parent" />
 
-                <!-- 소요 시간 (오른쪽) -->
                 <TextView
                     android:id="@+id/length_tv"
                     android:layout_width="wrap_content"
@@ -217,8 +216,8 @@
             </androidx.constraintlayout.widget.ConstraintLayout>
 
             <!-- 후기 내용 -->
-            <EditText
-                android:id="@+id/review_ed"
+            <TextView
+                android:id="@+id/review_tv"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="24dp"
@@ -236,10 +235,11 @@
                 android:paddingStart="16dp">
 
                 <ImageView
+                    android:id="@+id/difficulty_iv"
                     android:layout_width="48dp"
                     android:layout_height="18dp"
                     android:layout_marginEnd="8dp"
-                    android:src="@drawable/ic__difficulty" />
+                    android:src="@drawable/ic_normal" />
 
                 <ImageView
                     android:layout_width="48dp"
@@ -361,7 +361,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginStart="180dp"
-                    android:text="3"
+                    android:text="0"
                     android:textColor="#0E0E0E"
                     android:textSize="20dp"
                     android:textStyle="bold"
@@ -393,7 +393,6 @@
                 android:orientation="vertical"
                 android:scrollbars="vertical"
                 app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-                tools:itemCount="2"
                 tools:listitem="@layout/item_mapwaling_review" />
 
             <com.google.android.material.button.MaterialButton

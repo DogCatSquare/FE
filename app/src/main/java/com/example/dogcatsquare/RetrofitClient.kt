@@ -39,7 +39,7 @@ object RetrofitClient {
         .writeTimeout(15, TimeUnit.SECONDS)
         .build()
 
-    private val retrofit: Retrofit = Retrofit.Builder()
+    val retrofit: Retrofit = Retrofit.Builder()
         .baseUrl(BASE_URL)
         .client(okHttpClient)
         .addConverterFactory(GsonConverterFactory.create())

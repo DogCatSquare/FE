@@ -43,7 +43,21 @@ class WalkingMapViewFragment : Fragment(), OnMapReadyCallback, LocationUpdateInt
     private lateinit var fusedLocationClient: FusedLocationProviderClient
     private lateinit var locationRequest: LocationRequest
 
-    private var isTrackingLocation = false  // 위치 추적 상태 추가
+    private var isTrackingLocation = false  // 위치 추적 상태
+
+    // 타이머 관련 변수
+    private var startTime: Long = 0L
+    private var elapsedTime: Long = 0L
+    private val timerHandler = Handler(Looper.getMainLooper())
+    private val timerRunnable = object : Runnable {
+        override fun run() {
+            if (isTrackingLocation) {
+                elapsedTime = System.currentTimeMillis() - startTime
+                // 필요시 UI 업데이트 가능 (예: 타이머 텍스트뷰 갱신)
+                timerHandler.postDelayed(this, 1000)  // 1초마다 갱신
+            }
+        }
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
@@ -60,32 +74,45 @@ class WalkingMapViewFragment : Fragment(), OnMapReadyCallback, LocationUpdateInt
             requestLocationPermission()
         }
 
+        // 지도 프래그먼트 설정
         val mapFragment = childFragmentManager.findFragmentById(R.id.map_fragment) as MapFragment?
             ?: MapFragment.newInstance().also {
                 childFragmentManager.beginTransaction().replace(R.id.map_fragment, it).commit()
             }
-
         mapFragment.getMapAsync(this)
         locationSource = FusedLocationSource(this, LOCATION_PERMISSION_REQUEST_CODE)
 
-        // 산책 시작 버튼 클릭 시 위치 추적 시작
+        // 산책 시작 버튼 클릭 시 타이머와 위치 추적 시작
         val startButton: Button = rootView.findViewById(R.id.start_walk_bt)
         startButton.setOnClickListener {
             Toast.makeText(requireContext(), "산책 시작", Toast.LENGTH_SHORT).show()
             setInitialMarker()
-            startWalk()  // 위치 추적 시작
+            startWalk()
         }
 
-        // 산책 종료 버튼 클릭 시 화면 전환
+        // 산책 종료 버튼 클릭 시 타이머 정지 및 화면 전환 (다음 화면에 경로 데이터 전달)
         val nextButton: Button = rootView.findViewById(R.id.end_walk_bt)
         nextButton.setOnClickListener {
             Toast.makeText(requireContext(), "산책 종료", Toast.LENGTH_SHORT).show()
             endMarker()
+            stopWalk()
 
-            // 3초 후에 화면 전환
+            // 3초 후에 다음 Fragment로 전환하며 경로 데이터를 Bundle에 담아 전달
             Handler(Looper.getMainLooper()).postDelayed({
                 val transaction: FragmentTransaction = parentFragmentManager.beginTransaction()
-                transaction.replace(R.id.main_frm, WalkingReviewFragment())
+                val walkingReviewFragment = WalkingReviewFragment()
+                val bundle = Bundle()
+
+                // elapsedTime을 분 단위로 변환하여 전달 (정수 분)
+                val minutes = elapsedTime / 1000 / 60
+                bundle.putLong("elapsedTime", minutes)
+
+                // 좌표 목록 전달 (LatLng가 Parcelable 구현체여야 함)
+                val coordsList = ArrayList<LatLng>(coords)
+                bundle.putParcelableArrayList("routeCoords", coordsList)
+
+                walkingReviewFragment.arguments = bundle
+                transaction.replace(R.id.main_frm, walkingReviewFragment)
                 transaction.addToBackStack(null)
                 transaction.commit()
             }, 3000)
@@ -96,9 +123,20 @@ class WalkingMapViewFragment : Fragment(), OnMapReadyCallback, LocationUpdateInt
 
     private fun startWalk() {
         if (!isTrackingLocation) {
-            // 위치 추적 시작
             isTrackingLocation = true
-            requestLocationUpdate() // 위치 업데이트 요청
+            startTime = System.currentTimeMillis()
+            timerHandler.postDelayed(timerRunnable, 1000)
+            requestLocationUpdate() // 위치 업데이트 요청 시작
+        }
+    }
+
+    private fun stopWalk() {
+        if (isTrackingLocation) {
+            isTrackingLocation = false
+            timerHandler.removeCallbacks(timerRunnable)
+            // 최종 경과 시간 업데이트
+            elapsedTime = System.currentTimeMillis() - startTime
+            stopLocationUpdate()
         }
     }
 
@@ -107,18 +145,12 @@ class WalkingMapViewFragment : Fragment(), OnMapReadyCallback, LocationUpdateInt
             if (ActivityCompat.checkSelfPermission(
                     requireContext(),
                     Manifest.permission.ACCESS_FINE_LOCATION
-                ) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(
+                ) != PackageManager.PERMISSION_GRANTED &&
+                ActivityCompat.checkSelfPermission(
                     requireContext(),
                     Manifest.permission.ACCESS_COARSE_LOCATION
                 ) != PackageManager.PERMISSION_GRANTED
             ) {
-                // TODO: Consider calling
-                //    ActivityCompat#requestPermissions
-                // here to request the missing permissions, and then overriding
-                //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-                //                                          int[] grantResults)
-                // to handle the case where the user grants the permission. See the documentation
-                // for ActivityCompat#requestPermissions for more details.
                 return
             }
             fusedLocationClient.requestLocationUpdates(locationRequest, locationCallback, null)
@@ -163,7 +195,7 @@ class WalkingMapViewFragment : Fragment(), OnMapReadyCallback, LocationUpdateInt
             super.onLocationResult(locationResult)
             locationResult.locations.forEach { location ->
                 val latLng = LatLng(location.latitude, location.longitude)
-                updateCoords(latLng)  // 위치 갱신
+                updateCoords(latLng)
             }
         }
     }
@@ -172,11 +204,12 @@ class WalkingMapViewFragment : Fragment(), OnMapReadyCallback, LocationUpdateInt
         if (coords.isNotEmpty()) {
             val lastLatLng = coords.last()
             val distance = FloatArray(1)
-            Location.distanceBetween(lastLatLng.latitude, lastLatLng.longitude, latLng.latitude, latLng.longitude, distance)
-
+            Location.distanceBetween(
+                lastLatLng.latitude, lastLatLng.longitude,
+                latLng.latitude, latLng.longitude, distance
+            )
             if (distance[0] < 5) return
         }
-
         coords.add(latLng)
         if (coords.size >= 2) {
             userPolyline.coords = coords
@@ -194,7 +227,8 @@ class WalkingMapViewFragment : Fragment(), OnMapReadyCallback, LocationUpdateInt
         if (ActivityCompat.checkSelfPermission(
                 requireContext(),
                 Manifest.permission.ACCESS_FINE_LOCATION
-            ) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(
+            ) != PackageManager.PERMISSION_GRANTED &&
+            ActivityCompat.checkSelfPermission(
                 requireContext(),
                 Manifest.permission.ACCESS_COARSE_LOCATION
             ) != PackageManager.PERMISSION_GRANTED
@@ -207,7 +241,6 @@ class WalkingMapViewFragment : Fragment(), OnMapReadyCallback, LocationUpdateInt
             } else {
                 LatLng(37.5665, 126.9780)
             }
-
             initPolyLine(currentLatLng)
             val cameraUpdate = CameraUpdate.scrollTo(currentLatLng)
             naverMap.moveCamera(cameraUpdate)
@@ -227,11 +260,9 @@ class WalkingMapViewFragment : Fragment(), OnMapReadyCallback, LocationUpdateInt
 
     private fun requestLocationPermission() {
         val permissions = mutableListOf(Manifest.permission.ACCESS_FINE_LOCATION)
-
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q) {
             permissions.add(Manifest.permission.ACCESS_BACKGROUND_LOCATION)
         }
-
         ActivityCompat.requestPermissions(requireActivity(), permissions.toTypedArray(), LOCATION_PERMISSION_REQUEST_CODE)
     }
 
@@ -258,11 +289,9 @@ class WalkingMapViewFragment : Fragment(), OnMapReadyCallback, LocationUpdateInt
         }
     }
 
-    // 경로 라인 초기화
     private fun initPolyLine(startLatLng: LatLng) {
         coords.add(startLatLng)
         coords.add(startLatLng)
-
         if (coords.size >= 2) {
             userPolyline.coords = coords
             userPolyline.width = 10
@@ -271,16 +300,14 @@ class WalkingMapViewFragment : Fragment(), OnMapReadyCallback, LocationUpdateInt
         }
     }
 
-    // 위치 업데이트 설정
     private fun setupLocationRequest() {
         locationRequest = LocationRequest.create().apply {
-            interval = 2000 // 2초마다 위치 업데이트 (기존 1초보다 배터리 절약)
+            interval = 2000 // 2초마다 위치 업데이트
             fastestInterval = 1000
             priority = LocationRequest.PRIORITY_HIGH_ACCURACY
         }
     }
 
-    // 시작 위치 마커
     private fun setInitialMarker() {
         val startMarker = Marker()
         startMarker.icon = OverlayImage.fromResource(R.drawable.ic_start_marker)
@@ -291,8 +318,7 @@ class WalkingMapViewFragment : Fragment(), OnMapReadyCallback, LocationUpdateInt
         startMarker.map = naverMap
     }
 
-    // 끝 위치 마커
-    private fun endMarker(){
+    private fun endMarker() {
         val endMarker = Marker()
         endMarker.icon = OverlayImage.fromResource(R.drawable.ic_end_marker)
         endMarker.position = LatLng(
@@ -301,7 +327,6 @@ class WalkingMapViewFragment : Fragment(), OnMapReadyCallback, LocationUpdateInt
         )
         endMarker.map = naverMap
     }
-
 
     private val connection = object : ServiceConnection {
         override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
