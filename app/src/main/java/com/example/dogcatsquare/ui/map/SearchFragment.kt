@@ -4,8 +4,10 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.inputmethod.EditorInfo
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
+import com.example.dogcatsquare.R
 import com.example.dogcatsquare.databinding.FragmentSearchBinding
 import com.example.dogcatsquare.ui.map.location.MapFragment
 
@@ -89,6 +91,7 @@ class SearchFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        setupSearchEditText()
         setupBackButton()
         // 배경을 불투명하게 설정
         view.setBackgroundColor(ContextCompat.getColor(requireContext(), android.R.color.white))
@@ -99,6 +102,45 @@ class SearchFragment : Fragment() {
             // 이전 Fragment를 보이게 하고 현재 Fragment를 제거
             requireActivity().supportFragmentManager.popBackStack()
         }
+    }
+
+    private fun setupSearchEditText() {
+        binding.editText2.setOnEditorActionListener { textView, actionId, _ ->
+            if (actionId == EditorInfo.IME_ACTION_SEARCH || actionId == EditorInfo.IME_ACTION_DONE) {
+                val searchQuery = textView.text.toString().trim()
+                if (searchQuery.isNotEmpty()) {
+                    navigateToSearchResult(searchQuery)
+                }
+                true
+            } else {
+                false
+            }
+        }
+    }
+
+    private fun navigateToSearchResult(query: String) {
+        // SearchResultFragment 인스턴스 생성 및 검색어 전달
+        val searchResultFragment = SearchResultFragment().apply {
+            arguments = Bundle().apply {
+                putString("searchQuery", query)
+                // 전달받은 위치 정보를 다시 전달
+                putDouble("latitude", arguments?.getDouble("latitude") ?: 37.5665)
+                putDouble("longitude", arguments?.getDouble("longitude") ?: 126.9780)
+            }
+        }
+
+        // Fragment 전환
+        requireActivity().supportFragmentManager.beginTransaction()
+            .setCustomAnimations(
+                R.anim.slide_in_right,
+                R.anim.slide_out_left,
+                R.anim.slide_in_left,
+                R.anim.slide_out_right
+            )
+            .hide(this)
+            .add(R.id.main_frm, searchResultFragment)
+            .addToBackStack(null)
+            .commit()
     }
 
     override fun onDestroyView() {

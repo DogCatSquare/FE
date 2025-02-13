@@ -93,10 +93,16 @@ class MapFragment : Fragment(), OnMapReadyCallback {
         }
 
         binding.searchBox.setOnClickListener {
-            val searchFragment = SearchFragment()
+            val currentLocation = naverMap.cameraPosition.target
+            val searchFragment = SearchFragment().apply {
+                arguments = Bundle().apply {
+                    putDouble("latitude", currentLocation.latitude)
+                    putDouble("longitude", currentLocation.longitude)
+                }
+            }
             requireActivity().supportFragmentManager.beginTransaction()
-                .hide(this)  // 현재 Fragment 숨기기
-                .add(R.id.main_frm, searchFragment)  // replace 대신 add 사용
+                .hide(this)
+                .add(R.id.main_frm, searchFragment)
                 .addToBackStack(null)
                 .commit()
         }
