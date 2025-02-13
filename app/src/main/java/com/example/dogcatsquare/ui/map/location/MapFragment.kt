@@ -4,6 +4,7 @@ import android.Manifest
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.pm.PackageManager
+import android.graphics.Color
 import android.os.Bundle
 import android.os.Looper
 import android.util.Log
@@ -80,6 +81,8 @@ class MapFragment : Fragment(), OnMapReadyCallback {
     private var currentLocation: LatLng? = null
     private lateinit var locationCallback: LocationCallback
     private val locationViewModel: LocationViewModel by activityViewModels()
+
+    private var selectedMarker: Marker? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -227,6 +230,27 @@ class MapFragment : Fragment(), OnMapReadyCallback {
             startLocationUpdates()
         } else {
             requestLocationPermission()
+        }
+
+        naverMap.setOnMapClickListener { _, _ ->
+            // 선택된 마커가 있다면 원래 상태로 복원
+            selectedMarker?.apply {
+                width = 70
+                height = 70
+                zIndex = 0
+            }
+            selectedMarker = null
+
+            // 줌 레벨을 원래대로 복원
+            naverMap.moveCamera(
+                CameraUpdate.zoomTo(12.0)  // 기본 줌 레벨
+                    .animate(CameraAnimation.Easing)
+            )
+
+            // 전체 리스트로 복원
+            (binding.mapPlaceRV.adapter as? MapPlaceRVAdapter)?.let { adapter ->
+                adapter.updateList(originalPlaceDatas)
+            }
         }
 
         // 초기 장소 검색 수행 (선택적)
@@ -631,13 +655,45 @@ class MapFragment : Fragment(), OnMapReadyCallback {
 
             // 마커 클릭 이벤트
             setOnClickListener { overlay ->
-                // 마커 클릭시 해당 장소 정보를 보여주는 로직
-                showPlaceInfo(place)
+                // 이전에 선택된 마커가 있다면 원래 크기로 복원
+                selectedMarker?.apply {
+                    width = 70
+                    height = 70
+                    zIndex = 0
+                }
+
+                // 현재 마커를 선택된 상태로 변경
+                if (selectedMarker !== this) {  // marker 대신 this 사용
+                    // 마커 크기 증가
+                    width = 90
+                    height = 90
+                    zIndex = 1
+                    selectedMarker = this  // marker 대신 this 사용
+
+                    // 카메라를 해당 위치로 이동하며 줌 레벨 증가
+                    naverMap.moveCamera(
+                        CameraUpdate.scrollAndZoomTo(
+                            position,
+                            15.0
+                        ).animate(CameraAnimation.Easing)
+                    )
+                } else {
+                    // 같은 마커를 다시 클릭한 경우
+                    selectedMarker = null
+                }
+
+                // RecyclerView에 해당 장소만 표시
+                (binding.mapPlaceRV.adapter as? MapPlaceRVAdapter)?.let { adapter ->
+                    adapter.updateList(listOf(place))
+                }
+
                 true
             }
         }
         markers.add(marker)
     }
+
+
 
     // 모든 마커 제거
     private fun clearMarkers() {
@@ -647,13 +703,19 @@ class MapFragment : Fragment(), OnMapReadyCallback {
 
     // 장소 정보 표시
     private fun showPlaceInfo(place: MapPlace) {
-        // BottomSheet를 확장하고 해당 장소 정보를 표시
-        bottomSheetBehavior.state = BottomSheetBehavior.STATE_EXPANDED
+        // 카메라를 해당 위치로 이동
+        place.latitude?.let { lat ->
+            place.longitude?.let { lng ->
+                naverMap.moveCamera(
+                    CameraUpdate.scrollTo(LatLng(lat, lng))
+                        .animate(CameraAnimation.Easing)
+                )
+            }
+        }
 
-        // RecyclerView에서 해당 아이템으로 스크롤
-        val position = placeDatas.indexOf(place)
-        if (position != -1) {
-            binding.mapPlaceRV.scrollToPosition(position)
+        // RecyclerView에 해당 장소만 표시
+        (binding.mapPlaceRV.adapter as? MapPlaceRVAdapter)?.let { adapter ->
+            adapter.updateList(listOf(place))
         }
     }
 
