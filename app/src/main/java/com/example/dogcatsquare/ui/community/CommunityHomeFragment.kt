@@ -9,6 +9,9 @@ import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.dogcatsquare.R
+import com.example.dogcatsquare.data.community.LocalPost
+import com.example.dogcatsquare.data.community.Post
+import com.example.dogcatsquare.data.community.Tip
 import com.example.dogcatsquare.databinding.FragmentCommunityHomeBinding
 
 class CommunityHomeFragment : Fragment(R.layout.fragment_community_home) {
@@ -29,10 +32,38 @@ class CommunityHomeFragment : Fragment(R.layout.fragment_community_home) {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        // 더미 데이터 생성
+        // 더미 데이터 생성 (Post 데이터 클래스에 맞게 모든 필드 지정)
         val popularPosts = listOf(
-            Post("닉네임", "포메라니안", "제목을 입력해주세요", "내용을 입력해주세요 내용을 입력해주세요...", "1시간 전", null, 6, 1),
-            Post("닉네임", "포메라니안", "제목을 입력해주세요", "내용을 입력해주세요 내용을 입력해주세요...", "1시간 전", null, 6, 1)
+            createPost(
+                id = 1L,
+                board = "자유게시판",
+                username = "닉네임",
+                dogbreed = "포메라니안",
+                title = "제목을 입력해주세요",
+                content = "내용을 입력해주세요 내용을 입력해주세요...",
+                videoUrl = null,
+                thumbnailUrl = null,
+                profileImageUrl = null,
+                images = null,
+                likeCount = 6,
+                commentCount = 1,
+                createdAt = "1시간 전"
+            ),
+            createPost(
+                id = 2L,
+                board = "자유게시판",
+                username = "닉네임",
+                dogbreed = "포메라니안",
+                title = "제목을 입력해주세요",
+                content = "내용을 입력해주세요 내용을 입력해주세요...",
+                videoUrl = null,
+                thumbnailUrl = null,
+                profileImageUrl = null,
+                images = null,
+                likeCount = 6,
+                commentCount = 1,
+                createdAt = "1시간 전"
+            )
         )
 
         val tips = listOf(
@@ -42,20 +73,20 @@ class CommunityHomeFragment : Fragment(R.layout.fragment_community_home) {
 
         val localPosts = listOf(
             LocalPost(
-                id = "post1",
+                id = 1L,  // Long 타입 id
                 username = "닉네임1",
                 dogbreed = "포메라니안",
-                title = "강아지와 놀기", // 🔹 추가된 필드
+                title = "강아지와 놀기",
                 content = "새로 사준 장난감으로 놀아줬더니 기절한 듯이 잠들었어요ㅎ\n이제 5개월인데 미친 듯이 놀아서 너무 귀엽네요 새벽에...",
-                video_URL = null, // 🔹 추가된 필드
-                thumbnail_URL = null, // 🔹 추가된 필드
+                video_URL = null,
+                thumbnail_URL = null,
                 images = listOf(R.drawable.sample_image1, R.drawable.sample_image2)
             ),
             LocalPost(
-                id = "post2",
+                id = 2L,
                 username = "닉네임2",
                 dogbreed = "말티즈",
-                title = "새로운 애완동물 용품 추천", // 🔹 추가된 필드
+                title = "새로운 애완동물 용품 추천",
                 content = "새로 사준 장난감으로 놀아줬더니 기절한 듯이 잠들었어요ㅎ\n이제 5개월인데 미친 듯이 놀아서 너무 귀엽네요 새벽에...",
                 video_URL = null,
                 thumbnail_URL = null,
@@ -63,11 +94,43 @@ class CommunityHomeFragment : Fragment(R.layout.fragment_community_home) {
             )
         )
 
-
         // RecyclerView 설정
         setupPopularPostsRecyclerView(popularPosts)
         setupTipsRecyclerView(tips)
-        setupLocalPostsRecyclerView(localPosts) // 수정된 List<LocalPost> 전달
+        setupLocalPostsRecyclerView(localPosts)
+    }
+
+    // Post 객체 생성용 팩토리 함수 (Post 데이터 클래스에 맞게 수정)
+    private fun createPost(
+        id: Long,
+        board: String,
+        username: String,
+        dogbreed: String,
+        title: String?,
+        content: String?,
+        videoUrl: String? = null,
+        thumbnailUrl: String? = null,
+        profileImageUrl: String? = null,
+        images: List<String>? = null,
+        likeCount: Int,
+        commentCount: Int,
+        createdAt: String?
+    ): Post {
+        return Post(
+            id = id,
+            board = board,
+            username = username,
+            dogbreed = dogbreed,
+            title = title,
+            content = content,
+            videoUrl = videoUrl,
+            thumbnailUrl = thumbnailUrl,
+            profileImageUrl = profileImageUrl,
+            images = images,
+            likeCount = likeCount,
+            commentCount = commentCount,
+            createdAt = createdAt
+        )
     }
 
     private fun setupPopularPostsRecyclerView(popularPosts: List<Post>) {
@@ -80,7 +143,6 @@ class CommunityHomeFragment : Fragment(R.layout.fragment_community_home) {
 
     private fun setupTipsRecyclerView(tips: List<Tip>) {
         tipsAdapter = TipsAdapter(tips, isCompactView = true) { selectedTip ->
-            // 클릭 이벤트 처리
             Toast.makeText(requireContext(), "${selectedTip.title} 클릭됨", Toast.LENGTH_SHORT).show()
         }
         binding.rvTips.apply {

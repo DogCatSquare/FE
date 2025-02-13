@@ -7,6 +7,7 @@ import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.example.dogcatsquare.R
+import com.example.dogcatsquare.data.community.Tip
 
 class TipsAdapter(
     private val tipsList: List<Tip>, // 데이터 리스트
