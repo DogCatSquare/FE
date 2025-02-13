@@ -9,5 +9,7 @@ data class MapPlace(
     var placeCall: String? = "",
     var placeImgUrl: String? = null,
     var isOpen: String? = null,
-    val reviewCount: Int? = null
+    val reviewCount: Int? = null,
+    val latitude: Double? = null,
+    val longitude: Double? = null
 )
