@@ -162,23 +162,6 @@ class LoginDetailActivity: AppCompatActivity() {
         })
     }
 
-    // 토큰을 SharedPreferences에 저장
-    private fun saveToken(token: String){
-        val sharedPref = getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
-        with(sharedPref.edit()){
-            putString("token", token)
-            apply()
-        }
-    }
-
-    private fun saveId(id: Int){
-        val sharedPref = getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
-        with(sharedPref.edit()){
-            putInt("userId", id) // 아이디 값 전달
-            apply()
-        }
-    }
-
     private fun saveUserInfo(token: String, id: Int, email: String, pw: String) {
         val sharedPref = getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
         with(sharedPref.edit()){

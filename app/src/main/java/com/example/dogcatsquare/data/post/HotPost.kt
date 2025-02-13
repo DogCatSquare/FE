@@ -1,6 +1,6 @@
 package com.example.dogcatsquare.data.post
 
-data class Post(
+data class HotPost(
     val id: Int,
     val board: String,
     var username: String,
@@ -11,6 +11,5 @@ data class Post(
     val like_count: Int,
     val comment_count: Int,
     val createdAt: String,
-    val profileImage_URL: String?,
     val images: List<String>?
 )

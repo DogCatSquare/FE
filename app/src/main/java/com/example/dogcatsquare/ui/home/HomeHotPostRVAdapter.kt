@@ -3,6 +3,8 @@ package com.example.dogcatsquare.ui.home
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
+import com.bumptech.glide.Glide
+import com.example.dogcatsquare.R
 import com.example.dogcatsquare.data.post.Post
 import com.example.dogcatsquare.databinding.ItemHomeHotPostBinding
 
@@ -35,23 +37,15 @@ class HomeHotPostRVAdapter(private val hotPostList: ArrayList<Post>) : RecyclerV
 
     inner class HomeHotPostAdapterViewHolder(val binding: ItemHomeHotPostBinding) : RecyclerView.ViewHolder(binding.root) {
         fun bind(hotPost: Post) {
-            // 타이틀
             binding.postTitleTv.text = hotPost.title
-
-            // 내용
             binding.postContentTv.text = hotPost.content
-
-            // 닉네임
-            binding.postNicknameTv.text = hotPost.nickname
-
-            // 프로필
-            binding.postProfileIv
-
-            // 내용 사진(썸네일)
-
-            // 좋아요 수
-
-            // 답글 수
+            binding.postNicknameTv.text = hotPost.username
+            binding.postLikeCountTv.text = hotPost.like_count.toString()
+            binding.postCommentCountTv.text = hotPost.comment_count.toString()
+            Glide.with(itemView.context)
+                .load(hotPost.profileImage_URL)
+                .placeholder(R.drawable.ic_profile_img_default)
+                .into(binding.postProfileIv)
         }
     }
 }

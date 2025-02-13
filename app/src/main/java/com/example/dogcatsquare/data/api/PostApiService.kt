@@ -1,4 +1,5 @@
 import com.example.dogcatsquare.data.community.PostResponse
+import com.example.dogcatsquare.data.post.PopularPostResponse
 import okhttp3.MultipartBody
 import okhttp3.RequestBody
 import retrofit2.Call
@@ -16,4 +17,7 @@ interface PostApiService {
         @Part("videoUrl") videoUrl: RequestBody,
         @Part images: List<MultipartBody.Part> // ✅ 수정됨: 여러 이미지 업로드 지원
     ): Call<PostResponse>
+
+    @GET("api/board/posts/popular")
+    fun getPopularPost(@Header("Authorization") token: String): Call<PopularPostResponse>
 }

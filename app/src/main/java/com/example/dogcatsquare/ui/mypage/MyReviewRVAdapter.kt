@@ -4,11 +4,11 @@ import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.example.dogcatsquare.data.model.mypage.MyReview
-import com.example.dogcatsquare.databinding.ItemMapReviewBinding
+import com.example.dogcatsquare.databinding.ItemMyReviewBinding
 
 class MyReviewRVAdapter(private val myReviewList: ArrayList<MyReview>) : RecyclerView.Adapter<MyReviewRVAdapter.MyReviewAdapterViewHolder>() {
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MyReviewAdapterViewHolder {
-        val binding = ItemMapReviewBinding.inflate(LayoutInflater.from(parent.context), parent, false)
+        val binding = ItemMyReviewBinding.inflate(LayoutInflater.from(parent.context), parent, false)
         return MyReviewAdapterViewHolder(binding)
     }
 
@@ -19,11 +19,8 @@ class MyReviewRVAdapter(private val myReviewList: ArrayList<MyReview>) : Recycle
 
     override fun getItemCount(): Int = myReviewList.size
 
-    inner class MyReviewAdapterViewHolder(val binding: ItemMapReviewBinding) : RecyclerView.ViewHolder(binding.root) {
+    inner class MyReviewAdapterViewHolder(val binding: ItemMyReviewBinding) : RecyclerView.ViewHolder(binding.root) {
         fun bind(myReview: MyReview) {
-            binding.reviewName.text = myReview.name
-            binding.reviewText.text = myReview.content
-            binding.reviewDate.text = myReview.createdAt
         }
     }
 }

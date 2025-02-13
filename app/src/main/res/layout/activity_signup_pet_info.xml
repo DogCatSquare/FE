@@ -78,15 +78,15 @@
 
     <ImageButton
         android:id="@+id/pet_iv"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="95dp"
+        android:layout_height="95dp"
         android:layout_marginTop="30dp"
         android:background="@color/white"
         android:scaleType="centerCrop"
         app:layout_constraintEnd_toStartOf="@+id/guideline2"
         app:layout_constraintStart_toStartOf="@+id/guideline1"
         app:layout_constraintTop_toBottomOf="@+id/signup_pet_tv1"
-        app:srcCompat="@drawable/ic_place_img_default" />
+        app:srcCompat="@drawable/ic_profile_default" />
 
     <!-- 강아지/고양이 선택 -->
 

@@ -88,7 +88,6 @@ class MypageFragment : Fragment() {
             requireActivity().finish()
         }
 
-
         // 내 정보 수정
         binding.goEditInfoIv.setOnClickListener {
             val token = getToken()

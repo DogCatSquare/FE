@@ -235,18 +235,6 @@ class EditPetFragment : Fragment() {
         Log.d("EditProfileFragment", "Temp file path: ${tempFile.absolutePath}")
         return tempFile
     }
-    // Uri를 실제 경로로 변환하는 함수
-    private fun getRealPathFromURI(uri: Uri): String {
-        var path = ""
-        val cursor = requireContext()?.contentResolver?.query(uri, null, null, null, null)
-        if (cursor != null){
-            cursor.moveToFirst()
-            val idx = cursor.getColumnIndex(MediaStore.Images.ImageColumns.DATA)
-            path = cursor.getString(idx)
-            cursor.close()
-        }
-        return path
-    }
 
     // 이미지 압축 함수
     private fun getCompressedImageUri(uri: Uri): Uri {
@@ -330,14 +318,14 @@ class EditPetFragment : Fragment() {
                         if (resp.isSuccess) {
                             Log.d("DeletePet/SUCCESS", "Delete Pet")
 
-                            Toast.makeText(context, "반려동물 정보 삭제 완료", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(context, "반려동물 정보가 삭제되었습니다", Toast.LENGTH_SHORT).show()
                             parentFragmentManager.popBackStack()
                         } else {
                             Log.e(
                                 "DeletePet/FAILURE",
                                 "응답 코드: ${resp.code}, 응답 메시지: ${resp.message}"
                             )
-                            Toast.makeText(context, "반려동물 정보 삭제 실패", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(context, "오류가 발생했습니다", Toast.LENGTH_SHORT).show()
                         }
                     }
                 }
