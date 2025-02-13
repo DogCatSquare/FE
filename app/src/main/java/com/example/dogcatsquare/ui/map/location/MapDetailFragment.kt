@@ -419,4 +419,17 @@ class MapDetailFragment : Fragment(), OnMapReadyCallback {
             }
         _binding = null
     }
+
+    companion object {
+        fun newInstance(placeId: Int, latitude: Double, longitude: Double): MapEtcFragment {
+            return MapEtcFragment().apply {
+                arguments = Bundle().apply {
+                    putInt("placeId", placeId)
+                    putDouble("latitude", latitude)
+                    putDouble("longitude", longitude)
+                }
+            }
+        }
+    }
+
 }

@@ -34,16 +34,6 @@ class MyReviewFragment : Fragment() {
     }
 
     private fun setupMyReviewRecyclerView() {
-        myReviewDatas.clear()
-        myReviewDatas.apply {
-            add(MyReview("가나다 동물병원", "리뷰내용", "2025-01-10", 101, null))
-            add(MyReview("가나다 동물병원", "리뷰내용", "2025-01-10", 101, null))
-            add(MyReview("가나다 동물병원", "리뷰내용", "2025-01-10", 101, null))
-            add(MyReview("가나다 동물병원", "리뷰내용", "2025-01-10", 101, null))
-            add(MyReview("가나다 동물병원", "리뷰내용", "2025-01-10", 101, null))
-            add(MyReview("가나다 동물병원", "리뷰내용", "2025-01-10", 101, null))
-        }
-
         val myReviewRVAdapter = MyReviewRVAdapter(myReviewDatas)
         binding.myReviewRv.adapter = myReviewRVAdapter
         binding.myReviewRv.layoutManager = LinearLayoutManager(context, LinearLayoutManager.VERTICAL, false)
@@ -51,6 +41,7 @@ class MyReviewFragment : Fragment() {
 
     private fun getMyReview(page: Int) {
         val token = getToken()
+
 
     }
 }

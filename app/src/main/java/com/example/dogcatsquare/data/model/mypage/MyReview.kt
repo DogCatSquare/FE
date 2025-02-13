@@ -1,7 +1,7 @@
 package com.example.dogcatsquare.data.model.mypage
 
 data class MyReview(
-//    val reviewId: Int,
+    val id: Int,
     val name: String,
     val content: String?,
     val createdAt: String,

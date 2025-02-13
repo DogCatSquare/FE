@@ -1,5 +1,5 @@
 import com.example.dogcatsquare.data.community.PostResponse
-import com.example.dogcatsquare.data.post.PopularPostResponse
+import com.example.dogcatsquare.data.model.post.PopularPostResponse
 import okhttp3.MultipartBody
 import okhttp3.RequestBody
 import retrofit2.Call

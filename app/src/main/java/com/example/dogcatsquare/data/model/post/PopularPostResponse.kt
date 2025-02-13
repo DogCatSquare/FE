@@ -1,4 +1,4 @@
-package com.example.dogcatsquare.data.post
+package com.example.dogcatsquare.data.model.post
 
 import com.google.gson.annotations.SerializedName
 
@@ -16,7 +16,7 @@ data class PopularPopularResult(
     @SerializedName("content") var content: String,
     @SerializedName("video_URL") var video_URL: String?,
     @SerializedName("thumbnail_URL") var thumbnail_URL: String?,
-    @SerializedName("profuleImage_URL") var profuleImage_URL: String?,
+    @SerializedName("profuleImage_URL") var profileImage_URL: String?,
     @SerializedName("like_count") var like_count: Int,
     @SerializedName("comment_count") var comment_count: Int,
     @SerializedName("createdAt") var createdAt: String,

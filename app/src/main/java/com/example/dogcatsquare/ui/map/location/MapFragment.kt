@@ -654,6 +654,8 @@ class MapFragment : Fragment(), OnMapReadyCallback {
         // 지도가 초기화되었는지 확인
         if (::naverMap.isInitialized) {
             val mapCenter = naverMap.cameraPosition.target
+
+            saveCurrentLocation(mapCenter.latitude, mapCenter.longitude) // 현재 위치 저장
             return Pair(mapCenter.latitude, mapCenter.longitude)
         }
         // 지도가 초기화되지 않은 경우 기본값 반환
@@ -663,5 +665,15 @@ class MapFragment : Fragment(), OnMapReadyCallback {
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
+    }
+
+    private fun saveCurrentLocation(latitude: Double, longitude: Double) {
+        val sharedPref = requireActivity().getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
+        with(sharedPref.edit()) {
+            putFloat("current_latitude", latitude.toFloat())
+            putFloat("current_longitude", longitude.toFloat())
+            apply()
+        }
+        Log.d("MapFragment", "위치 저장: 위도 $latitude, 경도 $longitude")
     }
 }

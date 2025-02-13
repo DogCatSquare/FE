@@ -51,6 +51,7 @@ class MapEtcFragment : Fragment(), OnMapReadyCallback {
     private var actualPlaceLongitude: Double? = null
     private var isWished = false
 
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,

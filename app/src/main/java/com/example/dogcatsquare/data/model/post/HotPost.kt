@@ -1,4 +1,4 @@
-package com.example.dogcatsquare.data.post
+package com.example.dogcatsquare.data.model.post
 
 data class HotPost(
     val id: Int,
