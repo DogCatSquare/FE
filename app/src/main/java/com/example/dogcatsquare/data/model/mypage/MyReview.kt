@@ -1,11 +1,18 @@
 package com.example.dogcatsquare.data.model.mypage
 
 data class MyReview(
+    val content: List<ReviewContent>,
+    val totalPages: Int,
+    val totalElements: Int,
+    val last: Boolean,
+    val first: Boolean,
+    val size: Int,
+    val number: Int
+)
+
+data class ReviewContent(
     val id: Int,
-    val name: String,
-    val content: String?,
+    val content: String,
     val createdAt: String,
-    val placeId: Int?,
-    val walkId: Int?
-//    val image_urls: List<String>
+    val imageUrls: List<String>?
 )
