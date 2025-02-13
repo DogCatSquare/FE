@@ -7,6 +7,7 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.dogcatsquare.R
+import com.example.dogcatsquare.data.community.Tip
 import com.example.dogcatsquare.databinding.FragmentCommunityTipsBinding
 
 class CommunityTipsFragment : Fragment(R.layout.fragment_community_tips) {

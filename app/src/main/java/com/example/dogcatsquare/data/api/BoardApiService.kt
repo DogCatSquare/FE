@@ -3,6 +3,7 @@ package com.example.dogcatsquare.data.api
 import com.example.dogcatsquare.data.community.ApiResponse
 import com.example.dogcatsquare.data.community.BoardResponseDto
 import com.example.dogcatsquare.data.community.BoardSearchResponseDto
+import com.example.dogcatsquare.data.community.PostDetailResponse
 import okhttp3.MultipartBody
 import okhttp3.RequestBody
 import retrofit2.Call
@@ -37,6 +38,12 @@ interface BoardApiService {
         @Part("request") request: RequestBody,
         @Part communityImages: List<MultipartBody.Part>?
     ): Call<ApiResponse>
+
+    // 특정 게시글 조회 API
+    @GET("api/board/post/{postId}")
+    fun getPost(
+        @Path("postId") postId: Long
+    ): Call<PostDetailResponse>
 
     // 게시판 검색 API 추가
     @GET("/api/board/search")

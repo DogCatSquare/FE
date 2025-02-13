@@ -1,10 +1,7 @@
 package com.example.dogcatsquare.ui.community
 
 import android.content.Context
-import android.content.Intent
 import android.view.LayoutInflater
-import android.view.MenuInflater
-import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
@@ -12,11 +9,12 @@ import android.widget.PopupMenu
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.example.dogcatsquare.R
+import com.example.dogcatsquare.data.community.LocalPost
 
 class LocalPostAdapter(
     private val context: Context,
     private val localPosts: MutableList<LocalPost>,
-    private val onEditPost: (LocalPost) -> Unit, // 🔹 추가
+    private val onEditPost: (LocalPost) -> Unit, // 수정 기능 연결
     private val onDeletePost: (Int) -> Unit,
     private val isCompactView: Boolean
 ) : RecyclerView.Adapter<LocalPostAdapter.ViewHolder>() {
@@ -39,24 +37,32 @@ class LocalPostAdapter(
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val post = localPosts[position]
 
+        // 게시글 작성자, 견종, 내용을 설정
         holder.username.text = post.username
         holder.dogBreed.text = post.dogbreed
         holder.content.text = post.content
 
-        // 🛠 홈 탭에서는 2줄, 동네이야기 탭에서는 3줄 표시
+        // 홈 탭에서는 2줄, 동네 이야기 탭에서는 3줄 표시
         holder.content.apply {
             maxLines = if (isCompactView) 2 else 3
             ellipsize = android.text.TextUtils.TruncateAt.END
         }
 
+        // 이미지가 있다면, dummy 데이터의 경우 리소스 ID를 사용한다고 가정하여 캐스팅 처리
         if (post.images.isNotEmpty()) {
-            holder.image1?.setImageResource(post.images[0])
-            holder.image1?.visibility = View.VISIBLE
+            val imageList = post.images as? List<Int>
+            if (imageList != null && imageList.isNotEmpty()) {
+                holder.image1?.setImageResource(imageList[0])
+                holder.image1?.visibility = View.VISIBLE
 
-            if (post.images.size > 1) {
-                holder.image2?.setImageResource(post.images[1])
-                holder.image2?.visibility = View.VISIBLE
+                if (imageList.size > 1) {
+                    holder.image2?.setImageResource(imageList[1])
+                    holder.image2?.visibility = View.VISIBLE
+                } else {
+                    holder.image2?.visibility = View.GONE
+                }
             } else {
+                holder.image1?.visibility = View.GONE
                 holder.image2?.visibility = View.GONE
             }
         } else {
@@ -64,21 +70,19 @@ class LocalPostAdapter(
             holder.image2?.visibility = View.GONE
         }
 
-        // 메뉴 버튼 클릭 이벤트 설정
+        // 메뉴 버튼 클릭 이벤트: 수정/삭제 기능 연결
         holder.postMenu?.setOnClickListener { showPopupMenu(it, post, position) }
     }
-
 
     override fun getItemCount(): Int = localPosts.size
 
     private fun showPopupMenu(view: View, post: LocalPost, position: Int) {
         val popup = PopupMenu(context, view)
         popup.menuInflater.inflate(R.menu.post_menu, popup.menu)
-
         popup.setOnMenuItemClickListener { item ->
             when (item.itemId) {
                 R.id.menu_edit -> {
-                    onEditPost(post) // 🔹 수정 기능 연결
+                    onEditPost(post)
                     true
                 }
                 R.id.menu_delete -> {

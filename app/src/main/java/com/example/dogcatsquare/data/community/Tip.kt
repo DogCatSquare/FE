@@ -1,4 +1,4 @@
-package com.example.dogcatsquare.ui.community
+package com.example.dogcatsquare.data.community
 
 data class Tip(
     val title: String,
