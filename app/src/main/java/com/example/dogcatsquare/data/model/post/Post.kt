@@ -1,4 +1,4 @@
-package com.example.dogcatsquare.data.post
+package com.example.dogcatsquare.data.model.post
 
 data class Post(
     val id: Int,
@@ -12,5 +12,5 @@ data class Post(
     val comment_count: Int,
     val createdAt: String,
     val profileImage_URL: String?,
-    val images: List<String>?
+    val images: List<String?>?
 )

@@ -1,6 +1,7 @@
 package com.example.dogcatsquare.ui.home
 
 import PostApiService
+import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
@@ -21,29 +22,30 @@ import com.example.dogcatsquare.data.map.MapPlace
 import com.example.dogcatsquare.R
 import com.example.dogcatsquare.data.api.DDayRetrofitItf
 import com.example.dogcatsquare.data.api.EventRetrofitItf
+import com.example.dogcatsquare.data.api.PlacesApiService
 import com.example.dogcatsquare.data.api.WeatherRetrofitItf
+import com.example.dogcatsquare.data.map.GetHotPlaceRequest
+import com.example.dogcatsquare.data.map.GetHotPlaceResponse
+import com.example.dogcatsquare.data.map.Place
 import com.example.dogcatsquare.data.model.home.DDay
 import com.example.dogcatsquare.data.model.home.Event
 import com.example.dogcatsquare.data.model.home.GetAllDDayResponse
 import com.example.dogcatsquare.data.model.home.GetAllEventsResponse
 import com.example.dogcatsquare.data.model.home.WeatherResponse
 import com.example.dogcatsquare.data.model.home.WeatherResult
-import com.example.dogcatsquare.data.model.pet.GetAllPetResponse
-import com.example.dogcatsquare.data.model.pet.PetList
 import com.example.dogcatsquare.data.network.RetrofitObj
-import com.example.dogcatsquare.data.post.HotPost
-import com.example.dogcatsquare.data.post.PopularPostResponse
-import com.example.dogcatsquare.data.post.Post
+import com.example.dogcatsquare.data.model.post.PopularPostResponse
+import com.example.dogcatsquare.data.model.post.Post
 import com.example.dogcatsquare.databinding.FragmentHomeBinding
 import com.example.dogcatsquare.ui.map.location.MapDetailFragment
 import com.example.dogcatsquare.ui.map.location.MapEtcFragment
 import com.example.dogcatsquare.ui.mypage.HorizontalSpacingItemDecoration
+import com.google.android.gms.location.LocationServices
 import com.google.gson.annotations.SerializedName
 import com.naver.maps.geometry.LatLng
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
-import retrofit2.create
 import java.util.Timer
 import java.util.TimerTask
 
@@ -54,7 +56,7 @@ class HomeFragment : Fragment() {
     private val handler = Handler(Looper.getMainLooper())
 
     private var dDayDatas = ArrayList<DDay>()
-    private var placeDatas = ArrayList<MapPlace>()
+    private var placeDatas = ArrayList<Place>()
     private var hotPostDatas = ArrayList<Post>()
     private var eventDatas = ArrayList<Event>()
 
@@ -261,92 +263,83 @@ class HomeFragment : Fragment() {
         // 데이터 초기화
         placeDatas.clear()
 
-        // 핫플 임시 더미 데이터
-        placeDatas.apply {
-            add(MapPlace(
-                id = 0,
-                placeName = "가나다 동물병원",
-                placeType = "동물병원",
-                placeDistance = "0.55km",
-                placeLocation = "서울시 성북구 월곡동 77",
-                placeCall = "02-1234-5678",
-                placeImgUrl = null,
-                isOpen = "영업중"
-            ))
-            add(MapPlace(
-                id = 0,
-                placeName = "서대문 안산자락길",
-                placeType = "산책로",
-                placeDistance = "0.55km",
-                placeLocation = "서울시 서대문구 봉원사길 75-66 111111111111111111",
-                placeCall = "02-1234-5678",
-                placeImgUrl = null,
-                isOpen = "영업중"
-            ))
-            add(MapPlace(
-                id = 0,
-                placeName = "고양이호텔",
-                placeType = "호텔",
-                placeDistance = "0.55km",
-                placeLocation = "서울시 성북구 월곡동 77",
-                placeCall = "02-1234-5678",
-                placeImgUrl = null,
-                isOpen = "영업중"
-            ))
-            add(MapPlace(
-                id = 0,
-                placeName = "가나다 동물병원",
-                placeType = "동물병원",
-                placeDistance = "0.55km",
-                placeLocation = "서울시 성북구 월곡동 77",
-                placeCall = "02-1234-5678",
-                placeImgUrl = null,
-                isOpen = "영업중"
-            ))
-        }
-
         // hot place recycler view
         val homeHotPlaceRVAdapter = HomeHotPlaceRVAdapter(placeDatas)
         binding.homeHotPlaceRv.adapter = homeHotPlaceRVAdapter
         binding.homeHotPlaceRv.layoutManager = LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false)
 
+        getHotPlace(homeHotPlaceRVAdapter)
+
         // 클릭 인터페이스
         homeHotPlaceRVAdapter.setMyItemClickListener(object : HomeHotPlaceRVAdapter.OnItemClickListener {
-            override fun onItemClick(place: MapPlace) {
+            override fun onItemClick(place: Place) {
+                val savedLocation = getSavedLocation()
+
                 // placeType에 따라 다른 Fragment로 전환
-                val fragment = if (place.placeType == "동물병원") {
-                    MapDetailFragment().apply {
-                        arguments = Bundle().apply {
-                            putString("placeName", place.placeName)
-                            putString("placeType", place.placeType)
-                            putString("placeDistance", place.placeDistance)
-                            putString("placeLocation", place.placeLocation)
-                            putString("placeCall", place.placeCall)
-                            putString("placeImgUrl", place.placeImgUrl)
-                            putString("isOpen", place.isOpen)
-                        }
-                    }
+                if (place.category == "HOSPITAL") {
+                    val fragment = MapDetailFragment.newInstance(place.id, savedLocation?.first ?: 0.0, savedLocation?.second ?: 0.0)
+                    requireActivity().supportFragmentManager.beginTransaction()
+                        .replace(R.id.main_frm, fragment)
+                        .addToBackStack(null)
+                        .commitAllowingStateLoss()
                 } else {
-                    MapEtcFragment().apply {
-                        arguments = Bundle().apply {
-                            putString("placeName", place.placeName)
-                            putString("placeType", place.placeType)
-                            putString("placeDistance", place.placeDistance)
-                            putString("placeLocation", place.placeLocation)
-                            putString("placeCall", place.placeCall)
-                            putString("placeImgUrl", place.placeImgUrl)
-                            putString("isOpen", place.isOpen)
+                    val fragment = MapEtcFragment.newInstance(place.id, savedLocation?.first ?: 0.0, savedLocation?.second ?: 0.0)
+                    requireActivity().supportFragmentManager.beginTransaction()
+                        .replace(R.id.main_frm, fragment)
+                        .addToBackStack(null)
+                        .commitAllowingStateLoss()
+                }
+            }
+        })
+    }
+
+    private fun getHotPlace(adapter: HomeHotPlaceRVAdapter) {
+        val token = getToken()
+        val savedLocation = getSavedLocation()
+
+        val getPopularPlaceService = RetrofitObj.getRetrofit().create(PlacesApiService::class.java)
+        if (savedLocation != null) {
+            getPopularPlaceService.getHotPlace("Bearer $token", 1, GetHotPlaceRequest(savedLocation.first, savedLocation.second)).enqueue(object : Callback<GetHotPlaceResponse> {
+                override fun onResponse(call: Call<GetHotPlaceResponse>, response: Response<GetHotPlaceResponse>) {
+                    Log.d("GetHotPlace/SUCCESS", response.toString())
+                    val resp: GetHotPlaceResponse = response.body()!!
+
+                    if (resp != null) {
+                        if (resp.isSuccess) {
+                            Log.d("GetHotPlace", "핫플 전체 조회 성공")
+
+                            val places = resp.result.map { place ->
+                                Place (
+                                    id = place.id,
+                                    name = place.name,
+                                    address = place.address,
+                                    category = place.category,
+                                    phoneNumber = place.phoneNumber,
+                                    longitude = place.longitude,
+                                    latitude = place.latitude,
+                                    distance = place.distance,
+                                    open = place.open,
+                                    imgUrl = place.imgUrl,
+                                    reviewCount = place.reviewCount
+                                )
+                            }.take(5)
+
+                            placeDatas.addAll(places)
+                            Log.d("HotPlaceList", placeDatas.toString())
+                            adapter.notifyDataSetChanged()
                         }
+
+                    } else {
+                        Log.e("GetHotPlace/ERROR", "응답 코드: ${response.code()}")
                     }
                 }
 
-                // Fragment 전환
-                requireActivity().supportFragmentManager.beginTransaction()
-                    .replace(R.id.main_frm, fragment)
-                    .addToBackStack(null)
-                    .commitAllowingStateLoss()
-            }
-        })
+                override fun onFailure(call: Call<GetHotPlaceResponse>, t: Throwable) {
+                    Log.d("RETROFIT/FAILURE", t.message.toString())
+                }
+
+            })
+        }
     }
 
     // ad viewpager
@@ -373,14 +366,6 @@ class HomeFragment : Fragment() {
         binding.homeHotPostRv.layoutManager = LinearLayoutManager(context, LinearLayoutManager.VERTICAL, false)
 
         getPopularPost(homeHotPostRVAdapter)
-
-        // 클릭 인터페이스
-        homeHotPostRVAdapter.setMyItemClickListener(object : HomeHotPostRVAdapter.OnItemClickListener {
-            override fun onItemClick(post: Post) {
-                // post 연결
-            }
-        })
-
     }
 
     private fun getPopularPost(adapter: HomeHotPostRVAdapter) {
@@ -409,7 +394,7 @@ class HomeFragment : Fragment() {
                                 thumbnail_URL = post.thumbnail_URL,
                                 images = post.images,
                                 createdAt = post.createdAt,
-                                profileImage_URL = post.profuleImage_URL
+                                profileImage_URL = post.profileImage_URL
                             )
                         }.take(2)
 
@@ -488,29 +473,16 @@ class HomeFragment : Fragment() {
         })
     }
 
-    private fun setupLocationObserver() {
-        locationViewModel.currentLocation.observe(viewLifecycleOwner) { location ->
-            currentLocation = location
-            Log.d("HomeFragment", "위치 업데이트 - 위도: ${location.latitude}, 경도: ${location.longitude}")
+    private fun getSavedLocation(): Pair<Double, Double>? {
+        val sharedPref = requireActivity().getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
+        val latitude = sharedPref.getFloat("current_latitude", -1f)
+        val longitude = sharedPref.getFloat("current_longitude", -1f)
 
-            // 위치 정보가 업데이트될 때마다 필요한 작업 수행
-            updateHomeWithLocation(location)
+        return if (latitude != -1f && longitude != -1f) {
+            Pair(latitude.toDouble(), longitude.toDouble())
+        } else {
+            null // 위치 정보가 없는 경우
         }
     }
 
-    private fun updateHomeWithLocation(location: LatLng) {
-        // 현재는 로그만 출력
-        Log.d("HomeFragment", "위치 기반 업데이트 - 위도: ${location.latitude}, 경도: ${location.longitude}")
-
-        // 추후 이 위치에서 실제 기능 구현
-        // 1. 날씨 업데이트
-        // 2. 주변 장소 검색
-        // 3. 기타 위치 기반 서비스 구현
-    }
-
-    override fun onDestroyView() {
-        super.onDestroyView()
-        // 메모리 누수 방지를 위해 Observer 제거
-        locationViewModel.currentLocation.removeObservers(viewLifecycleOwner)
-    }
 }
