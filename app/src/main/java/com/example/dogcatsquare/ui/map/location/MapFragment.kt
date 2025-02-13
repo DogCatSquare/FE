@@ -1,8 +1,10 @@
 package com.example.dogcatsquare.ui.map.location
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.content.Context
 import android.content.pm.PackageManager
+import android.graphics.Color
 import android.os.Bundle
 import android.os.Looper
 import android.util.Log
@@ -50,6 +52,11 @@ import kotlinx.coroutines.withContext
 import retrofit2.HttpException
 import java.io.IOException
 import java.util.concurrent.TimeUnit
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.withContext
+import kotlinx.coroutines.suspendCancellableCoroutine
+import kotlin.coroutines.resume
 
 
 class MapFragment : Fragment(), OnMapReadyCallback {
@@ -74,6 +81,8 @@ class MapFragment : Fragment(), OnMapReadyCallback {
     private var currentLocation: LatLng? = null
     private lateinit var locationCallback: LocationCallback
     private val locationViewModel: LocationViewModel by activityViewModels()
+
+    private var selectedMarker: Marker? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -133,9 +142,14 @@ class MapFragment : Fragment(), OnMapReadyCallback {
             override fun onLocationResult(locationResult: LocationResult) {
                 locationResult.lastLocation?.let { location ->
                     val newLocation = LatLng(location.latitude, location.longitude)
+                    Log.d("MapFragment", "==== 위치 업데이트 발생 ====")
+                    Log.d("MapFragment", "이전 위치(currentLocation): $currentLocation")
+                    Log.d("MapFragment", "새로운 위치: lat=${newLocation.latitude}, lng=${newLocation.longitude}")
+
                     currentLocation = newLocation
-                    // ViewModel을 통해 위치 정보 공유
                     locationViewModel.updateLocation(newLocation)
+
+                    Log.d("MapFragment", "위치 업데이트 완료: currentLocation = $currentLocation")
                 }
             }
         }
@@ -143,39 +157,43 @@ class MapFragment : Fragment(), OnMapReadyCallback {
 
     private fun startLocationUpdates() {
         if (!hasLocationPermission()) {
+            Log.d("MapFragment", "위치 권한 없음 - 권한 요청 시작")
             requestLocationPermission()
             return
         }
 
         try {
+            Log.d("MapFragment", "위치 업데이트 시작")
             val locationRequest = LocationRequest.create().apply {
                 priority = LocationRequest.PRIORITY_HIGH_ACCURACY
-                interval = TimeUnit.SECONDS.toMillis(10) // 10초마다 업데이트
+                interval = TimeUnit.SECONDS.toMillis(10)
                 fastestInterval = TimeUnit.SECONDS.toMillis(5)
             }
 
             val fusedLocationClient = LocationServices.getFusedLocationProviderClient(requireActivity())
-            fusedLocationClient.requestLocationUpdates(
-                locationRequest,
-                locationCallback,
-                Looper.getMainLooper()
-            )
-
-            // 최초 위치 가져오기
             fusedLocationClient.lastLocation.addOnSuccessListener { location ->
                 location?.let {
+                    Log.d("MapFragment", "최초 위치 받아옴: lat=${it.latitude}, lng=${it.longitude}")
                     currentLocation = LatLng(it.latitude, it.longitude)
-                    // 초기 위치로 지도 이동
                     if (::naverMap.isInitialized) {
+                        Log.d("MapFragment", "지도를 현재 위치로 이동")
                         naverMap.moveCamera(
                             CameraUpdate.scrollTo(currentLocation!!)
                                 .animate(CameraAnimation.Easing)
                         )
                     }
-                }
+                } ?: Log.d("MapFragment", "최초 위치를 받아올 수 없음")
             }
+
+            fusedLocationClient.requestLocationUpdates(
+                locationRequest,
+                locationCallback,
+                Looper.getMainLooper()
+            )
+            Log.d("MapFragment", "위치 업데이트 요청 완료")
+
         } catch (e: SecurityException) {
-            Log.e("MapFragment", "위치 권한이 없습니다.", e)
+            Log.e("MapFragment", "위치 권한 오류", e)
             Toast.makeText(requireContext(), "위치 권한이 필요합니다.", Toast.LENGTH_SHORT).show()
         }
     }
@@ -200,6 +218,9 @@ class MapFragment : Fragment(), OnMapReadyCallback {
     override fun onMapReady(map: NaverMap) {
         naverMap = map
 
+        naverMap.minZoom = 11.0
+        naverMap.moveCamera(CameraUpdate.zoomTo(12.0))
+
         naverMap.locationSource = locationSource
         naverMap.uiSettings.isLocationButtonEnabled = true
 
@@ -209,6 +230,27 @@ class MapFragment : Fragment(), OnMapReadyCallback {
             startLocationUpdates()
         } else {
             requestLocationPermission()
+        }
+
+        naverMap.setOnMapClickListener { _, _ ->
+            // 선택된 마커가 있다면 원래 상태로 복원
+            selectedMarker?.apply {
+                width = 70
+                height = 70
+                zIndex = 0
+            }
+            selectedMarker = null
+
+            // 줌 레벨을 원래대로 복원
+            naverMap.moveCamera(
+                CameraUpdate.zoomTo(12.0)  // 기본 줌 레벨
+                    .animate(CameraAnimation.Easing)
+            )
+
+            // 전체 리스트로 복원
+            (binding.mapPlaceRV.adapter as? MapPlaceRVAdapter)?.let { adapter ->
+                adapter.updateList(originalPlaceDatas)
+            }
         }
 
         // 초기 장소 검색 수행 (선택적)
@@ -344,6 +386,12 @@ class MapFragment : Fragment(), OnMapReadyCallback {
                     adapter.updateList(filtered)
                     Log.d("MapFragment", "어댑터 업데이트 완료")
                 }
+
+                // 마커 업데이트
+                clearMarkers() // 기존 마커 모두 제거
+                filtered.forEach { place -> // 필터링된 장소들에 대해서만 마커 생성
+                    createMarker(place)
+                }
             }
         })
 
@@ -449,6 +497,7 @@ class MapFragment : Fragment(), OnMapReadyCallback {
             ?.getInt("city_id", -1) ?: -1
     }
 
+    @SuppressLint("MissingPermission")
     private suspend fun loadAllCategories() {
         val token = getToken()
         if (token == null) {
@@ -468,8 +517,39 @@ class MapFragment : Fragment(), OnMapReadyCallback {
             return
         }
 
-        // 사용자의 실제 위치 사용
-        val userLocation = currentLocation ?: naverMap.cameraPosition.target
+        // 위치 정보를 받아올 때까지 대기
+        val userLocation = currentLocation ?: run {
+            try {
+                suspendCancellableCoroutine { continuation ->
+                    val fusedLocationClient = LocationServices.getFusedLocationProviderClient(requireActivity())
+                    fusedLocationClient.lastLocation
+                        .addOnSuccessListener { location ->
+                            if (location != null) {
+                                val newLocation = LatLng(location.latitude, location.longitude)
+                                Log.d("MapFragment", "위치 정보 획득 성공: lat=${location.latitude}, lng=${location.longitude}")
+                                currentLocation = newLocation
+                                continuation.resume(newLocation)
+                            } else {
+                                Log.d("MapFragment", "위치 정보 획득 실패, 기본 위치 사용")
+                                val defaultLocation = naverMap.cameraPosition.target
+                                continuation.resume(defaultLocation)
+                            }
+                        }
+                        .addOnFailureListener { e ->
+                            Log.e("MapFragment", "위치 정보 획득 실패", e)
+                            val defaultLocation = naverMap.cameraPosition.target
+                            continuation.resume(defaultLocation)
+                        }
+                }
+            } catch (e: Exception) {
+                Log.e("MapFragment", "위치 정보 획득 중 오류 발생", e)
+                naverMap.cameraPosition.target
+            }
+        }
+
+        Log.d("MapFragment", "==== API 호출 위치 정보 확인 ====")
+        Log.d("MapFragment", "최종 사용 위치: lat=${userLocation.latitude}, lng=${userLocation.longitude}")
+
         val searchRequest = SearchPlacesRequest(
             latitude = userLocation.latitude,
             longitude = userLocation.longitude
@@ -551,11 +631,11 @@ class MapFragment : Fragment(), OnMapReadyCallback {
     // 카테고리별 마커 아이콘 설정
     private fun getMarkerIconForCategory(placeType: String?): Int {
         return when (placeType) {
-            "동물병원" -> R.drawable.ic_marker// 병원 마커 아이콘
-            "산책로" -> R.drawable.ic_marker // 공원 마커 아이콘
-            "카페" -> R.drawable.ic_marker // 카페 마커 아이콘
-            "식당" -> R.drawable.ic_marker // 식당 마커 아이콘
-            "호텔" -> R.drawable.ic_marker // 호텔 마커 아이콘
+            "동물병원" -> R.drawable.ic_marker_hospital// 병원 마커 아이콘
+            "산책로" -> R.drawable.ic_marker_park // 공원 마커 아이콘
+            "카페" -> R.drawable.ic_marker_cafe // 카페 마커 아이콘
+            "식당" -> R.drawable.ic_marker_cafe // 식당 마커 아이콘
+            "호텔" -> R.drawable.ic_marker_hotel // 호텔 마커 아이콘
             else -> R.drawable.ic_marker // 기본 마커 아이콘
         }
     }
@@ -570,18 +650,50 @@ class MapFragment : Fragment(), OnMapReadyCallback {
             icon = OverlayImage.fromResource(getMarkerIconForCategory(place.placeType))
 
             // 마커 크기 설정
-            width = 50
-            height = 50
+            width = 70
+            height = 70
 
             // 마커 클릭 이벤트
             setOnClickListener { overlay ->
-                // 마커 클릭시 해당 장소 정보를 보여주는 로직
-                showPlaceInfo(place)
+                // 이전에 선택된 마커가 있다면 원래 크기로 복원
+                selectedMarker?.apply {
+                    width = 70
+                    height = 70
+                    zIndex = 0
+                }
+
+                // 현재 마커를 선택된 상태로 변경
+                if (selectedMarker !== this) {  // marker 대신 this 사용
+                    // 마커 크기 증가
+                    width = 90
+                    height = 90
+                    zIndex = 1
+                    selectedMarker = this  // marker 대신 this 사용
+
+                    // 카메라를 해당 위치로 이동하며 줌 레벨 증가
+                    naverMap.moveCamera(
+                        CameraUpdate.scrollAndZoomTo(
+                            position,
+                            15.0
+                        ).animate(CameraAnimation.Easing)
+                    )
+                } else {
+                    // 같은 마커를 다시 클릭한 경우
+                    selectedMarker = null
+                }
+
+                // RecyclerView에 해당 장소만 표시
+                (binding.mapPlaceRV.adapter as? MapPlaceRVAdapter)?.let { adapter ->
+                    adapter.updateList(listOf(place))
+                }
+
                 true
             }
         }
         markers.add(marker)
     }
+
+
 
     // 모든 마커 제거
     private fun clearMarkers() {
@@ -591,13 +703,19 @@ class MapFragment : Fragment(), OnMapReadyCallback {
 
     // 장소 정보 표시
     private fun showPlaceInfo(place: MapPlace) {
-        // BottomSheet를 확장하고 해당 장소 정보를 표시
-        bottomSheetBehavior.state = BottomSheetBehavior.STATE_EXPANDED
+        // 카메라를 해당 위치로 이동
+        place.latitude?.let { lat ->
+            place.longitude?.let { lng ->
+                naverMap.moveCamera(
+                    CameraUpdate.scrollTo(LatLng(lat, lng))
+                        .animate(CameraAnimation.Easing)
+                )
+            }
+        }
 
-        // RecyclerView에서 해당 아이템으로 스크롤
-        val position = placeDatas.indexOf(place)
-        if (position != -1) {
-            binding.mapPlaceRV.scrollToPosition(position)
+        // RecyclerView에 해당 장소만 표시
+        (binding.mapPlaceRV.adapter as? MapPlaceRVAdapter)?.let { adapter ->
+            adapter.updateList(listOf(place))
         }
     }
 
