@@ -2,9 +2,11 @@ package com.example.dogcatsquare.ui.login
 
 import android.content.Context
 import android.content.Intent
+import android.content.SharedPreferences
 import android.os.Bundle
 import android.util.Log
 import android.view.View
+import android.widget.CompoundButton
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
@@ -23,52 +25,71 @@ import retrofit2.Response
 class LoginDetailActivity: AppCompatActivity() {
     lateinit var binding: ActivityLoginDetailBinding
 
+    lateinit var pref : SharedPreferences
+    lateinit var editor : SharedPreferences.Editor
+    private var loginChecked : Boolean = false
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityLoginDetailBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        pref = getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
+        editor = pref.edit()
+
         // 상단바 색깔
         window.statusBarColor = ContextCompat.getColor(this, R.color.white)
 
-        // 로그인 상태 확인
-//        if (isLoggedIn()) {
-//            navigateToMainWithToken()
-//            return
-//        }
-
-        // EditText 값 변경 감지
-        setupTextWatchers()
-
-        // 로그인 버튼 클릭 이벤트
-        binding.loginBtn.setOnClickListener {
-            val email = binding.loginEmailEt.text.toString()
-            val password = binding.loginPwEt.text.toString()
-
-            if (email.isEmpty() || password.isEmpty()) {
-                // 아무것도 안함
-            } else {
-                // 로그인 처리
-                handleLogin(email, password)
-            }
-        }
-
-        // 카카오 로그인 버튼 클릭 이벤트
-        binding.kakaoLoginBtn.setOnClickListener {
-            Toast.makeText(this, "카카오 로그인 시도 중...", Toast.LENGTH_SHORT).show()
-//            handleKakaoLogin()
-            val intent = Intent(this, MainActivity::class.java)
-            startActivity(intent)
-        }
-
-        // 아이디가 없으면 회원가입(임시)
+        // signup btn click
         binding.signupBtn.setOnClickListener {
             navigateToSignup()
         }
 
-        // 자동 로그인 체크박스
-        binding.checkBoxAll.setOnCheckedChangeListener { _, isChecked ->
-            saveLoginState(isChecked)
+        // EditText 값 변경 감지
+        setupTextWatchers()
+
+        // if autoLogin checked
+        if (pref.getBoolean("autoLogin", false)) {
+            binding.loginEmailEt.setText(pref.getString("email", ""))
+            binding.loginPwEt.setText(pref.getString("pw", ""))
+            binding.checkBoxAll.isChecked = true
+
+            val savedEmail = binding.loginEmailEt.text.toString().trim()
+            val savedPw = binding.loginPwEt.text.toString().trim()
+
+            handleLogin(savedEmail, savedPw)
+        } else {
+            // 로그인 버튼 클릭 이벤트
+            binding.loginBtn.setOnClickListener {
+                val email = binding.loginEmailEt.text.toString()
+                val pw = binding.loginPwEt.text.toString()
+
+                if (email.isEmpty() || pw.isEmpty()) {
+                    binding.errorTv.visibility = View.VISIBLE
+                    binding.errorTv.text = "이메일과 비밀번호를 입력하세요"
+                } else {
+                    // 로그인 처리
+                    // 만약 자동로그인 체크되어있으면 정보 저장
+                    if (loginChecked) {
+                        editor.putString("email", email)
+                        editor.putString("pw", pw)
+                        editor.putBoolean("autoLogin", true)
+                        editor.commit()
+                    }
+                    handleLogin(email, pw)
+                }
+            }
+        }
+
+        // autoLogin checkBox click
+        binding.checkBoxAll.setOnCheckedChangeListener{ buttonView, isChecked ->
+            if (isChecked) {
+                loginChecked = true
+            } else {
+                loginChecked = false
+                editor.clear()
+                editor.commit()
+            }
         }
     }
 
@@ -117,9 +138,6 @@ class LoginDetailActivity: AppCompatActivity() {
                         val resp: LoginResponse = response.body()!!
                         if (resp != null) {
                             if (resp.isSuccess) {
-                                if (binding.checkBoxAll.isChecked) {
-                                    saveLoginState(true)
-                                }
                                 navigateToMain(resp)
                             } else {
                                 Log.e("Login/FAILURE", "응답 코드: ${resp.code}, 응답 메시지: ${resp.message}")
@@ -161,26 +179,16 @@ class LoginDetailActivity: AppCompatActivity() {
         }
     }
 
-    // 자동 로그인
-    private fun saveLoginState(isLoggedIn: Boolean) {
-        val sharedPreferences = getSharedPreferences("AutoLoginPrefs", Context.MODE_PRIVATE)
-        val editor = sharedPreferences.edit()
-        editor.putBoolean("isLoggedIn", isLoggedIn)
-        editor.apply()
+    private fun saveUserInfo(token: String, id: Int, email: String, pw: String) {
+        val sharedPref = getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
+        with(sharedPref.edit()){
+            putString("token", token)
+            putInt("userId", id) // 아이디 값 전달
+            putString("email", email)
+            putString("pw", pw)
+            apply()
+        }
     }
-
-    private fun isLoggedIn(): Boolean {
-        val sharedPreferences = getSharedPreferences("AutoLoginPrefs", Context.MODE_PRIVATE)
-        return sharedPreferences.getBoolean("isLoggedIn", false)
-    }
-
-    // 카카오 로그인
-//    private fun handleKakaoLogin() {
-//        // 카카오 로그인 로직 구현
-//        // 예시: 성공 메시지
-//        Toast.makeText(this, "카카오 로그인 성공!", Toast.LENGTH_SHORT).show()
-//        navigateToMain()
-//    }
 
     // 회원가입으로
     private fun navigateToSignup() {
@@ -201,23 +209,13 @@ class LoginDetailActivity: AppCompatActivity() {
         var id: Int = loginResponse.result.userId
         Log.d("Nickname액티비티 사용자 아이디 값", id.toString())
 
-        saveToken(token)
-        saveId(id)
+        var email: String = loginResponse.result.email
+        var pw: String = binding.loginPwEt.text.toString()
+
+        saveUserInfo(token, id, email, pw)
 
         val intent = Intent(this, MainActivity::class.java)
         startActivity(intent)
         finish() // 로그인 화면 종료
     }
-
-    private fun navigateToMainWithToken() {
-        val sharedPref = getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
-        val token = sharedPref.getString("token", null)
-
-        if (token != null) {
-            val intent = Intent(this, MainActivity::class.java)
-            startActivity(intent)
-            finish()
-        }
-    }
-
 }

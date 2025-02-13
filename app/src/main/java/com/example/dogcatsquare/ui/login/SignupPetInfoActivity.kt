@@ -252,7 +252,7 @@ class SignupPetInfoActivity : AppCompatActivity() {
             Log.d("CHECK_PET_INFO", "selectedImageUri before intent: $selectedImageUri")
 
             bundle.apply {
-                putString("imageUri", selectedImageUri.toString())
+                putString("imageUri", selectedImageUri?.toString())
                 putString("petName", binding.petNameEt.text.toString())  // 반려동물 이름
                 putString("dogCat", selectedAnimal)                      // 강아지/고양이 선택
                 putString("birth", binding.birthSelectBtn.text.toString()) // 생일

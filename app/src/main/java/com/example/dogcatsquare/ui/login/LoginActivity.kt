@@ -25,5 +25,6 @@ class LoginActivity : AppCompatActivity() {
     private fun checkLogin() {
         val intent = Intent(this, LoginDetailActivity::class.java)
         startActivity(intent)
+        finish()
     }
 }

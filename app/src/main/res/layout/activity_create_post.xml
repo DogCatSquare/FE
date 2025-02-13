@@ -110,7 +110,18 @@
         android:layout_below="@id/link_input"
         android:layout_marginStart="16dp"
         android:layout_marginTop="16dp"
-        android:background="@drawable/bt_add_photo"></RelativeLayout>
+        android:background="@drawable/bt_add_photo">
+    </RelativeLayout>
+
+    <!-- 이미지 미리보기 추가 -->
+    <ImageView
+        android:id="@+id/image_preview"
+        android:layout_width="match_parent"
+        android:layout_height="200dp"
+        android:layout_below="@id/add_photo"
+        android:layout_marginTop="8dp"
+        android:scaleType="centerCrop"
+        android:visibility="gone" />
 
     <!-- 완료 버튼 -->
     <ImageView

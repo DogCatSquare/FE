@@ -130,8 +130,6 @@ class AddPetFragment : Fragment() {
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
                 val currentLength = s?.length ?: 0
                 charCountTV.text = "$currentLength/10"
-
-//                petNameCheck = true
             }
 
             override fun afterTextChanged(s: Editable?) {}
@@ -143,10 +141,7 @@ class AddPetFragment : Fragment() {
         breedET.addTextChangedListener(object : TextWatcher {
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
 
-            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-                // 입력하기만 하면 true로
-//                breedCheck = true
-            }
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
 
             override fun afterTextChanged(s: Editable?) {}
         })

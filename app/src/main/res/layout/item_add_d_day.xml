@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="@color/white"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.05" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="@color/white"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.95" />
+
+    <TextView
+        android:id="@+id/my_info_tv4"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="3dp"
+        android:fontFamily="@font/pretendard_medium"
+        android:text="디데이 제목"
+        android:textSize="20sp"
+        app:layout_constraintStart_toStartOf="@+id/guideline1"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/date_btn"
+        style="@style/CustomMaterialButton2"
+        android:layout_width="0dp"
+        android:layout_height="50dp"
+        android:layout_marginTop="5dp"
+        android:insetTop="0dp"
+        android:insetBottom="0dp"
+        android:text="구매날짜"
+        android:textAlignment="textStart"
+        app:layout_constraintEnd_toStartOf="@+id/guideline2"
+        app:layout_constraintStart_toStartOf="@+id/guideline1"
+        app:layout_constraintTop_toBottomOf="@id/my_info_tv4" />
+
+    <LinearLayout
+        android:id="@+id/week_ll"
+        android:layout_width="0dp"
+        android:layout_height="50dp"
+        android:layout_gravity="center"
+        android:layout_marginTop="5dp"
+        android:background="@drawable/custom_linear_layout"
+        android:gravity="center"
+        android:orientation="horizontal"
+        app:layout_constraintEnd_toEndOf="@id/guideline2"
+        app:layout_constraintStart_toStartOf="@id/guideline1"
+        app:layout_constraintTop_toBottomOf="@+id/date_btn">
+
+        <!-- 감소 버튼 -->
+        <ImageButton
+            android:id="@+id/decrease_btn"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@null"
+            android:paddingLeft="15dp"
+            android:src="@drawable/ic_minus"
+            android:text="−"
+            android:textColor="@color/main_color1"
+            android:textSize="20sp" />
+
+        <!-- 텍스트 (숫자) -->
+        <TextView
+            android:id="@+id/count_text"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:fontFamily="@font/pretendard_regular"
+            android:gravity="center"
+            android:padding="8dp"
+            android:text="1주"
+            android:textSize="18sp" />
+
+        <!-- 증가 버튼 -->
+        <ImageButton
+            android:id="@+id/increase_btn"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@null"
+            android:paddingRight="15dp"
+            android:src="@drawable/ic_plus"
+            android:textColor="@color/main_color1"
+            android:textSize="18sp" />
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/textView38"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="5dp"
+        android:fontFamily="@font/pretendard_regular"
+        android:text="주기 알람 받기"
+        android:textColor="@color/gray4"
+        android:textSize="13sp"
+        app:layout_constraintBottom_toBottomOf="@+id/alarm_btn"
+        app:layout_constraintEnd_toStartOf="@+id/alarm_btn"
+        app:layout_constraintTop_toTopOf="@+id/alarm_btn" />
+
+    <Switch
+        android:id="@+id/alarm_btn"
+        android:layout_width="wrap_content"
+        android:layout_height="24dp"
+        android:layout_marginTop="5dp"
+        android:thumb="@drawable/custom_toggle_thumb"
+        android:track="@drawable/custom_toggle_btn"
+        app:layout_constraintEnd_toStartOf="@+id/guideline2"
+        app:layout_constraintTop_toBottomOf="@+id/week_ll" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>
