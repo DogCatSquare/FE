@@ -28,3 +28,4 @@ class WalkingReviewAdapter(private val reviewList: List<WalkingAddress>) :
 
     override fun getItemCount(): Int = reviewList.size
 }
+

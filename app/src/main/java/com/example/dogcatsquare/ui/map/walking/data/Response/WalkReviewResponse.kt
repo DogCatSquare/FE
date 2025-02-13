@@ -26,3 +26,4 @@ data class User(
     val breed: String,
     val profileImageUrl: String
 )
+

@@ -38,3 +38,5 @@ class WalkDetailViewModel : ViewModel() {
         })
     }
 }
+
+

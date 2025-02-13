@@ -5,3 +5,4 @@ data class WalkResponse(
     val message: String,
     val walkRouteId: Int?
 )
+

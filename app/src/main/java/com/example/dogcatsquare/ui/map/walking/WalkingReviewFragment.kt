@@ -217,3 +217,4 @@ class WalkingReviewFragment : Fragment(), OnMapReadyCallback {
         return Base64.encodeToString(byteArray, Base64.NO_WRAP)
     }
 }
+

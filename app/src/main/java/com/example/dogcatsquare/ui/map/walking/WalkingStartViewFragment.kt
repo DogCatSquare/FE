@@ -174,3 +174,4 @@ class WalkingStartViewFragment : Fragment() {
 //    }
 }
 
+

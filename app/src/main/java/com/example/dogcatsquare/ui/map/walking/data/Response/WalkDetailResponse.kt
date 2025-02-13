@@ -39,3 +39,4 @@ data class CreatedBy(
     val breed: String?,
     val profileImageUrl: String
 )
+

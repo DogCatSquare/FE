@@ -49,3 +49,4 @@ class ReviewAdapter(private val reviews: List<Review>) : RecyclerView.Adapter<Re
         }
     }
 }
+
