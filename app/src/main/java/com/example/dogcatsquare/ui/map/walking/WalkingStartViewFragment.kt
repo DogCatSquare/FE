@@ -54,9 +54,8 @@ class WalkingStartViewFragment : Fragment() {
             supportActionBar?.setDisplayHomeAsUpEnabled(true)
 
             toolbar.setNavigationOnClickListener {
-                parentFragmentManager.beginTransaction()
-                    .replace(R.id.main_frm, MapFragment())
-                    .commit()
+                // replace 대신 popBackStack 사용
+                parentFragmentManager.popBackStack()
             }
         }
 
@@ -172,6 +171,18 @@ class WalkingStartViewFragment : Fragment() {
 //        userPolyline.width = 10F // 선의 두께
 //        userPolyline.color = Color.parseColor("#FFB200") // 선의 색상
 //    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        // WalkingStartViewFragment가 제거될 때 숨겨져 있던 MapFragment를 다시 보여줌
+        parentFragmentManager.fragments
+            .filterIsInstance<MapFragment>()
+            .firstOrNull()?.let { mapFragment ->
+                parentFragmentManager.beginTransaction()
+                    .show(mapFragment)
+                    .commit()
+            }
+    }
 }
 
 
