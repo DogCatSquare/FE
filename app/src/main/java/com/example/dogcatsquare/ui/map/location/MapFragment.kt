@@ -1,6 +1,7 @@
 package com.example.dogcatsquare.ui.map.location
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.content.Context
 import android.content.pm.PackageManager
 import android.os.Bundle
@@ -50,6 +51,11 @@ import kotlinx.coroutines.withContext
 import retrofit2.HttpException
 import java.io.IOException
 import java.util.concurrent.TimeUnit
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.withContext
+import kotlinx.coroutines.suspendCancellableCoroutine
+import kotlin.coroutines.resume
 
 
 class MapFragment : Fragment(), OnMapReadyCallback {
@@ -133,9 +139,14 @@ class MapFragment : Fragment(), OnMapReadyCallback {
             override fun onLocationResult(locationResult: LocationResult) {
                 locationResult.lastLocation?.let { location ->
                     val newLocation = LatLng(location.latitude, location.longitude)
+                    Log.d("MapFragment", "==== 위치 업데이트 발생 ====")
+                    Log.d("MapFragment", "이전 위치(currentLocation): $currentLocation")
+                    Log.d("MapFragment", "새로운 위치: lat=${newLocation.latitude}, lng=${newLocation.longitude}")
+
                     currentLocation = newLocation
-                    // ViewModel을 통해 위치 정보 공유
                     locationViewModel.updateLocation(newLocation)
+
+                    Log.d("MapFragment", "위치 업데이트 완료: currentLocation = $currentLocation")
                 }
             }
         }
@@ -143,39 +154,43 @@ class MapFragment : Fragment(), OnMapReadyCallback {
 
     private fun startLocationUpdates() {
         if (!hasLocationPermission()) {
+            Log.d("MapFragment", "위치 권한 없음 - 권한 요청 시작")
             requestLocationPermission()
             return
         }
 
         try {
+            Log.d("MapFragment", "위치 업데이트 시작")
             val locationRequest = LocationRequest.create().apply {
                 priority = LocationRequest.PRIORITY_HIGH_ACCURACY
-                interval = TimeUnit.SECONDS.toMillis(10) // 10초마다 업데이트
+                interval = TimeUnit.SECONDS.toMillis(10)
                 fastestInterval = TimeUnit.SECONDS.toMillis(5)
             }
 
             val fusedLocationClient = LocationServices.getFusedLocationProviderClient(requireActivity())
-            fusedLocationClient.requestLocationUpdates(
-                locationRequest,
-                locationCallback,
-                Looper.getMainLooper()
-            )
-
-            // 최초 위치 가져오기
             fusedLocationClient.lastLocation.addOnSuccessListener { location ->
                 location?.let {
+                    Log.d("MapFragment", "최초 위치 받아옴: lat=${it.latitude}, lng=${it.longitude}")
                     currentLocation = LatLng(it.latitude, it.longitude)
-                    // 초기 위치로 지도 이동
                     if (::naverMap.isInitialized) {
+                        Log.d("MapFragment", "지도를 현재 위치로 이동")
                         naverMap.moveCamera(
                             CameraUpdate.scrollTo(currentLocation!!)
                                 .animate(CameraAnimation.Easing)
                         )
                     }
-                }
+                } ?: Log.d("MapFragment", "최초 위치를 받아올 수 없음")
             }
+
+            fusedLocationClient.requestLocationUpdates(
+                locationRequest,
+                locationCallback,
+                Looper.getMainLooper()
+            )
+            Log.d("MapFragment", "위치 업데이트 요청 완료")
+
         } catch (e: SecurityException) {
-            Log.e("MapFragment", "위치 권한이 없습니다.", e)
+            Log.e("MapFragment", "위치 권한 오류", e)
             Toast.makeText(requireContext(), "위치 권한이 필요합니다.", Toast.LENGTH_SHORT).show()
         }
     }
@@ -449,6 +464,7 @@ class MapFragment : Fragment(), OnMapReadyCallback {
             ?.getInt("city_id", -1) ?: -1
     }
 
+    @SuppressLint("MissingPermission")
     private suspend fun loadAllCategories() {
         val token = getToken()
         if (token == null) {
@@ -468,8 +484,39 @@ class MapFragment : Fragment(), OnMapReadyCallback {
             return
         }
 
-        // 사용자의 실제 위치 사용
-        val userLocation = currentLocation ?: naverMap.cameraPosition.target
+        // 위치 정보를 받아올 때까지 대기
+        val userLocation = currentLocation ?: run {
+            try {
+                suspendCancellableCoroutine { continuation ->
+                    val fusedLocationClient = LocationServices.getFusedLocationProviderClient(requireActivity())
+                    fusedLocationClient.lastLocation
+                        .addOnSuccessListener { location ->
+                            if (location != null) {
+                                val newLocation = LatLng(location.latitude, location.longitude)
+                                Log.d("MapFragment", "위치 정보 획득 성공: lat=${location.latitude}, lng=${location.longitude}")
+                                currentLocation = newLocation
+                                continuation.resume(newLocation)
+                            } else {
+                                Log.d("MapFragment", "위치 정보 획득 실패, 기본 위치 사용")
+                                val defaultLocation = naverMap.cameraPosition.target
+                                continuation.resume(defaultLocation)
+                            }
+                        }
+                        .addOnFailureListener { e ->
+                            Log.e("MapFragment", "위치 정보 획득 실패", e)
+                            val defaultLocation = naverMap.cameraPosition.target
+                            continuation.resume(defaultLocation)
+                        }
+                }
+            } catch (e: Exception) {
+                Log.e("MapFragment", "위치 정보 획득 중 오류 발생", e)
+                naverMap.cameraPosition.target
+            }
+        }
+
+        Log.d("MapFragment", "==== API 호출 위치 정보 확인 ====")
+        Log.d("MapFragment", "최종 사용 위치: lat=${userLocation.latitude}, lng=${userLocation.longitude}")
+
         val searchRequest = SearchPlacesRequest(
             latitude = userLocation.latitude,
             longitude = userLocation.longitude
