@@ -310,7 +310,14 @@ class MapFragment : Fragment(), OnMapReadyCallback {
                             .commit()
                     }
                     "산책로" -> {
-                        val fragment = WalkingStartViewFragment()
+                        val (currentLat, currentLng) = getMapCurrentPosition()
+                        val fragment = WalkingStartViewFragment().apply {
+                            arguments = Bundle().apply {
+                                putInt("placeId", place.id)
+                                putDouble("latitude", currentLat)
+                                putDouble("longitude", currentLng) // 이건 필요한 정보들에 따라 수정
+                            }
+                        }
                         requireActivity().supportFragmentManager.beginTransaction()
                             .setCustomAnimations(
                                 R.anim.slide_in_right,
@@ -318,7 +325,7 @@ class MapFragment : Fragment(), OnMapReadyCallback {
                                 R.anim.slide_in_left,
                                 R.anim.slide_out_right
                             )
-                            .hide(this@MapFragment)  // 현재 Fragment 숨기기
+                            .hide(this@MapFragment)
                             .add(R.id.main_frm, fragment)
                             .addToBackStack(null)
                             .commit()
