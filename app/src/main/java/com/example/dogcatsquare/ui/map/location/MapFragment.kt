@@ -215,6 +215,9 @@ class MapFragment : Fragment(), OnMapReadyCallback {
     override fun onMapReady(map: NaverMap) {
         naverMap = map
 
+        naverMap.minZoom = 11.0
+        naverMap.moveCamera(CameraUpdate.zoomTo(12.0))
+
         naverMap.locationSource = locationSource
         naverMap.uiSettings.isLocationButtonEnabled = true
 
@@ -598,11 +601,11 @@ class MapFragment : Fragment(), OnMapReadyCallback {
     // 카테고리별 마커 아이콘 설정
     private fun getMarkerIconForCategory(placeType: String?): Int {
         return when (placeType) {
-            "동물병원" -> R.drawable.ic_marker// 병원 마커 아이콘
-            "산책로" -> R.drawable.ic_marker // 공원 마커 아이콘
-            "카페" -> R.drawable.ic_marker // 카페 마커 아이콘
-            "식당" -> R.drawable.ic_marker // 식당 마커 아이콘
-            "호텔" -> R.drawable.ic_marker // 호텔 마커 아이콘
+            "동물병원" -> R.drawable.ic_marker_hospital// 병원 마커 아이콘
+            "산책로" -> R.drawable.ic_marker_park // 공원 마커 아이콘
+            "카페" -> R.drawable.ic_marker_cafe // 카페 마커 아이콘
+            "식당" -> R.drawable.ic_marker_cafe // 식당 마커 아이콘
+            "호텔" -> R.drawable.ic_marker_hotel // 호텔 마커 아이콘
             else -> R.drawable.ic_marker // 기본 마커 아이콘
         }
     }
@@ -617,8 +620,8 @@ class MapFragment : Fragment(), OnMapReadyCallback {
             icon = OverlayImage.fromResource(getMarkerIconForCategory(place.placeType))
 
             // 마커 크기 설정
-            width = 50
-            height = 50
+            width = 70
+            height = 70
 
             // 마커 클릭 이벤트
             setOnClickListener { overlay ->
