@@ -1,28 +1,55 @@
 package com.example.dogcatsquare.ui.map.location
 
+import android.content.Context
+import android.content.Intent
 import android.graphics.Color
+import android.net.Uri
 import android.os.Bundle
 import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.dogcatsquare.data.map.DetailImg
 import com.example.dogcatsquare.data.map.MapPrice
 import com.example.dogcatsquare.data.map.MapReview
 import com.example.dogcatsquare.R
+import com.example.dogcatsquare.RetrofitClient
 import com.example.dogcatsquare.databinding.FragmentMapEtcBinding
 import com.example.dogcatsquare.ui.map.SearchFragment
 import com.google.android.material.bottomsheet.BottomSheetDialog
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+import com.example.dogcatsquare.data.map.PlaceDetailRequest
+import com.naver.maps.geometry.LatLng
+import com.naver.maps.map.*
+import com.naver.maps.map.overlay.Marker
+import com.naver.maps.map.overlay.OverlayImage
+import java.util.Calendar
+import java.util.TimeZone
+import com.naver.maps.map.MapFragment
+import com.naver.maps.map.OnMapReadyCallback
+import com.naver.maps.map.NaverMap
 
-class MapEtcFragment : Fragment() {
+class MapEtcFragment : Fragment(), OnMapReadyCallback {
     private var _binding: FragmentMapEtcBinding? = null
     private val binding get() = _binding!!
 
     private val imgDatas by lazy { ArrayList<DetailImg>() }
     private val priceDatas by lazy { ArrayList<MapPrice>() }
     private val reviewDatas by lazy { ArrayList<MapReview>() }
+
+    private lateinit var naverMap: NaverMap
+    private var placeLatitude: Double = 0.0
+    private var placeLongitude: Double = 0.0
+    private var currentMarker: Marker? = null
+    private var actualPlaceLatitude: Double? = null
+    private var actualPlaceLongitude: Double? = null
+    private var isWished = false
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -36,9 +63,14 @@ class MapEtcFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        // 위치 정보 저장
+        placeLatitude = arguments?.getDouble("latitude") ?: 37.5665
+        placeLongitude = arguments?.getDouble("longitude") ?: 126.9780
+
         setupBackButton()
         setupRecyclerView()
         setupAddReviewButton()
+        setupNaverMap()
 
         binding.filter.setOnClickListener {
             showSearchOptions()
@@ -48,147 +80,217 @@ class MapEtcFragment : Fragment() {
             val searchFragment = SearchFragment()
             requireActivity().supportFragmentManager.beginTransaction()
                 .replace(R.id.main_frm, searchFragment)
-                .addToBackStack(null)  // 뒤로 가기를 위해 백스택에 추가
+                .addToBackStack(null)
                 .commit()
         }
 
-        // Bundle에서 데이터 받아오기
-        arguments?.let { args ->
-            val placeName = args.getString("placeName")
-            val placeType = args.getString("placeType")
-            val placeDistance = args.getString("placeDistance")
-            val placeLocation = args.getString("placeLocation")
-            val placeCall = args.getString("placeCall")
-            val char1Text = args.getString("char1Text")
-            val char2Text = args.getString("char2Text")
-            val char3Text = args.getString("char3Text")
-            val placeImg = args.getInt("placeImg")
+        arguments?.getInt("placeId")?.let { placeId ->
+            loadPlaceDetails(placeId)
+        }
+    }
 
-            // 로그 추가
-            Log.d("MapEtcFragment", "char1Text: $char1Text")
-            Log.d("MapEtcFragment", "char2Text: $char2Text")
-            Log.d("MapEtcFragment", "char3Text: $char3Text")
-
-            // 받아온 데이터를 뷰에 설정
-            binding.placeName.text = placeName
-            binding.placeType.text = placeType
-            binding.placeLocation.text = placeLocation?.split(" ")?.getOrNull(2) ?: ""
-            binding.placeDistance.text = placeDistance
-            binding.placeCall.text = placeCall
-            binding.placeLocationFull.text = placeLocation
-
-            // char1Text가 null이 아닌 경우에만 표시
-            if (!char1Text.isNullOrEmpty()) {
-                binding.char1.visibility = View.VISIBLE
-                binding.char1Text.text = char1Text
-            } else {
-                binding.char1.visibility = View.GONE
-            }
-
-            // char2Text가 null이 아닌 경우에만 표시
-            if (!char2Text.isNullOrEmpty()) {
-                binding.char2.visibility = View.VISIBLE
-                binding.char2Text.text = char2Text
-            } else {
-                binding.char2.visibility = View.GONE
-            }
-
-            // char3Text가 null이 아닌 경우에만 표시
-            if (!char3Text.isNullOrEmpty()) {
-                binding.char3.visibility = View.VISIBLE
-                binding.char3Text.text = char3Text
-            } else {
-                binding.char3.visibility = View.GONE
-            }
-
-            // placeType에 따른 특성 카드의 스타일 설정
-            when (placeType) {
-                "호텔" -> {
-                    binding.char1.setCardBackgroundColor(Color.parseColor("#FEEEEA"))
-                    binding.char1Text.setTextColor(Color.parseColor("#F36037"))
-                    binding.char2.setCardBackgroundColor(Color.parseColor("#FEEEEA"))
-                    binding.char2Text.setTextColor(Color.parseColor("#F36037"))
-                    binding.char3.setCardBackgroundColor(Color.parseColor("#FEEEEA"))
-                    binding.char3Text.setTextColor(Color.parseColor("#F36037"))
-                    binding.reserveButton.visibility = View.VISIBLE
+    private fun loadPlaceDetails(placeId: Int) {
+        lifecycleScope.launch {
+            try {
+                val token = getToken()
+                if (token == null) {
+                    Toast.makeText(requireContext(), "로그인이 필요합니다.", Toast.LENGTH_SHORT).show()
+                    return@launch
                 }
-                "식당" -> {
-                    binding.char1.setCardBackgroundColor(Color.parseColor("#FFFBF1"))
-                    binding.char1Text.setTextColor(Color.parseColor("#FF8D41"))
-                    binding.char2.setCardBackgroundColor(Color.parseColor("#FFFBF1"))
-                    binding.char2Text.setTextColor(Color.parseColor("#FF8D41"))
-                    binding.char3.setCardBackgroundColor(Color.parseColor("#FFFBF1"))
-                    binding.char3Text.setTextColor(Color.parseColor("#FF8D41"))
-                    binding.reserveButton.visibility = View.GONE
+
+                val request = PlaceDetailRequest(
+                    latitude = placeLatitude,
+                    longitude = placeLongitude
+                )
+
+                val response = withContext(Dispatchers.IO) {
+                    RetrofitClient.placesApiService.getPlaceById(
+                        token = "Bearer $token",
+                        placeId = placeId,
+                        request = request
+                    )
                 }
-                "카페" -> {
-                    binding.char1.setCardBackgroundColor(Color.parseColor("#FFFBF1"))
-                    binding.char1Text.setTextColor(Color.parseColor("#FF8D41"))
-                    binding.char2.setCardBackgroundColor(Color.parseColor("#FFFBF1"))
-                    binding.char2Text.setTextColor(Color.parseColor("#FF8D41"))
-                    binding.char3.setCardBackgroundColor(Color.parseColor("#FFFBF1"))
-                    binding.char3Text.setTextColor(Color.parseColor("#FF8D41"))
-                    binding.reserveButton.visibility = View.GONE
+
+                if (response.isSuccess) {
+                    response.result?.let { placeDetail ->
+                        actualPlaceLatitude = placeDetail.latitude
+                        actualPlaceLongitude = placeDetail.longitude
+
+                        binding.apply {
+                            placeName.text = placeDetail.name
+                            placeLocationFull.text = placeDetail.address
+                            placeLocation.text = placeDetail.address.split(" ").getOrNull(2) ?: ""
+                            placeType.text = convertCategory(placeDetail.category)
+                            placeCall.text = placeDetail.phoneNumber
+                            placeDistance.text = "${String.format("%.2f", placeDetail.distance)}km"
+
+                            // 운영 시간 및 상태 설정
+                            placeStatus.text = if (placeDetail.open) "영업중" else "영업종료"
+                            placeDetail.businessHours?.let { hours ->
+                                placeTime.text = formatBusinessHours(hours)
+                            }
+
+                            // 홈페이지 URL 설정
+                            placeDetail.homepageUrl?.let { url ->
+                                if (url.isNotEmpty()) {
+                                    placeUrl.text = url
+                                    placeUrl.setOnClickListener {
+                                        try {
+                                            val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
+                                            startActivity(intent)
+                                        } catch (e: Exception) {
+                                            Toast.makeText(requireContext(), "URL을 열 수 없습니다.", Toast.LENGTH_SHORT).show()
+                                        }
+                                    }
+                                }
+                            } ?: run {
+                                placeUrl.text = "정보가 없습니다."
+                                placeUrl.setOnClickListener(null)
+                            }
+
+                            // 시설 정보 설정
+                            placeFacility.text = formatFacilities(placeDetail.facilities)
+
+                            // 찜하기 버튼 설정
+                            wishButton.setImageResource(
+                                if (placeDetail.wished) R.drawable.ic_wish_check
+                                else R.drawable.ic_wish
+                            )
+
+                            // 특성 카드 스타일 설정
+                            setupCharacteristicCards(placeDetail.category)
+
+                            // 지도 위치 업데이트
+                            if (::naverMap.isInitialized) {
+                                updateMapLocation(placeDetail.latitude, placeDetail.longitude)
+                            }
+
+                            // 이미지 업데이트
+                            updateImages(placeDetail.imageUrls)
+
+                            // 리뷰 업데이트
+                            updateReviews(placeDetail.recentReviews)
+                        }
+                    }
+                } else {
+                    Toast.makeText(
+                        requireContext(),
+                        response.message ?: "상세 정보를 불러오는데 실패했습니다.",
+                        Toast.LENGTH_SHORT
+                    ).show()
                 }
+            } catch (e: Exception) {
+                handleError(e)
             }
         }
     }
 
-    // 나머지 함수들은 그대로 유지
-    private fun setupBackButton() {
-        binding.backButton.setOnClickListener {
-            requireActivity().supportFragmentManager.popBackStack()
+    private fun setupCharacteristicCards(category: String) {
+        val (backgroundColor, textColor) = when (category) {
+            "HOTEL" -> "#FEEEEA" to "#F36037"
+            "RESTAURANT", "CAFE" -> "#FFFBF1" to "#FF8D41"
+            else -> return
+        }
+
+        binding.apply {
+            val cards = listOf(char1, char2, char3)
+            val texts = listOf(char1Text, char2Text, char3Text)
+
+            cards.forEach { card ->
+                card.setCardBackgroundColor(Color.parseColor(backgroundColor))
+            }
+            texts.forEach { text ->
+                text.setTextColor(Color.parseColor(textColor))
+            }
+
+            reserveButton.visibility = if (category == "HOTEL") View.VISIBLE else View.GONE
         }
     }
 
-    private fun setupRecyclerView() {
-        // 기존 코드 유지
+    private fun setupNaverMap() {
+        val fm = childFragmentManager
+        val mapFragment = fm.findFragmentById(R.id.mapView2) as MapFragment?
+            ?: MapFragment.newInstance().also {
+                fm.beginTransaction().add(R.id.mapView2, it).commit()
+            }
+
+        mapFragment.getMapAsync(this)
+    }
+
+    override fun onMapReady(map: NaverMap) {
+        naverMap = map
+
+        naverMap.uiSettings.apply {
+            isZoomControlEnabled = false
+            isScrollGesturesEnabled = false
+            isRotateGesturesEnabled = false
+            isTiltGesturesEnabled = false
+            isZoomGesturesEnabled = false
+        }
+
+        val latitude = actualPlaceLatitude ?: placeLatitude
+        val longitude = actualPlaceLongitude ?: placeLongitude
+
+        updateMapLocation(latitude, longitude)
+    }
+
+    private fun updateMapLocation(lat: Double, lng: Double) {
+        val location = LatLng(lat, lng)
+        Log.d("MapEtcFragment", "Updating map location to: lat=$lat, lng=$lng")
+
+        currentMarker?.setMap(null)
+
+        naverMap.moveCamera(CameraUpdate.scrollAndZoomTo(
+            location,
+            15.0
+        ))
+
+        currentMarker = Marker().apply {
+            position = location
+            icon = OverlayImage.fromResource(R.drawable.ic_marker)
+            setMap(naverMap)
+        }
+    }
+
+    private fun updateImages(imageUrls: List<String>?) {
         imgDatas.clear()
-        priceDatas.clear()
+
+        if (imageUrls.isNullOrEmpty()) {
+            imgDatas.add(DetailImg(R.drawable.ic_place_img_default))
+        } else {
+            imageUrls.forEach { url ->
+                if (!url.isNullOrBlank()) {
+                    imgDatas.add(DetailImg(url))
+                }
+            }
+        }
+
+        binding.detailImgRV.post {
+            if (binding.detailImgRV.adapter == null) {
+                val detailImgRVAdapter = DetailImgRVAdapter(imgDatas)
+                binding.detailImgRV.apply {
+                    adapter = detailImgRVAdapter
+                    layoutManager = LinearLayoutManager(
+                        context,
+                        LinearLayoutManager.HORIZONTAL,
+                        false
+                    )
+                }
+            } else {
+                binding.detailImgRV.adapter = DetailImgRVAdapter(ArrayList(imgDatas))
+            }
+        }
+    }
+
+    private fun updateReviews(apiReviews: List<MapReview>?) {
         reviewDatas.clear()
 
-        // 이미지 데이터 설정
-        imgDatas.apply {
-            add(DetailImg(R.drawable.ic_place_img_default))
-            add(DetailImg(R.drawable.ic_place_img_default))
-            add(DetailImg(R.drawable.ic_place_img_default))
-            add(DetailImg(R.drawable.ic_place_img_default))
-            add(DetailImg(R.drawable.ic_place_img_default))
-            add(DetailImg(R.drawable.ic_place_img_default))
+        if (!apiReviews.isNullOrEmpty()) {
+            reviewDatas.addAll(apiReviews)
         }
 
-        val detailImgRVAdapter = DetailImgRVAdapter(imgDatas)
-        binding.detailImgRV.apply {
-            adapter = detailImgRVAdapter
-            layoutManager = LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false)
-        }
-
-        // 가격 데이터 설정
-        priceDatas.apply {
-            add(MapPrice("스텐다드", "30,000원"))
-            add(MapPrice("디럭스", "30,000원"))
-            add(MapPrice("VIP룸", "30,000원"))
-            add(MapPrice("1묘 추가비", "30,000원"))
-        }
-
-        val mapPriceRVAdapter = MapPriceRVAdapter(priceDatas)
-        binding.mapPriceRV.apply {
-            adapter = mapPriceRVAdapter
-            layoutManager = LinearLayoutManager(context, LinearLayoutManager.VERTICAL, false)
-        }
-
-        // 리뷰 데이터 설정
-        reviewDatas.apply {
-            add(MapReview(R.drawable.ic_profile_img_default, "닉네임", "포메라니안", "강아지 종합접종이랑 중성화했어요 의사선생님이 친절하시고 꼼꼼히 봐주셔서 좋아요. 다음에 건강검진도 이곳에... 더보기", "2024.01.04", R.drawable.ic_place_img_default))
-            add(MapReview(R.drawable.ic_profile_img_default, "닉네임", "포메라니안", "두 번째 리뷰 내용...", "2024.01.04", R.drawable.ic_place_img_default))
-            add(MapReview(R.drawable.ic_profile_img_default, "닉네임", "골든리트리버", "세 번째 리뷰 내용...", "2024.01.03", R.drawable.ic_place_img_default))
-            add(MapReview(R.drawable.ic_profile_img_default, "닉네임", "시바견", "네 번째 리뷰 내용...", "2024.01.02", R.drawable.ic_place_img_default))
-        }
-
-        // reviewCount 텍스트 설정
         binding.reviewCount.text = reviewDatas.size.toString()
 
-        // 처음 2개의 리뷰만 표시
         val displayedReviews = ArrayList<MapReview>().apply {
             addAll(reviewDatas.take(2))
         }
@@ -198,10 +300,103 @@ class MapEtcFragment : Fragment() {
             adapter = mapReviewRVAdapter
             layoutManager = LinearLayoutManager(context, LinearLayoutManager.VERTICAL, false)
         }
+    }
+
+    private fun formatBusinessHours(businessHours: String): String {
+        val calendar = Calendar.getInstance(TimeZone.getTimeZone("Asia/Seoul"))
+        val dayOfWeek = calendar.get(Calendar.DAY_OF_WEEK)
+
+        val koreanDayName = when (dayOfWeek) {
+            Calendar.MONDAY -> "월요일"
+            Calendar.TUESDAY -> "화요일"
+            Calendar.WEDNESDAY -> "수요일"
+            Calendar.THURSDAY -> "목요일"
+            Calendar.FRIDAY -> "금요일"
+            Calendar.SATURDAY -> "토요일"
+            Calendar.SUNDAY -> "일요일"
+            else -> return "영업시간 정보 없음"
+        }
+
+        return businessHours.split(", ")
+            .find { it.startsWith(koreanDayName) }
+            ?.substringAfter(": ")
+            ?.let { hours ->
+                when {
+                    hours.contains("24시간") -> "24시간 영업"
+                    hours.contains("휴무") -> "휴무일"
+                    else -> hours
+                }
+            } ?: "영업시간 정보 없음"
+    }
+
+    private fun formatFacilities(facilities: List<String>?): String {
+        return facilities
+            ?.takeIf { it.isNotEmpty() }
+            ?.let { facilityList ->
+                facilityList.map { facility ->
+                    when (facility.toLowerCase()) {
+                        "parking" -> "주차장"
+                        "wifi" -> "와이파이"
+                        "pet_friendly" -> "반려동물 동반 가능"
+                        else -> facility
+                    }
+                }.joinToString(" • ")
+            } ?: "정보가 없습니다."
+    }
+
+    private fun convertCategory(category: String): String {
+        return when (category) {
+            "HOTEL" -> "호텔"
+            "RESTAURANT" -> "식당"
+            "CAFE" -> "카페"
+            else -> category
+        }
+    }
+
+    private fun getToken(): String? {
+        return activity?.getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
+            ?.getString("token", null)
+    }
+
+    private fun handleError(e: Exception) {
+        val errorMessage = when (e) {
+            is retrofit2.HttpException -> {
+                when (e.code()) {
+                    401 -> "로그인이 필요합니다."
+                    403 -> "권한이 없습니다."
+                    404 -> "데이터를 찾을 수 없습니다."
+                    else -> "서버 오류가 발생했습니다. (${e.code()})"
+                }
+            }
+            is java.io.IOException -> "네트워크 연결을 확인해주세요."
+            else -> "알 수 없는 오류가 발생했습니다: ${e.message}"
+        }
+        Toast.makeText(requireContext(), errorMessage, Toast.LENGTH_SHORT).show()
+    }
+
+    // 기존 함수들은 유지
+    private fun setupBackButton() {
+        binding.backButton.setOnClickListener {
+            requireActivity().supportFragmentManager.popBackStack()
+        }
+    }
+
+    private fun setupRecyclerView() {
+        // 기본 RecyclerView 설정
+        val detailImgRVAdapter = DetailImgRVAdapter(imgDatas)
+        binding.detailImgRV.apply {
+            adapter = detailImgRVAdapter
+            layoutManager = LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false)
+        }
+
+        val mapPriceRVAdapter = MapPriceRVAdapter(priceDatas)
+        binding.mapPriceRV.apply {
+            adapter = mapPriceRVAdapter
+            layoutManager = LinearLayoutManager(context, LinearLayoutManager.VERTICAL, false)
+        }
 
         binding.reviewPlus.setOnClickListener {
             val mapReviewFragment = MapReviewFragment()
-
             requireActivity().supportFragmentManager.beginTransaction()
                 .replace(R.id.main_frm, mapReviewFragment)
                 .addToBackStack(null)
@@ -228,7 +423,6 @@ class MapEtcFragment : Fragment() {
 
     override fun onDestroyView() {
         super.onDestroyView()
-        // 이전 Fragment를 다시 보이게 함
         requireActivity().supportFragmentManager.fragments
             .filterIsInstance<MapFragment>()
             .firstOrNull()?.let { mapFragment ->
@@ -237,5 +431,17 @@ class MapEtcFragment : Fragment() {
                     .commit()
             }
         _binding = null
+    }
+
+    companion object {
+        fun newInstance(placeId: Int, latitude: Double, longitude: Double): MapEtcFragment {
+            return MapEtcFragment().apply {
+                arguments = Bundle().apply {
+                    putInt("placeId", placeId)
+                    putDouble("latitude", latitude)
+                    putDouble("longitude", longitude)
+                }
+            }
+        }
     }
 }

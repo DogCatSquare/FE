@@ -1,10 +1,13 @@
 package com.example.dogcatsquare.data.map
 
 data class MapReview(
-    var reviewProfileImg: Int? = null,
-    var reviewName: String? = "",
-    var petType: String? = "",
-    var reviewText: String? = "",
-    var reviewDate: String? = "",
-    var reviewImg: Int? = null
+    val id: Int,
+    val content: String?,
+    val breed: String?,
+    val nickname: String?,
+    val userImageUrl: String?,
+    val createdAt: String?,
+    val userId: Int,
+    val placeReviewImageUrl: List<String>?,
+    val placeId: Int
 )

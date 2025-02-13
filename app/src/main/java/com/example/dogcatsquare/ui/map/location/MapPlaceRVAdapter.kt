@@ -64,9 +64,82 @@ class MapPlaceRVAdapter(private val placeList: ArrayList<MapPlace>, private val 
                 binding.placeImg.setImageResource(R.drawable.ic_place_img_default)
             }
 
+            if (place.placeCall == "0" || place.placeCall == null) {
+                // call 아이콘과 placeCall 텍스트뷰 숨기기
+                binding.call.visibility = View.GONE
+                binding.placeCall.visibility = View.GONE
+
+                // reviewCount가 0일 때의 로직
+                if (place.reviewCount == 0 || place.placeCall == null) {
+                    binding.ImageView.visibility = View.GONE
+                    binding.placeReview.visibility = View.GONE
+
+                    //char1 위치 조정
+                    (binding.char1.layoutParams as ConstraintLayout.LayoutParams).apply {
+                        startToStart = binding.guideline1.id
+                        topToBottom = binding.placeLocation.id  // call이 없으므로 placeLocation 기준으로 변경
+                        bottomToBottom = ConstraintLayout.LayoutParams.UNSET
+                        marginStart = 0
+                        topMargin = (8 * binding.root.context.resources.displayMetrics.density).toInt()
+                    }
+                    binding.char1.requestLayout()
+                } else {
+                    binding.ImageView.visibility = View.VISIBLE
+                    binding.placeReview.visibility = View.VISIBLE
+                    binding.placeReview.text = "리뷰(${place.reviewCount})"
+
+                    // char1을 원래 위치로 복원 (단, topToBottom은 placeLocation 기준)
+                    (binding.char1.layoutParams as ConstraintLayout.LayoutParams).apply {
+                        startToStart = ConstraintLayout.LayoutParams.UNSET
+                        startToEnd = binding.placeReview.id
+                        topToBottom = binding.placeLocation.id  // call이 없으므로 placeLocation 기준으로 변경
+                        bottomToBottom = ConstraintLayout.LayoutParams.UNSET
+                        marginStart = (8 * binding.root.context.resources.displayMetrics.density).toInt()
+                        topMargin = (5 * binding.root.context.resources.displayMetrics.density).toInt()
+                    }
+                    binding.char1.requestLayout()
+                }
+            } else {
+                // call 아이콘과 placeCall 텍스트뷰 보이기
+                binding.call.visibility = View.VISIBLE
+                binding.placeCall.visibility = View.VISIBLE
+                binding.placeCall.text = place.placeCall
+
+                // reviewCount에 따른 기존 로직
+                if (place.reviewCount == 0) {
+                    binding.ImageView.visibility = View.GONE
+                    binding.placeReview.visibility = View.GONE
+
+                    //char1 위치 조정
+                    (binding.char1.layoutParams as ConstraintLayout.LayoutParams).apply {
+                        startToStart = binding.guideline1.id
+                        topToBottom = binding.call.id
+                        bottomToBottom = ConstraintLayout.LayoutParams.UNSET
+                        marginStart = 0
+                        topMargin = (8 * binding.root.context.resources.displayMetrics.density).toInt()
+                    }
+                    binding.char1.requestLayout()
+                } else {
+                    binding.ImageView.visibility = View.VISIBLE
+                    binding.placeReview.visibility = View.VISIBLE
+                    binding.placeReview.text = "리뷰(${place.reviewCount})"
+
+                    // char1을 원래 위치로 복원
+                    (binding.char1.layoutParams as ConstraintLayout.LayoutParams).apply {
+                        startToStart = ConstraintLayout.LayoutParams.UNSET
+                        startToEnd = binding.placeReview.id
+                        topToBottom = binding.call.id
+                        bottomToBottom = ConstraintLayout.LayoutParams.UNSET
+                        marginStart = (8 * binding.root.context.resources.displayMetrics.density).toInt()
+                        topMargin = (5 * binding.root.context.resources.displayMetrics.density).toInt()
+                    }
+                    binding.char1.requestLayout()
+                }
+            }
+
             // placeReview가 null인 경우 관련 뷰들을 숨김
-            if (place.placeReview == null) {
-                binding.review.visibility = View.GONE
+            if (place.reviewCount == 0 || place.reviewCount == null) {
+                binding.ImageView.visibility = View.GONE
                 binding.placeReview.visibility = View.GONE
 
                 //char1 위치 조정
@@ -79,89 +152,54 @@ class MapPlaceRVAdapter(private val placeList: ArrayList<MapPlace>, private val 
                 }
                 binding.char1.requestLayout()
             } else {
-                binding.review.visibility = View.VISIBLE
+                binding.ImageView.visibility = View.VISIBLE
                 binding.placeReview.visibility = View.VISIBLE
-                binding.placeReview.text = place.placeReview
+                binding.placeReview.text = "리뷰(${place.reviewCount})"
+
+                // char1을 원래 위치로 복원
+                (binding.char1.layoutParams as ConstraintLayout.LayoutParams).apply {
+                    startToStart = ConstraintLayout.LayoutParams.UNSET  // 기존 제약 제거
+                    startToEnd = binding.placeReview.id  // placeReview 우측에 위치
+                    topToBottom = binding.placeCall.id
+                    bottomToBottom = ConstraintLayout.LayoutParams.UNSET
+                    marginStart = (8 * binding.root.context.resources.displayMetrics.density).toInt()
+                    topMargin = (5 * binding.root.context.resources.displayMetrics.density).toInt()
+                }
+                binding.char1.requestLayout()
             }
 
-            // char1, char2, char3 표시 여부 설정
-            if (place.char1Text == null) {
+            // isOpen 표시 설정
+            if (place.isOpen == null) {
                 binding.char1.visibility = View.GONE
             } else {
                 binding.char1.visibility = View.VISIBLE
-                binding.char1Text.text = place.char1Text
+                binding.char1Text.text = place.isOpen
             }
 
-            if (place.char2Text == null) {
-                binding.char2.visibility = View.GONE
-            } else {
-                binding.char2.visibility = View.VISIBLE
-                binding.char2Text.text = place.char2Text
-            }
-
-            if (place.char3Text == null) {
-                binding.char3.visibility = View.GONE
-            } else {
-                binding.char3.visibility = View.VISIBLE
-                binding.char3Text.text = place.char3Text
-            }
-
-            // placeType에 따라 보이는 char들의 배경색과 텍스트 색상 설정
+            // placeType에 따라 보이는 영업상태의 배경색과 텍스트 색상 설정
             when (place.placeType) {
                 "동물병원" -> {
-                    if (place.char1Text != null) {
+                    if (place.isOpen != null) {
                         binding.char1.setCardBackgroundColor(Color.parseColor("#EAF2FE"))
                         binding.char1Text.setTextColor(Color.parseColor("#276CCB"))
                     }
-                    if (place.char2Text != null) {
-                        binding.char2.setCardBackgroundColor(Color.parseColor("#EAF2FE"))
-                        binding.char2Text.setTextColor(Color.parseColor("#276CCB"))
-                    }
-                    if (place.char3Text != null) {
-                        binding.char3.setCardBackgroundColor(Color.parseColor("#EAF2FE"))
-                        binding.char3Text.setTextColor(Color.parseColor("#276CCB"))
-                    }
                 }
                 "호텔" -> {
-                    if (place.char1Text != null) {
+                    if (place.isOpen != null) {
                         binding.char1.setCardBackgroundColor(Color.parseColor("#FEEEEA"))
                         binding.char1Text.setTextColor(Color.parseColor("#F36037"))
                     }
-                    if (place.char2Text != null) {
-                        binding.char2.setCardBackgroundColor(Color.parseColor("#FEEEEA"))
-                        binding.char2Text.setTextColor(Color.parseColor("#F36037"))
-                    }
-                    if (place.char3Text != null) {
-                        binding.char3.setCardBackgroundColor(Color.parseColor("#FEEEEA"))
-                        binding.char3Text.setTextColor(Color.parseColor("#F36037"))
-                    }
                 }
                 "산책로" -> {
-                    if (place.char1Text != null) {
+                    if (place.isOpen != null) {
                         binding.char1.setCardBackgroundColor(Color.parseColor("#F4FCF5"))
                         binding.char1Text.setTextColor(Color.parseColor("#3E7C43"))
                     }
-                    if (place.char2Text != null) {
-                        binding.char2.setCardBackgroundColor(Color.parseColor("#F4FCF5"))
-                        binding.char2Text.setTextColor(Color.parseColor("#3E7C43"))
-                    }
-                    if (place.char3Text != null) {
-                        binding.char3.setCardBackgroundColor(Color.parseColor("#F4FCF5"))
-                        binding.char3Text.setTextColor(Color.parseColor("#3E7C43"))
-                    }
                 }
                 "식당", "카페" -> {
-                    if (place.char1Text != null) {
+                    if (place.isOpen != null) {
                         binding.char1.setCardBackgroundColor(Color.parseColor("#FFFBF1"))
                         binding.char1Text.setTextColor(Color.parseColor("#FF8D41"))
-                    }
-                    if (place.char2Text != null) {
-                        binding.char2.setCardBackgroundColor(Color.parseColor("#FFFBF1"))
-                        binding.char2Text.setTextColor(Color.parseColor("#FF8D41"))
-                    }
-                    if (place.char3Text != null) {
-                        binding.char3.setCardBackgroundColor(Color.parseColor("#FFFBF1"))
-                        binding.char3Text.setTextColor(Color.parseColor("#FF8D41"))
                     }
                 }
             }

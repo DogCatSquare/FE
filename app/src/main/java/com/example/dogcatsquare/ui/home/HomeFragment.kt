@@ -204,48 +204,45 @@ class HomeFragment : Fragment() {
         // 핫플 임시 더미 데이터
         placeDatas.apply {
             add(MapPlace(
-                "가나다 동물병원",
-                "동물병원",
-                "0.55km",
-                "서울시 성북구 월곡동 77",
-                "02-1234-5678",
-                "중성화 수술",    // char1Text
-                "예방접종",       // char2Text
-                "24시",          // char3Text
-                R.drawable.ic_place_img_default,
-                null))
+                id = 0,
+                placeName = "가나다 동물병원",
+                placeType = "동물병원",
+                placeDistance = "0.55km",
+                placeLocation = "서울시 성북구 월곡동 77",
+                placeCall = "02-1234-5678",
+                placeImgUrl = null,
+                isOpen = "영업중"
+            ))
             add(MapPlace(
-                "서대문 안산자락길",
-                "산책로",
-                "0.55km",
-                "서울시 서대문구 봉원사길 75-66 111111111111111111",
-                "02-1234-5678",
-                "난이도 하",
-                "쓰레기통",
-                null,
-                R.drawable.ic_place_img_default,
-                "리뷰(18)"))
-            add(MapPlace("고양이호텔",
-                "호텔",
-                "0.55km",
-                "서울시 성북구 월곡동 77",
-                "02-1234-5678",
-                "고양이탁묘",
-                "고양이 보호소",
-                null,
-                R.drawable.ic_place_img_default,
-                "리뷰(18)"))
+                id = 0,
+                placeName = "서대문 안산자락길",
+                placeType = "산책로",
+                placeDistance = "0.55km",
+                placeLocation = "서울시 서대문구 봉원사길 75-66 111111111111111111",
+                placeCall = "02-1234-5678",
+                placeImgUrl = null,
+                isOpen = "영업중"
+            ))
             add(MapPlace(
-                "가나다 동물병원",
-                "동물병원",
-                "0.55km",
-                "서울시 성북구 월곡동 77",
-                "02-1234-5678",
-                "중성화 수술",    // char1Text
-                "예방접종",       // char2Text
-                "24시",          // char3Text
-                R.drawable.ic_place_img_default,
-                null))
+                id = 0,
+                placeName = "고양이호텔",
+                placeType = "호텔",
+                placeDistance = "0.55km",
+                placeLocation = "서울시 성북구 월곡동 77",
+                placeCall = "02-1234-5678",
+                placeImgUrl = null,
+                isOpen = "영업중"
+            ))
+            add(MapPlace(
+                id = 0,
+                placeName = "가나다 동물병원",
+                placeType = "동물병원",
+                placeDistance = "0.55km",
+                placeLocation = "서울시 성북구 월곡동 77",
+                placeCall = "02-1234-5678",
+                placeImgUrl = null,
+                isOpen = "영업중"
+            ))
         }
 
         // hot place recycler view
@@ -265,8 +262,8 @@ class HomeFragment : Fragment() {
                             putString("placeDistance", place.placeDistance)
                             putString("placeLocation", place.placeLocation)
                             putString("placeCall", place.placeCall)
-                            putString("char1Text", place.char1Text)
-                            place.placeImg?.let { putInt("placeImg", it) }
+                            putString("placeImgUrl", place.placeImgUrl)
+                            putString("isOpen", place.isOpen)
                         }
                     }
                 } else {
@@ -277,8 +274,8 @@ class HomeFragment : Fragment() {
                             putString("placeDistance", place.placeDistance)
                             putString("placeLocation", place.placeLocation)
                             putString("placeCall", place.placeCall)
-                            putString("char1Text", place.char1Text)
-                            place.placeImg?.let { putInt("placeImg", it) }
+                            putString("placeImgUrl", place.placeImgUrl)
+                            putString("isOpen", place.isOpen)
                         }
                     }
                 }

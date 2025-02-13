@@ -3,17 +3,20 @@ package com.example.dogcatsquare.ui.map.location
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import android.widget.PopupWindow
-import android.widget.TextView
 import androidx.fragment.app.FragmentActivity
 import androidx.recyclerview.widget.RecyclerView
+import com.bumptech.glide.Glide
 import com.example.dogcatsquare.R
 import com.example.dogcatsquare.data.map.MapReview
 import com.example.dogcatsquare.databinding.ItemMapReviewBinding
 
 class MapReviewRVAdapter(private val reviewList: ArrayList<MapReview>): RecyclerView.Adapter<MapReviewRVAdapter.ViewHolder>() {
     override fun onCreateViewHolder(viewGroup: ViewGroup, viewType: Int): ViewHolder {
-        val binding: ItemMapReviewBinding = ItemMapReviewBinding.inflate(LayoutInflater.from(viewGroup.context), viewGroup, false)
-
+        val binding: ItemMapReviewBinding = ItemMapReviewBinding.inflate(
+            LayoutInflater.from(viewGroup.context),
+            viewGroup,
+            false
+        )
         return ViewHolder(binding)
     }
 
@@ -25,17 +28,41 @@ class MapReviewRVAdapter(private val reviewList: ArrayList<MapReview>): Recycler
 
     inner class ViewHolder(val binding: ItemMapReviewBinding): RecyclerView.ViewHolder(binding.root) {
         fun bind(review: MapReview) {
-            binding.reviewProfileImg.setImageResource(review.reviewProfileImg!!)
-            binding.reviewName.text = review.reviewName
-            binding.petType.text = review.petType
-            binding.reviewText.text = review.reviewText
-            binding.reviewDate.text = review.reviewDate
-            binding.reviewImg.setImageResource(review.reviewImg!!)
+            // 프로필 이미지 설정
+            if (!review.userImageUrl.isNullOrEmpty()) {
+                Glide.with(itemView.context)
+                    .load(review.userImageUrl)
+                    .fallback(R.drawable.ic_profile_img_default)
+                    .error(R.drawable.ic_profile_img_default)
+                    .into(binding.reviewProfileImg)
+            } else {
+                binding.reviewProfileImg.setImageResource(R.drawable.ic_profile_img_default)
+            }
 
-            // etcButton에 클릭 리스너 추가
+            // 텍스트 정보 설정
+            binding.reviewName.text = review.nickname ?: "알 수 없음"
+            binding.petType.text = review.breed ?: ""
+            binding.reviewText.text = review.content ?: ""
+
+            // 날짜 포맷 변환 (YYYY-MM-DD -> YYYY.MM.DD)
+            binding.reviewDate.text = review.createdAt?.split("T")?.get(0)?.replace("-", ".") ?: ""
+
+            // 리뷰 이미지 설정
+            if (!review.placeReviewImageUrl.isNullOrEmpty()) {
+                Glide.with(itemView.context)
+                    .load(review.placeReviewImageUrl.first())
+                    .fallback(R.drawable.ic_place_img_default)
+                    .error(R.drawable.ic_place_img_default)
+                    .into(binding.reviewImg)
+            } else {
+                binding.reviewImg.setImageResource(R.drawable.ic_place_img_default)
+            }
+
+            // 더보기 버튼(etcButton) 클릭 리스너
             binding.etcButton.setOnClickListener { view ->
                 // 커스텀 팝업 레이아웃 inflate
-                val popupView = LayoutInflater.from(view.context).inflate(R.layout.popup_menu_custom, null)
+                val popupView = LayoutInflater.from(view.context)
+                    .inflate(R.layout.popup_menu_custom, null)
 
                 // PopupWindow 생성
                 val popupWindow = PopupWindow(
@@ -43,16 +70,15 @@ class MapReviewRVAdapter(private val reviewList: ArrayList<MapReview>): Recycler
                     ViewGroup.LayoutParams.WRAP_CONTENT,
                     ViewGroup.LayoutParams.WRAP_CONTENT,
                     true
-                )
+                ).apply {
+                    setBackgroundDrawable(view.context.getDrawable(R.drawable.custom_popup_background))
+                    elevation = 10f
+                }
 
-                // 팝업 창의 배경 설정
-                popupWindow.setBackgroundDrawable(view.context.getDrawable(R.drawable.custom_popup_background))
-                popupWindow.elevation = 10f
-
-                // 팝업 창 위치 설정
+                // 팝업 창 위치 설정 및 표시
                 popupWindow.showAsDropDown(view, 0, 0)
 
-                // 팝업 메뉴 전체에 클릭 리스너 추가
+                // 팝업 메뉴 클릭 리스너
                 popupView.setOnClickListener {
                     val activity = view.context as FragmentActivity
                     val mapReportFragment = MapReportFragment()
@@ -65,8 +91,6 @@ class MapReviewRVAdapter(private val reviewList: ArrayList<MapReview>): Recycler
                     popupWindow.dismiss()
                 }
             }
-
-
         }
     }
 }

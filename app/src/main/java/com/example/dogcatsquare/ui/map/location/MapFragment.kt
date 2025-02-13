@@ -29,10 +29,10 @@ import com.naver.maps.map.OnMapReadyCallback
 import com.naver.maps.map.util.FusedLocationSource
 import android.widget.Toast
 import androidx.lifecycle.lifecycleScope
-import com.example.dogcatsquare.data.map.PlaceRequest
-import com.example.dogcatsquare.data.map.RegionRequest
 import com.example.dogcatsquare.data.map.SearchPlacesRequest
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import retrofit2.HttpException
@@ -93,10 +93,16 @@ class MapFragment : Fragment(), OnMapReadyCallback {
         }
 
         binding.searchBox.setOnClickListener {
-            val searchFragment = SearchFragment()
+            val currentLocation = naverMap.cameraPosition.target
+            val searchFragment = SearchFragment().apply {
+                arguments = Bundle().apply {
+                    putDouble("latitude", currentLocation.latitude)
+                    putDouble("longitude", currentLocation.longitude)
+                }
+            }
             requireActivity().supportFragmentManager.beginTransaction()
-                .hide(this)  // 현재 Fragment 숨기기
-                .add(R.id.main_frm, searchFragment)  // replace 대신 add 사용
+                .hide(this)
+                .add(R.id.main_frm, searchFragment)
                 .addToBackStack(null)
                 .commit()
         }
@@ -138,7 +144,9 @@ class MapFragment : Fragment(), OnMapReadyCallback {
             requestLocationPermission()
         }
 
-//        loadPlaces()
+        lifecycleScope.launch {
+            loadAllCategories()
+        }
     }
 
     private fun hasLocationPermission(): Boolean {
@@ -192,83 +200,45 @@ class MapFragment : Fragment(), OnMapReadyCallback {
 
         val dummyPlaces = listOf(
             MapPlace(
+                id = 0,
                 placeName = "가나다 동물병원",
                 placeType = "동물병원",
                 placeDistance = "0.55km",
                 placeLocation = "서울시 성북구 월곡동 77",
                 placeCall = "02-1234-5678",
-                char1Text = "중성화 수술",
-                char2Text = "예방접종",
-                char3Text = "24시",
-                placeImg = null,
                 placeImgUrl = null,
-                placeReview = null,
-                longitude = 127.0495556,
-                latitude = 37.6074859,
-                isOpen = "영업중"
+                isOpen = "영업중",
             ),
             MapPlace(
+                id = 0,
                 placeName = "서대문 안산자락길",
                 placeType = "산책로",
                 placeDistance = "0.55km",
                 placeLocation = "서울시 서대문구 봉원사길 75-66",
                 placeCall = "02-1234-5678",
-                char1Text = "난이도 하",
-                char2Text = "쓰레기통",
-                char3Text = null,
-                placeImg = null,
                 placeImgUrl = null,
-                placeReview = "리뷰(18)",
-                longitude = 127.0495556,
-                latitude = 37.6074859,
-                isOpen = "영업중"
+                isOpen = "영업중",
+                reviewCount = 2
             ),
             MapPlace(
+                id = 0,
                 placeName = "고양이호텔",
                 placeType = "호텔",
                 placeDistance = "0.55km",
                 placeLocation = "서울시 성북구 월곡동 77",
                 placeCall = "02-1234-5678",
-                char1Text = "고양이탁묘",
-                char2Text = "고양이 보호소",
-                char3Text = null,
-                placeImg = null,
                 placeImgUrl = null,
-                placeReview = "리뷰(18)",
-                longitude = 127.0495556,
-                latitude = 37.6074859,
-                isOpen = "영업중"
+                isOpen = "영업중",
+                reviewCount = 13
             ),
             MapPlace(
+                id = 0,
                 placeName = "반려동물 카페",
                 placeType = "카페",
                 placeDistance = "0.55km",
                 placeLocation = "서울시 성북구 월곡동 77",
                 placeCall = "02-1234-5678",
-                char1Text = "중성화 수술",
-                char2Text = "예방접종",
-                char3Text = "24시",
-                placeImg = null,
                 placeImgUrl = null,
-                placeReview = "리뷰(7)",
-                longitude = 127.0495556,
-                latitude = 37.6074859,
-                isOpen = "영업중"
-            ),
-            MapPlace(
-                placeName = "반려동물 식당",
-                placeType = "식당",
-                placeDistance = "0.55km",
-                placeLocation = "서울시 성북구 월곡동 77",
-                placeCall = "02-1234-5678",
-                char1Text = "중성화 수술",
-                char2Text = "예방접종",
-                char3Text = "24시",
-                placeImg = null,
-                placeImgUrl = null,
-                placeReview = "리뷰(7)",
-                longitude = 127.0495556,
-                latitude = 37.6074859,
                 isOpen = "영업중"
             )
         )
@@ -319,17 +289,12 @@ class MapFragment : Fragment(), OnMapReadyCallback {
             override fun onItemClick(place: MapPlace) {
                 when (place.placeType) {
                     "동물병원" -> {
+                        val (currentLat, currentLng) = getMapCurrentPosition()
                         val fragment = MapDetailFragment().apply {
                             arguments = Bundle().apply {
-                                putString("placeName", place.placeName)
-                                putString("placeType", place.placeType)
-                                putString("placeDistance", place.placeDistance)
-                                putString("placeLocation", place.placeLocation)
-                                putString("placeCall", place.placeCall)
-                                putString("char1Text", place.char1Text)
-                                putString("char2Text", place.char2Text)
-                                putString("char3Text", place.char3Text)
-                                place.placeImg?.let { putInt("placeImg", it) }
+                                putInt("placeId", place.id)
+                                putDouble("latitude", currentLat)
+                                putDouble("longitude", currentLng)
                             }
                         }
                         requireActivity().supportFragmentManager.beginTransaction()
@@ -339,8 +304,8 @@ class MapFragment : Fragment(), OnMapReadyCallback {
                                 R.anim.slide_in_left,
                                 R.anim.slide_out_right
                             )
-                            .hide(this@MapFragment)  // 현재 Fragment 숨기기
-                            .add(R.id.main_frm, fragment)  // 새 Fragment 추가
+                            .hide(this@MapFragment)
+                            .add(R.id.main_frm, fragment)
                             .addToBackStack(null)
                             .commit()
                     }
@@ -359,17 +324,12 @@ class MapFragment : Fragment(), OnMapReadyCallback {
                             .commit()
                     }
                     else -> {
+                        val (currentLat, currentLng) = getMapCurrentPosition()
                         val fragment = MapEtcFragment().apply {
                             arguments = Bundle().apply {
-                                putString("placeName", place.placeName)
-                                putString("placeType", place.placeType)
-                                putString("placeDistance", place.placeDistance)
-                                putString("placeLocation", place.placeLocation)
-                                putString("placeCall", place.placeCall)
-                                putString("char1Text", place.char1Text)
-                                putString("char2Text", place.char2Text)
-                                putString("char3Text", place.char3Text)
-                                place.placeImg?.let { putInt("placeImg", it) }
+                                putInt("placeId", place.id)
+                                putDouble("latitude", currentLat)
+                                putDouble("longitude", currentLng)
                             }
                         }
                         requireActivity().supportFragmentManager.beginTransaction()
@@ -410,6 +370,10 @@ class MapFragment : Fragment(), OnMapReadyCallback {
         return sharedPref?.getString("token", null)
     }
 
+    private fun getCityId(): Int {
+        return activity?.getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
+            ?.getInt("city_id", -1) ?: -1
+    }
 
     private fun loadPlaces(keyword: String = "") {
         val token = getToken()
@@ -423,138 +387,71 @@ class MapFragment : Fragment(), OnMapReadyCallback {
             return
         }
 
-//        val regionId = 10000
-
-        val regionId = getRegionId()
-        if (regionId == -1) {
-            Toast.makeText(requireContext(), "지역 정보가 없습니다.", Toast.LENGTH_SHORT).show()
+        val cityId = 1 // cityId 가져오기
+        if (cityId == -1) {
+            Toast.makeText(requireContext(), "도시 정보가 필요합니다.", Toast.LENGTH_SHORT).show()
             return
         }
 
-        Log.d("MapFragment", "API 호출 - regionId: $regionId")
-
         lifecycleScope.launch {
             try {
-                // 현재 지도의 중심 좌표 사용
                 val mapCenter = naverMap.cameraPosition.target
 
-                // 또는 현재 지도의 보이는 영역의 중심 좌표 사용
-                val visibleRegion = naverMap.contentBounds
-                val centerLatitude = (visibleRegion.northLatitude + visibleRegion.southLatitude) / 2
-                val centerLongitude = (visibleRegion.eastLongitude + visibleRegion.westLongitude) / 2
-
-                // 위치 정보 로깅
-                Log.d("MapFragment", """
-                ===== 위치 정보 =====
-                지도 중심 좌표:
-                - 위도: ${mapCenter.latitude}
-                - 경도: ${mapCenter.longitude}
-                
-                보이는 영역 중심:
-                - 위도: $centerLatitude
-                - 경도: $centerLongitude
-                
-                현재 Region ID: $regionId
-                ==================
-            """.trimIndent())
-
                 val searchRequest = SearchPlacesRequest(
-                    userId = getUserId(),
-                    // 지도의 현재 중심 좌표 사용
                     latitude = mapCenter.latitude,
-                    longitude = mapCenter.longitude,
-                    keyword = keyword
+                    longitude = mapCenter.longitude
                 )
-
-                // API 요청 정보 로깅
-                Log.d("MapFragment", """
-                ===== API 요청 정보 =====
-                Region ID: $regionId
-                위도: ${searchRequest.latitude}
-                경도: ${searchRequest.longitude}
-                키워드: ${searchRequest.keyword}
-                ====================
-            """.trimIndent())
 
                 val response = withContext(Dispatchers.IO) {
                     RetrofitClient.placesApiService.searchPlaces(
                         token = "Bearer $token",
-                        regionId = regionId,
+                        cityId = cityId,
+                        keyword = keyword,
                         request = searchRequest
                     )
                 }
 
-                Log.d("MapFragment", """
-                ===== API 응답 정보 =====
-                성공 여부: ${response.isSuccess}
-                응답 코드: ${response.code}
-                메시지: ${response.message}
-                데이터 개수: ${response.result?.size ?: 0}
-                ====================
-            """.trimIndent())
-
                 when {
                     response.isSuccess -> {
-                        // 응답 데이터 상세 로깅
-                        Log.d("MapFragment", "받은 장소 개수: ${response.result?.size}")
-                        response.result?.forEachIndexed { index, place ->
-                            Log.d("MapFragment", "장소 $index: " +
-                                    "이름=${place.name}, " +
-                                    "카테고리=${place.category}, " +
-                                    "주소=${place.address}, " +
-                                    "거리=${place.distance}, " +
-                                    "이미지URL=${place.imgUrl}")
-                        }
-
-                        val mapPlaces = response.result?.map { place ->
+                        // 성공 처리 로직
+                        val pageResponse = response.result
+                        val mapPlaces = pageResponse?.content?.map { place ->
                             MapPlace(
+                                id = place.id,
                                 placeName = place.name,
                                 placeType = convertCategory(place.category),
                                 placeDistance = "${String.format("%.2f", place.distance)}km",
                                 placeLocation = place.address,
                                 placeCall = place.phoneNumber,
-                                char1Text = null,
-                                char2Text = null,
-                                char3Text = if (place.open) "영업중" else "영업종료",
-                                placeImg = null,  // 서버에서 제공하는 이미지 URL 사용
-                                placeImgUrl = place.imgUrl,  // 이미지 URL 추가
-                                placeReview = null,
-                                longitude = place.longitude,
-                                latitude = place.latitude,
-                                isOpen = if (place.open) "영업중" else "영업종료"
+                                isOpen = if (place.open) "영업중" else "영업종료",
+                                placeImgUrl = place.imgUrl
                             )
                         } ?: emptyList()
 
-                        Log.d("MapFragment", "변환된 MapPlace 개수: ${mapPlaces.size}")
-
-                        // UI 업데이트
                         withContext(Dispatchers.Main) {
-                            // 원본 데이터 업데이트
-                            originalPlaceDatas.clear()
+//                            originalPlaceDatas.clear()
                             originalPlaceDatas.addAll(mapPlaces)
 
-                            // 현재 표시 중인 데이터 업데이트
-                            placeDatas.clear()
+//                            placeDatas.clear()
                             placeDatas.addAll(mapPlaces)
-
-                            // RecyclerView 어댑터 업데이트
                             binding.mapPlaceRV.adapter?.notifyDataSetChanged()
+
+                            val totalElements = pageResponse?.totalElements ?: 0
+                            val currentPage = pageResponse?.number?.plus(1) ?: 0
+                            val totalPages = pageResponse?.totalPages ?: 0
 
                             Toast.makeText(
                                 requireContext(),
                                 "총 ${mapPlaces.size}개의 장소를 불러왔습니다.",
                                 Toast.LENGTH_SHORT
                             ).show()
-
-                            Log.d("MapFragment", "데이터 업데이트 완료 - 원본: ${originalPlaceDatas.size}, 표시: ${placeDatas.size}")
                         }
                     }
                     else -> {
-                        Log.e("MapFragment", "API 응답 실패: ${response.message}")
                         withContext(Dispatchers.Main) {
                             Toast.makeText(
                                 requireContext(),
-                                "데이터 로드 실패: ${response.message}",
+                                response.message ?: "데이터를 불러오는데 실패했습니다.",
                                 Toast.LENGTH_SHORT
                             ).show()
                         }
@@ -566,18 +463,93 @@ class MapFragment : Fragment(), OnMapReadyCallback {
         }
     }
 
-    private fun getUserId(): Int {
-        return activity?.getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
-            ?.getInt("user_id", -1) ?: -1
-    }
+    private suspend fun loadAllCategories() {
+        val token = getToken()
+        if (token == null) {
+            Toast.makeText(requireContext(), "로그인이 필요합니다.", Toast.LENGTH_SHORT).show()
+            return
+        }
 
-    private fun getRegionId(): Int {
-        val sharedPref = activity?.getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
-        val regionId = sharedPref?.getInt("region_id", -1) ?: -1
+        if (!::naverMap.isInitialized) {
+            Log.d("MapFragment", "지도가 아직 초기화되지 않았습니다.")
+            return
+        }
 
-        Log.d("MapFragment", "Retrieved regionId from SharedPreferences: $regionId")
+        val cityId = 1
+        if (cityId == -1) {
+            Toast.makeText(requireContext(), "도시 정보가 필요합니다.", Toast.LENGTH_SHORT).show()
+            return
+        }
 
-        return regionId
+        val mapCenter = naverMap.cameraPosition.target
+        val searchRequest = SearchPlacesRequest(
+            latitude = mapCenter.latitude,
+            longitude = mapCenter.longitude
+        )
+
+        val categories = listOf(" ", "PARK", "CAFE", "RESTAURANT", "HOTEL")
+
+        try {
+            val allPlaces = mutableListOf<MapPlace>()
+
+            withContext(Dispatchers.IO) {
+                // 모든 카테고리를 병렬로 호출
+                val deferredResults = categories.map { category ->
+                    async {
+                        try {
+                            RetrofitClient.placesApiService.searchPlaces(
+                                token = "Bearer $token",
+                                cityId = cityId,
+                                keyword = category,
+                                request = searchRequest
+                            )
+                        } catch (e: Exception) {
+                            Log.e("MapFragment", "Failed to load category $category", e)
+                            null
+                        }
+                    }
+                }
+
+                // 모든 결과 수집
+                deferredResults.awaitAll()
+                    .filterNotNull()
+                    .forEach { response ->
+                        if (response.isSuccess) {
+                            response.result?.content?.map { place ->
+                                MapPlace(
+                                    id = place.id,
+                                    placeName = place.name,
+                                    placeType = convertCategory(place.category),
+                                    placeDistance = "${String.format("%.2f", place.distance)}km",
+                                    placeLocation = place.address,
+                                    placeCall = place.phoneNumber,
+                                    isOpen = if (place.open) "영업중" else "영업종료",
+                                    placeImgUrl = place.imgUrl,
+                                    reviewCount = place.reviewCount
+                                )
+                            }?.let { allPlaces.addAll(it) }
+                        }
+                    }
+            }
+
+            // UI 업데이트는 한 번만 수행
+            withContext(Dispatchers.Main) {
+//                originalPlaceDatas.clear()
+                originalPlaceDatas.addAll(allPlaces)
+
+//                placeDatas.clear()
+                placeDatas.addAll(allPlaces)
+                binding.mapPlaceRV.adapter?.notifyDataSetChanged()
+
+                Toast.makeText(
+                    requireContext(),
+                    "총 ${allPlaces.size}개의 장소를 불러왔습니다.",
+                    Toast.LENGTH_SHORT
+                ).show()
+            }
+        } catch (e: Exception) {
+            handleError(e)
+        }
     }
 
     private fun handleError(e: Exception) {
@@ -593,7 +565,11 @@ class MapFragment : Fragment(), OnMapReadyCallback {
             is IOException -> "네트워크 연결을 확인해주세요."
             else -> "알 수 없는 오류가 발생했습니다: ${e.message}"
         }
-        Toast.makeText(requireContext(), errorMessage, Toast.LENGTH_SHORT).show()
+        context?.let { // context가 null이 아닌 경우에만 Toast를 표시
+            Toast.makeText(it, errorMessage, Toast.LENGTH_SHORT).show()
+        } ?: run {
+            Log.w("MapFragment", "Fragment가 Activity에 연결되지 않아 Toast를 표시할 수 없습니다.")
+        }
         Log.e("MapFragment", "API 오류", e)
     }
 
@@ -672,6 +648,16 @@ class MapFragment : Fragment(), OnMapReadyCallback {
         super.onSaveInstanceState(outState)
         // 현재 상태 저장
         outState.putString("currentSortType", currentSortType)
+    }
+
+    private fun getMapCurrentPosition(): Pair<Double, Double> {
+        // 지도가 초기화되었는지 확인
+        if (::naverMap.isInitialized) {
+            val mapCenter = naverMap.cameraPosition.target
+            return Pair(mapCenter.latitude, mapCenter.longitude)
+        }
+        // 지도가 초기화되지 않은 경우 기본값 반환
+        return Pair(37.5665, 126.9780) // 서울 시청 기본값
     }
 
     override fun onDestroyView() {

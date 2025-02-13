@@ -52,7 +52,7 @@ class HomeHotPlaceRVAdapter(private val placeList: ArrayList<MapPlace>) : Recycl
             binding.hotPlaceFilterTv.text = hot_place.placeType
 
             // 핫플 이미지
-            hot_place.placeImg?.let {
+            hot_place.placeImgUrl?.let {
                 Glide.with(binding.root.context)
                     .load(it)
                     .placeholder(R.drawable.img_home_hot_place_pet)
