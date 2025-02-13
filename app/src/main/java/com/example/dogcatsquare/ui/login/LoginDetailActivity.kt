@@ -162,13 +162,14 @@ class LoginDetailActivity: AppCompatActivity() {
         })
     }
 
-    private fun saveUserInfo(token: String, id: Int, email: String, pw: String) {
+    private fun saveUserInfo(token: String, id: Int, email: String, pw: String, cityId: Long) {
         val sharedPref = getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
         with(sharedPref.edit()){
             putString("token", token)
             putInt("userId", id) // 아이디 값 전달
             putString("email", email)
             putString("pw", pw)
+            putLong("cityId", cityId)
             apply()
         }
     }
@@ -192,10 +193,12 @@ class LoginDetailActivity: AppCompatActivity() {
         var id: Int = loginResponse.result.userId
         Log.d("Nickname액티비티 사용자 아이디 값", id.toString())
 
+        var cityId: Long = loginResponse.result.cityId
+
         var email: String = loginResponse.result.email
         var pw: String = binding.loginPwEt.text.toString()
 
-        saveUserInfo(token, id, email, pw)
+        saveUserInfo(token, id, email, pw, cityId)
 
         val intent = Intent(this, MainActivity::class.java)
         startActivity(intent)
