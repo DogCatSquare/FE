@@ -42,7 +42,7 @@ interface BoardApiService {
     // 특정 게시글 조회 API
     @GET("api/board/post/{postId}")
     fun getPost(
-        @Path("postId") postId: Long
+        @Path("postId") postId: Int
     ): Call<PostDetailResponse>
 
     // 게시판 검색 API 추가
