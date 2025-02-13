@@ -392,13 +392,6 @@ class MapDetailFragment : Fragment(), OnMapReadyCallback {
             adapter = detailImgRVAdapter
             layoutManager = LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false)
         }
-
-        // 가격 리사이클러뷰 설정
-        val mapPriceRVAdapter = MapPriceRVAdapter(priceDatas)
-        binding.mapPriceRV.apply {
-            adapter = mapPriceRVAdapter
-            layoutManager = LinearLayoutManager(context, LinearLayoutManager.VERTICAL, false)
-        }
     }
 
     private fun showSearchOptions() {
