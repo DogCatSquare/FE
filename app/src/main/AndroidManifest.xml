@@ -37,8 +37,8 @@
         </activity>
 
         <activity android:name=".ui.community.CreatePostActivity" />
-        <activity android:name=".ui.settings.BoardSettingsActivity" />
-        <activity android:name=".ui.board.BoardCreateActivity" />
+        <activity android:name=".ui.community.BoardSettingsActivity" />
+        <activity android:name=".ui.community.BoardCreateActivity" />
         <activity android:name=".ui.community.PostDetailActivity" />
         <activity android:name=".ui.community.EditPostActivity" />
 

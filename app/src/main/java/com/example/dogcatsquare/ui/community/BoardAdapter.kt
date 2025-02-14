@@ -8,10 +8,10 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.example.dogcatsquare.R
-import com.example.dogcatsquare.data.community.BoardItem
+import com.example.dogcatsquare.data.community.BoardData
 
 class BoardAdapter(emptyList: List<Any>) :
-    ListAdapter<BoardItem, BoardAdapter.BoardViewHolder>(BoardDiffCallback()) {
+    ListAdapter<BoardData, BoardAdapter.BoardViewHolder>(BoardDiffCallback()) {
 
     class BoardViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         val boardName: TextView = view.findViewById(R.id.tvBoardName)
@@ -30,12 +30,12 @@ class BoardAdapter(emptyList: List<Any>) :
         holder.boardContent.text = board.content
     }
 
-    class BoardDiffCallback : DiffUtil.ItemCallback<BoardItem>() {
-        override fun areItemsTheSame(oldItem: BoardItem, newItem: BoardItem): Boolean {
+    class BoardDiffCallback : DiffUtil.ItemCallback<BoardData>() {
+        override fun areItemsTheSame(oldItem: BoardData, newItem: BoardData): Boolean {
             return oldItem.id == newItem.id
         }
 
-        override fun areContentsTheSame(oldItem: BoardItem, newItem: BoardItem): Boolean {
+        override fun areContentsTheSame(oldItem: BoardData, newItem: BoardData): Boolean {
             return oldItem == newItem
         }
     }
