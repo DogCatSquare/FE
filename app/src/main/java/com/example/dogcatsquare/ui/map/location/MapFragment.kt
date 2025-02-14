@@ -728,3 +728,4 @@ class MapFragment : Fragment(), OnMapReadyCallback {
         _binding = null
     }
 }
+
