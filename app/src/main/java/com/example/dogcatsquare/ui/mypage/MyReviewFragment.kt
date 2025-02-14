@@ -6,11 +6,13 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.dogcatsquare.data.api.MyPageRetrofitItf
+import com.example.dogcatsquare.data.api.ReviewRetrofitItf
+import com.example.dogcatsquare.data.map.DeleteReviewResponse
 import com.example.dogcatsquare.data.model.mypage.GetMyReviewResponse
-import com.example.dogcatsquare.data.model.mypage.MyReview
 import com.example.dogcatsquare.data.model.mypage.ReviewContent
 import com.example.dogcatsquare.data.network.RetrofitObj
 import com.example.dogcatsquare.databinding.FragmentMyReviewBinding
@@ -23,6 +25,9 @@ class MyReviewFragment : Fragment() {
 
     private var myReviewDatas = ArrayList<ReviewContent>()
     var currentPage = 1 // 현재 페이지 번호를 관리하는 변수
+    private val id: Int = -1
+    private val walkId: Int? = null
+    private val placeId: Int? = null
 
     private fun getToken(): String?{
         val sharedPref = activity?.getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
@@ -44,18 +49,20 @@ class MyReviewFragment : Fragment() {
     private fun setupMyReviewRecyclerView() {
         myReviewDatas.clear()
 
-        val myReviewRVAdapter = MyReviewRVAdapter(myReviewDatas)
+        val myReviewRVAdapter = MyReviewRVAdapter(myReviewDatas) { params ->
+            onDeleteReview(params.reviewId, params.placeId, params.walkId)
+        }
         binding.myReviewRv.adapter = myReviewRVAdapter
         binding.myReviewRv.layoutManager = LinearLayoutManager(context, LinearLayoutManager.VERTICAL, false)
 
-        getMyReview(1, myReviewRVAdapter)
+        getMyReview(myReviewRVAdapter)
     }
 
-    private fun getMyReview(page: Int, adapter: MyReviewRVAdapter) {
+    private fun getMyReview(adapter: MyReviewRVAdapter) {
         val token = getToken()
 
         val getMyReviewService = RetrofitObj.getRetrofit().create(MyPageRetrofitItf::class.java)
-        getMyReviewService.getMyReview("Bearer $token", page).enqueue(object : Callback<GetMyReviewResponse> {
+        getMyReviewService.getMyReview("Bearer $token", 0).enqueue(object : Callback<GetMyReviewResponse> {
             override fun onResponse(call: Call<GetMyReviewResponse>, response: Response<GetMyReviewResponse>) {
                 Log.d("RETROFIT/SUCCESS", response.toString())
                 val resp: GetMyReviewResponse = response.body()!!
@@ -67,9 +74,12 @@ class MyReviewFragment : Fragment() {
                         val reviews = resp.result.content.map { review ->
                             ReviewContent(
                                 id = review.id,
+                                title = review.title,
                                 content = review.content,
                                 createdAt = review.createdAt,
                                 imageUrls = review.imageUrls,
+                                placeId = review.placeId,
+                                walkId = review.walkId
                             )
                         }
 
@@ -87,5 +97,65 @@ class MyReviewFragment : Fragment() {
                 Log.d("RETROFIT/FAILURE", t.message.toString())
             }
         })
+    }
+
+    private fun onDeleteReview(reviewId: Int, placeId: Int?, walkId: Int?) {
+        val token = getToken()
+        val deleteReviewService = RetrofitObj.getRetrofit().create(ReviewRetrofitItf::class.java)
+
+        if (walkId == null) { // walkId 삭제
+            deleteReviewService.deletePlaceReview("Bearer $token", reviewId).enqueue(object : Callback<DeleteReviewResponse> {
+                override fun onResponse(call: Call<DeleteReviewResponse>, response: Response<DeleteReviewResponse>) {
+                    Log.d("RETROFIT/SUCCESS", response.toString())
+
+                    if (response.isSuccessful) {
+                        response.body()?.let { resp ->
+                            if (resp.isSuccess) {
+                                Log.d("DeletePlaceReview/SUCCESS", "DeletePlaceReview")
+
+                                Toast.makeText(context, "리뷰 삭제가 완료되었습니다", Toast.LENGTH_SHORT).show()
+                            } else {
+                                Log.e(
+                                    "DeletePlaceReview/FAILURE",
+                                    "응답 코드: ${resp.code}, 응답 메시지: ${resp.message}"
+                                )
+                                Toast.makeText(context, "오류가 발생했습니다", Toast.LENGTH_SHORT).show()
+                            }
+                        }
+                    }
+                }
+
+                override fun onFailure(call: Call<DeleteReviewResponse>, t: Throwable) {
+                    Log.d("RETROFIT/FAILURE", t.message.toString())                }
+
+            })
+        } else { // placeId 삭제
+            deleteReviewService.deleteWalkReview("Bearer $token", reviewId).enqueue(object :
+                Callback<DeleteReviewResponse> {
+                override fun onResponse(call: Call<DeleteReviewResponse>, response: Response<DeleteReviewResponse>) {
+                    Log.d("RETROFIT/SUCCESS", response.toString())
+
+                    if (response.isSuccessful) {
+                        response.body()?.let { resp ->
+                            if (resp.isSuccess) {
+                                Log.d("DeleteWalkReview/SUCCESS", "DeleteWalkReview")
+
+                                Toast.makeText(context, "리뷰 삭제가 완료되었습니다", Toast.LENGTH_SHORT).show()
+                            } else {
+                                Log.e(
+                                    "DeleteWalkReview/FAILURE",
+                                    "응답 코드: ${resp.code}, 응답 메시지: ${resp.message}"
+                                )
+                                Toast.makeText(context, "오류가 발생했습니다", Toast.LENGTH_SHORT).show()
+                            }
+                        }
+                    }
+                }
+
+                override fun onFailure(call: Call<DeleteReviewResponse>, t: Throwable) {
+                    Log.d("RETROFIT/FAILURE", t.message.toString())                }
+
+            })
+        }
     }
 }

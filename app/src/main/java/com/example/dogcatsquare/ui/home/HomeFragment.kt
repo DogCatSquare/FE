@@ -1,6 +1,7 @@
 package com.example.dogcatsquare.ui.home
 
 import PostApiService
+import WeatherViewModel
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
@@ -13,6 +14,8 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
+import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.viewpager2.widget.ViewPager2
 import com.example.dogcatsquare.R
@@ -45,6 +48,9 @@ import java.util.TimerTask
 
 class HomeFragment : Fragment() {
     lateinit var binding: FragmentHomeBinding
+
+    private val viewModel: WeatherViewModel by activityViewModels()
+
 
     private val timer = Timer()
     private val handler = Handler(Looper.getMainLooper())
@@ -124,36 +130,35 @@ class HomeFragment : Fragment() {
 
     // weather viewpager
     private fun fetchWeatherData() {
-        val token = getToken()
-
-        val weatherService = RetrofitObj.getRetrofit().create(WeatherRetrofitItf::class.java)
-        weatherService.getWeather("Bearer $token").enqueue(object : Callback<WeatherResponse> {
-            override fun onResponse(call: Call<WeatherResponse>, response: Response<WeatherResponse>) {
-                if (response.isSuccessful) {
-                    response.body()?.let { weatherResponse ->
-                        if (weatherResponse.isSuccess) {
-                            val weatherResult = weatherResponse.result
-                            setupWeatherViewPager(weatherResult)
-                        } else {
-                            Log.e("Weather API", "API 응답 오류: ${weatherResponse.message}")
-                        }
-                    }
-                }
+        viewModel.weatherData.observe(viewLifecycleOwner) { weatherResponse ->
+            if (weatherResponse != null) {
+                Log.d("HomeFragment", "WeatherData 수신: ${weatherResponse.result.mainMessage}")
+                setupWeatherViewPager(weatherResponse.result)
+            } else {
+                Log.e("HomeFragment", "WeatherData 수신 실패")
             }
-
-            override fun onFailure(call: Call<WeatherResponse>, t: Throwable) {
-                Log.e("Weather API", "API 요청 실패: ${t.message}")
-            }
-        })
+        }
+        viewModel.getWeatherData() // ViewModel에서 캐싱 확인 후 호출
     }
 
     private fun setupWeatherViewPager(weatherResult: WeatherResult) {
         // ad view pager
         val homeWeatherAdapter = HomeWeatherVPAdapter(this)
-        homeWeatherAdapter.addFragment(HomeWeatherFragment.newInstance(weatherResult, 0))
 
-        binding.homeWeatherVp.adapter = homeWeatherAdapter
-        binding.homeWeatherVp.orientation = ViewPager2.ORIENTATION_HORIZONTAL
+        if(weatherResult.ddayTitle != null) {
+            homeWeatherAdapter.addFragment(HomeWeatherFragment.newInstance(weatherResult, 0))
+            homeWeatherAdapter.addFragment(HomeWeatherFragment.newInstance(weatherResult, 1))
+
+            binding.homeWeatherVp.adapter = homeWeatherAdapter
+            binding.homeWeatherVp.orientation = ViewPager2.ORIENTATION_HORIZONTAL
+
+            weatherAutoSlide(homeWeatherAdapter)
+        } else {
+            homeWeatherAdapter.addFragment(HomeWeatherFragment.newInstance(weatherResult, 0))
+
+            binding.homeWeatherVp.adapter = homeWeatherAdapter
+            binding.homeWeatherVp.orientation = ViewPager2.ORIENTATION_HORIZONTAL
+        }
     }
 
     // d_day rv
@@ -290,6 +295,8 @@ class HomeFragment : Fragment() {
         val token = getToken()
         val cityId = getCityId()
         val savedLocation = getSavedLocation()
+
+        Log.d("loc", "$cityId, $savedLocation")
 
         val getPopularPlaceService = RetrofitObj.getRetrofit().create(PlacesApiService::class.java)
         if (savedLocation != null) {
@@ -479,8 +486,8 @@ class HomeFragment : Fragment() {
 
     private fun getSavedLocation(): Pair<Double, Double>? {
         val sharedPref = requireActivity().getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
-        val latitude = sharedPref.getFloat("current_latitude", -1f)
-        val longitude = sharedPref.getFloat("current_longitude", -1f)
+        val latitude = sharedPref.getFloat("current_latitude", 0f)
+        val longitude = sharedPref.getFloat("current_longitude", 0f)
 
         return if (latitude != -1f && longitude != -1f) {
             Pair(latitude.toDouble(), longitude.toDouble())
