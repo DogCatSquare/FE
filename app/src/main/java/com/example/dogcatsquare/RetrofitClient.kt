@@ -2,6 +2,7 @@ package com.example.dogcatsquare
 
 import android.util.Log
 import com.example.dogcatsquare.data.api.PlacesApiService
+import com.example.dogcatsquare.ui.map.walking.WalkApiService
 import com.jakewharton.retrofit2.adapter.kotlin.coroutines.CoroutineCallAdapterFactory
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
@@ -48,5 +49,9 @@ object RetrofitClient {
 
     val placesApiService: PlacesApiService by lazy {
         retrofit.create(PlacesApiService::class.java)
+    }
+
+    val walkApiService: WalkApiService by lazy {
+        retrofit.create(WalkApiService::class.java)
     }
 }

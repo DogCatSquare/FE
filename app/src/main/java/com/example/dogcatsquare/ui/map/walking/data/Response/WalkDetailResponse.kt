@@ -23,20 +23,9 @@ data class WalkDetail(
     val createdBy: CreatedBy
 )
 
-data class Special(
-    val type: String,
-    val customValue: String?
-)
-
 data class Coordinate(
     val latitude: Double,
     val longitude: Double,
     val sequence: Int
-)
-
-data class CreatedBy(
-    val nickname: String,
-    val breed: String?,
-    val profileImageUrl: String
 )
 

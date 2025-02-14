@@ -30,12 +30,15 @@ import com.naver.maps.map.util.FusedLocationSource
 import android.widget.Toast
 import androidx.lifecycle.lifecycleScope
 import com.example.dogcatsquare.data.map.SearchPlacesRequest
+import com.example.dogcatsquare.ui.map.walking.data.Request.WalkListRequest
+import com.example.dogcatsquare.ui.map.walking.data.Response.WalkResponse
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import retrofit2.HttpException
+import retrofit2.Response
 import java.io.IOException
 
 class MapFragment : Fragment(), OnMapReadyCallback {
@@ -429,10 +432,8 @@ class MapFragment : Fragment(), OnMapReadyCallback {
                         } ?: emptyList()
 
                         withContext(Dispatchers.Main) {
-//                            originalPlaceDatas.clear()
+                            // 기존 장소 데이터에 추가
                             originalPlaceDatas.addAll(mapPlaces)
-
-//                            placeDatas.clear()
                             placeDatas.addAll(mapPlaces)
                             binding.mapPlaceRV.adapter?.notifyDataSetChanged()
 
@@ -447,6 +448,7 @@ class MapFragment : Fragment(), OnMapReadyCallback {
                             ).show()
                         }
                     }
+
                     else -> {
                         withContext(Dispatchers.Main) {
                             Toast.makeText(
@@ -457,8 +459,69 @@ class MapFragment : Fragment(), OnMapReadyCallback {
                         }
                     }
                 }
-            } catch (e: Exception) {
-                handleError(e)
+
+                // 산책로 API 호출
+                // 산책로 API 호출
+                val walkRequest = WalkListRequest(
+                    latitude = mapCenter.latitude,
+                    longitude = mapCenter.longitude,
+                    radius = 0
+                )
+
+                val walkResponse: Response<WalkResponse> = withContext(Dispatchers.IO) {
+                    RetrofitClient.walkApiService.getWalkList(
+                        token = "Bearer $token",
+                        request = walkRequest
+                    )
+                }
+
+                if (walkResponse.isSuccessful) {
+                    val walkResponseBody = walkResponse.body()
+                    if (walkResponseBody?.isSuccess == true) {
+                        val walkPlaces = walkResponseBody.result.walks.map { walk ->
+                            MapPlace(
+                                id = walk.walkId.toInt(),
+                                placeName = walk.title,
+                                placeType = "산책로",
+                                placeDistance = "${
+                                    String.format(
+                                        "%.2f",
+                                        walk.distance
+                                    )
+                                }km",  // 거리 포맷
+                                placeLocation = "",
+                                placeCall = "",
+                                isOpen = "",
+                                placeImgUrl = walk.walkImageUrl.firstOrNull()
+                                    ?: ""
+                            )
+                        }
+
+                        withContext(Dispatchers.Main) {
+                            // 기존 리스트에 산책로 데이터 추가
+                            originalPlaceDatas.addAll(walkPlaces)
+                            placeDatas.addAll(walkPlaces)
+
+                            // 리사이클러뷰 갱신
+                            binding.mapPlaceRV.adapter?.notifyDataSetChanged()
+
+                            Toast.makeText(
+                                requireContext(),
+                                "산책로 ${walkPlaces.size}개를 불러왔습니다.",
+                                Toast.LENGTH_SHORT
+                            ).show()
+                        }
+                    }
+                }
+            }catch (e: Exception) {
+                e.printStackTrace()
+                withContext(Dispatchers.Main) {
+                    Toast.makeText(
+                        requireContext(),
+                        "오류 발생: ${e.message}",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
             }
         }
     }

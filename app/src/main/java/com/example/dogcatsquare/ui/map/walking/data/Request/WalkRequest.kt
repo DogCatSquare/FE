@@ -21,3 +21,14 @@ data class Coordinate(
     val sequence: Int
 )
 
+data class WalkReviewRequest(
+    val content: String
+)
+
+data class WalkListRequest(
+    val latitude: Double,
+    val longitude: Double,
+    val radius: Int
+)
+
+
