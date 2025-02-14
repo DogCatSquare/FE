@@ -21,8 +21,11 @@ data class MyReviewResult(
 
 data class PostContent(
     @SerializedName("id") val id: Int,
+    @SerializedName("title") val title: String,
     @SerializedName("content") val content: String,
     @SerializedName("createdAt") val createdAt: String,
-    @SerializedName("imageUrls") val imageUrls: List<String>?
+    @SerializedName("imageUrls") val imageUrls: List<String>?,
+    @SerializedName("placeId") val placeId: Int,
+    @SerializedName("walkId") val walkId: Int
 )
 

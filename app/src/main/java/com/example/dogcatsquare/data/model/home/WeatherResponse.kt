@@ -24,7 +24,7 @@ data class WeatherResult(
     @SerializedName("minTemp") val minTemp: String,           // 최저 기온
 
     // 날씨 추가 정보
-    @SerializedName("imageUrl") val imageUrl: String,         // 날씨 상태 이미지 URL
+    @SerializedName("imageUrl") val imageUrl: String?,         // 날씨 상태 이미지 URL
     @SerializedName("rainProbability") val rainProbability: String, // 강수 확률
 
     // D-day 정보 (선택적)

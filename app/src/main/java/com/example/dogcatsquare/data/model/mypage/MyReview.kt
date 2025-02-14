@@ -12,7 +12,10 @@ data class MyReview(
 
 data class ReviewContent(
     val id: Int,
+    val title: String,
     val content: String,
     val createdAt: String,
-    val imageUrls: List<String>?
+    val imageUrls: List<String>?,
+    val placeId: Int?,
+    val walkId: Int?
 )
