@@ -112,26 +112,6 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="12dp" />
-
-            <!-- 경계선 -->
-            <View
-                android:layout_width="match_parent"
-                android:layout_height="1dp"
-                android:layout_marginBottom="16dp"
-                android:background="#E0E0E0" />
-
-            <!-- 동네 소식 더보기 버튼 -->
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btnSeeMoreLocal"
-                style="@style/CustomMaterialButton8"
-                android:layout_width="match_parent"
-                android:layout_height="50dp"
-                android:layout_gravity="center_horizontal"
-                android:layout_marginTop="16dp"
-                android:layout_marginBottom="16dp"
-                android:insetTop="0dp"
-                android:insetBottom="0dp"
-                android:text="동네 소식 더보기" />
-        </LinearLayout>
+       </LinearLayout>
     </androidx.core.widget.NestedScrollView>
 </androidx.constraintlayout.widget.ConstraintLayout>

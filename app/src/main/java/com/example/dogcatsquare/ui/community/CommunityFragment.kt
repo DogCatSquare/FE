@@ -9,7 +9,7 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import com.example.dogcatsquare.R
 import com.example.dogcatsquare.databinding.FragmentCommunityBinding
-import com.example.dogcatsquare.ui.settings.BoardSettingsActivity
+import com.example.dogcatsquare.ui.community.BoardSettingsActivity
 import com.google.android.material.tabs.TabLayoutMediator
 
 class CommunityFragment : Fragment(R.layout.fragment_community) {

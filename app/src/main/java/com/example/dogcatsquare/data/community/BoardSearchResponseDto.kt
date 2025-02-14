@@ -4,5 +4,5 @@ data class BoardSearchResponseDto(
     val isSuccess: Boolean,
     val code: String,
     val message: String,
-    val result: List<BoardItem>
+    val result: List<BoardData>
 )

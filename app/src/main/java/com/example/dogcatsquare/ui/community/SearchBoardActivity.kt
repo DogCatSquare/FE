@@ -36,10 +36,10 @@ class SearchBoardActivity : AppCompatActivity() {
         boardAdapter = BoardAdapter(emptyList())
         recyclerView.adapter = boardAdapter
 
-        // 🔹 앱 실행 시 모든 게시판 조회
+        // 앱 실행 시 모든 게시판 조회
         getAllBoards()
 
-        // 🔹 검색 버튼 클릭 이벤트
+        // 검색 버튼 클릭 이벤트
         btnSearch.setOnClickListener {
             val boardName = etSearchBoard.text.toString().trim()
             Log.d("SearchBoardActivity", "검색 버튼이 클릭됨")
@@ -52,7 +52,7 @@ class SearchBoardActivity : AppCompatActivity() {
             }
         }
 
-        // 🔹 키보드 엔터 입력 시 검색 실행
+        // 키보드 엔터 입력 시 검색 실행
         etSearchBoard.setOnEditorActionListener { _, actionId, event ->
             if (actionId == EditorInfo.IME_ACTION_SEARCH || (event?.action == KeyEvent.ACTION_DOWN && event.keyCode == KeyEvent.KEYCODE_ENTER)) {
                 btnSearch.performClick() // 엔터를 누르면 검색 버튼 클릭 실행
@@ -63,7 +63,7 @@ class SearchBoardActivity : AppCompatActivity() {
         }
     }
 
-    // 🔹 모든 게시판 조회 API 호출
+    // 모든 게시판 조회 API 호출
     private fun getAllBoards() {
         RetrofitClient.instance.getAllBoards()
             .enqueue(object : Callback<BoardSearchResponseDto> {

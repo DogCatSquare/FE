@@ -33,34 +33,6 @@
             android:textStyle="bold" />
     </RelativeLayout>
 
-    <!-- 게시판 목록 -->
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="8dp"
-        android:background="@drawable/bg_item_border"
-        android:gravity="center_vertical"
-        android:orientation="horizontal"
-        android:padding="12dp">
-
-        <!-- 게시판 아이템 -->
-        <TextView
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="고양이 게시판"
-            android:textColor="#0E0E0E"
-            android:textSize="16sp"
-            android:ellipsize="end"
-            android:singleLine="true" />
-
-        <ImageView
-            android:layout_width="20dp"
-            android:layout_height="20dp"
-            android:src="@drawable/ic_menu"
-            android:contentDescription="메뉴" />
-    </LinearLayout>
-
     <!-- 게시판 만들기 버튼 -->
     <ImageButton
         android:id="@+id/btnCreateBoard"
@@ -91,252 +63,25 @@
             android:hint="게시판 검색"
             android:paddingStart="8dp"
             android:textColor="#000000"
-            android:textSize="14sp" />
+            android:textSize="14sp"
+            android:imeOptions="actionSearch"
+            android:inputType="text" />
 
         <ImageView
+            android:id="@+id/btnSearchBoard"
             android:layout_width="24dp"
             android:layout_height="24dp"
             android:src="@drawable/ic_search"
-            android:contentDescription="검색" />
+            android:contentDescription="검색"
+            android:clickable="true"
+            android:focusable="true"/>
     </LinearLayout>
 
-    <!-- 검색 결과 게시판 리스트 -->
-    <LinearLayout
+    <!-- 검색 결과 게시판 리스트 (RecyclerView로 변경) -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recyclerView"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:layout_marginTop="16dp">
-
-        <!-- 검색 결과 아이템 -->
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:background="@drawable/bg_before_item_border"
-            android:padding="12dp"
-            android:layout_marginBottom="8dp">
-
-            <!-- 제목과 추가 아이콘 -->
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:gravity="center_vertical">
-
-                <TextView
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:text="강아지 게시판 🐶"
-                    android:textColor="#0E0E0E"
-                    android:textSize="16sp"
-                    android:lineHeight="22.4sp"
-                    android:ellipsize="end"
-                    android:singleLine="true" />
-
-                <ImageView
-                    android:layout_width="20dp"
-                    android:layout_height="20dp"
-                    android:src="@drawable/ic_plus"
-                    android:contentDescription="추가" />
-            </LinearLayout>
-
-            <!-- 설명 텍스트 -->
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="견주들이 모여 강아지 이야기를 자유롭게 할 수 있는 게시판"
-                android:textColor="#757575"
-                android:textSize="12sp"
-                android:lineHeight="16.8sp"
-                android:layout_marginTop="4dp" />
-
-            <!-- 태그 목록 -->
-            <LinearLayout
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:layout_marginTop="8dp">
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="#강아지"
-                    android:textColor="#757575"
-                    android:textSize="12sp"
-                    android:lineHeight="16.8sp"
-                    android:layout_marginEnd="8dp" />
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="#견주"
-                    android:textColor="#757575"
-                    android:textSize="12sp"
-                    android:lineHeight="16.8sp"
-                    android:layout_marginEnd="8dp" />
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="#일상"
-                    android:textColor="#757575"
-                    android:textSize="12sp"
-                    android:lineHeight="16.8sp" />
-            </LinearLayout>
-        </LinearLayout>
-
-
-        <!-- 📌 산책방 -->
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:background="@drawable/bg_before_item_border"
-            android:padding="12dp"
-            android:layout_marginBottom="8dp">
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:gravity="center_vertical">
-
-                <TextView
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:text="산책방"
-                    android:textColor="#0E0E0E"
-                    android:textSize="16sp"
-                    android:lineHeight="22.4sp"
-                    android:ellipsize="end"
-                    android:singleLine="true" />
-
-                <ImageView
-                    android:layout_width="20dp"
-                    android:layout_height="20dp"
-                    android:src="@drawable/ic_plus"
-                    android:contentDescription="추가" />
-            </LinearLayout>
-
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="강아지와 함께하는 산책을 공유하고 유용한 이야기를 나누는 강아지 산책방"
-                android:textColor="#757575"
-                android:textSize="12sp"
-                android:lineHeight="16.8sp"
-                android:layout_marginTop="4dp" />
-
-            <LinearLayout
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:layout_marginTop="8dp">
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="#강아지"
-                    android:textColor="#757575"
-                    android:textSize="12sp"
-                    android:lineHeight="16.8sp"
-                    android:layout_marginEnd="8dp" />
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="#견주"
-                    android:textColor="#757575"
-                    android:textSize="12sp"
-                    android:lineHeight="16.8sp"
-                    android:layout_marginEnd="8dp" />
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="#일상"
-                    android:textColor="#757575"
-                    android:textSize="12sp"
-                    android:lineHeight="16.8sp" />
-            </LinearLayout>
-        </LinearLayout>
-
-        <!-- 📌 고양이 게시판 -->
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:background="@drawable/bg_before_item_border"
-            android:padding="12dp"
-            android:layout_marginBottom="8dp">
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:gravity="center_vertical">
-
-                <TextView
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:text="고양이 게시판 🐱"
-                    android:textColor="#0E0E0E"
-                    android:textSize="16sp"
-                    android:lineHeight="22.4sp"
-                    android:ellipsize="end"
-                    android:singleLine="true" />
-
-                <ImageView
-                    android:layout_width="20dp"
-                    android:layout_height="20dp"
-                    android:src="@drawable/ic_plus"
-                    android:contentDescription="추가" />
-            </LinearLayout>
-
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="고양이 집사들이 자유롭게 이야기를 나눌 수 있는 고양이 게시판"
-                android:textColor="#757575"
-                android:textSize="12sp"
-                android:lineHeight="16.8sp"
-                android:layout_marginTop="4dp" />
-
-            <LinearLayout
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:layout_marginTop="8dp">
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="#고양이"
-                    android:textColor="#757575"
-                    android:textSize="12sp"
-                    android:lineHeight="16.8sp"
-                    android:layout_marginEnd="8dp" />
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="#집사"
-                    android:textColor="#757575"
-                    android:textSize="12sp"
-                    android:lineHeight="16.8sp"
-                    android:layout_marginEnd="8dp" />
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="#일상"
-                    android:textColor="#757575"
-                    android:textSize="12sp"
-                    android:lineHeight="16.8sp" />
-            </LinearLayout>
-        </LinearLayout>
-    </LinearLayout>
+        android:layout_height="match_parent"
+        android:layout_marginTop="16dp"
+        android:scrollbars="vertical"/>
 </LinearLayout>
