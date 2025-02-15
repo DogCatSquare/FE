@@ -35,6 +35,7 @@ import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope
 import com.example.dogcatsquare.LocationViewModel
 import com.example.dogcatsquare.data.map.SearchPlacesRequest
+import com.example.dogcatsquare.data.map.WalkListRequest
 import com.google.android.gms.location.LocationCallback
 import com.google.android.gms.location.LocationRequest
 import com.google.android.gms.location.LocationResult
@@ -498,26 +499,20 @@ class MapFragment : Fragment(), OnMapReadyCallback {
     }
 
     @SuppressLint("MissingPermission")
-    private suspend fun loadAllCategories() {
-        val token = getToken()
-        if (token == null) {
+    private suspend fun loadPlacesData(): List<MapPlace> {
+        val token = getToken() ?: run {
             Toast.makeText(requireContext(), "로그인이 필요합니다.", Toast.LENGTH_SHORT).show()
-            return
+            return emptyList()
         }
 
-        if (!::naverMap.isInitialized) {
-            Log.d("MapFragment", "지도가 아직 초기화되지 않았습니다.")
-            return
-        }
-
-        val cityId = 1
 //        val cityId = getCityId()
+        val cityId = 1
         if (cityId == -1) {
             Toast.makeText(requireContext(), "도시 정보가 필요합니다.", Toast.LENGTH_SHORT).show()
-            return
+            return emptyList()
         }
 
-        // 위치 정보를 받아올 때까지 대기
+        // 위치 정보 획득
         val userLocation = currentLocation ?: run {
             try {
                 suspendCancellableCoroutine { continuation ->
@@ -526,29 +521,22 @@ class MapFragment : Fragment(), OnMapReadyCallback {
                         .addOnSuccessListener { location ->
                             if (location != null) {
                                 val newLocation = LatLng(location.latitude, location.longitude)
-                                Log.d("MapFragment", "위치 정보 획득 성공: lat=${location.latitude}, lng=${location.longitude}")
                                 currentLocation = newLocation
                                 continuation.resume(newLocation)
                             } else {
-                                Log.d("MapFragment", "위치 정보 획득 실패, 기본 위치 사용")
                                 val defaultLocation = naverMap.cameraPosition.target
                                 continuation.resume(defaultLocation)
                             }
                         }
                         .addOnFailureListener { e ->
-                            Log.e("MapFragment", "위치 정보 획득 실패", e)
                             val defaultLocation = naverMap.cameraPosition.target
                             continuation.resume(defaultLocation)
                         }
                 }
             } catch (e: Exception) {
-                Log.e("MapFragment", "위치 정보 획득 중 오류 발생", e)
                 naverMap.cameraPosition.target
             }
         }
-
-        Log.d("MapFragment", "==== API 호출 위치 정보 확인 ====")
-        Log.d("MapFragment", "최종 사용 위치: lat=${userLocation.latitude}, lng=${userLocation.longitude}")
 
         val searchRequest = SearchPlacesRequest(
             latitude = userLocation.latitude,
@@ -556,12 +544,10 @@ class MapFragment : Fragment(), OnMapReadyCallback {
         )
 
         val categories = listOf(" ", "PARK", "CAFE", "RESTAURANT", "HOTEL")
+        val allPlaces = mutableListOf<MapPlace>()
 
         try {
-            val allPlaces = mutableListOf<MapPlace>()
-
             withContext(Dispatchers.IO) {
-                // 모든 카테고리를 병렬로 호출
                 val deferredResults = categories.map { category ->
                     async {
                         try {
@@ -572,13 +558,11 @@ class MapFragment : Fragment(), OnMapReadyCallback {
                                 request = searchRequest
                             )
                         } catch (e: Exception) {
-                            Log.e("MapFragment", "Failed to load category $category", e)
                             null
                         }
                     }
                 }
 
-                // 모든 결과 수집
                 deferredResults.awaitAll()
                     .filterNotNull()
                     .forEach { response ->
@@ -601,32 +585,152 @@ class MapFragment : Fragment(), OnMapReadyCallback {
                         }
                     }
             }
+            return allPlaces
+        } catch (e: Exception) {
+            handleError(e)
+            return emptyList()
+        }
+    }
 
-            // UI 업데이트는 한 번만 수행
-            withContext(Dispatchers.Main) {
-                clearMarkers()
+    @SuppressLint("MissingPermission")
+    private suspend fun loadWalkData(): List<MapPlace> {
+        val token = getToken() ?: run {
+            Toast.makeText(requireContext(), "로그인이 필요합니다.", Toast.LENGTH_SHORT).show()
+            return emptyList()
+        }
 
-//                originalPlaceDatas.clear()
-                originalPlaceDatas.addAll(allPlaces)
-
-//                placeDatas.clear()
-                placeDatas.addAll(allPlaces)
-                binding.mapPlaceRV.adapter?.notifyDataSetChanged()
-
-                allPlaces.forEach { place ->
-                    createMarker(place)
+        // 위치 정보 획득
+        val userLocation = currentLocation ?: run {
+            try {
+                suspendCancellableCoroutine { continuation ->
+                    val fusedLocationClient = LocationServices.getFusedLocationProviderClient(requireActivity())
+                    fusedLocationClient.lastLocation
+                        .addOnSuccessListener { location ->
+                            if (location != null) {
+                                val newLocation = LatLng(location.latitude, location.longitude)
+                                currentLocation = newLocation
+                                continuation.resume(newLocation)
+                            } else {
+                                val defaultLocation = naverMap.cameraPosition.target
+                                continuation.resume(defaultLocation)
+                            }
+                        }
+                        .addOnFailureListener { e ->
+                            val defaultLocation = naverMap.cameraPosition.target
+                            continuation.resume(defaultLocation)
+                        }
                 }
+            } catch (e: Exception) {
+                naverMap.cameraPosition.target
+            }
+        }
 
-                Toast.makeText(
-                    requireContext(),
-                    "총 ${allPlaces.size}개의 장소를 불러왔습니다.",
-                    Toast.LENGTH_SHORT
-                ).show()
+        val walkRequest = WalkListRequest(
+            latitude = userLocation.latitude,
+            longitude = userLocation.longitude,
+            radius = 5.0 // 기본 반경 5km로 설정 (필요에 따라 조정 가능)
+        )
+
+        try {
+            val response = withContext(Dispatchers.IO) {
+                RetrofitClient.placesApiService.getWalkList(
+                    token = "Bearer $token",
+                    request = walkRequest
+                )
+            }
+
+            if (response.isSuccess) {
+                return response.result?.walks?.map { walk ->
+                    MapPlace(
+                        id = walk.walkId,
+                        placeName = walk.title,
+                        placeType = "산책로",
+                        placeDistance = "${String.format("%.2f", walk.distance)}km",
+                        placeLocation = walk.description,
+                        placeCall = "", // 산책로는 전화번호 없음
+                        isOpen = "이용가능", // 산책로는 항상 이용 가능으로 설정
+                        placeImgUrl = walk.walkImageUrl.firstOrNull(),
+                        reviewCount = walk.reviewCount,
+                        latitude = walk.coordinates.firstOrNull()?.latitude,
+                        longitude = walk.coordinates.firstOrNull()?.longitude,
+                        // 산책로 전용 추가 정보
+                        walkTime = walk.time,
+                        walkDifficulty = walk.difficulty,
+                        walkSpecial = walk.special,
+                        walkCoordinates = walk.coordinates,
+                        createdBy = walk.createdBy
+                    )
+                } ?: emptyList()
+            } else {
+                Toast.makeText(requireContext(), "산책로 데이터를 불러오는데 실패했습니다.", Toast.LENGTH_SHORT).show()
+                return emptyList()
             }
         } catch (e: Exception) {
             handleError(e)
+            return emptyList()
         }
     }
+
+    private suspend fun updateUI(places: List<MapPlace>) {
+        withContext(Dispatchers.Main) {
+            // 기존 마커 제거
+            clearMarkers()
+
+            // RecyclerView 데이터 업데이트
+            originalPlaceDatas.clear()
+            originalPlaceDatas.addAll(places)
+
+            placeDatas.clear()
+            placeDatas.addAll(places)
+            binding.mapPlaceRV.adapter?.notifyDataSetChanged()
+
+            // 새로운 마커 생성
+            places.forEach { place ->
+                createMarker(place)
+            }
+
+            // 데이터 로드 완료 메시지
+            Toast.makeText(
+                requireContext(),
+                "총 ${places.size}개의 장소를 불러왔습니다.",
+                Toast.LENGTH_SHORT
+            ).show()
+        }
+    }
+
+    private suspend fun loadAllCategories() {
+        if (!::naverMap.isInitialized) {
+            Log.d("MapFragment", "지도가 아직 초기화되지 않았습니다.")
+            return
+        }
+
+        try {
+            // 병렬로 두 API 호출 실행
+            val allPlaces = withContext(Dispatchers.IO) {
+                val placesDeferred = async { loadPlacesData() }
+                val walksDeferred = async { loadWalkData() }
+
+                // 두 결과를 기다리고 합치기
+                val places = placesDeferred.await()
+                val walks = walksDeferred.await()
+
+                // 두 리스트 합치기
+                places + walks
+            }
+
+            // UI 업데이트
+            updateUI(allPlaces)
+
+            Log.d("MapFragment", "총 ${allPlaces.size}개의 장소 로드 완료 " +
+                    "(일반 장소: ${allPlaces.count { it.placeType != "산책로" }}, " +
+                    "산책로: ${allPlaces.count { it.placeType == "산책로" }})")
+
+        } catch (e: Exception) {
+            Log.e("MapFragment", "데이터 로드 중 오류 발생", e)
+            handleError(e)
+        }
+    }
+
 
     // 카테고리별 마커 아이콘 설정
     private fun getMarkerIconForCategory(placeType: String?): Int {

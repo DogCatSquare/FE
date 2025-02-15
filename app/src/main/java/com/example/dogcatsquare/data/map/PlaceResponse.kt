@@ -26,8 +26,6 @@ data class PageResponse<T>(
     @SerializedName("number") val number: Int
 )
 
-
-
 data class BaseResponse<T>(
     @SerializedName("isSuccess") val isSuccess: Boolean,
     @SerializedName("code") val code: String,

@@ -8,6 +8,8 @@ import com.example.dogcatsquare.data.map.PlaceDetailRequest
 import com.example.dogcatsquare.data.map.PlaceDetailResponse
 import com.example.dogcatsquare.data.map.PlaceItem
 import com.example.dogcatsquare.data.map.SearchPlacesRequest
+import com.example.dogcatsquare.data.map.WalkListRequest
+import com.example.dogcatsquare.data.map.WalkListResponse
 import retrofit2.Call
 import retrofit2.http.POST
 import retrofit2.http.Body
@@ -39,4 +41,10 @@ interface PlacesApiService {
 
     @POST("api/places/hot/{cityId}")
     fun getHotPlace(@Header("Authorization") token: String, @Path("cityId") cityId: Long?, @Body hotPlaceRequest: GetHotPlaceRequest): Call<GetHotPlaceResponse>
+
+    @POST("api/walks")
+    suspend fun getWalkList(
+        @Header("Authorization") token: String,
+        @Body request: WalkListRequest
+    ): BaseResponse<WalkListResponse>
 }

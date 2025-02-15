@@ -11,5 +11,12 @@ data class MapPlace(
     var isOpen: String? = null,
     val reviewCount: Int? = null,
     val latitude: Double? = null,
-    val longitude: Double? = null
+    val longitude: Double? = null,
+
+    // 산책로 전용 필드
+    val walkTime: Int? = null,
+    val walkDifficulty: String? = null,
+    val walkSpecial: List<Special>? = null,
+    val walkCoordinates: List<Coordinate>? = null,
+    val createdBy: CreatedBy? = null
 )
