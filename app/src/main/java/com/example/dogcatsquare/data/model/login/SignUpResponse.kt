@@ -18,5 +18,6 @@ data class SignUpResult(
     @SerializedName("gu") var guName: String,
     @SerializedName("regionId") var regionId: String,
     @SerializedName("profileImageUrl") var profileImageUrl: String?,
-    @SerializedName("token") var token: String
+    @SerializedName("token") var token: String,
+    @SerializedName("refreshToken") var refreshToken: String
 )

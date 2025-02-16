@@ -8,6 +8,7 @@ data class LoginResponse(
 )
 data class LoginResponseResult(
     var token: String,
+    var refreshToken: String,
     var email: String,
     var nickname: String,
     var userId: Int,

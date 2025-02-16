@@ -18,5 +18,7 @@ data class GetUserResult(
     var gu: String,
     var adAgree: Boolean,
     var firstPetBreed: String,
-    var profileImageUrl: String?
+    var profileImageUrl: String?,
+    var gridX: Double,
+    var gridY: Double
 )

@@ -17,6 +17,7 @@ import com.example.dogcatsquare.data.network.RetrofitObj
 import com.example.dogcatsquare.data.api.UserRetrofitItf
 import com.example.dogcatsquare.data.model.login.LoginRequest
 import com.example.dogcatsquare.data.model.login.LoginResponse
+import com.example.dogcatsquare.data.model.login.RefreshTokenResponse
 import com.example.dogcatsquare.databinding.ActivityLoginDetailBinding
 import retrofit2.Call
 import retrofit2.Callback
@@ -129,43 +130,70 @@ class LoginDetailActivity: AppCompatActivity() {
     // 로그인
     private fun handleLogin(email: String, password: String) {
         val loginService = RetrofitObj.getRetrofit().create(UserRetrofitItf::class.java)
-        loginService.login(LoginRequest(email, password)).enqueue(object : Callback<LoginResponse>{
+        loginService.login(LoginRequest(email, password)).enqueue(object : Callback<LoginResponse> {
             override fun onResponse(call: Call<LoginResponse>, response: Response<LoginResponse>) {
-                Log.d("Login/SUCCESS", response.toString())
-
-                when(response.code()) {
+                when (response.code()) {
                     200 -> {
-                        val resp: LoginResponse = response.body()!!
-                        if (resp != null) {
-                            if (resp.isSuccess) {
-                                navigateToMain(resp)
-                            } else {
-                                Log.e("Login/FAILURE", "응답 코드: ${resp.code}, 응답 메시지: ${resp.message}")
-                            }
+                        val resp: LoginResponse? = response.body()
+                        if (resp != null && resp.isSuccess) {
+                            navigateToMain(resp)
                         } else {
-                            Log.d("Login/FAILURE", "Response body is null")
-                            Log.e("Login/FAILURE", "응답 코드: ${resp.code}, 응답메시지: ${resp.message}")
+                            Log.e("Login/FAILURE", "응답 코드: ${resp?.code}, 응답 메시지: ${resp?.message}")
                         }
+                    }
+                    401 -> {
+                        Log.d("Login/FAILURE", "토큰 만료 - 로그인 필요")
+                        refreshAccessToken()
                     }
                     500 -> {
                         binding.errorTv.visibility = View.VISIBLE
                         binding.errorTv.text = "로그인 정보가 일치하지 않습니다"
-                        Log.d("Login/FAILURE", "존재하지 않는 이메일")
                     }
                 }
             }
 
             override fun onFailure(call: Call<LoginResponse>, t: Throwable) {
-                Log.d("RETROFIT/FAILURE", t.message.toString())
+                Log.e("Login/FAILURE", "서버 오류: ${t.message}")
             }
-
         })
     }
 
-    private fun saveUserInfo(token: String, id: Int, email: String, pw: String, cityId: Long) {
+    private fun refreshAccessToken() {
+        val refreshToken = pref.getString("refreshToken", null) ?: return logout()
+
+        val refreshService = RetrofitObj.getRetrofit().create(UserRetrofitItf::class.java)
+        refreshService.refreshToken(refreshToken).enqueue(object : Callback<RefreshTokenResponse> {
+            override fun onResponse(call: Call<RefreshTokenResponse>, response: Response<RefreshTokenResponse>) {
+                if (response.isSuccessful && response.body()?.isSuccess == true) {
+                    val newToken = response.body()?.result?.refreshToken ?: return logout()
+                    editor.putString("token", newToken)
+                    editor.commit()
+                    Log.d("TOKEN", "새로운 토큰 저장 완료")
+                } else {
+                    logout()
+                }
+            }
+
+            override fun onFailure(call: Call<RefreshTokenResponse>, t: Throwable) {
+                Log.e("TOKEN/FAILURE", "토큰 갱신 실패: ${t.message}")
+                logout()
+            }
+        })
+    }
+
+    private fun logout() {
+        editor.clear()
+        editor.commit()
+        val intent = Intent(this, LoginDetailActivity::class.java)
+        startActivity(intent)
+        finish()
+    }
+
+    private fun saveUserInfo(token: String, refreshToken: String, id: Int, email: String, pw: String, cityId: Long) {
         val sharedPref = getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
         with(sharedPref.edit()){
             putString("token", token)
+            putString("refreshToken", refreshToken)
             putInt("userId", id) // 아이디 값 전달
             putString("email", email)
             putString("pw", pw)
@@ -182,23 +210,14 @@ class LoginDetailActivity: AppCompatActivity() {
 
     // 메인으로
     private fun navigateToMain(loginResponse: LoginResponse) {
-        Log.d("message", loginResponse.message)
-        Log.d("액세스 토큰 값", loginResponse.result.token)
-
-        // 로그인 연동 후 받은 토큰 값 저장
-        var token: String = loginResponse.result.token
-        Log.d("토큰 값", token)
-
-        // 로그인 연동 후 받은 아이디 저장
-        var id: Int = loginResponse.result.userId
-        Log.d("Nickname액티비티 사용자 아이디 값", id.toString())
-
-        var cityId: Long = loginResponse.result.cityId
-
-        var email: String = loginResponse.result.email
-        var pw: String = binding.loginPwEt.text.toString()
-
-        saveUserInfo(token, id, email, pw, cityId)
+        saveUserInfo(
+            loginResponse.result.token,
+            loginResponse.result.refreshToken,
+            loginResponse.result.userId,
+            loginResponse.result.email,
+            binding.loginPwEt.text.toString(),
+            loginResponse.result.cityId
+        )
 
         val intent = Intent(this, MainActivity::class.java)
         startActivity(intent)
