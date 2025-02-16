@@ -4,6 +4,7 @@ import com.example.dogcatsquare.data.model.login.CheckEmailResponse
 import com.example.dogcatsquare.data.model.login.CheckNicknameResponse
 import com.example.dogcatsquare.data.model.login.LoginRequest
 import com.example.dogcatsquare.data.model.login.LoginResponse
+import com.example.dogcatsquare.data.model.login.RefreshTokenResponse
 import com.example.dogcatsquare.data.model.login.SendVerficationRequest
 import com.example.dogcatsquare.data.model.login.SendVerficationResponse
 import com.example.dogcatsquare.data.model.login.SignUpRequest
@@ -44,6 +45,9 @@ interface UserRetrofitItf {
 
     @POST("api/users/login")
     fun login(@Body loginRequest: LoginRequest): Call<LoginResponse>
+
+    @POST("api/token/refresh")
+    fun refreshToken(@Header("RefreshToken") refreshToken: String): Call<RefreshTokenResponse>
 
     @GET("api/users/users-inquiry")
     fun getUser(@Header("Authorization") token: String): Call<GetUserResponse>
