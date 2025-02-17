@@ -10,9 +10,11 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.TextView
 import android.widget.Toast
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.example.dogcatsquare.MapAddKeywordFragment
 import com.example.dogcatsquare.data.map.DetailImg
 import com.example.dogcatsquare.data.map.MapPrice
 import com.example.dogcatsquare.data.map.MapReview
@@ -25,6 +27,8 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import com.example.dogcatsquare.data.map.PlaceDetailRequest
+import com.google.android.flexbox.FlexboxLayout
+import com.google.android.material.card.MaterialCardView
 import com.naver.maps.geometry.LatLng
 import com.naver.maps.map.*
 import com.naver.maps.map.overlay.Marker
@@ -124,14 +128,10 @@ class MapEtcFragment : Fragment(), OnMapReadyCallback {
                             placeType.text = convertCategory(placeDetail.category)
                             placeCall.text = placeDetail.phoneNumber
                             placeDistance.text = "${String.format("%.2f", placeDetail.distance)}km"
-
-                            // 운영 시간 및 상태 설정
                             placeStatus.text = if (placeDetail.open) "영업중" else "영업종료"
                             placeDetail.businessHours?.let { hours ->
                                 placeTime.text = formatBusinessHours(hours)
                             }
-
-                            // 홈페이지 URL 설정
                             placeDetail.homepageUrl?.let { url ->
                                 if (url.isNotEmpty()) {
                                     placeUrl.text = url
@@ -148,28 +148,58 @@ class MapEtcFragment : Fragment(), OnMapReadyCallback {
                                 placeUrl.text = "정보가 없습니다."
                                 placeUrl.setOnClickListener(null)
                             }
-
-                            // 시설 정보 설정
+                            placeIntro.text = placeDetail.description
                             placeFacility.text = formatFacilities(placeDetail.facilities)
+                            wishButton.setOnClickListener {
+                                lifecycleScope.launch {
+                                    try {
+                                        val token = getToken()
+                                        if (token == null) {
+                                            Toast.makeText(requireContext(), "로그인이 필요합니다.", Toast.LENGTH_SHORT).show()
+                                            return@launch
+                                        }
 
-                            // 찜하기 버튼 설정
-                            wishButton.setImageResource(
-                                if (placeDetail.wished) R.drawable.ic_wish_check
-                                else R.drawable.ic_wish
-                            )
+                                        // API 호출
+                                        val response = withContext(Dispatchers.IO) {
+                                            RetrofitClient.placesApiService.toggleWish(
+                                                token = "Bearer $token",
+                                                placeId = placeDetail.id
+                                            )
+                                        }
 
-                            // 특성 카드 스타일 설정
-                            setupCharacteristicCards(placeDetail.category)
+                                        if (response.isSuccess) {
+                                            // 로컬 상태 업데이트
+                                            isWished = response.result ?: !isWished
 
-                            // 지도 위치 업데이트
-                            if (::naverMap.isInitialized) {
-                                updateMapLocation(placeDetail.latitude, placeDetail.longitude)
+                                            // 이미지 업데이트
+                                            wishButton.setImageResource(
+                                                if (isWished) R.drawable.ic_wish_check
+                                                else R.drawable.ic_wish
+                                            )
+
+                                            Toast.makeText(
+                                                requireContext(),
+                                                if (isWished) "찜 목록에 추가되었습니다."
+                                                else "찜 목록에서 제거되었습니다.",
+                                                Toast.LENGTH_SHORT
+                                            ).show()
+                                        } else {
+                                            Toast.makeText(
+                                                requireContext(),
+                                                response.message ?: "요청 처리에 실패했습니다.",
+                                                Toast.LENGTH_SHORT
+                                            ).show()
+                                        }
+                                    } catch (e: Exception) {
+                                        handleError(e)
+                                    }
+                                }
                             }
-
-                            // 이미지 업데이트
+                            // 특성 카드 스타일 설정
+                            placeDetail.keywords?.let { keywords ->
+                                setupCharacteristicCards(placeDetail.category, keywords)
+                            }
                             updateImages(placeDetail.imageUrls)
-
-                            // 리뷰 업데이트
                             updateReviews(placeDetail.recentReviews)
                         }
                     }
@@ -186,7 +216,7 @@ class MapEtcFragment : Fragment(), OnMapReadyCallback {
         }
     }
 
-    private fun setupCharacteristicCards(category: String) {
+    private fun setupCharacteristicCards(category: String, keywords: List<String>) {
         val (backgroundColor, textColor) = when (category) {
             "HOTEL" -> "#FEEEEA" to "#F36037"
             "RESTAURANT", "CAFE" -> "#FFFBF1" to "#FF8D41"
@@ -194,17 +224,103 @@ class MapEtcFragment : Fragment(), OnMapReadyCallback {
         }
 
         binding.apply {
-            val cards = listOf(char1, char2, char3)
-            val texts = listOf(char1Text, char2Text, char3Text)
+            // 기존 카드들 모두 제거
+            characteristicsContainer.removeAllViews()
 
-            cards.forEach { card ->
-                card.setCardBackgroundColor(Color.parseColor(backgroundColor))
-            }
-            texts.forEach { text ->
-                text.setTextColor(Color.parseColor(textColor))
+            // 각 키워드에 대해 동적으로 카드 생성
+            keywords.forEach { keyword ->
+                val cardView = MaterialCardView(requireContext()).apply {
+                    layoutParams = FlexboxLayout.LayoutParams(
+                        ViewGroup.LayoutParams.WRAP_CONTENT,
+                        ViewGroup.LayoutParams.WRAP_CONTENT
+                    ).apply {
+                        val margin = resources.getDimensionPixelSize(R.dimen.spacing_8)
+                        setMargins(0, 0, margin, margin)
+                    }
+                    radius = resources.getDimension(R.dimen.radius_4)
+                    cardElevation = 0f
+                    setCardBackgroundColor(Color.parseColor(backgroundColor))
+                }
+
+                val textView = TextView(requireContext()).apply {
+                    layoutParams = ViewGroup.LayoutParams(
+                        ViewGroup.LayoutParams.WRAP_CONTENT,
+                        ViewGroup.LayoutParams.WRAP_CONTENT
+                    )
+                    text = keyword
+                    setTextColor(Color.parseColor(textColor))
+                    textSize = 12f
+                    setPadding(
+                        resources.getDimensionPixelSize(R.dimen.spacing_14),
+                        resources.getDimensionPixelSize(R.dimen.spacing_3),
+                        resources.getDimensionPixelSize(R.dimen.spacing_14),
+                        resources.getDimensionPixelSize(R.dimen.spacing_3)
+                    )
+                }
+
+                cardView.addView(textView)
+                characteristicsContainer.addView(cardView)
             }
 
-            reserveButton.visibility = if (category == "HOTEL") View.VISIBLE else View.GONE
+            // 정보추가하기 버튼 추가
+            val addButton = MaterialCardView(requireContext()).apply {
+                layoutParams = FlexboxLayout.LayoutParams(
+                    ViewGroup.LayoutParams.WRAP_CONTENT,
+                    ViewGroup.LayoutParams.WRAP_CONTENT
+                ).apply {
+                    val margin = resources.getDimensionPixelSize(R.dimen.spacing_8)
+                    setMargins(0, 0, margin, margin)
+                }
+                radius = resources.getDimension(R.dimen.radius_4)
+                cardElevation = 0f
+                strokeColor = Color.parseColor(textColor)
+                strokeWidth = resources.getDimensionPixelSize(R.dimen.stroke_1)
+                setCardBackgroundColor(Color.WHITE)
+
+                setOnClickListener {
+                    val placeId = arguments?.getInt("placeId") ?: return@setOnClickListener
+                    val placeName = binding.placeName.text.toString()
+
+                    // MapAddKeywordFragment로 이동
+                    val fragment = MapAddKeywordFragment().apply {
+                        arguments = Bundle().apply {
+                            putInt("placeId", placeId)
+                            putString("placeName", placeName)
+                        }
+                    }
+
+                    requireActivity().supportFragmentManager.beginTransaction()
+                        .setCustomAnimations(
+                            R.anim.slide_in_right,
+                            R.anim.slide_out_left,
+                            R.anim.slide_in_left,
+                            R.anim.slide_out_right
+                        )
+                        .hide(this@MapEtcFragment)
+                        .add(R.id.main_frm, fragment)
+                        .addToBackStack(null)
+                        .commit()
+                }
+            }
+
+            val addButtonText = TextView(requireContext()).apply {
+                layoutParams = ViewGroup.LayoutParams(
+                    ViewGroup.LayoutParams.WRAP_CONTENT,
+                    ViewGroup.LayoutParams.WRAP_CONTENT
+                )
+                text = "+ 정보추가하기"
+                setTextColor(Color.parseColor(textColor))
+                textSize = 12f
+                setPadding(
+                    resources.getDimensionPixelSize(R.dimen.spacing_14),
+                    resources.getDimensionPixelSize(R.dimen.spacing_3),
+                    resources.getDimensionPixelSize(R.dimen.spacing_14),
+                    resources.getDimensionPixelSize(R.dimen.spacing_3)
+                )
+            }
+
+            addButton.addView(addButtonText)
+            characteristicsContainer.addView(addButton)
         }
     }
 

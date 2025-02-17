@@ -12,6 +12,7 @@ data class MapPlace(
     val reviewCount: Int? = null,
     val latitude: Double? = null,
     val longitude: Double? = null,
+    val keywords: List<String>? = null,
 
     // 산책로 전용 필드
     val walkTime: Int? = null,

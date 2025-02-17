@@ -22,6 +22,16 @@ class MapButtonRVAdapter(
 
     private var selectedPosition = 0
 
+    companion object {
+        private val CATEGORY_COLORS = mapOf(
+            "전체" to R.color.black,
+            "병원" to R.color.blue,
+            "산책로" to R.color.green,
+            "음식/카페" to R.color.main_color1,
+            "호텔" to R.color.red
+        )
+    }
+
     override fun onCreateViewHolder(viewGroup: ViewGroup, viewType: Int): ViewHolder {
         val binding: ItemMapButtonBinding = ItemMapButtonBinding.inflate(
             LayoutInflater.from(viewGroup.context), viewGroup, false
@@ -34,18 +44,14 @@ class MapButtonRVAdapter(
         holder.itemView.isSelected = position == selectedPosition
 
         // 선택된 아이템의 테두리 색상 변경
-        val strokeColor = when {
-            position == selectedPosition -> {
-                when(buttonList[position].buttonName) {
-                    "전체" -> ContextCompat.getColor(holder.itemView.context, R.color.black)
-                    "병원" ->  ContextCompat.getColor(holder.itemView.context, R.color.blue)
-                    "산책로" ->  ContextCompat.getColor(holder.itemView.context, R.color.green)
-                    "음식/카페" ->  ContextCompat.getColor(holder.itemView.context, R.color.main_color1)
-                    "호텔" ->  ContextCompat.getColor(holder.itemView.context, R.color.red)
-                    else -> ContextCompat.getColor(holder.itemView.context, R.color.map_stroke_gray)
-                }
-            }
-            else -> ContextCompat.getColor(holder.itemView.context, R.color.map_stroke_gray)
+        val buttonName = buttonList[position].buttonName
+        val strokeColor = if (position == selectedPosition) {
+            ContextCompat.getColor(
+                holder.itemView.context,
+                CATEGORY_COLORS[buttonName] ?: R.color.map_stroke_gray
+            )
+        } else {
+            ContextCompat.getColor(holder.itemView.context, R.color.map_stroke_gray)
         }
         (holder.itemView as MaterialCardView).strokeColor = strokeColor
     }
@@ -56,10 +62,15 @@ class MapButtonRVAdapter(
         init {
             itemView.setOnClickListener {
                 val position = adapterPosition
-                if (position != RecyclerView.NO_POSITION) {
-                    notifyItemChanged(selectedPosition)
+                if (position != RecyclerView.NO_POSITION && position != selectedPosition) {
+                    val oldPosition = selectedPosition
                     selectedPosition = position
+
+                    // 이전 선택과 현재 선택 아이템만 업데이트
+                    notifyItemChanged(oldPosition)
                     notifyItemChanged(selectedPosition)
+
+                    // 리스너 호출
                     buttonList[position].buttonName?.let { name ->
                         listener.onItemClick(position, name)
                     }
@@ -70,25 +81,43 @@ class MapButtonRVAdapter(
         fun bind(button: MapButton) {
             binding.buttonName.text = button.buttonName
 
+            // 이미지 유무에 따른 레이아웃 처리
             if (button.buttonImg == null) {
-                binding.buttonImg.visibility = View.GONE
-                (binding.buttonName.layoutParams as ConstraintLayout.LayoutParams).apply {
-                    startToEnd = ConstraintLayout.LayoutParams.UNSET
-                    startToStart = ConstraintLayout.LayoutParams.PARENT_ID
-                    endToEnd = ConstraintLayout.LayoutParams.PARENT_ID
-                    marginStart = 24
-                }
-                binding.buttonName.requestLayout() // 레이아웃 갱신
+                setupLayoutWithoutImage()
             } else {
-                binding.buttonImg.visibility = View.VISIBLE
-                binding.buttonImg.setImageResource(button.buttonImg!!)
-                (binding.buttonName.layoutParams as ConstraintLayout.LayoutParams).apply {
-                    startToStart = ConstraintLayout.LayoutParams.UNSET
-                    startToEnd = binding.buttonImg.id
-                    endToEnd = ConstraintLayout.LayoutParams.PARENT_ID
-                    marginStart = 8
-                }
+                setupLayoutWithImage(button.buttonImg!!)
             }
         }
+
+        private fun setupLayoutWithoutImage() {
+            binding.buttonImg.visibility = View.GONE
+            (binding.buttonName.layoutParams as ConstraintLayout.LayoutParams).apply {
+                startToEnd = ConstraintLayout.LayoutParams.UNSET
+                startToStart = ConstraintLayout.LayoutParams.PARENT_ID
+                endToEnd = ConstraintLayout.LayoutParams.PARENT_ID
+                marginStart = 24
+            }
+            binding.buttonName.requestLayout()
+        }
+
+        private fun setupLayoutWithImage(imageResource: Int) {
+            binding.buttonImg.apply {
+                visibility = View.VISIBLE
+                setImageResource(imageResource)
+            }
+            (binding.buttonName.layoutParams as ConstraintLayout.LayoutParams).apply {
+                startToStart = ConstraintLayout.LayoutParams.UNSET
+                startToEnd = binding.buttonImg.id
+                endToEnd = ConstraintLayout.LayoutParams.PARENT_ID
+                marginStart = 8
+            }
+        }
+    }
+
+    fun resetSelection() {
+        val oldPosition = selectedPosition
+        selectedPosition = 0
+        notifyItemChanged(oldPosition)
+        notifyItemChanged(selectedPosition)
     }
 }

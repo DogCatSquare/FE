@@ -2,6 +2,7 @@ package com.example.dogcatsquare.ui.map.location
 
 import android.content.Context
 import android.content.Intent
+import android.graphics.Color
 import android.net.Uri
 import android.os.Bundle
 import android.util.Log
@@ -9,9 +10,11 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.TextView
 import android.widget.Toast
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.example.dogcatsquare.MapAddKeywordFragment
 import com.example.dogcatsquare.data.map.DetailImg
 import com.example.dogcatsquare.data.map.MapPrice
 import com.example.dogcatsquare.R
@@ -21,6 +24,8 @@ import com.example.dogcatsquare.ui.map.SearchFragment
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import kotlinx.coroutines.launch
 import com.example.dogcatsquare.data.map.PlaceDetailRequest
+import com.google.android.flexbox.FlexboxLayout
+import com.google.android.material.card.MaterialCardView
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.util.Calendar
@@ -227,6 +232,9 @@ class MapDetailFragment : Fragment(), OnMapReadyCallback {
                                 }
                             }
 
+                            placeDetail.keywords?.let { keywords ->
+                                setupCharacteristicCards(keywords)
+                            } ?: setupCharacteristicCards(emptyList())
                             // 지도 위치 업데이트
                             if (::naverMap.isInitialized) {
                                 updateMapLocation(placeDetail.latitude, placeDetail.longitude)
@@ -248,6 +256,119 @@ class MapDetailFragment : Fragment(), OnMapReadyCallback {
             }
         }
     }
+
+    private fun setupCharacteristicCards(keywords: List<String>) {
+        val backgroundColor = "#EAF2FE"  // 동물병원용 배경색
+        val textColor = "#276CCB"       // 동물병원용 텍스트색
+
+        binding.apply {
+            // 기존 카드들 모두 제거
+            characteristicsContainer.removeAllViews()
+
+            // 각 키워드에 대해 동적으로 카드 생성 및 추가
+            keywords.forEach { keyword ->
+                // CardView 생성
+                val cardView = MaterialCardView(requireContext()).apply {
+                    layoutParams = FlexboxLayout.LayoutParams(
+                        ViewGroup.LayoutParams.WRAP_CONTENT,
+                        ViewGroup.LayoutParams.WRAP_CONTENT
+                    ).apply {
+                        // marginEnd와 marginBottom을 setMargins 메소드로 설정
+                        val margin = resources.getDimensionPixelSize(R.dimen.spacing_8)
+                        setMargins(0, 0, margin, margin)  // left, top, right, bottom
+                    }
+                    radius = resources.getDimension(R.dimen.radius_4)
+                    cardElevation = 0f
+                    setCardBackgroundColor(Color.parseColor(backgroundColor))
+                }
+
+                // TextView 생성
+                val textView = TextView(requireContext()).apply {
+                    layoutParams = ViewGroup.LayoutParams(
+                        ViewGroup.LayoutParams.WRAP_CONTENT,
+                        ViewGroup.LayoutParams.WRAP_CONTENT
+                    )
+                    text = keyword
+                    setTextColor(Color.parseColor(textColor))
+                    textSize = 12f
+                    setPadding(
+                        resources.getDimensionPixelSize(R.dimen.spacing_14),
+                        resources.getDimensionPixelSize(R.dimen.spacing_3),
+                        resources.getDimensionPixelSize(R.dimen.spacing_14),
+                        resources.getDimensionPixelSize(R.dimen.spacing_3)
+                    )
+                }
+
+                // TextView를 CardView에 추가
+                cardView.addView(textView)
+
+                // CardView를 FlexboxLayout에 추가
+                characteristicsContainer.addView(cardView)
+            }
+
+            // 정보추가하기 버튼 추가
+            val addButton = MaterialCardView(requireContext()).apply {
+                layoutParams = FlexboxLayout.LayoutParams(
+                    ViewGroup.LayoutParams.WRAP_CONTENT,
+                    ViewGroup.LayoutParams.WRAP_CONTENT
+                ).apply {
+                    val margin = resources.getDimensionPixelSize(R.dimen.spacing_8)
+                    setMargins(0, 0, margin, margin)
+                }
+                radius = resources.getDimension(R.dimen.radius_4)
+                cardElevation = 0f
+                strokeColor = Color.parseColor(textColor)
+                strokeWidth = resources.getDimensionPixelSize(R.dimen.stroke_1)
+                setCardBackgroundColor(Color.WHITE)
+
+                setOnClickListener {
+                    val placeId = arguments?.getInt("placeId") ?: return@setOnClickListener
+                    val placeName = binding.placeName.text.toString()
+
+                    // MapAddKeywordFragment로 이동
+                    val fragment = MapAddKeywordFragment().apply {
+                        arguments = Bundle().apply {
+                            putInt("placeId", placeId)
+                            putString("placeName", placeName)
+                        }
+                    }
+
+                    requireActivity().supportFragmentManager.beginTransaction()
+                        .setCustomAnimations(
+                            R.anim.slide_in_right,
+                            R.anim.slide_out_left,
+                            R.anim.slide_in_left,
+                            R.anim.slide_out_right
+                        )
+                        .hide(this@MapDetailFragment)
+                        .add(R.id.main_frm, fragment)
+                        .addToBackStack(null)
+                        .commit()
+                }
+            }
+
+            val addButtonText = TextView(requireContext()).apply {
+                layoutParams = ViewGroup.LayoutParams(
+                    ViewGroup.LayoutParams.WRAP_CONTENT,
+                    ViewGroup.LayoutParams.WRAP_CONTENT
+                )
+                text = "+ 정보추가하기"
+                setTextColor(Color.parseColor(textColor))
+                textSize = 12f
+                setPadding(
+                    resources.getDimensionPixelSize(R.dimen.spacing_14),
+                    resources.getDimensionPixelSize(R.dimen.spacing_3),
+                    resources.getDimensionPixelSize(R.dimen.spacing_14),
+                    resources.getDimensionPixelSize(R.dimen.spacing_3)
+                )
+            }
+
+            addButton.addView(addButtonText)
+            characteristicsContainer.addView(addButton)
+        }
+    }
+
+
 
     private fun formatBusinessHours(businessHours: String): String {
         val calendar = Calendar.getInstance(TimeZone.getTimeZone("Asia/Seoul"))

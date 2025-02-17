@@ -6,6 +6,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.constraintlayout.widget.ConstraintLayout
+import androidx.constraintlayout.widget.ConstraintSet
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.resource.bitmap.CenterCrop
@@ -46,167 +47,142 @@ class MapPlaceRVAdapter(private val placeList: ArrayList<MapPlace>, private val 
             binding.placeLocation.text = place.placeLocation
             binding.placeCall.text = place.placeCall
 
-            // 이미지 처리 수정
+            // 이미지 처리 (기존 코드 유지)
             if (place.placeImgUrl != null) {
-                // 이미지 URL이 있는 경우 Glide 등을 사용해 이미지 로드
-                 Glide.with(binding.placeImg.context)
-                     .load(place.placeImgUrl)
-                     .override(300, 300)
-                     .transform(
-                         MultiTransformation(
-                             CenterCrop(),
-                             RoundedCorners((8 * binding.root.resources.displayMetrics.density).toInt())
-                         )
-                     )
-                     .placeholder(R.drawable.ic_place_img_default)
-                     .into(binding.placeImg)
+                Glide.with(binding.placeImg.context)
+                    .load(place.placeImgUrl)
+                    .override(300, 300)
+                    .transform(
+                        MultiTransformation(
+                            CenterCrop(),
+                            RoundedCorners((8 * binding.root.resources.displayMetrics.density).toInt())
+                        )
+                    )
+                    .placeholder(R.drawable.ic_place_img_default)
+                    .into(binding.placeImg)
             } else {
                 binding.placeImg.setImageResource(R.drawable.ic_place_img_default)
             }
 
+            // 전화번호 관련 처리
             if (place.placeCall == "0" || place.placeCall == null) {
-                // call 아이콘과 placeCall 텍스트뷰 숨기기
                 binding.call.visibility = View.GONE
                 binding.placeCall.visibility = View.GONE
-
-                // reviewCount가 0일 때의 로직
-                if (place.reviewCount == 0 || place.placeCall == null) {
-                    binding.ImageView.visibility = View.GONE
-                    binding.placeReview.visibility = View.GONE
-
-                    //char1 위치 조정
-                    (binding.char1.layoutParams as ConstraintLayout.LayoutParams).apply {
-                        startToStart = binding.guideline1.id
-                        topToBottom = binding.placeLocation.id  // call이 없으므로 placeLocation 기준으로 변경
-                        bottomToBottom = ConstraintLayout.LayoutParams.UNSET
-                        marginStart = 0
-                        topMargin = (8 * binding.root.context.resources.displayMetrics.density).toInt()
-                    }
-                    binding.char1.requestLayout()
-                } else {
-                    binding.ImageView.visibility = View.VISIBLE
-                    binding.placeReview.visibility = View.VISIBLE
-                    binding.placeReview.text = "리뷰(${place.reviewCount})"
-
-                    // char1을 원래 위치로 복원 (단, topToBottom은 placeLocation 기준)
-                    (binding.char1.layoutParams as ConstraintLayout.LayoutParams).apply {
-                        startToStart = ConstraintLayout.LayoutParams.UNSET
-                        startToEnd = binding.placeReview.id
-                        topToBottom = binding.placeLocation.id  // call이 없으므로 placeLocation 기준으로 변경
-                        bottomToBottom = ConstraintLayout.LayoutParams.UNSET
-                        marginStart = (8 * binding.root.context.resources.displayMetrics.density).toInt()
-                        topMargin = (5 * binding.root.context.resources.displayMetrics.density).toInt()
-                    }
-                    binding.char1.requestLayout()
-                }
             } else {
-                // call 아이콘과 placeCall 텍스트뷰 보이기
                 binding.call.visibility = View.VISIBLE
                 binding.placeCall.visibility = View.VISIBLE
                 binding.placeCall.text = place.placeCall
-
-                // reviewCount에 따른 기존 로직
-                if (place.reviewCount == 0) {
-                    binding.ImageView.visibility = View.GONE
-                    binding.placeReview.visibility = View.GONE
-
-                    //char1 위치 조정
-                    (binding.char1.layoutParams as ConstraintLayout.LayoutParams).apply {
-                        startToStart = binding.guideline1.id
-                        topToBottom = binding.call.id
-                        bottomToBottom = ConstraintLayout.LayoutParams.UNSET
-                        marginStart = 0
-                        topMargin = (8 * binding.root.context.resources.displayMetrics.density).toInt()
-                    }
-                    binding.char1.requestLayout()
-                } else {
-                    binding.ImageView.visibility = View.VISIBLE
-                    binding.placeReview.visibility = View.VISIBLE
-                    binding.placeReview.text = "리뷰(${place.reviewCount})"
-
-                    // char1을 원래 위치로 복원
-                    (binding.char1.layoutParams as ConstraintLayout.LayoutParams).apply {
-                        startToStart = ConstraintLayout.LayoutParams.UNSET
-                        startToEnd = binding.placeReview.id
-                        topToBottom = binding.call.id
-                        bottomToBottom = ConstraintLayout.LayoutParams.UNSET
-                        marginStart = (8 * binding.root.context.resources.displayMetrics.density).toInt()
-                        topMargin = (5 * binding.root.context.resources.displayMetrics.density).toInt()
-                    }
-                    binding.char1.requestLayout()
-                }
             }
 
-            // placeReview가 null인 경우 관련 뷰들을 숨김
+            // 리뷰 관련 처리
             if (place.reviewCount == 0 || place.reviewCount == null) {
                 binding.ImageView.visibility = View.GONE
                 binding.placeReview.visibility = View.GONE
-
-                //char1 위치 조정
-                (binding.char1.layoutParams as ConstraintLayout.LayoutParams).apply {
-                    startToStart = binding.guideline1.id
-                    topToBottom = binding.call.id
-                    bottomToBottom = ConstraintLayout.LayoutParams.UNSET
-                    marginStart = 0
-                    topMargin = (8 * binding.root.context.resources.displayMetrics.density).toInt()
-                }
-                binding.char1.requestLayout()
             } else {
                 binding.ImageView.visibility = View.VISIBLE
                 binding.placeReview.visibility = View.VISIBLE
                 binding.placeReview.text = "리뷰(${place.reviewCount})"
+            }
 
-                // char1을 원래 위치로 복원
-                (binding.char1.layoutParams as ConstraintLayout.LayoutParams).apply {
-                    startToStart = ConstraintLayout.LayoutParams.UNSET  // 기존 제약 제거
-                    startToEnd = binding.placeReview.id  // placeReview 우측에 위치
-                    topToBottom = binding.placeCall.id
-                    bottomToBottom = ConstraintLayout.LayoutParams.UNSET
-                    marginStart = (8 * binding.root.context.resources.displayMetrics.density).toInt()
-                    topMargin = (5 * binding.root.context.resources.displayMetrics.density).toInt()
+            // keywords 처리
+            place.keywords?.let { keywords ->
+                // char1 처리
+                if (keywords.isNotEmpty()) {
+                    binding.char1.visibility = View.VISIBLE
+                    binding.char1Text.text = keywords[0]
+                } else {
+                    binding.char1.visibility = View.GONE
                 }
-                binding.char1.requestLayout()
-            }
 
-            // isOpen 표시 설정
-            if (place.isOpen == null) {
+                // char2 처리
+                if (keywords.size > 1) {
+                    binding.char2.visibility = View.VISIBLE
+                    binding.char2Text.text = keywords[1]
+                } else {
+                    binding.char2.visibility = View.GONE
+                }
+
+                // char3 처리
+                if (keywords.size > 2) {
+                    binding.char3.visibility = View.VISIBLE
+                    binding.char3Text.text = keywords[2]
+                } else {
+                    binding.char3.visibility = View.GONE
+                }
+            } ?: run {
+                // keywords가 null인 경우 모든 char 숨기기
                 binding.char1.visibility = View.GONE
-            } else {
-                binding.char1.visibility = View.VISIBLE
-                binding.char1Text.text = place.isOpen
+                binding.char2.visibility = View.GONE
+                binding.char3.visibility = View.GONE
             }
 
-            // placeType에 따라 보이는 영업상태의 배경색과 텍스트 색상 설정
+            // FlexboxLayout의 마진 설정
+            val flexLP = binding.characteristicsContainer.layoutParams as ViewGroup.MarginLayoutParams
+            flexLP.topMargin = if (place.placeCall == "0" || place.placeCall == null) {
+                (8 * binding.root.resources.displayMetrics.density).toInt()
+            } else {
+                (5 * binding.root.resources.displayMetrics.density).toInt()
+            }
+            binding.characteristicsContainer.layoutParams = flexLP
+
+            val hasReview = place.reviewCount != null && place.reviewCount > 0
+            val hasKeywords = !place.keywords.isNullOrEmpty()
+
+            binding.characteristicsContainer.visibility = if (hasReview || hasKeywords) View.VISIBLE else View.GONE
+
+            val constraintSet = ConstraintSet()
+            constraintSet.clone(binding.root as ConstraintLayout)
+
+            if (hasReview || hasKeywords) {
+                constraintSet.connect(
+                    R.id.contour2,
+                    ConstraintSet.TOP,
+                    R.id.characteristicsContainer,
+                    ConstraintSet.BOTTOM,
+                    (15 * binding.root.resources.displayMetrics.density).toInt() // 15dp를 px로 변환
+                )
+            } else {
+                constraintSet.connect(
+                    R.id.contour2,
+                    ConstraintSet.TOP,
+                    R.id.placeImg,
+                    ConstraintSet.BOTTOM,
+                    (15 * binding.root.resources.displayMetrics.density).toInt() // 15dp를 px로 변환
+                )
+            }
+
+            constraintSet.applyTo(binding.root as ConstraintLayout)
+
+            // placeType에 따른 특성 카드 스타일 설정
             when (place.placeType) {
                 "동물병원" -> {
-                    if (place.isOpen != null) {
-                        binding.char1.setCardBackgroundColor(Color.parseColor("#EAF2FE"))
-                        binding.char1Text.setTextColor(Color.parseColor("#276CCB"))
-                    }
+                    setCardsStyle("#EAF2FE", "#276CCB")
                 }
                 "호텔" -> {
-                    if (place.isOpen != null) {
-                        binding.char1.setCardBackgroundColor(Color.parseColor("#FEEEEA"))
-                        binding.char1Text.setTextColor(Color.parseColor("#F36037"))
-                    }
+                    setCardsStyle("#FEEEEA", "#F36037")
                 }
                 "산책로" -> {
-                    if (place.isOpen != null) {
-                        binding.char1.setCardBackgroundColor(Color.parseColor("#F4FCF5"))
-                        binding.char1Text.setTextColor(Color.parseColor("#3E7C43"))
-                    }
+                    setCardsStyle("#F4FCF5", "#3E7C43")
                 }
                 "식당", "카페" -> {
-                    if (place.isOpen != null) {
-                        binding.char1.setCardBackgroundColor(Color.parseColor("#FFFBF1"))
-                        binding.char1Text.setTextColor(Color.parseColor("#FF8D41"))
-                    }
+                    setCardsStyle("#FFFBF1", "#FF8D41")
                 }
             }
 
             // 아이템 클릭 리스너 설정
             itemView.setOnClickListener {
                 listener?.onItemClick(place)
+            }
+        }
+
+        private fun setCardsStyle(backgroundColor: String, textColor: String) {
+            binding.apply {
+                char1.setCardBackgroundColor(Color.parseColor(backgroundColor))
+                char1Text.setTextColor(Color.parseColor(textColor))
+                char2.setCardBackgroundColor(Color.parseColor(backgroundColor))
+                char2Text.setTextColor(Color.parseColor(textColor))
+                char3.setCardBackgroundColor(Color.parseColor(backgroundColor))
+                char3Text.setTextColor(Color.parseColor(textColor))
             }
         }
     }

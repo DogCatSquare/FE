@@ -129,8 +129,8 @@ class SearchResultFragment : Fragment() {
                 val response = withContext(Dispatchers.IO) {
                     RetrofitClient.placesApiService.searchPlaces(
                         token = "Bearer $token",
-                        cityId = getCityId(),
-                        keyword = keyword,
+//                        cityId = getCityId(),
+//                        keyword = keyword,
                         request = searchRequest
                     )
                 }
