@@ -12,10 +12,12 @@ import retrofit2.http.*
 
 interface BoardApiService {
     // 게시판 생성 API
-    @POST("/api/board")
+    @POST("api/board")
     fun createBoard(
         @Header("Authorization") token: String,
-        @Body boardRequest: BoardRequestDto
+        @Query("boardName") boardName: String,
+        @Query("content") content: String,
+        @Query("keywords") keywords: List<String?>
     ): Call<BoardResponseDto>
 
     // 게시글 등록 API
@@ -30,7 +32,7 @@ interface BoardApiService {
 
     // 게시글 수정 API
     @Multipart
-    @PUT("/api/board/post/{postId}")
+    @PUT("api/board/post/{postId}")
     fun updatePost(
         @Path("postId") postId: Long,
         @Part("request") request: RequestBody,
@@ -44,10 +46,10 @@ interface BoardApiService {
     ): Call<PostDetailResponse>
 
     // 모든 게시판 조회 API
-    @GET("/api/board/all")
+    @GET("api/board/all")
     fun getAllBoards(): Call<BoardSearchResponseDto>
 
     // 게시판 검색 API
-    @GET("/api/board/search")
+    @GET("api/board/search")
     fun searchBoard(@Query("boardName") boardName: String): Call<BoardSearchResponseDto>
 }

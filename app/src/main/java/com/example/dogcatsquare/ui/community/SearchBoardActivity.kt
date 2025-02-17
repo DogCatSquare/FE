@@ -102,12 +102,12 @@ class SearchBoardActivity : AppCompatActivity() {
                         val sortedList = boardList.sortedByDescending { board ->
                             val isExactTitleMatch = board.boardName.equals(boardName, ignoreCase = true)
                             val isTitleContains = board.boardName.contains(boardName, ignoreCase = true)
-                            val isKeywordMatch = board.keywords.any { it.contains(boardName, ignoreCase = true) }
+                            val isKeywordMatch = board.keywords?.any { it.contains(boardName, ignoreCase = true) }
 
                             when {
                                 isExactTitleMatch -> 3
                                 isTitleContains -> 2
-                                isKeywordMatch -> 1
+                                isKeywordMatch == true -> 1
                                 else -> 0
                             }
                         }

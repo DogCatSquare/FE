@@ -1,6 +1,7 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    xmlns:tools="http://schemas.android.com/tools"
     android:background="#FFFFFF">
 
     <!-- Toolbar -->
@@ -43,6 +44,7 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:background="@android:color/transparent"
+            android:maxLength="8"
             android:gravity="top|start"
             android:hint="게시판 이름"
             android:padding="16dp"
@@ -77,7 +79,7 @@
             android:background="@android:color/transparent"
             android:gravity="top|start"
             android:hint="게시판 설명"
-            android:maxLength="300"
+            android:maxLength="20"
             android:padding="16dp"
             android:textSize="14sp" />
 
@@ -88,9 +90,25 @@
             android:layout_alignParentEnd="true"
             android:layout_alignParentBottom="true"
             android:padding="8dp"
-            android:text="0/300"
+            android:text="0/20"
             android:textColor="#9E9E9E"
             android:textSize="12sp" />
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:id="@+id/board_keyword_result"
+        android:layout_width="match_parent"
+        android:layout_height="56dp"
+        android:layout_below="@id/board_description_input"
+        android:layout_marginHorizontal="16dp"
+        android:layout_marginTop="8dp" >
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/keyword_rv"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            tools:itemCount="3"
+            android:layout_marginTop="0dp"
+            android:scrollbars="vertical" />
     </RelativeLayout>
 
     <!-- 게시판 키워드 -->
@@ -98,7 +116,7 @@
         android:id="@+id/board_keyword_input"
         android:layout_width="match_parent"
         android:layout_height="56dp"
-        android:layout_below="@id/board_description_input"
+        android:layout_below="@id/board_keyword_result"
         android:layout_marginHorizontal="16dp"
         android:layout_marginTop="8dp">
 
@@ -122,15 +140,17 @@
     </RelativeLayout>
 
     <!-- 완료 버튼 -->
-    <ImageView
+    <com.google.android.material.button.MaterialButton
         android:id="@+id/btn_complete"
+        style="@style/CustomMaterialButton4"
         android:layout_width="match_parent"
-        android:layout_height="56dp"
+        android:layout_height="50dp"
+        android:insetTop="0dp"
+        android:insetBottom="0dp"
         android:layout_alignParentBottom="true"
         android:layout_marginStart="16dp"
         android:layout_marginEnd="16dp"
         android:layout_marginBottom="40dp"
-        android:contentDescription="완료 버튼"
-        android:src="@drawable/bt_deactivated_complete" />
+        android:text="완료" />
 
 </RelativeLayout>

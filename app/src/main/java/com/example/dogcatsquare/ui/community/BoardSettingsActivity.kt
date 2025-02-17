@@ -38,7 +38,6 @@ class BoardSettingsActivity : AppCompatActivity() {
             startActivity(intent)
         }
 
-
         // RecyclerView 초기화 (XML과 ID 확인!)
         binding.recyclerView.layoutManager = LinearLayoutManager(this)
         boardAdapter = BoardAdapter(emptyList())
@@ -107,11 +106,11 @@ class BoardSettingsActivity : AppCompatActivity() {
                         // 검색어 포함 여부에 따라 정렬 (제목 포함 > 키워드 포함 순)
                         val sortedList = boardList.sortedByDescending { board ->
                             val isTitleMatch = board.boardName.contains(boardName, ignoreCase = true)
-                            val isKeywordMatch = board.keywords.any { it.contains(boardName, ignoreCase = true) }
+                            val isKeywordMatch = board.keywords?.any { it.contains(boardName, ignoreCase = true) }
 
                             when {
                                 isTitleMatch -> 2
-                                isKeywordMatch -> 1
+                                isKeywordMatch == true -> 1
                                 else -> 0
                             }
                         }
