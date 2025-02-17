@@ -18,11 +18,10 @@ import retrofit2.http.Path
 import retrofit2.http.Query
 
 interface PlacesApiService {
-    @POST("api/places/search/{cityId}")
+    @POST("api/places/nearby")
     suspend fun searchPlaces(
         @Header("Authorization") token: String,
-        @Path("cityId") cityId: Int,
-        @Query("keyword") keyword: String,
+        @Query("page") page: Int = 0,
         @Body request: SearchPlacesRequest
     ): BaseResponse<PageResponse<PlaceItem>>
 

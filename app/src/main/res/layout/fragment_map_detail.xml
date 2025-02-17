@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".ui.map.location.MapEtcFragment"
+    tools:context=".ui.map.location.MapDetailFragment"
     android:background="@color/white">
 
     <androidx.constraintlayout.widget.Guideline
@@ -79,6 +79,7 @@
         app:layout_constraintTop_toTopOf="@+id/searchBox" />
 
     <ScrollView
+        android:id="@+id/scrollView3"
         android:layout_width="0dp"
         android:layout_height="0dp"
         app:layout_constraintBottom_toBottomOf="parent"
@@ -92,7 +93,7 @@
 
             <androidx.constraintlayout.widget.Guideline
                 android:id="@+id/guideline1"
-                android:layout_width="wrap_content"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:background="@color/white"
                 android:orientation="vertical"
@@ -209,14 +210,40 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:layout_marginTop="16dp"
-                android:paddingEnd="15dp"
                 android:clipToPadding="false"
+                android:orientation="horizontal"
+                android:paddingEnd="15dp"
+                app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/placeType"
-                android:orientation="horizontal"
-                app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
                 tools:listitem="@layout/item_detail_img" />
+
+            <ImageView
+                android:id="@+id/defaultDetailImage"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:scaleType="centerCrop"
+                android:src="@drawable/img_detail_default"
+                android:visibility="gone"
+                app:layout_constraintEnd_toStartOf="@+id/guideline2"
+                app:layout_constraintStart_toStartOf="@+id/guideline1"
+                app:layout_constraintTop_toBottomOf="@+id/placeType" />
+
+            <TextView
+                android:id="@+id/defaultImgText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="아직 사진이\n등록되지 않았어요"
+                android:textAlignment="center"
+                android:textColor="#9E9E9E"
+                android:textSize="12dp"
+                android:visibility="gone"
+                app:layout_constraintBottom_toBottomOf="@+id/defaultDetailImage"
+                app:layout_constraintEnd_toStartOf="@+id/guideline2"
+                app:layout_constraintStart_toStartOf="@+id/guideline1"
+                app:layout_constraintTop_toTopOf="@+id/defaultDetailImage" />
 
             <ImageView
                 android:id="@+id/imageView7"
@@ -293,7 +320,7 @@
                 android:textSize="14dp"
                 android:textStyle="bold"
                 app:layout_constraintStart_toStartOf="@+id/guideline1"
-                app:layout_constraintTop_toBottomOf="@+id/textView23" />
+                app:layout_constraintTop_toBottomOf="@+id/placeFacility" />
 
             <TextView
                 android:id="@+id/placeStatus"
@@ -393,6 +420,7 @@
                 android:text="길찾기"
                 android:textColor="#696969"
                 android:textSize="14dp"
+                app:layout_constraintBottom_toBottomOf="@+id/placeLocationFull"
                 app:layout_constraintEnd_toEndOf="@id/guideline2"
                 app:layout_constraintTop_toTopOf="@+id/placeLocationFull" />
 
@@ -449,7 +477,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
 
-                    android:background="#EFEFF0">
+                    android:background="#FAFAFA">
 
                     <TextView
                         android:id="@+id/placeIntro"
@@ -467,77 +495,21 @@
                 </androidx.constraintlayout.widget.ConstraintLayout>
             </androidx.cardview.widget.CardView>
 
-            <androidx.cardview.widget.CardView
-                android:id="@+id/char1"
-                android:layout_width="wrap_content"
+            <com.google.android.flexbox.FlexboxLayout
+                android:id="@+id/characteristicsContainer"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"
-                android:background="#EAF2FE"
-                app:cardCornerRadius="8dp"
+                android:paddingBottom="4dp"
+                app:alignItems="flex_start"
+                app:flexWrap="wrap"
+                app:justifyContent="flex_start"
+                app:layout_constraintEnd_toEndOf="@+id/guideline2"
                 app:layout_constraintStart_toStartOf="@+id/guideline1"
                 app:layout_constraintTop_toBottomOf="@+id/cardView">
 
-                <TextView
-                    android:id="@+id/char1Text"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="8dp"
-                    android:layout_marginTop="1dp"
-                    android:layout_marginEnd="8dp"
-                    android:layout_marginBottom="1dp"
-                    android:text="고양이친화"
-                    android:textColor="#276CCB"
-                    android:textSize="12dp" />
 
-            </androidx.cardview.widget.CardView>
-
-            <androidx.cardview.widget.CardView
-                android:id="@+id/char2"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="8dp"
-                android:layout_marginTop="16dp"
-                android:background="#EAF2FE"
-                app:cardCornerRadius="8dp"
-                app:layout_constraintStart_toEndOf="@+id/char1"
-                app:layout_constraintTop_toBottomOf="@+id/cardView">
-
-                <TextView
-                    android:id="@+id/char2Text"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="8dp"
-                    android:layout_marginTop="1dp"
-                    android:layout_marginEnd="8dp"
-                    android:layout_marginBottom="1dp"
-                    android:text="예방접종"
-                    android:textColor="#276CCB"
-                    android:textSize="12dp" />
-            </androidx.cardview.widget.CardView>
-
-            <androidx.cardview.widget.CardView
-                android:id="@+id/char3"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="8dp"
-                android:layout_marginTop="16dp"
-                android:background="#EAF2FE"
-                app:cardCornerRadius="8dp"
-                app:layout_constraintStart_toEndOf="@+id/char2"
-                app:layout_constraintTop_toBottomOf="@+id/cardView">
-
-                <TextView
-                    android:id="@+id/char3Text"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="8dp"
-                    android:layout_marginTop="1dp"
-                    android:layout_marginEnd="8dp"
-                    android:layout_marginBottom="1dp"
-                    android:text="24시"
-                    android:textColor="#276CCB"
-                    android:textSize="12dp" />
-            </androidx.cardview.widget.CardView>
+            </com.google.android.flexbox.FlexboxLayout>
 
             <ImageView
                 android:id="@+id/imageView10"
@@ -547,9 +519,97 @@
                 android:src="@drawable/ic_map_contour_place"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/char1" />
+                app:layout_constraintTop_toBottomOf="@+id/characteristicsContainer" />
+
+            <TextView
+                android:id="@+id/textView7"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:text="이웃들의 후기"
+                android:textSize="20dp"
+                android:textStyle="bold"
+
+                app:layout_constraintStart_toStartOf="@id/guideline1"
+                app:layout_constraintTop_toBottomOf="@+id/imageView10" />
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/reviewRV"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+                app:layout_constraintEnd_toEndOf="@id/guideline2"
+                app:layout_constraintStart_toStartOf="@id/guideline1"
+
+                app:layout_constraintTop_toBottomOf="@+id/textView7"
+                tools:listitem="@layout/item_map_review" />
+
+            <ImageView
+                android:id="@+id/imageView3"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="80dp"
+                android:src="@drawable/ic_map_contour_place"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/addButton" />
+
+            <ImageView
+                android:id="@+id/addButton"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="24dp"
+                android:src="@drawable/btn_add_review"
+                app:layout_constraintEnd_toStartOf="@+id/guideline2"
+                app:layout_constraintStart_toStartOf="@+id/guideline1"
+                app:layout_constraintTop_toBottomOf="@+id/reviewRV" />
+
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/reviewPlus"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                app:layout_constraintBottom_toBottomOf="@+id/textView7"
+                app:layout_constraintEnd_toStartOf="@+id/guideline2"
+                app:layout_constraintTop_toTopOf="@+id/textView7">
+
+                <TextView
+                    android:id="@+id/reviewCount"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="8dp"
+                    android:layout_marginEnd="8dp"
+                    android:text="3"
+                    android:textSize="20dp"
+                    android:textStyle="bold"
+
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toStartOf="@+id/imageView6"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
+
+                <ImageView
+                    android:id="@+id/imageView6"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:rotationY="180"
+                    android:src="@drawable/ic_back"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
+            </androidx.constraintlayout.widget.ConstraintLayout>
 
         </androidx.constraintlayout.widget.ConstraintLayout>
     </ScrollView>
+
+    <ImageView
+        android:id="@+id/reserveButton"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="16dp"
+        android:src="@drawable/btn_hotel_reserve"
+        app:layout_constraintBottom_toBottomOf="@+id/scrollView3"
+        app:layout_constraintEnd_toStartOf="@+id/guideline_end"
+        app:layout_constraintStart_toStartOf="@+id/guideline_start" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -9,7 +9,6 @@ import com.example.dogcatsquare.data.map.MapPlace
 import com.example.dogcatsquare.R
 import com.example.dogcatsquare.data.map.Place
 import com.example.dogcatsquare.databinding.ItemHomeHotPlaceBinding
-import com.example.dogcatsquare.ui.map.location.MapDetailFragment
 
 class HomeHotPlaceRVAdapter(private val placeList: ArrayList<Place>) : RecyclerView.Adapter<HomeHotPlaceRVAdapter.HomeHotPlaceAdapterViewHolder>() {
     interface OnItemClickListener {

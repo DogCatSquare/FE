@@ -8,12 +8,13 @@ data class PlaceItem(
     @SerializedName("address") val address: String,
     @SerializedName("category") val category: String,
     @SerializedName("phoneNumber") val phoneNumber: String,
+    @SerializedName("longitude") val longitude: Double,
+    @SerializedName("latitude") val latitude: Double,
     @SerializedName("distance") val distance: Double,
     @SerializedName("open") val open: Boolean,
     @SerializedName("imgUrl") val imgUrl: String,
-    @SerializedName("longitude") val longitude: Double,
-    @SerializedName("latitude") val latitude: Double,
-    @SerializedName("reviewCount") val reviewCount: Int
+    @SerializedName("reviewCount") val reviewCount: Int,
+    @SerializedName("keywords") val keywords: List<String>
 )
 
 data class PageResponse<T>(
@@ -54,7 +55,9 @@ data class PlaceDetailResponse(
     @SerializedName("imageUrls") val imageUrls: List<String>?,
     @SerializedName("distance") val distance: Double,
     @SerializedName("wished") val wished: Boolean,
-    @SerializedName("recentReviews") val recentReviews: List<MapReview>?
+    @SerializedName("recentReviews") val recentReviews: List<MapReview>?,
+    @SerializedName("keywords") val keywords: List<String>?,
+    @SerializedName("additionalInfo") val additionalInfo: String?
 )
 
 data class PlaceDetailRequest(

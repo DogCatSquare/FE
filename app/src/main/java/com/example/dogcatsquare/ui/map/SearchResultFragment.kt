@@ -16,7 +16,6 @@ import com.example.dogcatsquare.data.map.MapPlace
 import com.example.dogcatsquare.data.map.SearchPlacesRequest
 import com.example.dogcatsquare.databinding.FragmentSearchResultBinding
 import com.example.dogcatsquare.ui.map.location.MapDetailFragment
-import com.example.dogcatsquare.ui.map.location.MapEtcFragment
 import com.example.dogcatsquare.ui.map.location.MapPlaceRVAdapter
 import com.example.dogcatsquare.ui.map.walking.WalkingStartViewFragment
 import kotlinx.coroutines.Dispatchers
@@ -81,7 +80,7 @@ class SearchResultFragment : Fragment() {
                         navigateToFragment(WalkingStartViewFragment())
                     }
                     else -> {
-                        val fragment = MapEtcFragment().apply {
+                        val fragment = MapDetailFragment().apply {
                             arguments = Bundle().apply {
                                 putInt("placeId", place.id)
                                 val (lat, lng) = getCurrentLocation()
@@ -129,8 +128,8 @@ class SearchResultFragment : Fragment() {
                 val response = withContext(Dispatchers.IO) {
                     RetrofitClient.placesApiService.searchPlaces(
                         token = "Bearer $token",
-                        cityId = getCityId(),
-                        keyword = keyword,
+//                        cityId = getCityId(),
+//                        keyword = keyword,
                         request = searchRequest
                     )
                 }

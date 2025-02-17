@@ -1,5 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <dimen name="spacing_3">3dp</dimen>
     <dimen name="spacing_8">8dp</dimen>
+    <dimen name="spacing_14">14dp</dimen>
+    <dimen name="radius_4">4dp</dimen>
+    <dimen name="stroke_1">1dp</dimen>
     <dimen name="review_image_size">85dp</dimen>
 </resources>
