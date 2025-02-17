@@ -546,6 +546,32 @@
                 tools:listitem="@layout/item_map_review" />
 
             <ImageView
+                android:id="@+id/defaultReviewImage"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:scaleType="centerCrop"
+                android:src="@drawable/img_detail_default"
+                android:visibility="gone"
+                app:layout_constraintEnd_toEndOf="@id/guideline2"
+                app:layout_constraintStart_toStartOf="@id/guideline1"
+                app:layout_constraintTop_toBottomOf="@+id/textView7" />
+
+            <TextView
+                android:id="@+id/defaultReviewText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="아직 작성된 후기가 없어요\n이웃들을 위해 첫번째 후기를 남겨보세요"
+                android:textAlignment="center"
+                android:textColor="#9E9E9E"
+                android:textSize="14dp"
+                android:visibility="gone"
+                app:layout_constraintBottom_toBottomOf="@+id/defaultReviewImage"
+                app:layout_constraintEnd_toEndOf="@+id/defaultReviewImage"
+                app:layout_constraintStart_toStartOf="@+id/defaultReviewImage"
+                app:layout_constraintTop_toTopOf="@+id/defaultReviewImage" />
+
+            <ImageView
                 android:id="@+id/imageView3"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"

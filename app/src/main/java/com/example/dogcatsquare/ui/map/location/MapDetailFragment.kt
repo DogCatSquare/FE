@@ -482,19 +482,50 @@ class MapDetailFragment : Fragment(), OnMapReadyCallback {
         reviewDatas.clear()
 
         if (!apiReviews.isNullOrEmpty()) {
+            // 리뷰가 있는 경우
             reviewDatas.addAll(apiReviews)
-        }
+            binding.reviewCount.text = reviewDatas.size.toString()
 
-        binding.reviewCount.text = reviewDatas.size.toString()
+            // 리뷰 관련 뷰들 표시
+            binding.reviewRV.visibility = View.VISIBLE
+            binding.defaultReviewImage.visibility = View.GONE
+            binding.defaultReviewText.visibility = View.GONE
+            binding.reviewPlus.visibility = View.VISIBLE
+            binding.addButton.visibility = View.VISIBLE
+            binding.imageView3.visibility = View.VISIBLE
 
-        val displayedReviews = ArrayList<MapReview>().apply {
-            addAll(reviewDatas.take(2))
-        }
+            val displayedReviews = ArrayList<MapReview>().apply {
+                addAll(reviewDatas.take(2))
+            }
 
-        val mapReviewRVAdapter = MapReviewRVAdapter(displayedReviews)
-        binding.reviewRV.apply {
-            adapter = mapReviewRVAdapter
-            layoutManager = LinearLayoutManager(context, LinearLayoutManager.VERTICAL, false)
+            val mapReviewRVAdapter = MapReviewRVAdapter(displayedReviews)
+            binding.reviewRV.apply {
+                adapter = mapReviewRVAdapter
+                layoutManager = LinearLayoutManager(context, LinearLayoutManager.VERTICAL, false)
+            }
+        } else {
+            // 리뷰가 없는 경우
+            binding.reviewCount.text = "0"
+
+            // 리뷰 관련 뷰들 숨기기/표시
+            binding.reviewRV.visibility = View.GONE
+            binding.defaultReviewImage.visibility = View.VISIBLE
+            binding.defaultReviewText.visibility = View.VISIBLE
+            binding.reviewPlus.visibility = View.GONE
+            binding.addButton.visibility = View.VISIBLE  // 리뷰 추가 버튼은 계속 표시
+            binding.imageView3.visibility = View.VISIBLE
+
+            // 리뷰가 없을 때의 제약 조건 변경
+            val constraintSet = ConstraintSet()
+            constraintSet.clone(binding.scrollView3.getChildAt(0) as ConstraintLayout)
+            constraintSet.connect(
+                R.id.addButton,
+                ConstraintSet.TOP,
+                R.id.defaultReviewImage,
+                ConstraintSet.BOTTOM,
+                (24 * resources.displayMetrics.density).toInt()
+            )
+            constraintSet.applyTo(binding.scrollView3.getChildAt(0) as ConstraintLayout)
         }
     }
 
