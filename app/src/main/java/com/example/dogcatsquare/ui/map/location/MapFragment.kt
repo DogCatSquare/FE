@@ -4,7 +4,6 @@ import android.Manifest
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.pm.PackageManager
-import android.graphics.Color
 import android.os.Bundle
 import android.os.Looper
 import android.util.Log
@@ -48,15 +47,11 @@ import com.naver.maps.map.overlay.Marker
 import com.naver.maps.map.overlay.OverlayImage
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
-import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import retrofit2.HttpException
 import java.io.IOException
 import java.util.concurrent.TimeUnit
-import kotlinx.coroutines.async
-import kotlinx.coroutines.awaitAll
-import kotlinx.coroutines.withContext
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlin.coroutines.resume
 
@@ -439,7 +434,29 @@ class MapFragment : Fragment(), OnMapReadyCallback {
         val mapPlaceRVAdapter = MapPlaceRVAdapter(placeDatas, object : MapPlaceRVAdapter.OnItemClickListener {
             override fun onItemClick(place: MapPlace) {
                 when (place.placeType) {
-                    "동물병원" -> {
+                    "산책로" -> {
+                        val (currentLat, currentLng) = getMapCurrentPosition()
+                        val fragment = WalkingStartViewFragment().apply {
+                            arguments = Bundle().apply {
+                                putInt("placeId", place.id)
+                                putDouble("latitude", currentLat)
+                                putDouble("longitude", currentLng)
+                            }
+                        }
+                        requireActivity().supportFragmentManager.beginTransaction()
+                            .setCustomAnimations(
+                                R.anim.slide_in_right,
+                                R.anim.slide_out_left,
+                                R.anim.slide_in_left,
+                                R.anim.slide_out_right
+                            )
+                            .hide(this@MapFragment)
+                            .add(R.id.main_frm, fragment)
+                            .addToBackStack(null)
+                            .commit()
+                    }
+                    else -> {
+                        // 산책로를 제외한 모든 카테고리는 MapDetailFragment로 이동
                         val (currentLat, currentLng) = getMapCurrentPosition()
                         val fragment = MapDetailFragment().apply {
                             arguments = Bundle().apply {
@@ -456,48 +473,6 @@ class MapFragment : Fragment(), OnMapReadyCallback {
                                 R.anim.slide_out_right
                             )
                             .hide(this@MapFragment)
-                            .add(R.id.main_frm, fragment)
-                            .addToBackStack(null)
-                            .commit()
-                    }
-                    "산책로" -> {
-                        val (currentLat, currentLng) = getMapCurrentPosition()
-                        val fragment = WalkingStartViewFragment().apply {
-                            arguments = Bundle().apply {
-                                putInt("placeId", place.id)
-                                putDouble("latitude", currentLat)
-                                putDouble("longitude", currentLng) // 이건 필요한 정보들에 따라 수정
-                            }
-                        }
-                        requireActivity().supportFragmentManager.beginTransaction()
-                            .setCustomAnimations(
-                                R.anim.slide_in_right,
-                                R.anim.slide_out_left,
-                                R.anim.slide_in_left,
-                                R.anim.slide_out_right
-                            )
-                            .hide(this@MapFragment)
-                            .add(R.id.main_frm, fragment)
-                            .addToBackStack(null)
-                            .commit()
-                    }
-                    else -> {
-                        val (currentLat, currentLng) = getMapCurrentPosition()
-                        val fragment = MapEtcFragment().apply {
-                            arguments = Bundle().apply {
-                                putInt("placeId", place.id)
-                                putDouble("latitude", currentLat)
-                                putDouble("longitude", currentLng)
-                            }
-                        }
-                        requireActivity().supportFragmentManager.beginTransaction()
-                            .setCustomAnimations(
-                                R.anim.slide_in_right,
-                                R.anim.slide_out_left,
-                                R.anim.slide_in_left,
-                                R.anim.slide_out_right
-                            )
-                            .hide(this@MapFragment)  // 현재 Fragment 숨기기
                             .add(R.id.main_frm, fragment)
                             .addToBackStack(null)
                             .commit()

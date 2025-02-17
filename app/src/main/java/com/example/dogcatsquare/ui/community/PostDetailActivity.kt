@@ -12,7 +12,6 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.dogcatsquare.R
 import com.example.dogcatsquare.data.community.PostDetailResponse
 import com.example.dogcatsquare.data.network.RetrofitObj
-import com.example.dogcatsquare.ui.map.location.MapEtcFragment
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
