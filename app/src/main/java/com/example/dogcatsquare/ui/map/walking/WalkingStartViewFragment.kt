@@ -1,12 +1,12 @@
 package com.example.dogcatsquare.ui.map.walking
 
-import android.graphics.Color
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
+import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.appcompat.widget.Toolbar
@@ -132,6 +132,15 @@ class WalkingStartViewFragment : Fragment() {
                 .commit()
         }
 
+        //리뷰 전체 보기
+        val reviewBt : ImageButton = view.findViewById(R.id.review_button)
+        reviewBt.setOnClickListener {
+            parentFragmentManager.beginTransaction()
+                .replace(R.id.main_frm, WalkingReviewRVFragment())
+                .addToBackStack(null)
+                .commit()
+        }
+
         return view
     }
 
@@ -149,29 +158,6 @@ class WalkingStartViewFragment : Fragment() {
         endMarker.position = LatLng(endCoordinate.latitude, endCoordinate.longitude)
         endMarker.map = naverMap
     }
-
-//    private fun drawRoute(startCoordinates: List<Coordinate>, endCoordinates: List<Coordinate>) {
-//        val routeCoordinates = mutableListOf<LatLng>()
-//
-//        // 경로 좌표 추가 (시작과 끝 좌표 외에도 중간 좌표를 추가할 수 있습니다)
-//        startCoordinates.forEach {
-//            routeCoordinates.add(LatLng(it.latitude, it.longitude))
-//        }
-//        endCoordinates.forEach {
-//            routeCoordinates.add(LatLng(it.latitude, it.longitude))
-//        }
-//
-//        // Polyline 객체 초기화
-//        if (!::userPolyline.isInitialized) {
-//            userPolyline = Polyline()
-//            userPolyline.map = naverMap // NaverMap 객체와 연결
-//        }
-//
-//        // Polyline의 좌표 업데이트
-//        userPolyline.setCoords(routeCoordinates) // setCoords 메서드 사용
-//        userPolyline.width = 10F // 선의 두께
-//        userPolyline.color = Color.parseColor("#FFB200") // 선의 색상
-//    }
 }
 
 
