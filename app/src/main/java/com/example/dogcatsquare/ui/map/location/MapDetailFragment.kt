@@ -12,6 +12,8 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
 import android.widget.Toast
+import androidx.constraintlayout.widget.ConstraintLayout
+import androidx.constraintlayout.widget.ConstraintSet
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.dogcatsquare.MapAddKeywordFragment
@@ -415,31 +417,63 @@ class MapDetailFragment : Fragment(), OnMapReadyCallback {
     }
 
     private fun updateImages(imageUrls: List<String>?) {
-        imgDatas.clear()
-
         if (imageUrls.isNullOrEmpty()) {
-            imgDatas.add(DetailImg(R.drawable.ic_place_img_default))
+            // RecyclerView 숨기고 기본 이미지 표시
+            binding.detailImgRV.visibility = View.GONE
+            binding.defaultDetailImage.visibility = View.VISIBLE
+            binding.defaultImgText.visibility = View.VISIBLE
+
+            // imageView7의 제약 조건 변경
+            val constraintSet = ConstraintSet()
+            constraintSet.clone(binding.scrollView3.getChildAt(0) as ConstraintLayout)
+            constraintSet.connect(
+                R.id.imageView7,
+                ConstraintSet.TOP,
+                R.id.defaultDetailImage,
+                ConstraintSet.BOTTOM,
+                (16 * resources.displayMetrics.density).toInt() // 16dp를 픽셀로 변환
+            )
+            constraintSet.applyTo(binding.scrollView3.getChildAt(0) as ConstraintLayout)
         } else {
+            // 기본 이미지 숨기고 RecyclerView 표시
+            binding.defaultDetailImage.visibility = View.GONE
+            binding.detailImgRV.visibility = View.VISIBLE
+            binding.defaultImgText.visibility = View.GONE
+
+            // imageView7의 제약 조건을 원래대로 복원
+            val constraintSet = ConstraintSet()
+            constraintSet.clone(binding.scrollView3.getChildAt(0) as ConstraintLayout)
+            constraintSet.connect(
+                R.id.imageView7,
+                ConstraintSet.TOP,
+                R.id.detailImgRV,
+                ConstraintSet.BOTTOM,
+                (16 * resources.displayMetrics.density).toInt() // 16dp를 픽셀로 변환
+            )
+            constraintSet.applyTo(binding.scrollView3.getChildAt(0) as ConstraintLayout)
+
+            // RecyclerView 데이터 업데이트
+            imgDatas.clear()
             imageUrls.forEach { url ->
                 if (!url.isNullOrBlank()) {
                     imgDatas.add(DetailImg(url))
                 }
             }
-        }
 
-        binding.detailImgRV.post {
-            if (binding.detailImgRV.adapter == null) {
-                val detailImgRVAdapter = DetailImgRVAdapter(imgDatas)
-                binding.detailImgRV.apply {
-                    adapter = detailImgRVAdapter
-                    layoutManager = LinearLayoutManager(
-                        context,
-                        LinearLayoutManager.HORIZONTAL,
-                        false
-                    )
+            binding.detailImgRV.post {
+                if (binding.detailImgRV.adapter == null) {
+                    val detailImgRVAdapter = DetailImgRVAdapter(imgDatas)
+                    binding.detailImgRV.apply {
+                        adapter = detailImgRVAdapter
+                        layoutManager = LinearLayoutManager(
+                            context,
+                            LinearLayoutManager.HORIZONTAL,
+                            false
+                        )
+                    }
+                } else {
+                    binding.detailImgRV.adapter = DetailImgRVAdapter(ArrayList(imgDatas))
                 }
-            } else {
-                binding.detailImgRV.adapter = DetailImgRVAdapter(ArrayList(imgDatas))
             }
         }
     }

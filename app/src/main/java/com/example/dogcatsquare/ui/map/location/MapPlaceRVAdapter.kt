@@ -5,6 +5,7 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.annotation.DrawableRes
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.constraintlayout.widget.ConstraintSet
 import androidx.recyclerview.widget.RecyclerView
@@ -16,13 +17,37 @@ import com.example.dogcatsquare.R
 import com.example.dogcatsquare.data.map.MapPlace
 import com.example.dogcatsquare.databinding.ItemMapPlaceBinding
 
-class MapPlaceRVAdapter(private val placeList: ArrayList<MapPlace>, private val listener: OnItemClickListener? = null): RecyclerView.Adapter<MapPlaceRVAdapter.ViewHolder>() {
+// PlaceType enum class 추가
+enum class PlaceType(val value: String, @DrawableRes val defaultImage: Int) {
+    HOSPITAL("동물병원", R.drawable.img_hospital_dafault),
+    HOTEL("호텔", R.drawable.img_hotel_dafault),
+    PARK("산책로", R.drawable.img_walk_default),
+    RESTAURANT("식당", R.drawable.img_cafe_default),
+    CAFE("카페", R.drawable.img_cafe_default),
+    UNKNOWN("", R.drawable.ic_place_img_default);
+
+    companion object {
+        fun fromString(value: String?): PlaceType {
+            return values().find { it.value == value } ?: UNKNOWN
+        }
+    }
+}
+
+class MapPlaceRVAdapter(
+    private val placeList: ArrayList<MapPlace>,
+    private val listener: OnItemClickListener? = null
+): RecyclerView.Adapter<MapPlaceRVAdapter.ViewHolder>() {
+
     interface OnItemClickListener {
         fun onItemClick(place: MapPlace)
     }
 
     override fun onCreateViewHolder(viewGroup: ViewGroup, viewType: Int): ViewHolder {
-        val binding: ItemMapPlaceBinding = ItemMapPlaceBinding.inflate(LayoutInflater.from(viewGroup.context), viewGroup, false)
+        val binding: ItemMapPlaceBinding = ItemMapPlaceBinding.inflate(
+            LayoutInflater.from(viewGroup.context),
+            viewGroup,
+            false
+        )
         return ViewHolder(binding)
     }
 
@@ -47,7 +72,10 @@ class MapPlaceRVAdapter(private val placeList: ArrayList<MapPlace>, private val 
             binding.placeLocation.text = place.placeLocation
             binding.placeCall.text = place.placeCall
 
-            // 이미지 처리 (기존 코드 유지)
+            // 카테고리별 기본 이미지 설정
+            val defaultImageRes = PlaceType.fromString(place.placeType).defaultImage
+
+            // 이미지 처리
             if (place.placeImgUrl != null) {
                 Glide.with(binding.placeImg.context)
                     .load(place.placeImgUrl)
@@ -58,10 +86,11 @@ class MapPlaceRVAdapter(private val placeList: ArrayList<MapPlace>, private val 
                             RoundedCorners((8 * binding.root.resources.displayMetrics.density).toInt())
                         )
                     )
-                    .placeholder(R.drawable.ic_place_img_default)
+                    .placeholder(defaultImageRes)
+                    .error(defaultImageRes)
                     .into(binding.placeImg)
             } else {
-                binding.placeImg.setImageResource(R.drawable.ic_place_img_default)
+                binding.placeImg.setImageResource(defaultImageRes)
             }
 
             // 전화번호 관련 처리
@@ -139,7 +168,7 @@ class MapPlaceRVAdapter(private val placeList: ArrayList<MapPlace>, private val 
                     ConstraintSet.TOP,
                     R.id.characteristicsContainer,
                     ConstraintSet.BOTTOM,
-                    (15 * binding.root.resources.displayMetrics.density).toInt() // 15dp를 px로 변환
+                    (15 * binding.root.resources.displayMetrics.density).toInt()
                 )
             } else {
                 constraintSet.connect(
@@ -147,7 +176,7 @@ class MapPlaceRVAdapter(private val placeList: ArrayList<MapPlace>, private val 
                     ConstraintSet.TOP,
                     R.id.placeImg,
                     ConstraintSet.BOTTOM,
-                    (15 * binding.root.resources.displayMetrics.density).toInt() // 15dp를 px로 변환
+                    (15 * binding.root.resources.displayMetrics.density).toInt()
                 )
             }
 
@@ -155,18 +184,10 @@ class MapPlaceRVAdapter(private val placeList: ArrayList<MapPlace>, private val 
 
             // placeType에 따른 특성 카드 스타일 설정
             when (place.placeType) {
-                "동물병원" -> {
-                    setCardsStyle("#EAF2FE", "#276CCB")
-                }
-                "호텔" -> {
-                    setCardsStyle("#FEEEEA", "#F36037")
-                }
-                "산책로" -> {
-                    setCardsStyle("#F4FCF5", "#3E7C43")
-                }
-                "식당", "카페" -> {
-                    setCardsStyle("#FFFBF1", "#FF8D41")
-                }
+                "동물병원" -> setCardsStyle("#EAF2FE", "#276CCB")
+                "호텔" -> setCardsStyle("#FEEEEA", "#F36037")
+                "산책로" -> setCardsStyle("#F4FCF5", "#3E7C43")
+                "식당", "카페" -> setCardsStyle("#FFFBF1", "#FF8D41")
             }
 
             // 아이템 클릭 리스너 설정
