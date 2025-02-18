@@ -1,5 +1,7 @@
 package com.example.dogcatsquare.ui.map
 
+import android.content.Context
+import android.graphics.Rect
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -7,47 +9,38 @@ import android.view.ViewGroup
 import android.view.inputmethod.EditorInfo
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.example.dogcatsquare.R
 import com.example.dogcatsquare.databinding.FragmentSearchBinding
 import com.example.dogcatsquare.ui.map.location.MapFragment
+import com.example.dogcatsquare.ui.map.location.SearchItem
+import com.example.dogcatsquare.ui.map.location.SearchWordAdapter
+import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
 
-class SearchFragment : Fragment() {
+class SearchFragment : Fragment(), SearchWordAdapter.OnSearchTermClickListener {
     private var _binding: FragmentSearchBinding? = null
     private val binding get() = _binding!!
+
+    private lateinit var searchAdapter: SearchWordAdapter
+    private val recentSearches = mutableListOf<SearchItem>()
+
+    companion object {
+        private const val PREFS_NAME = "SearchPrefs"
+        private const val KEY_SEARCHES = "recent_searches"
+        private const val MAX_RECENT_SEARCHES = 5
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
+    ): View {
         _binding = FragmentSearchBinding.inflate(inflater, container, false)
 
-        // 최근검색어 로직인데 xml에서 searchview로 안하고 edittext로 구현해놔서 알맞게 수정하시면 될 거 같습니다
-        // 최신 검색어
-//        val searchView: androidx.appcompat.widget.SearchView = binding.searchView
-//        binding.searchRecipeRV.layoutManager = LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false)
-//        val adapter = SearchWordAdapter(requireContext(), recentSearches, this)
-//        binding.searchRecipeRV.adapter = adapter
-
-        // SharedPreferences에서 최근 검색어 불러오기
-//        loadRecentSearches()
-
-//        searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener,
-//            androidx.appcompat.widget.SearchView.OnQueryTextListener {
-//            override fun onQueryTextSubmit(query: String?): Boolean {
-//                if (!query.isNullOrEmpty()) {
-//                    addRecentSearch(query)
-//                    adapter.notifyDataSetChanged()
-//                    navigateToSearchResult(query)
-//                }
-//
-//                return false // 키보드 검색 아이콘 클릭 시 키보드 내림
-//            }
-//
-//            override fun onQueryTextChange(newText: String?): Boolean {
-//                return true
-//            }
-//        })
+        setupRecyclerView()
+        loadRecentSearches()
 
         binding.backBtn.setOnClickListener {
             requireActivity().supportFragmentManager.popBackStack()
@@ -56,52 +49,72 @@ class SearchFragment : Fragment() {
         return binding.root
     }
 
-    // 최근검색어 클릭
-//    override fun onSearchTermClicked(query: String) {
-//        val bundle = Bundle().apply {
-//            putString("query", query)
-//        }
-//        val searchResultFragment = SearchResultFragment().apply {
-//            arguments = bundle
-//        }
-//        requireActivity().supportFragmentManager.beginTransaction()
-//            .replace(R.id.main_frm, searchResultFragment)
-//            .addToBackStack("SearchResultFragment") // 백 스택 추가
-//            .commitAllowingStateLoss()
-//    }
+    private fun setupRecyclerView() {
+        searchAdapter = SearchWordAdapter(recentSearches, this)
+        binding.searchResultRv.apply {
+            layoutManager = LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false)
+            adapter = searchAdapter
+            addItemDecoration(object : RecyclerView.ItemDecoration() {
+                override fun getItemOffsets(
+                    outRect: Rect,
+                    view: View,
+                    parent: RecyclerView,
+                    state: RecyclerView.State
+                ) {
+                    outRect.right = resources.getDimensionPixelSize(R.dimen.spacing_8)
+                }
+            })
+        }
+    }
 
-    // 최근검색어 추가
-//    private fun addRecentSearch(search: String) {
-//        if (recentSearches.size >= 5) { // 5개 넘어가면 맨 처음꺼 삭제
-//            recentSearches.removeAt(0)
-//        }
-//        recentSearches.add(search)
-//        saveRecentSearches()
-//    }
+    private fun loadRecentSearches() {
+        val sharedPreferences = requireContext().getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        val searchesJson = sharedPreferences.getString(KEY_SEARCHES, null)
+        if (searchesJson != null) {
+            try {
+                val type = object : TypeToken<List<SearchItem>>() {}.type
+                val loadedSearches = Gson().fromJson<List<SearchItem>>(searchesJson, type)
+                recentSearches.clear()
+                recentSearches.addAll(loadedSearches)
+                searchAdapter.updateSearches(recentSearches.toList())
+            } catch (e: Exception) {
+                recentSearches.clear()
+                saveRecentSearches()
+            }
+        }
+    }
 
-    // 최근 검색어 SP에 저장
-//    private fun saveRecentSearches() {
-//        val sharedPreferences = requireContext().getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-//        val editor = sharedPreferences.edit()
-//        val searchSet = recentSearches.toSet()
-//        editor.putStringSet(KEY_SEARCHES, searchSet)
-//        editor.apply()
-//    }
+    private fun saveRecentSearches() {
+        val sharedPreferences = requireContext().getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        val searchesJson = Gson().toJson(recentSearches)
+        sharedPreferences.edit()
+            .putString(KEY_SEARCHES, searchesJson)
+            .apply()
+    }
+
+    private fun addRecentSearch(query: String) {
+        // 중복 검색어 제거
+        recentSearches.removeIf { it.query == query }
+
+        // 최대 개수 체크
+        if (recentSearches.size >= MAX_RECENT_SEARCHES) {
+            recentSearches.removeAt(0)
+        }
+
+        // 새 검색어 추가
+        recentSearches.add(SearchItem(query))
+        searchAdapter.notifyDataSetChanged()
+        saveRecentSearches()
+    }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
         setupSearchEditText()
-        setupBackButton()
-        // 배경을 불투명하게 설정
-        view.setBackgroundColor(ContextCompat.getColor(requireContext(), android.R.color.white))
-    }
-
-    private fun setupBackButton() {
         binding.backBtn.setOnClickListener {
-            // 이전 Fragment를 보이게 하고 현재 Fragment를 제거
             requireActivity().supportFragmentManager.popBackStack()
         }
+        view.setBackgroundColor(ContextCompat.getColor(requireContext(), android.R.color.white))
     }
 
     private fun setupSearchEditText() {
@@ -109,6 +122,7 @@ class SearchFragment : Fragment() {
             if (actionId == EditorInfo.IME_ACTION_SEARCH || actionId == EditorInfo.IME_ACTION_DONE) {
                 val searchQuery = textView.text.toString().trim()
                 if (searchQuery.isNotEmpty()) {
+                    addRecentSearch(searchQuery)
                     navigateToSearchResult(searchQuery)
                 }
                 true
@@ -118,18 +132,34 @@ class SearchFragment : Fragment() {
         }
     }
 
+    override fun onSearchTermClicked(query: String) {
+        binding.editText2.setText(query)
+        navigateToSearchResult(query)
+    }
+
+    override fun onSearchTermRemoved(query: String) {
+        // 1. 먼저 현재 리스트에서 해당 아이템 제거
+        val index = recentSearches.indexOfFirst { it.query == query }
+        if (index != -1) {
+            recentSearches.removeAt(index)
+
+            // 2. SharedPreferences에 변경사항 저장
+            saveRecentSearches()
+
+            // 3. 어댑터에 변경 알림
+            searchAdapter.updateSearches(recentSearches.toList())
+        }
+    }
+
     private fun navigateToSearchResult(query: String) {
-        // SearchResultFragment 인스턴스 생성 및 검색어 전달
         val searchResultFragment = SearchResultFragment().apply {
             arguments = Bundle().apply {
                 putString("searchQuery", query)
-                // 전달받은 위치 정보를 다시 전달
                 putDouble("latitude", arguments?.getDouble("latitude") ?: 37.5665)
                 putDouble("longitude", arguments?.getDouble("longitude") ?: 126.9780)
             }
         }
 
-        // Fragment 전환
         requireActivity().supportFragmentManager.beginTransaction()
             .setCustomAnimations(
                 R.anim.slide_in_right,
@@ -145,7 +175,6 @@ class SearchFragment : Fragment() {
 
     override fun onDestroyView() {
         super.onDestroyView()
-        // 이전 Fragment를 다시 보이게 함
         requireActivity().supportFragmentManager.fragments
             .filterIsInstance<MapFragment>()
             .firstOrNull()?.let { mapFragment ->
@@ -154,19 +183,5 @@ class SearchFragment : Fragment() {
                     .commit()
             }
         _binding = null
-    }
-
-    override fun onSaveInstanceState(outState: Bundle) {
-        super.onSaveInstanceState(outState)
-        // 현재 검색어나 다른 상태를 저장
-        // outState.putString("searchQuery", binding.searchEditText.text.toString())
-    }
-
-    override fun onViewStateRestored(savedInstanceState: Bundle?) {
-        super.onViewStateRestored(savedInstanceState)
-        // 저장된 상태 복원
-        savedInstanceState?.let { bundle ->
-            // binding.searchEditText.setText(bundle.getString("searchQuery", ""))
-        }
     }
 }

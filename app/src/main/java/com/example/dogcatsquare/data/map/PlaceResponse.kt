@@ -64,3 +64,8 @@ data class PlaceDetailRequest(
     @SerializedName("latitude") val latitude: Double,
     @SerializedName("longitude") val longitude: Double
 )
+
+data class PlaceUserInfoRequest(
+    val keywords: List<String>,
+    val additionalInfo: String
+)

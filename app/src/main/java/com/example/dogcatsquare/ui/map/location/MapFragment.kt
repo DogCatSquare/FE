@@ -84,7 +84,9 @@ class MapFragment : Fragment(), OnMapReadyCallback {
     private var currentPage = 0
     private var isLastPage = false
     private var isLoading = false
-    private val ITEMS_PER_PAGE = 10
+    private val ITEMS_PER_PAGE = 20
+
+    var shouldRefresh = false
 
     // RecyclerView 스크롤 리스너
     private val scrollListener = object : RecyclerView.OnScrollListener() {
@@ -115,6 +117,16 @@ class MapFragment : Fragment(), OnMapReadyCallback {
         super.onCreate(savedInstanceState)
         locationSource = FusedLocationSource(this, LOCATION_PERMISSION_REQUEST_CODE)
         setupLocationCallback()
+
+        // 프래그먼트 백스택 변경 리스너 등록
+        requireActivity().supportFragmentManager.addOnBackStackChangedListener {
+            if (isVisible && shouldRefresh) {
+                lifecycleScope.launch {
+                    loadAllCategories()
+                }
+                shouldRefresh = false
+            }
+        }
     }
 
     override fun onCreateView(
@@ -162,6 +174,7 @@ class MapFragment : Fragment(), OnMapReadyCallback {
                 .addToBackStack(null)
                 .commit()
         }
+
     }
 
     private fun setupLocationCallback() {
@@ -776,6 +789,7 @@ class MapFragment : Fragment(), OnMapReadyCallback {
     }
 
 
+
     // 카테고리별 마커 아이콘 설정
     private fun getMarkerIconForCategory(placeType: String?): Int {
         return when (placeType) {
@@ -985,6 +999,23 @@ class MapFragment : Fragment(), OnMapReadyCallback {
         LocationServices.getFusedLocationProviderClient(requireActivity())
             .removeLocationUpdates(locationCallback)
         _binding = null
+    }
+
+    override fun onResume() {
+        super.onResume()
+        // 이전 화면에서 돌아왔을 때 데이터 새로고침
+        if (shouldRefresh) {
+            lifecycleScope.launch {
+                loadAllCategories()  // 모든 카테고리 데이터 새로고침
+            }
+            shouldRefresh = false
+        }
+    }
+
+    override fun onPause() {
+        super.onPause()
+        // 다른 프래그먼트로 이동할 때 새로고침 플래그 설정
+        shouldRefresh = true
     }
 
     private fun saveCurrentLocation(latitude: Double, longitude: Double) {

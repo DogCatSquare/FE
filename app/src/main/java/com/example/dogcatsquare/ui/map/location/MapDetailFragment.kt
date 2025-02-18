@@ -12,11 +12,11 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
 import android.widget.Toast
+import androidx.cardview.widget.CardView
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.constraintlayout.widget.ConstraintSet
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.example.dogcatsquare.MapAddKeywordFragment
 import com.example.dogcatsquare.data.map.DetailImg
 import com.example.dogcatsquare.data.map.MapPrice
 import com.example.dogcatsquare.data.map.MapReview
@@ -30,7 +30,6 @@ import kotlinx.coroutines.withContext
 import com.example.dogcatsquare.data.map.PlaceDetailRequest
 import com.example.dogcatsquare.databinding.FragmentMapDetailBinding
 import com.google.android.flexbox.FlexboxLayout
-import com.google.android.material.card.MaterialCardView
 import com.naver.maps.geometry.LatLng
 import com.naver.maps.map.*
 import com.naver.maps.map.overlay.Marker
@@ -164,9 +163,17 @@ class MapDetailFragment : Fragment(), OnMapReadyCallback {
                                 placeUrl.setOnClickListener(null)
                             }
 
-                            // 소개 및 편의시설 설정
                             placeIntro.text = placeDetail.description
-                            placeFacility.text = formatFacilities(placeDetail.facilities)
+                            placeDetail.additionalInfo?.let { info ->
+                                binding.additionalInfo.visibility = View.VISIBLE
+                                binding.additionalInfo.text = info
+                            } ?: run {
+                                binding.additionalInfo.visibility = View.GONE
+                                val params = binding.imageView9.layoutParams as ConstraintLayout.LayoutParams
+                                params.topMargin = (32 * resources.displayMetrics.density).toInt()
+                                params.topToBottom = binding.cardView2.id
+                                binding.imageView9.layoutParams = params
+                            }
 
                             // 리뷰 관련 뷰 visibility 설정
                             textView7.visibility = if (isHospital) View.GONE else View.VISIBLE
@@ -276,65 +283,123 @@ class MapDetailFragment : Fragment(), OnMapReadyCallback {
 
             // 각 키워드에 대해 동적으로 카드 생성
             keywords.forEach { keyword ->
-                val cardView = MaterialCardView(requireContext()).apply {
+                val cardView = CardView(requireContext()).apply {
                     layoutParams = FlexboxLayout.LayoutParams(
                         ViewGroup.LayoutParams.WRAP_CONTENT,
                         ViewGroup.LayoutParams.WRAP_CONTENT
                     ).apply {
-                        val margin = resources.getDimensionPixelSize(R.dimen.spacing_8)
-                        setMargins(0, 0, margin, margin)
+                        setMargins(
+                            0,
+                            0,
+                            resources.getDimensionPixelSize(R.dimen.spacing_14),
+                            resources.getDimensionPixelSize(R.dimen.spacing_8)
+                        )
                     }
                     radius = resources.getDimension(R.dimen.radius_4)
                     cardElevation = 0f
                     setCardBackgroundColor(Color.parseColor(backgroundColor))
-                }
+                    val strokeWidth = resources.getDimensionPixelSize(R.dimen.stroke_1)
+                    setContentPadding(strokeWidth, strokeWidth, strokeWidth, strokeWidth)
 
-                val textView = TextView(requireContext()).apply {
-                    layoutParams = ViewGroup.LayoutParams(
-                        ViewGroup.LayoutParams.WRAP_CONTENT,
-                        ViewGroup.LayoutParams.WRAP_CONTENT
-                    )
-                    text = keyword
-                    setTextColor(Color.parseColor(textColor))
-                    textSize = 12f
-                    setPadding(
-                        resources.getDimensionPixelSize(R.dimen.spacing_14),
-                        resources.getDimensionPixelSize(R.dimen.spacing_3),
-                        resources.getDimensionPixelSize(R.dimen.spacing_14),
-                        resources.getDimensionPixelSize(R.dimen.spacing_3)
-                    )
-                }
+                    val innerCard = CardView(requireContext()).apply {
+                        layoutParams = ViewGroup.LayoutParams(
+                            ViewGroup.LayoutParams.WRAP_CONTENT,
+                            ViewGroup.LayoutParams.WRAP_CONTENT
+                        )
+                        setCardBackgroundColor(Color.parseColor(backgroundColor))
+                        radius = resources.getDimension(R.dimen.radius_4) - strokeWidth
+                        cardElevation = 0f
 
-                cardView.addView(textView)
+                        val textView = TextView(context).apply {
+                            layoutParams = ViewGroup.MarginLayoutParams(
+                                ViewGroup.LayoutParams.WRAP_CONTENT,
+                                ViewGroup.LayoutParams.WRAP_CONTENT
+                            )
+                            text = keyword
+                            setTextColor(Color.parseColor(textColor))
+                            textSize = 14f
+                            setPadding(
+                                resources.getDimensionPixelSize(R.dimen.spacing_14),
+                                resources.getDimensionPixelSize(R.dimen.spacing_3),
+                                resources.getDimensionPixelSize(R.dimen.spacing_14),
+                                resources.getDimensionPixelSize(R.dimen.spacing_3)
+                            )
+                        }
+                        addView(textView)
+                    }
+                    addView(innerCard)
+                }
                 characteristicsContainer.addView(cardView)
             }
 
             // 정보추가하기 버튼 추가
-            val addButton = MaterialCardView(requireContext()).apply {
+            val addButton = CardView(requireContext()).apply {
                 layoutParams = FlexboxLayout.LayoutParams(
                     ViewGroup.LayoutParams.WRAP_CONTENT,
                     ViewGroup.LayoutParams.WRAP_CONTENT
                 ).apply {
-                    val margin = resources.getDimensionPixelSize(R.dimen.spacing_8)
-                    setMargins(0, 0, margin, margin)
+                    setMargins(
+                        0,
+                        0,
+                        resources.getDimensionPixelSize(R.dimen.spacing_14),
+                        resources.getDimensionPixelSize(R.dimen.spacing_8)
+                    )
                 }
                 radius = resources.getDimension(R.dimen.radius_4)
                 cardElevation = 0f
-                strokeColor = Color.parseColor(textColor)
-                strokeWidth = resources.getDimensionPixelSize(R.dimen.stroke_1)
-                setCardBackgroundColor(Color.WHITE)
+                setCardBackgroundColor(Color.parseColor(textColor))
+                val strokeWidth = resources.getDimensionPixelSize(R.dimen.stroke_1)
+                setContentPadding(strokeWidth, strokeWidth, strokeWidth, strokeWidth)
+
+                val innerCard = CardView(requireContext()).apply {
+                    layoutParams = ViewGroup.LayoutParams(
+                        ViewGroup.LayoutParams.WRAP_CONTENT,
+                        ViewGroup.LayoutParams.WRAP_CONTENT
+                    )
+                    setCardBackgroundColor(Color.WHITE)
+                    radius = resources.getDimension(R.dimen.radius_4) - strokeWidth
+                    cardElevation = 0f
+
+                    val textView = TextView(context).apply {
+                        layoutParams = ViewGroup.MarginLayoutParams(
+                            ViewGroup.LayoutParams.WRAP_CONTENT,
+                            ViewGroup.LayoutParams.WRAP_CONTENT
+                        )
+                        text = "+ 정보추가하기"
+                        setTextColor(Color.parseColor(textColor))
+                        textSize = 14f
+                        setPadding(
+                            resources.getDimensionPixelSize(R.dimen.spacing_14),
+                            resources.getDimensionPixelSize(R.dimen.spacing_3),
+                            resources.getDimensionPixelSize(R.dimen.spacing_14),
+                            resources.getDimensionPixelSize(R.dimen.spacing_3)
+                        )
+                    }
+                    addView(textView)
+                }
+                addView(innerCard)
 
                 setOnClickListener {
                     val placeId = arguments?.getInt("placeId") ?: return@setOnClickListener
                     val placeName = binding.placeName.text.toString()
 
-                    // MapAddKeywordFragment로 이동
-                    val fragment = MapAddKeywordFragment().apply {
-                        arguments = Bundle().apply {
-                            putInt("placeId", placeId)
-                            putString("placeName", placeName)
-                        }
+                    // 카테고리에 따른 기본 키워드 설정
+                    val defaultKeywords = when (category) {
+                        "HOSPITAL" -> listOf("고양이친화", "중성화수술", "CCTV")
+                        "HOTEL" -> listOf("고양이친화", "CCTV", "주차")
+                        "RESTAURANT", "CAFE" -> listOf("예약", "포장", "주차")
+                        else -> emptyList()
                     }
+
+                    // MapAddKeywordFragment로 이동
+                    val fragment = MapAddKeywordFragment.newInstance(
+                        placeId = placeId,
+                        placeName = placeName,
+                        defaultKeywords = defaultKeywords.toTypedArray(),
+                        category = category,
+                        currentKeywords = keywords,
+                        additionalInfo = binding.additionalInfo.text.toString()
+                    )
 
                     requireActivity().supportFragmentManager.beginTransaction()
                         .setCustomAnimations(
@@ -350,23 +415,6 @@ class MapDetailFragment : Fragment(), OnMapReadyCallback {
                 }
             }
 
-            val addButtonText = TextView(requireContext()).apply {
-                layoutParams = ViewGroup.LayoutParams(
-                    ViewGroup.LayoutParams.WRAP_CONTENT,
-                    ViewGroup.LayoutParams.WRAP_CONTENT
-                )
-                text = "+ 정보추가하기"
-                setTextColor(Color.parseColor(textColor))
-                textSize = 12f
-                setPadding(
-                    resources.getDimensionPixelSize(R.dimen.spacing_14),
-                    resources.getDimensionPixelSize(R.dimen.spacing_3),
-                    resources.getDimensionPixelSize(R.dimen.spacing_14),
-                    resources.getDimensionPixelSize(R.dimen.spacing_3)
-                )
-            }
-
-            addButton.addView(addButtonText)
             characteristicsContainer.addView(addButton)
         }
     }
@@ -653,6 +701,12 @@ class MapDetailFragment : Fragment(), OnMapReadyCallback {
                     .commit()
             }
         _binding = null
+    }
+
+    fun refreshPlaceDetails() {
+        arguments?.getInt("placeId")?.let { id ->
+            loadPlaceDetails(id)
+        }
     }
 
     companion object {
