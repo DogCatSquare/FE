@@ -1,6 +1,5 @@
 package com.example.dogcatsquare.ui.home
 
-import PostApiService
 import WeatherViewModel
 import android.content.Context
 import android.content.Intent
@@ -18,6 +17,7 @@ import androidx.fragment.app.activityViewModels
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.viewpager2.widget.ViewPager2
 import com.example.dogcatsquare.R
+import com.example.dogcatsquare.data.api.BoardApiService
 import com.example.dogcatsquare.data.api.DDayRetrofitItf
 import com.example.dogcatsquare.data.api.EventRetrofitItf
 import com.example.dogcatsquare.data.api.PlacesApiService
@@ -378,7 +378,7 @@ class HomeFragment : Fragment() {
     private fun getPopularPost(adapter: HomeHotPostRVAdapter) {
         val token = getToken()
 
-        val getPopularPostService = RetrofitObj.getRetrofit().create(PostApiService::class.java)
+        val getPopularPostService = RetrofitObj.getRetrofit().create(BoardApiService::class.java)
         getPopularPostService.getPopularPost("Bearer $token").enqueue(object : Callback<PopularPostResponse> {
             override fun onResponse(call: Call<PopularPostResponse>, response: Response<PopularPostResponse>) {
                 Log.d("PopularPost/SUCCESS", response.toString())
