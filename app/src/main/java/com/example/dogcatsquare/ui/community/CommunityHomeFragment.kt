@@ -67,9 +67,31 @@ class CommunityHomeFragment : Fragment(R.layout.fragment_community_home) {
         )
 
         val tips = listOf(
-            Tip("강아지 산책할 때 주의할 점", "내용을 입력해주세요 내용을 입력해주세요...", R.drawable.ic_sample_image),
-            Tip("강아지 간식 추천", "내용을 입력해주세요 내용을 입력해주세요...", R.drawable.ic_sample_image)
+            Tip(
+                title = "강아지 산책할 때 주의할 점",
+                content = "내용을 입력해주세요 내용을 입력해주세요...",
+                thumbnailResId = R.drawable.ic_sample_image,
+                nickname = "닉네임1",
+                time = "1시간 전",
+                likeCount = 6,
+                commentCount = 1,
+                dogBreed = "포메라니안",
+                date = "2024-01-01"
+            ),
+            Tip(
+                title = "강아지 간식 추천",
+                content = "내용을 입력해주세요 내용을 입력해주세요...",
+                thumbnailResId = R.drawable.ic_sample_image,
+                nickname = "닉네임2",
+                time = "2시간 전",
+                likeCount = 8,
+                commentCount = 3,
+                dogBreed = "말티즈",
+                date = "2024-01-02"
+            )
         )
+
+
 
         val localPosts = listOf(
             LocalPost(
@@ -121,17 +143,18 @@ class CommunityHomeFragment : Fragment(R.layout.fragment_community_home) {
             board = board,
             username = username,
             dogbreed = dogbreed,
-            title = title,
-            content = content,
-            videoUrl = videoUrl,
-            thumbnailUrl = thumbnailUrl,
-            profileImageUrl = profileImageUrl,
+            title = title ?: "",
+            content = content ?: "",
+            videoUrl = videoUrl ?: "",
+            thumbnailUrl = thumbnailUrl ?: "",
+            profileImageUrl = profileImageUrl ?: "",
             images = images,
             likeCount = likeCount,
             commentCount = commentCount,
-            createdAt = createdAt
+            createdAt = createdAt ?: ""
         )
     }
+
 
     private fun setupPopularPostsRecyclerView(popularPosts: List<Post>) {
         postAdapter = PostAdapter(popularPosts)
@@ -142,15 +165,27 @@ class CommunityHomeFragment : Fragment(R.layout.fragment_community_home) {
     }
 
     private fun setupTipsRecyclerView(tips: List<Tip>) {
-        tipsAdapter = TipsAdapter(tips, isCompactView = true) { selectedTip ->
-            Toast.makeText(requireContext(), "${selectedTip.title} 클릭됨", Toast.LENGTH_SHORT).show()
+        tipsAdapter = TipsAdapter(tips, isCompactView = true, isExpanded = false) { selectedTip ->
+            // 토스트 대신 상세 화면으로 이동하는 코드
+            val intent = Intent(requireContext(), TipDetailActivity::class.java).apply {
+                putExtra("title", selectedTip.title)
+                putExtra("content", selectedTip.content)
+                putExtra("thumbnailResId", selectedTip.thumbnailResId)
+                putExtra("dogBreed", selectedTip.dogBreed)
+                putExtra("date", selectedTip.date)
+                putExtra("nickname", selectedTip.nickname)
+                putExtra("time", selectedTip.time)
+                putExtra("likeCount", selectedTip.likeCount)
+                putExtra("commentCount", selectedTip.commentCount)
+            }
+            startActivity(intent)
         }
         binding.rvTips.apply {
-            layoutManager =
-                LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false)
+            layoutManager = LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false)
             adapter = tipsAdapter
         }
     }
+
 
     private fun setupLocalPostsRecyclerView(localPosts: List<LocalPost>) {
         localPostAdapter = LocalPostAdapter(

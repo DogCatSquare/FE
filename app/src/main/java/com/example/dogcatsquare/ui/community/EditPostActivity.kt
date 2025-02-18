@@ -10,14 +10,17 @@ import android.text.Editable
 import android.text.TextWatcher
 import android.util.Log
 import android.view.View
-import android.widget.*
+import android.widget.EditText
+import android.widget.ImageView
+import android.widget.RelativeLayout
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.bumptech.glide.Glide
 import com.example.dogcatsquare.R
+import com.example.dogcatsquare.data.community.ApiResponse
+import com.example.dogcatsquare.data.community.PostRequest
 import com.example.dogcatsquare.data.network.RetrofitObj
 import com.example.dogcatsquare.data.api.BoardApiService
-import com.example.dogcatsquare.data.community.PostRequest
-import com.example.dogcatsquare.data.community.ApiResponse
 import com.google.gson.Gson
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody
@@ -43,9 +46,12 @@ class EditPostActivity : AppCompatActivity() {
     private var postId: Long = -1L
     private var originalImageUrl: String? = null
 
+    // 게시글 종류 ("post" 또는 "tip") – UI 구분용으로만 사용할 수 있음.
+    private var postType: String = "post"
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_edit_post)
+        setContentView(R.layout.activity_edit_post) // activity_edit_post.xml 레이아웃 사용
 
         btnComplete = findViewById(R.id.btnComplete)
         etTitle = findViewById(R.id.etTitle)
@@ -58,15 +64,17 @@ class EditPostActivity : AppCompatActivity() {
         ivBack.setOnClickListener { finish() }
 
         btnComplete.setOnClickListener {
-            Log.d("EditPostActivity", "게시글 수정 버튼 클릭됨!")
-            updatePost()
+            Log.d("EditPostActivity", "수정 버튼 클릭됨!")
+            updatePost() // postType에 관계없이 updatePost API 호출
         }
 
         // Intent에서 데이터 가져오기
         postId = intent.getLongExtra("postId", -1L)
+        postType = intent.getStringExtra("postType") ?: "post" // "tip"일 수도 있으나, API는 동일함.
+
         etTitle.setText(intent.getStringExtra("title"))
         etContent.setText(intent.getStringExtra("content"))
-        etLink.setText(intent.getStringExtra("videoUrl"))
+        etLink.setText(intent.getStringExtra("videoUrl")) // 꿀팁인 경우 빈 문자열을 보낼 수 있음
 
         originalImageUrl = intent.getStringExtra("imageUrl")
         if (!originalImageUrl.isNullOrEmpty()) {
@@ -78,31 +86,22 @@ class EditPostActivity : AppCompatActivity() {
 
         addPhoto.setOnClickListener { openGallery() }
 
-        // 🛠 TextWatcher 추가 - EditText 값 변경 감지
         val textWatcher = object : TextWatcher {
-            override fun afterTextChanged(s: Editable?) {
-                updateButtonState()
-            }
+            override fun afterTextChanged(s: Editable?) { updateButtonState() }
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
         }
-
         etTitle.addTextChangedListener(textWatcher)
         etContent.addTextChangedListener(textWatcher)
-
-        // 초기 상태 체크
         updateButtonState()
     }
 
     private fun updateButtonState() {
         val title = etTitle.text.toString().trim()
         val content = etContent.text.toString().trim()
-
-        val isButtonEnabled = title.isNotEmpty() && content.isNotEmpty()
-        btnComplete.isEnabled = isButtonEnabled
-
-        // 활성화 상태에 따라 버튼 이미지 변경
-        if (isButtonEnabled) {
+        val isEnabled = title.isNotEmpty() && content.isNotEmpty()
+        btnComplete.isEnabled = isEnabled
+        if (isEnabled) {
             btnComplete.setImageResource(R.drawable.bt_activated_complete)
         } else {
             btnComplete.setImageResource(R.drawable.bt_deactivated_complete)
@@ -117,20 +116,16 @@ class EditPostActivity : AppCompatActivity() {
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
-
         if (requestCode == PICK_IMAGE_REQUEST && resultCode == Activity.RESULT_OK && data?.data != null) {
             val imageUri: Uri = data.data!!
             selectedImageFile = getCompressedImageFile(imageUri)
-
             imagePreview.visibility = View.VISIBLE
-            Glide.with(this)
-                .load(selectedImageFile)
-                .into(imagePreview)
+            Glide.with(this).load(selectedImageFile).into(imagePreview)
         }
     }
 
     private fun getCompressedImageFile(uri: Uri): File {
-        val bitmap = MediaStore.Images.Media.getBitmap(this.contentResolver, uri)
+        val bitmap: Bitmap = MediaStore.Images.Media.getBitmap(this.contentResolver, uri)
         val compressedFile = File(this.cacheDir, "compressed_image.jpg")
         FileOutputStream(compressedFile).use { outputStream ->
             bitmap.compress(Bitmap.CompressFormat.JPEG, 85, outputStream)
@@ -140,18 +135,17 @@ class EditPostActivity : AppCompatActivity() {
     }
 
     private fun updatePost() {
-        Log.d("EditPostActivity", "updatePost() 실행됨")
-
         val title = etTitle.text.toString().trim()
         val content = etContent.text.toString().trim()
         val videoUrl = etLink.text.toString().trim()
 
         if (title.isEmpty() || content.isEmpty()) {
-            Log.e("EditPostActivity", "제목 또는 내용이 비어있음")
             Toast.makeText(this, "제목과 내용을 모두 입력해주세요.", Toast.LENGTH_SHORT).show()
             return
         }
 
+        // PostRequest 객체를 생성합니다.
+        // 꿀팁일 경우 videoUrl 등 필요하지 않은 필드는 빈 문자열로 보낼 수 있습니다.
         val postRequest = PostRequest(
             boardId = 1,
             title = title,
@@ -174,22 +168,23 @@ class EditPostActivity : AppCompatActivity() {
         call.enqueue(object : Callback<ApiResponse> {
             override fun onResponse(call: Call<ApiResponse>, response: Response<ApiResponse>) {
                 if (response.isSuccessful) {
-                    val intent = Intent().apply {
+                    val resultIntent = Intent().apply {
                         putExtra("UPDATED_POST_ID", postId)
                         putExtra("UPDATED_TITLE", title)
                         putExtra("UPDATED_CONTENT", content)
                         putExtra("UPDATED_VIDEO_URL", videoUrl)
                         putExtra("UPDATED_IMAGE_URL", selectedImageFile?.absolutePath ?: originalImageUrl)
                     }
-                    setResult(Activity.RESULT_OK, intent)
+                    setResult(Activity.RESULT_OK, resultIntent)
                     finish()
                 } else {
-                    Log.e("EditPostActivity", "게시글 수정 실패: ${response.code()} - ${response.errorBody()?.string()}")
+                    Log.e("EditPostActivity", "수정 실패: ${response.code()} - ${response.errorBody()?.string()}")
+                    Toast.makeText(this@EditPostActivity, "수정 실패", Toast.LENGTH_SHORT).show()
                 }
             }
-
             override fun onFailure(call: Call<ApiResponse>, t: Throwable) {
                 Log.e("EditPostActivity", "네트워크 오류: ${t.message}")
+                Toast.makeText(this@EditPostActivity, "네트워크 오류", Toast.LENGTH_SHORT).show()
             }
         })
     }

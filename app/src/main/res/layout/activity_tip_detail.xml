@@ -1,0 +1,214 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@color/white">
+
+    <!-- 기존 상세보기 툴바 유지 -->
+    <RelativeLayout
+        android:id="@+id/toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="56dp"
+        android:background="@color/white"
+        android:elevation="4dp">
+
+        <ImageView
+            android:id="@+id/ivBack"
+            android:layout_width="12dp"
+            android:layout_height="12dp"
+            android:layout_centerVertical="true"
+            android:layout_marginStart="10dp"
+            android:src="@drawable/ic_back"
+            android:contentDescription="뒤로가기 버튼" />
+
+        <TextView
+            android:id="@+id/title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true"
+            android:text="상세보기"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:textColor="@color/black" />
+    </RelativeLayout>
+
+    <!-- ✅ 기존의 ScrollView 유지하면서 item_tips.xml 레이아웃 적용 -->
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="12dp"
+            android:background="@drawable/bg_post_border">
+
+            <!-- ✅ item_tips.xml의 주요 요소 추가 (UI 스타일 유지) -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical">
+
+                <!-- 프로필 이미지 -->
+                <ImageView
+                    android:id="@+id/ivUserProfile"
+                    android:layout_width="36dp"
+                    android:layout_height="36dp"
+                    android:src="@drawable/ic_sample_profile"
+                    android:scaleType="centerCrop"
+                    android:layout_marginEnd="8dp"
+                    android:background="@drawable/bg_rounded_profile"
+                    android:clipToOutline="true" />
+
+                <!-- 닉네임 + 견종 -->
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:id="@+id/tvUserNickname"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="닉네임"
+                        android:textSize="14sp"
+                        android:textStyle="bold"
+                        android:textColor="#000000" />
+
+                    <TextView
+                        android:id="@+id/tvDogBreed"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="포메라니안"
+                        android:textSize="13sp"
+                        android:textColor="#666666"
+                        android:layout_marginStart="6dp" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <!-- 제목 + 좋아요 + 메뉴 버튼 -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_marginTop="12dp">
+
+                <!-- 제목 -->
+                <TextView
+                    android:id="@+id/tvTipTitle"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="강아지 산책할 때 주의할 점"
+                    android:textSize="16sp"
+                    android:textStyle="bold"
+                    android:textColor="#000000"
+                    android:maxLines="2"
+                    android:ellipsize="end" />
+
+                <!-- 좋아요 아이콘 -->
+                <ImageView
+                    android:id="@+id/ivLikeButton"
+                    android:layout_width="20dp"
+                    android:layout_height="20dp"
+                    android:src="@drawable/ic_like"
+                    android:layout_marginStart="8dp"
+                    android:layout_marginEnd="8dp"
+                    android:contentDescription="좋아요" />
+
+                <!-- 메뉴 아이콘 -->
+                <ImageView
+                    android:id="@+id/ivPostMenu"
+                    android:layout_width="20dp"
+                    android:layout_height="20dp"
+                    android:src="@drawable/ic_post_menu"
+                    android:contentDescription="게시글 메뉴" />
+            </LinearLayout>
+
+            <!-- 썸네일 이미지 -->
+            <ImageView
+                android:id="@+id/ivTipThumbnail"
+                android:layout_width="match_parent"
+                android:layout_height="180dp"
+                android:layout_marginTop="8dp"
+                android:scaleType="centerCrop"
+                android:background="@drawable/rounded_thumbnail"
+                android:clipToOutline="true"
+                android:src="@drawable/ic_sample_image" />
+
+            <!-- 게시글 내용 -->
+            <TextView
+                android:id="@+id/tvTipContent"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:text="강아지 산책할 때 주의해야 할 점들이 잘 나와있어요 초보 견주님들은 보시고 안전한 산책하세요!"
+                android:textSize="14sp"
+                android:textColor="#808080"
+                android:maxLines="6"
+                android:ellipsize="end" />
+
+            <!-- 날짜 + 좋아요 & 댓글 정보 -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginTop="12dp">
+
+                <!-- 날짜 (왼쪽 정렬) -->
+                <TextView
+                    android:id="@+id/tvPostDate"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="2024.01.01"
+                    android:textSize="12sp"
+                    android:textColor="#808080" />
+
+                <!-- 좋아요 & 댓글 정보 (오른쪽 정렬) -->
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="end">
+
+                    <!-- 좋아요 아이콘 및 개수 -->
+                    <ImageView
+                        android:id="@+id/ivLike"
+                        android:layout_width="20dp"
+                        android:layout_height="20dp"
+                        android:src="@drawable/ic_like"
+                        android:layout_marginEnd="4dp" />
+
+                    <TextView
+                        android:id="@+id/tvLikeCount"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="0"
+                        android:textSize="14sp"
+                        android:textColor="#808080"
+                        android:layout_marginEnd="12dp" />
+
+                    <!-- 댓글 아이콘 및 개수 -->
+                    <ImageView
+                        android:id="@+id/ivComment"
+                        android:layout_width="20dp"
+                        android:layout_height="20dp"
+                        android:src="@drawable/ic_comment"
+                        android:layout_marginEnd="4dp" />
+
+                    <TextView
+                        android:id="@+id/tvCommentCount"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="0"
+                        android:textSize="14sp"
+                        android:textColor="#808080" />
+                </LinearLayout>
+            </LinearLayout>
+        </LinearLayout>
+    </ScrollView>
+</LinearLayout>

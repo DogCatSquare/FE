@@ -35,7 +35,7 @@ class CommunityFragment : Fragment(R.layout.fragment_community) {
         TabLayoutMediator(binding.tabLayout, binding.viewPager) { tab, position ->
             tab.text = when (position) {
                 0 -> "홈"
-                1 -> "동네 이야기"
+                1 -> "댕냥 라운지"
                 2 -> "꿀팁"
                 else -> "탭 $position"
             }

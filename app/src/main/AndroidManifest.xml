@@ -41,6 +41,8 @@
         <activity android:name=".ui.community.BoardCreateActivity" />
         <activity android:name=".ui.community.PostDetailActivity" />
         <activity android:name=".ui.community.EditPostActivity" />
+        <activity android:name=".ui.community.TipDetailActivity" />
+
 
 
         <meta-data
