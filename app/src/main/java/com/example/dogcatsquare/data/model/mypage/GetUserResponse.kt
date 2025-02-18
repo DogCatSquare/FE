@@ -1,7 +1,5 @@
 package com.example.dogcatsquare.data.model.mypage
 
-import android.text.Editable
-
 data class GetUserResponse(
     var isSuccess: Boolean,
     var code: String,

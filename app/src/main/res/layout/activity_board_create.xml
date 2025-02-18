@@ -1,7 +1,8 @@
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     xmlns:tools="http://schemas.android.com/tools"
+    android:orientation="vertical"
     android:background="#FFFFFF">
 
     <!-- Toolbar -->
@@ -31,6 +32,10 @@
     </RelativeLayout>
 
     <!-- 게시판 이름 입력 -->
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
     <RelativeLayout
         android:id="@+id/board_name_input"
         android:layout_width="match_parent"
@@ -47,6 +52,7 @@
             android:maxLength="8"
             android:gravity="top|start"
             android:hint="게시판 이름"
+            android:inputType="text"
             android:padding="16dp"
             android:textSize="14sp" />
 
@@ -79,6 +85,7 @@
             android:background="@android:color/transparent"
             android:gravity="top|start"
             android:hint="게시판 설명"
+            android:inputType="text"
             android:maxLength="20"
             android:padding="16dp"
             android:textSize="14sp" />
@@ -126,6 +133,7 @@
             android:layout_height="match_parent"
             android:background="@android:color/transparent"
             android:hint="게시판 키워드"
+            android:inputType="text"
             android:padding="16dp"
             android:textSize="14sp" />
 
@@ -147,10 +155,11 @@
         android:layout_height="50dp"
         android:insetTop="0dp"
         android:insetBottom="0dp"
-        android:layout_alignParentBottom="true"
+        android:layout_marginTop="50dp"
         android:layout_marginStart="16dp"
         android:layout_marginEnd="16dp"
         android:layout_marginBottom="40dp"
         android:text="완료" />
+</LinearLayout>
 
-</RelativeLayout>
+</LinearLayout>

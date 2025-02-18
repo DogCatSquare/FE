@@ -141,10 +141,6 @@ class LoginDetailActivity: AppCompatActivity() {
                             Log.e("Login/FAILURE", "응답 코드: ${resp?.code}, 응답 메시지: ${resp?.message}")
                         }
                     }
-                    401 -> {
-                        Log.d("Login/FAILURE", "토큰 만료 - 로그인 필요")
-                        refreshAccessToken()
-                    }
                     500 -> {
                         binding.errorTv.visibility = View.VISIBLE
                         binding.errorTv.text = "로그인 정보가 일치하지 않습니다"
@@ -156,37 +152,6 @@ class LoginDetailActivity: AppCompatActivity() {
                 Log.e("Login/FAILURE", "서버 오류: ${t.message}")
             }
         })
-    }
-
-    private fun refreshAccessToken() {
-        val refreshToken = pref.getString("refreshToken", null) ?: return logout()
-
-        val refreshService = RetrofitObj.getRetrofit().create(UserRetrofitItf::class.java)
-        refreshService.refreshToken(refreshToken).enqueue(object : Callback<RefreshTokenResponse> {
-            override fun onResponse(call: Call<RefreshTokenResponse>, response: Response<RefreshTokenResponse>) {
-                if (response.isSuccessful && response.body()?.isSuccess == true) {
-                    val newToken = response.body()?.result?.refreshToken ?: return logout()
-                    editor.putString("token", newToken)
-                    editor.commit()
-                    Log.d("TOKEN", "새로운 토큰 저장 완료")
-                } else {
-                    logout()
-                }
-            }
-
-            override fun onFailure(call: Call<RefreshTokenResponse>, t: Throwable) {
-                Log.e("TOKEN/FAILURE", "토큰 갱신 실패: ${t.message}")
-                logout()
-            }
-        })
-    }
-
-    private fun logout() {
-        editor.clear()
-        editor.commit()
-        val intent = Intent(this, LoginDetailActivity::class.java)
-        startActivity(intent)
-        finish()
     }
 
     private fun saveUserInfo(token: String, refreshToken: String, id: Int, email: String, pw: String, cityId: Long) {

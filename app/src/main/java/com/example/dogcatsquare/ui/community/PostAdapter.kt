@@ -11,9 +11,20 @@ import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.example.dogcatsquare.R
 import com.example.dogcatsquare.data.community.Post
+import com.example.dogcatsquare.ui.home.HomeHotPostRVAdapter.OnItemClickListener
 
-class PostAdapter(private val postList: List<Post>) :
+class PostAdapter(private val hotPostList: ArrayList<com.example.dogcatsquare.data.model.post.Post>) :
     RecyclerView.Adapter<PostAdapter.PostViewHolder>() {
+
+    interface OnItemClickListener {
+        fun onItemClick(post: com.example.dogcatsquare.data.model.post.Post)
+    }
+
+    private lateinit var mItemClickListener: OnItemClickListener
+
+    fun setMyItemClickListener(itemClickListener: OnItemClickListener) {
+        mItemClickListener = itemClickListener
+    }
 
     inner class PostViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         private val titleText: TextView = itemView.findViewById(R.id.tvTitle)
@@ -22,35 +33,19 @@ class PostAdapter(private val postList: List<Post>) :
         private val likeCountText: TextView = itemView.findViewById(R.id.tvLikeCount)
         private val commentCountText: TextView = itemView.findViewById(R.id.tvCommentCount)
 
-        fun bind(post: Post) {
+        fun bind(post: com.example.dogcatsquare.data.model.post.Post) {
             titleText.text = post.title ?: "제목 없음"
             contentPreview.text = post.content ?: "내용 없음"
-            likeCountText.text = post.likeCount.toString()
-            commentCountText.text = post.commentCount.toString()
+            likeCountText.text = post.like_count.toString()
+            commentCountText.text = post.comment_count.toString()
 
-            if (!post.thumbnailUrl.isNullOrEmpty()) {
+            if (!post.thumbnail_URL.isNullOrEmpty()) {
                 Glide.with(itemView.context)
-                    .load(post.thumbnailUrl)
+                    .load(post.thumbnail_URL)
                     .placeholder(R.drawable.ic_sample_thumbnail)
                     .into(thumbnail)
             } else {
                 thumbnail.setImageResource(R.drawable.ic_sample_thumbnail)
-            }
-
-            itemView.setOnClickListener {
-                Log.d("PostAdapter", "Clicked post: id=${post.id}, title=${post.title}")
-                val context = itemView.context
-                val intent = Intent(context, PostDetailActivity::class.java).apply {
-                    putExtra("postId", post.id)
-                    putExtra("board", post.board)
-                    putExtra("username", post.username)
-                    putExtra("title", post.title ?: "제목 없음")
-                    putExtra("content", post.content ?: "내용 없음")
-                    putExtra("videoUrl", post.videoUrl)
-                    putExtra("thumbnailUrl", post.thumbnailUrl)
-                    putExtra("profileImageUrl", post.profileImageUrl)
-                }
-                context.startActivity(intent)
             }
         }
     }
@@ -61,8 +56,8 @@ class PostAdapter(private val postList: List<Post>) :
     }
 
     override fun onBindViewHolder(holder: PostViewHolder, position: Int) {
-        holder.bind(postList[position])
+        holder.bind(hotPostList[position])
     }
 
-    override fun getItemCount(): Int = postList.size
+    override fun getItemCount(): Int = hotPostList.size
 }

@@ -129,7 +129,7 @@ class BoardCreateActivity : AppCompatActivity() {
 
         val token = getToken()
         val createBoardService = RetrofitObj.getRetrofit().create(BoardApiService::class.java)
-        createBoardService.createBoard("Bearer $token", boardName, content, keywordList).enqueue(object :
+        createBoardService.createBoard("Bearer $token", BoardRequestDto(boardName, content, keywordList)).enqueue(object :
             Callback<BoardResponseDto> {
             override fun onResponse(call: Call<BoardResponseDto>, response: Response<BoardResponseDto>) {
                 Log.d("CreateBoard/SUCCESS", response.toString())

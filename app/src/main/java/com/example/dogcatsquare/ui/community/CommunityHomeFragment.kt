@@ -1,7 +1,10 @@
 package com.example.dogcatsquare.ui.community
 
+import PostApiService
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -12,7 +15,13 @@ import com.example.dogcatsquare.R
 import com.example.dogcatsquare.data.community.LocalPost
 import com.example.dogcatsquare.data.community.Post
 import com.example.dogcatsquare.data.community.Tip
+import com.example.dogcatsquare.data.model.post.PopularPostResponse
+import com.example.dogcatsquare.data.network.RetrofitObj
 import com.example.dogcatsquare.databinding.FragmentCommunityHomeBinding
+import com.example.dogcatsquare.ui.home.HomeHotPostRVAdapter
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
 
 class CommunityHomeFragment : Fragment(R.layout.fragment_community_home) {
 
@@ -21,150 +30,121 @@ class CommunityHomeFragment : Fragment(R.layout.fragment_community_home) {
     private lateinit var tipsAdapter: TipsAdapter
     private lateinit var localPostAdapter: LocalPostAdapter
 
+    private var hotPostDatas = ArrayList<com.example.dogcatsquare.data.model.post.Post>()
+    private var tipPostDatas = ArrayList<com.example.dogcatsquare.data.model.post.Post>()
+
+    private fun getToken(): String? {
+        val sharedPref = activity?.getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
+        return sharedPref?.getString("token", null)
+    }
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
         binding = FragmentCommunityHomeBinding.inflate(inflater, container, false)
+
+        setupHotPostRecyclerView()
+//        setupTipPostRecyclerView()
+
         return binding.root
     }
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
+    // hot post rv
+    private fun setupHotPostRecyclerView() {
+        hotPostDatas.clear()
 
-        // 더미 데이터 생성 (Post 데이터 클래스에 맞게 모든 필드 지정)
-        val popularPosts = listOf(
-            createPost(
-                id = 1L,
-                board = "자유게시판",
-                username = "닉네임",
-                dogbreed = "포메라니안",
-                title = "제목을 입력해주세요",
-                content = "내용을 입력해주세요 내용을 입력해주세요...",
-                videoUrl = null,
-                thumbnailUrl = null,
-                profileImageUrl = null,
-                images = null,
-                likeCount = 6,
-                commentCount = 1,
-                createdAt = "1시간 전"
-            ),
-            createPost(
-                id = 2L,
-                board = "자유게시판",
-                username = "닉네임",
-                dogbreed = "포메라니안",
-                title = "제목을 입력해주세요",
-                content = "내용을 입력해주세요 내용을 입력해주세요...",
-                videoUrl = null,
-                thumbnailUrl = null,
-                profileImageUrl = null,
-                images = null,
-                likeCount = 6,
-                commentCount = 1,
-                createdAt = "1시간 전"
-            )
-        )
+        // 인기 게시물 recycler view
+        val hotPostRVAdapter = PostAdapter(hotPostDatas)
+        binding.rvPopularPosts.adapter = hotPostRVAdapter
+        binding.rvPopularPosts.layoutManager = LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false)
 
-        val tips = listOf(
-            Tip("강아지 산책할 때 주의할 점", "내용을 입력해주세요 내용을 입력해주세요...", R.drawable.ic_sample_image),
-            Tip("강아지 간식 추천", "내용을 입력해주세요 내용을 입력해주세요...", R.drawable.ic_sample_image)
-        )
+        // 클릭 인터페이스
+        hotPostRVAdapter.setMyItemClickListener(object : PostAdapter.OnItemClickListener {
+            override fun onItemClick(post: com.example.dogcatsquare.data.model.post.Post) {
+                val intent = Intent(requireContext(), PostDetailActivity::class.java).apply {
+                    putExtra("postId", post.id)
+                }
+                startActivity(intent)
+            }
+        })
 
-        val localPosts = listOf(
-            LocalPost(
-                id = 1L,  // Long 타입 id
-                username = "닉네임1",
-                dogbreed = "포메라니안",
-                title = "강아지와 놀기",
-                content = "새로 사준 장난감으로 놀아줬더니 기절한 듯이 잠들었어요ㅎ\n이제 5개월인데 미친 듯이 놀아서 너무 귀엽네요 새벽에...",
-                video_URL = null,
-                thumbnail_URL = null,
-                images = listOf(R.drawable.sample_image1, R.drawable.sample_image2)
-            ),
-            LocalPost(
-                id = 2L,
-                username = "닉네임2",
-                dogbreed = "말티즈",
-                title = "새로운 애완동물 용품 추천",
-                content = "새로 사준 장난감으로 놀아줬더니 기절한 듯이 잠들었어요ㅎ\n이제 5개월인데 미친 듯이 놀아서 너무 귀엽네요 새벽에...",
-                video_URL = null,
-                thumbnail_URL = null,
-                images = emptyList()
-            )
-        )
-
-        // RecyclerView 설정
-        setupPopularPostsRecyclerView(popularPosts)
-        setupTipsRecyclerView(tips)
-        setupLocalPostsRecyclerView(localPosts)
+        getPopularPost(hotPostRVAdapter)
     }
 
-    // Post 객체 생성용 팩토리 함수 (Post 데이터 클래스에 맞게 수정)
-    private fun createPost(
-        id: Long,
-        board: String,
-        username: String,
-        dogbreed: String,
-        title: String?,
-        content: String?,
-        videoUrl: String? = null,
-        thumbnailUrl: String? = null,
-        profileImageUrl: String? = null,
-        images: List<String>? = null,
-        likeCount: Int,
-        commentCount: Int,
-        createdAt: String?
-    ): Post {
-        return Post(
-            id = id,
-            board = board,
-            username = username,
-            dogbreed = dogbreed,
-            title = title,
-            content = content,
-            videoUrl = videoUrl,
-            thumbnailUrl = thumbnailUrl,
-            profileImageUrl = profileImageUrl,
-            images = images,
-            likeCount = likeCount,
-            commentCount = commentCount,
-            createdAt = createdAt
-        )
+    private fun getPopularPost(adapter: PostAdapter) {
+        val token = getToken()
+
+        val getPopularPostService = RetrofitObj.getRetrofit().create(PostApiService::class.java)
+        getPopularPostService.getPopularPost("Bearer $token").enqueue(object :
+            Callback<PopularPostResponse> {
+            override fun onResponse(call: Call<PopularPostResponse>, response: Response<PopularPostResponse>) {
+                Log.d("PopularPost/SUCCESS", response.toString())
+                val resp: PopularPostResponse = response.body()!!
+
+                if (resp != null) {
+                    if (resp.isSuccess) {
+                        Log.d("PopularPost", "인기게시물 전체 조회 성공")
+
+                        val posts = resp.result.map { post ->
+                            com.example.dogcatsquare.data.model.post.Post(
+                                id = post.id,
+                                board = post.board,
+                                title = post.title,
+                                username = post.username,
+                                content = post.content,
+                                like_count = post.like_count,
+                                comment_count = post.comment_count,
+                                video_URL = post.video_URL,
+                                thumbnail_URL = post.thumbnail_URL,
+                                images = post.images,
+                                createdAt = post.createdAt,
+                                profileImage_URL = post.profileImage_URL
+                            )
+                        }.take(2)
+
+                        hotPostDatas.addAll(posts)
+                        Log.d("HotPostList", hotPostDatas.toString())
+                        adapter.notifyDataSetChanged()
+                    }
+
+                } else {
+                    Log.e("GetEvent/ERROR", "응답 코드: ${response.code()}")
+                }
+            }
+
+            override fun onFailure(call: Call<PopularPostResponse>, t: Throwable) {
+                Log.d("RETROFIT/FAILURE", t.message.toString())
+            }
+
+        })
     }
 
-    private fun setupPopularPostsRecyclerView(popularPosts: List<Post>) {
-        postAdapter = PostAdapter(popularPosts)
-        binding.rvPopularPosts.apply {
-            layoutManager = LinearLayoutManager(requireContext())
-            adapter = postAdapter
-        }
-    }
+    // hot post rv
+//    private fun setupTipPostRecyclerView() {
+//        tipPostDatas.clear()
+//
+//        // 꿀팁 게시물 recycler view
+//        val tipPostRVAdapter = TipsAdapter(tipPostDatas)
+//        binding.rvTips.adapter = tipPostRVAdapter
+//        binding.rvTips.layoutManager = LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false)
+//
+//        // 클릭 인터페이스
+//        tipPostRVAdapter.setMyItemClickListener(object : tipPostRVAdapter.OnItemClickListener {
+//            override fun onItemClick(post: com.example.dogcatsquare.data.model.post.Post) {
+//                val intent = Intent(requireContext(), PostDetailActivity::class.java).apply {
+//                    putExtra("postId", post.id)
+//                }
+//                startActivity(intent)
+//            }
+//        })
+//
+//        getTipPost(tipPostRVAdapter)
+//    }
 
-    private fun setupTipsRecyclerView(tips: List<Tip>) {
-        tipsAdapter = TipsAdapter(tips, isCompactView = true) { selectedTip ->
-            Toast.makeText(requireContext(), "${selectedTip.title} 클릭됨", Toast.LENGTH_SHORT).show()
-        }
-        binding.rvTips.apply {
-            layoutManager =
-                LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false)
-            adapter = tipsAdapter
-        }
-    }
-
-    private fun setupLocalPostsRecyclerView(localPosts: List<LocalPost>) {
-        localPostAdapter = LocalPostAdapter(
-            requireContext(),
-            localPosts.toMutableList(),
-            onEditPost = { post -> editPost(post) },
-            onDeletePost = { position -> deletePost(position) },
-            isCompactView = true
-        )
-        binding.rvLocalPosts.apply {
-            layoutManager = LinearLayoutManager(requireContext())
-            adapter = localPostAdapter
-        }
-    }
+//    private fun getTipPost(adapter: TipsAdapter) {
+//        val token = getToken()
+//    }
 
     private fun editPost(post: LocalPost) {
         val intent = Intent(requireContext(), EditPostActivity::class.java)

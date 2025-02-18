@@ -37,10 +37,10 @@
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/addMyBoardRecyclerView"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        tools:itemCount="5"
+        android:layout_height="150dp"
         android:layout_marginTop="16dp"
-        android:scrollbars="vertical" />
+        android:scrollbars="vertical"
+        tools:itemCount="5" />
 
     <!-- 게시판 만들기 버튼 -->
     <ImageButton
@@ -93,6 +93,7 @@
         android:id="@+id/recyclerView"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        tools:itemCount="8"
         android:layout_marginTop="16dp"
         android:scrollbars="vertical"/>
 </LinearLayout>

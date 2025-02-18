@@ -1,3 +1,4 @@
+import com.example.dogcatsquare.data.community.BoardPost
 import com.example.dogcatsquare.data.community.PostDetail
 import com.example.dogcatsquare.data.community.PostResponse
 import com.example.dogcatsquare.data.model.post.PopularPostResponse
@@ -24,4 +25,7 @@ interface PostApiService {
 
     @GET("api/board/posts/popular")
     fun getPopularPost(@Header("Authorization") token: String): Call<PopularPostResponse>
+
+    @GET("api/board/{boardId}/posts")
+    fun getBoardPost(@Header("Authorization") token: String, @Path("boardId") boardId: Int): Call<BoardPost>
 }

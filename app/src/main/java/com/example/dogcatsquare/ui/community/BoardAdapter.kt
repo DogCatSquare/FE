@@ -1,33 +1,62 @@
 package com.example.dogcatsquare.ui.community
 
+import android.content.Context
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Button
+import android.widget.ImageView
 import android.widget.TextView
+import android.widget.Toast
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.example.dogcatsquare.R
+import com.example.dogcatsquare.data.api.BoardApiService
 import com.example.dogcatsquare.data.community.BoardData
+import com.example.dogcatsquare.data.community.MyBoardResponse
+import com.example.dogcatsquare.data.community.MyBoardResult
+import com.example.dogcatsquare.data.model.home.DDay
+import com.example.dogcatsquare.data.model.home.GetAllDDayResponse
+import com.example.dogcatsquare.data.network.RetrofitObj
+import com.example.dogcatsquare.databinding.ItemBoardBinding
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
 
-class BoardAdapter(emptyList: List<Any>) :
+class BoardAdapter(
+    private val context: Context,
+    private val onAddClick: (MyBoardResult) -> Unit // 🔹 삭제 클릭 리스너 추가
+) :
     ListAdapter<BoardData, BoardAdapter.BoardViewHolder>(BoardDiffCallback()) {
 
-    class BoardViewHolder(view: View) : RecyclerView.ViewHolder(view) {
-        val boardName: TextView = view.findViewById(R.id.tvBoardName)
-        val boardContent: TextView = view.findViewById(R.id.tvBoardDescription)
+    inner class BoardViewHolder(private val binding: ItemBoardBinding) : RecyclerView.ViewHolder(binding.root) {
+        fun bind(board: BoardData) {
+            binding.tvBoardName.text = board.boardName
+            binding.tvBoardDescription.text = board.content
+            binding.tvBoardHashtags.text = board.keywords?.joinToString(" ") { "#$it" } ?: ""
+
+            // 🔹 추가 버튼 클릭 이벤트
+            binding.ivAddIcon.setOnClickListener {
+                val myBoard = MyBoardResult(
+                    id = board.id,
+                    boardId = board.id,
+                    username = "",  // 필요하면 추가
+                    boardName = board.boardName
+                )
+                onAddClick(myBoard)
+            }
+        }
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): BoardViewHolder {
-        val view = LayoutInflater.from(parent.context)
-            .inflate(R.layout.item_board, parent, false)
-        return BoardViewHolder(view)
+        val binding = ItemBoardBinding.inflate(LayoutInflater.from(parent.context), parent, false)
+        return BoardViewHolder(binding)
     }
 
     override fun onBindViewHolder(holder: BoardViewHolder, position: Int) {
-        val board = getItem(position)
-        holder.boardName.text = board.boardName
-        holder.boardContent.text = board.content
+        holder.bind(getItem(position))
     }
 
     class BoardDiffCallback : DiffUtil.ItemCallback<BoardData>() {
