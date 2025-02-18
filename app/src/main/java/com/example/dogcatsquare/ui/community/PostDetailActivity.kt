@@ -29,7 +29,8 @@ class PostDetailActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_post_detail)
 
-        val postId: Int = intent.getIntExtra("postId", -1)
+        // postId를 Long 타입으로 받아옴
+        val postId: Long = intent.getLongExtra("postId", -1L)
 
         // 뷰 초기화
         val ivBack = findViewById<ImageView>(R.id.ivBack)
@@ -61,9 +62,9 @@ class PostDetailActivity : AppCompatActivity() {
             }
         }
 
-        // 전달받은 postId 확인
+        // 전달받은 postId 확인 (Long 타입 비교)
         Log.d("PostDetailActivity", "Received postId: $postId")
-        if (postId != -1) {
+        if (postId != -1L) {
             loadPostDetail(postId)
         } else {
             Toast.makeText(this, "게시글 ID가 전달되지 않았습니다.", Toast.LENGTH_SHORT).show()
@@ -71,11 +72,11 @@ class PostDetailActivity : AppCompatActivity() {
         }
     }
 
-    private fun loadPostDetail(postId: Int) {
+    private fun loadPostDetail(postId: Long) {
         val boardApiService = RetrofitObj.getRetrofit().create(
             com.example.dogcatsquare.data.api.BoardApiService::class.java
         )
-        boardApiService.getPost(postId).enqueue(object : Callback<PostDetailResponse> {
+        boardApiService.getPost("community", postId).enqueue(object : Callback<PostDetailResponse> {
             override fun onResponse(
                 call: Call<PostDetailResponse>,
                 response: Response<PostDetailResponse>
@@ -85,10 +86,8 @@ class PostDetailActivity : AppCompatActivity() {
                     val postDetail = response.body()?.result
                     Log.d("PostDetailActivity", "Post detail received: $postDetail")
                     if (postDetail != null) {
-                        // API로부터 받은 게시글 정보 적용
                         tvPostTitle.text = postDetail.title
                         tvPostContent.text = postDetail.content
-                        // 추가 데이터(작성자, 썸네일 등)가 필요하다면 여기에 추가 처리
                     } else {
                         Toast.makeText(
                             this@PostDetailActivity,
@@ -115,4 +114,5 @@ class PostDetailActivity : AppCompatActivity() {
             }
         })
     }
+
 }

@@ -8,7 +8,7 @@ class CommunityPagerAdapter(fragment: Fragment) : FragmentStateAdapter(fragment)
     // 각 탭에 사용할 프래그먼트 리스트
     private val fragments: List<Fragment> = listOf(
         CommunityHomeFragment(), // 홈
-        CommunityLocalFragment(), // 동네 이야기
+        CommunityLocalFragment(), // 댕냥 라운지
         CommunityTipsFragment()  // 꿀팁
     )
 

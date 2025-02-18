@@ -16,7 +16,8 @@ class LocalPostAdapter(
     private val localPosts: MutableList<LocalPost>,
     private val onEditPost: (LocalPost) -> Unit, // 수정 기능 연결
     private val onDeletePost: (Int) -> Unit,
-    private val isCompactView: Boolean
+    private val isCompactView: Boolean,
+    private val onItemClick: ((LocalPost) -> Unit)? = null  // 전체 아이템 클릭 이벤트 추가
 ) : RecyclerView.Adapter<LocalPostAdapter.ViewHolder>() {
 
     inner class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
@@ -37,12 +38,17 @@ class LocalPostAdapter(
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val post = localPosts[position]
 
+        // 전체 아이템 클릭 시 상세 화면으로 이동하는 이벤트 처리
+        holder.itemView.setOnClickListener {
+            onItemClick?.invoke(post)
+        }
+
         // 게시글 작성자, 견종, 내용을 설정
         holder.username.text = post.username
         holder.dogBreed.text = post.dogbreed
         holder.content.text = post.content
 
-        // 홈 탭에서는 2줄, 동네 이야기 탭에서는 3줄 표시
+        // 홈 탭에서는 2줄, 댕냥 라운지 탭에서는 3줄 표시
         holder.content.apply {
             maxLines = if (isCompactView) 2 else 3
             ellipsize = android.text.TextUtils.TruncateAt.END
