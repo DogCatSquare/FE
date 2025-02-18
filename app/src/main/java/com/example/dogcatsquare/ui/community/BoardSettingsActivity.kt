@@ -18,7 +18,7 @@ import com.example.dogcatsquare.data.community.MyBoardResult
 import com.example.dogcatsquare.data.network.RetrofitObj
 import com.example.dogcatsquare.databinding.ActivityBoardSettingsBinding
 import com.example.dogcatsquare.ui.community.BoardAdapter
-import com.example.dogcatsquare.ui.community.BoardCreateActivity
+//import com.example.dogcatsquare.ui.community.BoardCreateActivity
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -46,10 +46,10 @@ class BoardSettingsActivity : AppCompatActivity() {
         }
 
         // 게시판 만들기 버튼
-        binding.btnCreateBoard.setOnClickListener {
-            val intent = Intent(this, BoardCreateActivity::class.java)
-            startActivity(intent)
-        }
+//        binding.btnCreateBoard.setOnClickListener {
+//            val intent = Intent(this, BoardCreateActivity::class.java)
+//            startActivity(intent)
+//        }
 
         // RecyclerView 초기화 (XML과 ID 확인!)
         binding.recyclerView.layoutManager = LinearLayoutManager(this)

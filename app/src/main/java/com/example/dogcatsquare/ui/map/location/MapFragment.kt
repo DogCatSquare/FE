@@ -4,7 +4,6 @@ import android.Manifest
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.pm.PackageManager
-import android.graphics.Color
 import android.os.Bundle
 import android.os.Looper
 import android.util.Log
@@ -33,6 +32,7 @@ import com.naver.maps.map.util.FusedLocationSource
 import android.widget.Toast
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope
+import androidx.recyclerview.widget.RecyclerView
 import com.example.dogcatsquare.LocationViewModel
 import com.example.dogcatsquare.data.map.SearchPlacesRequest
 import com.example.dogcatsquare.data.map.WalkListRequest
@@ -47,15 +47,11 @@ import com.naver.maps.map.overlay.Marker
 import com.naver.maps.map.overlay.OverlayImage
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
-import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import retrofit2.HttpException
 import java.io.IOException
 import java.util.concurrent.TimeUnit
-import kotlinx.coroutines.async
-import kotlinx.coroutines.awaitAll
-import kotlinx.coroutines.withContext
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlin.coroutines.resume
 
@@ -85,10 +81,52 @@ class MapFragment : Fragment(), OnMapReadyCallback {
 
     private var selectedMarker: Marker? = null
 
+    private var currentPage = 0
+    private var isLastPage = false
+    private var isLoading = false
+    private val ITEMS_PER_PAGE = 20
+
+    var shouldRefresh = false
+
+    // RecyclerView 스크롤 리스너
+    private val scrollListener = object : RecyclerView.OnScrollListener() {
+        override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
+            super.onScrolled(recyclerView, dx, dy)
+
+            val layoutManager = recyclerView.layoutManager as LinearLayoutManager
+            val visibleItemCount = layoutManager.childCount            // 현재 화면에 보이는 아이템 수
+            val totalItemCount = layoutManager.itemCount              // 전체 아이템 수
+            val firstVisibleItemPosition = layoutManager.findFirstVisibleItemPosition()  // 첫 번째로 보이는 아이템 위치
+
+            // 현재 화면에 보이는 아이템 중 마지막 아이템의 position
+            val lastVisibleItemPosition = firstVisibleItemPosition + visibleItemCount - 1
+
+            // 페이지 로드 트리거 포지션 (현재 페이지의 6-7번째 아이템)
+            val loadTriggerPosition = (currentPage * ITEMS_PER_PAGE) + 5  // 6번째 아이템부터
+
+            if (!isLoading && !isLastPage) {
+                // 현재 보이는 아이템들 중에 트리거 포지션이 포함되어 있는지 확인
+                if (firstVisibleItemPosition <= loadTriggerPosition && loadTriggerPosition <= lastVisibleItemPosition) {
+                    loadMorePlaces()
+                }
+            }
+        }
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         locationSource = FusedLocationSource(this, LOCATION_PERMISSION_REQUEST_CODE)
         setupLocationCallback()
+
+        // 프래그먼트 백스택 변경 리스너 등록
+        requireActivity().supportFragmentManager.addOnBackStackChangedListener {
+            if (isVisible && shouldRefresh) {
+                lifecycleScope.launch {
+                    loadAllCategories()
+                }
+                shouldRefresh = false
+            }
+        }
     }
 
     override fun onCreateView(
@@ -136,6 +174,7 @@ class MapFragment : Fragment(), OnMapReadyCallback {
                 .addToBackStack(null)
                 .commit()
         }
+
     }
 
     private fun setupLocationCallback() {
@@ -220,7 +259,7 @@ class MapFragment : Fragment(), OnMapReadyCallback {
         naverMap = map
 
         naverMap.minZoom = 11.0
-        naverMap.moveCamera(CameraUpdate.zoomTo(12.0))
+        naverMap.moveCamera(CameraUpdate.zoomTo(14.0))
 
         naverMap.locationSource = locationSource
         naverMap.uiSettings.isLocationButtonEnabled = true
@@ -244,7 +283,7 @@ class MapFragment : Fragment(), OnMapReadyCallback {
 
             // 줌 레벨을 원래대로 복원
             naverMap.moveCamera(
-                CameraUpdate.zoomTo(12.0)  // 기본 줌 레벨
+                CameraUpdate.zoomTo(14.0)  // 기본 줌 레벨
                     .animate(CameraAnimation.Easing)
             )
 
@@ -318,6 +357,7 @@ class MapFragment : Fragment(), OnMapReadyCallback {
                 placeCall = "02-1234-5678",
                 placeImgUrl = null,
                 isOpen = "영업중",
+                keywords = listOf("24시간", "예약가능", "주차가능")
             ),
             MapPlace(
                 id = 0,
@@ -328,7 +368,8 @@ class MapFragment : Fragment(), OnMapReadyCallback {
                 placeCall = "02-1234-5678",
                 placeImgUrl = null,
                 isOpen = "영업중",
-                reviewCount = 2
+                reviewCount = 2,
+                keywords = listOf("잔디밭", "벤치있음", "화장실")
             ),
             MapPlace(
                 id = 0,
@@ -339,7 +380,8 @@ class MapFragment : Fragment(), OnMapReadyCallback {
                 placeCall = "02-1234-5678",
                 placeImgUrl = null,
                 isOpen = "영업중",
-                reviewCount = 13
+                reviewCount = 13,
+                keywords = listOf("1:1케어", "CCTV", "샤워가능")
             ),
             MapPlace(
                 id = 0,
@@ -349,7 +391,8 @@ class MapFragment : Fragment(), OnMapReadyCallback {
                 placeLocation = "서울시 성북구 월곡동 77",
                 placeCall = "02-1234-5678",
                 placeImgUrl = null,
-                isOpen = "영업중"
+                isOpen = "영업중",
+                keywords = listOf("대형견가능", "야외좌석", "주차가능")
             )
         )
 
@@ -404,7 +447,29 @@ class MapFragment : Fragment(), OnMapReadyCallback {
         val mapPlaceRVAdapter = MapPlaceRVAdapter(placeDatas, object : MapPlaceRVAdapter.OnItemClickListener {
             override fun onItemClick(place: MapPlace) {
                 when (place.placeType) {
-                    "동물병원" -> {
+                    "산책로" -> {
+                        val (currentLat, currentLng) = getMapCurrentPosition()
+                        val fragment = WalkingStartViewFragment().apply {
+                            arguments = Bundle().apply {
+                                putInt("placeId", place.id)
+                                putDouble("latitude", currentLat)
+                                putDouble("longitude", currentLng)
+                            }
+                        }
+                        requireActivity().supportFragmentManager.beginTransaction()
+                            .setCustomAnimations(
+                                R.anim.slide_in_right,
+                                R.anim.slide_out_left,
+                                R.anim.slide_in_left,
+                                R.anim.slide_out_right
+                            )
+                            .hide(this@MapFragment)
+                            .add(R.id.main_frm, fragment)
+                            .addToBackStack(null)
+                            .commit()
+                    }
+                    else -> {
+                        // 산책로를 제외한 모든 카테고리는 MapDetailFragment로 이동
                         val (currentLat, currentLng) = getMapCurrentPosition()
                         val fragment = MapDetailFragment().apply {
                             arguments = Bundle().apply {
@@ -425,48 +490,6 @@ class MapFragment : Fragment(), OnMapReadyCallback {
                             .addToBackStack(null)
                             .commit()
                     }
-                    "산책로" -> {
-                        val (currentLat, currentLng) = getMapCurrentPosition()
-                        val fragment = WalkingStartViewFragment().apply {
-                            arguments = Bundle().apply {
-                                putInt("placeId", place.id)
-                                putDouble("latitude", currentLat)
-                                putDouble("longitude", currentLng) // 이건 필요한 정보들에 따라 수정
-                            }
-                        }
-                        requireActivity().supportFragmentManager.beginTransaction()
-                            .setCustomAnimations(
-                                R.anim.slide_in_right,
-                                R.anim.slide_out_left,
-                                R.anim.slide_in_left,
-                                R.anim.slide_out_right
-                            )
-                            .hide(this@MapFragment)
-                            .add(R.id.main_frm, fragment)
-                            .addToBackStack(null)
-                            .commit()
-                    }
-                    else -> {
-                        val (currentLat, currentLng) = getMapCurrentPosition()
-                        val fragment = MapEtcFragment().apply {
-                            arguments = Bundle().apply {
-                                putInt("placeId", place.id)
-                                putDouble("latitude", currentLat)
-                                putDouble("longitude", currentLng)
-                            }
-                        }
-                        requireActivity().supportFragmentManager.beginTransaction()
-                            .setCustomAnimations(
-                                R.anim.slide_in_right,
-                                R.anim.slide_out_left,
-                                R.anim.slide_in_left,
-                                R.anim.slide_out_right
-                            )
-                            .hide(this@MapFragment)  // 현재 Fragment 숨기기
-                            .add(R.id.main_frm, fragment)
-                            .addToBackStack(null)
-                            .commit()
-                    }
                 }
             }
         })
@@ -474,6 +497,7 @@ class MapFragment : Fragment(), OnMapReadyCallback {
         binding.mapPlaceRV.apply {
             adapter = mapPlaceRVAdapter
             layoutManager = LinearLayoutManager(context, LinearLayoutManager.VERTICAL, false)
+            addOnScrollListener(scrollListener)
         }
     }
 
@@ -499,16 +523,9 @@ class MapFragment : Fragment(), OnMapReadyCallback {
     }
 
     @SuppressLint("MissingPermission")
-    private suspend fun loadPlacesData(): List<MapPlace> {
+    private suspend fun loadPlacesData(page: Int = 0): List<MapPlace> {
         val token = getToken() ?: run {
             Toast.makeText(requireContext(), "로그인이 필요합니다.", Toast.LENGTH_SHORT).show()
-            return emptyList()
-        }
-
-//        val cityId = getCityId()
-        val cityId = 1
-        if (cityId == -1) {
-            Toast.makeText(requireContext(), "도시 정보가 필요합니다.", Toast.LENGTH_SHORT).show()
             return emptyList()
         }
 
@@ -543,53 +560,93 @@ class MapFragment : Fragment(), OnMapReadyCallback {
             longitude = userLocation.longitude
         )
 
-        val categories = listOf(" ", "PARK", "CAFE", "RESTAURANT", "HOTEL")
-        val allPlaces = mutableListOf<MapPlace>()
-
         try {
-            withContext(Dispatchers.IO) {
-                val deferredResults = categories.map { category ->
-                    async {
-                        try {
-                            RetrofitClient.placesApiService.searchPlaces(
-                                token = "Bearer $token",
-                                cityId = cityId,
-                                keyword = category,
-                                request = searchRequest
-                            )
-                        } catch (e: Exception) {
-                            null
-                        }
-                    }
+            val response = withContext(Dispatchers.IO) {
+                RetrofitClient.placesApiService.searchPlaces(
+                    token = "Bearer $token",
+                    page = page,
+                    request = searchRequest
+                )
+            }
+
+            if (response.isSuccess) {
+                // 페이징 정보 업데이트
+                response.result?.let { pageResponse ->
+                    isLastPage = pageResponse.last
                 }
 
-                deferredResults.awaitAll()
-                    .filterNotNull()
-                    .forEach { response ->
-                        if (response.isSuccess) {
-                            response.result?.content?.map { place ->
-                                MapPlace(
-                                    id = place.id,
-                                    placeName = place.name,
-                                    placeType = convertCategory(place.category),
-                                    placeDistance = "${String.format("%.2f", place.distance)}km",
-                                    placeLocation = place.address,
-                                    placeCall = place.phoneNumber,
-                                    isOpen = if (place.open) "영업중" else "영업종료",
-                                    placeImgUrl = place.imgUrl,
-                                    reviewCount = place.reviewCount,
-                                    latitude = place.latitude,
-                                    longitude = place.longitude
-                                )
-                            }?.let { allPlaces.addAll(it) }
-                        }
-                    }
+                return response.result?.content?.map { place ->
+                    MapPlace(
+                        id = place.id,
+                        placeName = place.name,
+                        placeType = convertCategory(place.category),
+                        placeDistance = "${String.format("%.2f", place.distance)}km",
+                        placeLocation = place.address,
+                        placeCall = place.phoneNumber,
+                        isOpen = if (place.open) "영업중" else "영업종료",
+                        placeImgUrl = place.imgUrl,
+                        reviewCount = place.reviewCount,
+                        latitude = place.latitude,
+                        longitude = place.longitude,
+                        keywords = place.keywords
+                    )
+                } ?: emptyList()
+            } else {
+                Toast.makeText(requireContext(), response.message, Toast.LENGTH_SHORT).show()
+                return emptyList()
             }
-            return allPlaces
         } catch (e: Exception) {
             handleError(e)
             return emptyList()
         }
+    }
+
+    private fun loadMorePlaces() {
+        if (isLoading) return
+
+        isLoading = true
+        lifecycleScope.launch {
+            try {
+                val newPlaces = loadPlacesData(currentPage + 1)
+                if (newPlaces.isNotEmpty()) {
+                    currentPage++
+                    val currentList = ArrayList(placeDatas)
+                    currentList.addAll(newPlaces)
+                    placeDatas.clear()
+                    placeDatas.addAll(currentList)
+                    binding.mapPlaceRV.adapter?.notifyDataSetChanged()
+
+                    // 새로운 장소들에 대한 마커 생성
+                    newPlaces.forEach { place ->
+                        createMarker(place)
+                    }
+
+                    Log.d("MapFragment", "새로운 페이지 로드 완료: ${newPlaces.size}개의 새 장소, 마커 추가됨")
+                } else {
+                    isLastPage = true
+                    Log.d("MapFragment", "마지막 페이지 도달")
+                }
+            } catch (e: Exception) {
+                handleError(e)
+            } finally {
+                isLoading = false
+            }
+        }
+    }
+
+    // 데이터 초기화 함수
+    private fun resetPagingState() {
+        currentPage = 0
+        isLastPage = false
+        isLoading = false
+        placeDatas.clear()
+        clearMarkers()
+        binding.mapPlaceRV.adapter?.notifyDataSetChanged()
+    }
+
+    private fun resetCategoryAndPaging() {
+        (binding.mapButtonRV.adapter as? MapButtonRVAdapter)?.resetSelection()
+        resetPagingState()
     }
 
     @SuppressLint("MissingPermission")
@@ -732,6 +789,7 @@ class MapFragment : Fragment(), OnMapReadyCallback {
     }
 
 
+
     // 카테고리별 마커 아이콘 설정
     private fun getMarkerIconForCategory(placeType: String?): Int {
         return when (placeType) {
@@ -778,7 +836,7 @@ class MapFragment : Fragment(), OnMapReadyCallback {
                     naverMap.moveCamera(
                         CameraUpdate.scrollAndZoomTo(
                             position,
-                            15.0
+                            16.0
                         ).animate(CameraAnimation.Easing)
                     )
                 } else {
@@ -941,6 +999,23 @@ class MapFragment : Fragment(), OnMapReadyCallback {
         LocationServices.getFusedLocationProviderClient(requireActivity())
             .removeLocationUpdates(locationCallback)
         _binding = null
+    }
+
+    override fun onResume() {
+        super.onResume()
+        // 이전 화면에서 돌아왔을 때 데이터 새로고침
+        if (shouldRefresh) {
+            lifecycleScope.launch {
+                loadAllCategories()  // 모든 카테고리 데이터 새로고침
+            }
+            shouldRefresh = false
+        }
+    }
+
+    override fun onPause() {
+        super.onPause()
+        // 다른 프래그먼트로 이동할 때 새로고침 플래그 설정
+        shouldRefresh = true
     }
 
     private fun saveCurrentLocation(latitude: Double, longitude: Double) {

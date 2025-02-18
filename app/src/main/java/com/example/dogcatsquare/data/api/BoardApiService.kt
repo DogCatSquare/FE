@@ -8,6 +8,9 @@ import com.example.dogcatsquare.data.community.DeleteMyBoardResponse
 import com.example.dogcatsquare.data.community.GetMyBoardHomeResponse
 import com.example.dogcatsquare.data.community.MyBoardResponse
 import com.example.dogcatsquare.data.community.PostDetailResponse
+import com.example.dogcatsquare.data.community.PostListResponse
+import com.example.dogcatsquare.data.community.PostResponse
+import com.example.dogcatsquare.data.model.post.PopularPostResponse
 import okhttp3.MultipartBody
 import okhttp3.RequestBody
 import retrofit2.Call
@@ -41,10 +44,17 @@ interface BoardApiService {
     ): Call<ApiResponse>
 
     // 특정 게시글 조회 API
-    @GET("api/board/post/{postId}")
+    @GET("api/board/{boardType}/post/{postId}")
     fun getPost(
-        @Path("postId") postId: Int
+        @Path("boardType") boardType: String,
+        @Path("postId") postId: Long
     ): Call<PostDetailResponse>
+
+    // 특정게시판에 있는 게시글들 조회
+    @GET("api/board/{boardId}/posts")
+    fun getPosts(
+        @Path("boardId") boardId: Long
+    ): Call<PostListResponse>
 
     // 모든 게시판 조회 API
     @GET("api/board/all")
@@ -62,7 +72,12 @@ interface BoardApiService {
     @GET("api/myboard/home")
     fun getMyBoardHome(@Header("Authorization") token: String): Call<MyBoardResponse>
 
-    // 게시판 검색 API
     @GET("api/board/search")
     fun searchBoard(@Header("Authorization") token: String, @Query("boardName") boardName: String): Call<BoardSearchResponseDto>
+
+    @GET("/api/board/search")
+    fun searchBoard(@Query("boardName") boardName: String): Call<BoardSearchResponseDto>
+
+    @GET("api/board/posts/popular")
+    fun getPopularPost(@Header("Authorization") token: String): Call<PopularPostResponse>
 }

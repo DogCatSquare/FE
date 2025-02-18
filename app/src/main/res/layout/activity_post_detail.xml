@@ -23,7 +23,7 @@
             android:id="@+id/tvTitle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="동네 이야기"
+            android:text="댕냥 라운지"
             android:textSize="18sp"
             android:textStyle="bold"
             android:layout_centerInParent="true" />

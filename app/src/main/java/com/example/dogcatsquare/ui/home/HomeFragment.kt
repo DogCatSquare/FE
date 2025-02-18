@@ -1,6 +1,5 @@
 package com.example.dogcatsquare.ui.home
 
-import PostApiService
 import WeatherViewModel
 import android.content.Context
 import android.content.Intent
@@ -15,14 +14,13 @@ import android.view.ViewGroup
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
-import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.viewpager2.widget.ViewPager2
 import com.example.dogcatsquare.R
+import com.example.dogcatsquare.data.api.BoardApiService
 import com.example.dogcatsquare.data.api.DDayRetrofitItf
 import com.example.dogcatsquare.data.api.EventRetrofitItf
 import com.example.dogcatsquare.data.api.PlacesApiService
-import com.example.dogcatsquare.data.api.WeatherRetrofitItf
 import com.example.dogcatsquare.data.map.GetHotPlaceRequest
 import com.example.dogcatsquare.data.map.GetHotPlaceResponse
 import com.example.dogcatsquare.data.map.Place
@@ -30,7 +28,6 @@ import com.example.dogcatsquare.data.model.home.DDay
 import com.example.dogcatsquare.data.model.home.Event
 import com.example.dogcatsquare.data.model.home.GetAllDDayResponse
 import com.example.dogcatsquare.data.model.home.GetAllEventsResponse
-import com.example.dogcatsquare.data.model.home.WeatherResponse
 import com.example.dogcatsquare.data.model.home.WeatherResult
 import com.example.dogcatsquare.data.network.RetrofitObj
 import com.example.dogcatsquare.data.model.post.PopularPostResponse
@@ -38,7 +35,6 @@ import com.example.dogcatsquare.data.model.post.Post
 import com.example.dogcatsquare.databinding.FragmentHomeBinding
 import com.example.dogcatsquare.ui.community.PostDetailActivity
 import com.example.dogcatsquare.ui.map.location.MapDetailFragment
-import com.example.dogcatsquare.ui.map.location.MapEtcFragment
 import com.example.dogcatsquare.ui.mypage.HorizontalSpacingItemDecoration
 import retrofit2.Call
 import retrofit2.Callback
@@ -281,7 +277,7 @@ class HomeFragment : Fragment() {
                         .addToBackStack(null)
                         .commitAllowingStateLoss()
                 } else {
-                    val fragment = MapEtcFragment.newInstance(place.id, savedLocation?.first ?: 0.0, savedLocation?.second ?: 0.0)
+                    val fragment = MapDetailFragment.newInstance(place.id, savedLocation?.first ?: 0.0, savedLocation?.second ?: 0.0)
                     requireActivity().supportFragmentManager.beginTransaction()
                         .replace(R.id.main_frm, fragment)
                         .addToBackStack(null)
@@ -382,7 +378,7 @@ class HomeFragment : Fragment() {
     private fun getPopularPost(adapter: HomeHotPostRVAdapter) {
         val token = getToken()
 
-        val getPopularPostService = RetrofitObj.getRetrofit().create(PostApiService::class.java)
+        val getPopularPostService = RetrofitObj.getRetrofit().create(BoardApiService::class.java)
         getPopularPostService.getPopularPost("Bearer $token").enqueue(object : Callback<PopularPostResponse> {
             override fun onResponse(call: Call<PopularPostResponse>, response: Response<PopularPostResponse>) {
                 Log.d("PopularPost/SUCCESS", response.toString())

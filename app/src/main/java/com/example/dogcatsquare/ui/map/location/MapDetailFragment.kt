@@ -2,6 +2,7 @@ package com.example.dogcatsquare.ui.map.location
 
 import android.content.Context
 import android.content.Intent
+import android.graphics.Color
 import android.net.Uri
 import android.os.Bundle
 import android.util.Log
@@ -9,30 +10,35 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.TextView
 import android.widget.Toast
+import androidx.cardview.widget.CardView
+import androidx.constraintlayout.widget.ConstraintLayout
+import androidx.constraintlayout.widget.ConstraintSet
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.dogcatsquare.data.map.DetailImg
 import com.example.dogcatsquare.data.map.MapPrice
+import com.example.dogcatsquare.data.map.MapReview
 import com.example.dogcatsquare.R
 import com.example.dogcatsquare.RetrofitClient
-import com.example.dogcatsquare.databinding.FragmentMapDetailBinding
 import com.example.dogcatsquare.ui.map.SearchFragment
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import kotlinx.coroutines.launch
-import com.example.dogcatsquare.data.map.PlaceDetailRequest
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import com.example.dogcatsquare.data.map.PlaceDetailRequest
+import com.example.dogcatsquare.databinding.FragmentMapDetailBinding
+import com.google.android.flexbox.FlexboxLayout
+import com.naver.maps.geometry.LatLng
+import com.naver.maps.map.*
+import com.naver.maps.map.overlay.Marker
+import com.naver.maps.map.overlay.OverlayImage
 import java.util.Calendar
 import java.util.TimeZone
-import com.naver.maps.geometry.LatLng
-import com.naver.maps.map.CameraPosition
 import com.naver.maps.map.MapFragment
-import com.naver.maps.map.NaverMap
 import com.naver.maps.map.OnMapReadyCallback
-import com.naver.maps.map.overlay.Marker
-import com.naver.maps.map.CameraUpdate
-import com.naver.maps.map.overlay.OverlayImage
+import com.naver.maps.map.NaverMap
 
 class MapDetailFragment : Fragment(), OnMapReadyCallback {
     private var _binding: FragmentMapDetailBinding? = null
@@ -40,17 +46,16 @@ class MapDetailFragment : Fragment(), OnMapReadyCallback {
 
     private val imgDatas by lazy { ArrayList<DetailImg>() }
     private val priceDatas by lazy { ArrayList<MapPrice>() }
+    private val reviewDatas by lazy { ArrayList<MapReview>() }
 
     private lateinit var naverMap: NaverMap
     private var placeLatitude: Double = 0.0
     private var placeLongitude: Double = 0.0
     private var currentMarker: Marker? = null
-    private var isInitialLoad = true
-
     private var actualPlaceLatitude: Double? = null
     private var actualPlaceLongitude: Double? = null
-
     private var isWished = false
+
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -70,6 +75,7 @@ class MapDetailFragment : Fragment(), OnMapReadyCallback {
 
         setupBackButton()
         setupRecyclerView()
+        setupAddReviewButton()
         setupNaverMap()
 
         binding.filter.setOnClickListener {
@@ -87,34 +93,6 @@ class MapDetailFragment : Fragment(), OnMapReadyCallback {
         arguments?.getInt("placeId")?.let { placeId ->
             loadPlaceDetails(placeId)
         }
-    }
-
-    private fun setupNaverMap() {
-        val fm = childFragmentManager
-        val mapFragment = fm.findFragmentById(R.id.mapView2) as MapFragment?
-            ?: MapFragment.newInstance().also {
-                fm.beginTransaction().add(R.id.mapView2, it).commit()
-            }
-
-        mapFragment.getMapAsync(this)
-    }
-
-    override fun onMapReady(map: NaverMap) {
-        naverMap = map
-
-        naverMap.uiSettings.apply {
-            isZoomControlEnabled = false
-            isScrollGesturesEnabled = false
-            isRotateGesturesEnabled = false
-            isTiltGesturesEnabled = false
-            isZoomGesturesEnabled = false
-        }
-
-        // 실제 장소 위치가 있으면 그 위치를, 없으면 초기 위치를 사용
-        val latitude = actualPlaceLatitude ?: placeLatitude
-        val longitude = actualPlaceLongitude ?: placeLongitude
-
-        updateMapLocation(latitude, longitude)
     }
 
     private fun loadPlaceDetails(placeId: Int) {
@@ -148,7 +126,12 @@ class MapDetailFragment : Fragment(), OnMapReadyCallback {
                         actualPlaceLatitude = placeDetail.latitude
                         actualPlaceLongitude = placeDetail.longitude
 
+                        // 카테고리에 따른 뷰 visibility 설정
+                        val isHospital = placeDetail.category == "HOSPITAL"
+                        val isHotel = placeDetail.category == "HOTEL"
+
                         binding.apply {
+                            // 기본 정보 설정
                             placeName.text = placeDetail.name
                             placeLocationFull.text = placeDetail.address
                             placeLocation.text = placeDetail.address.split(" ").getOrNull(2) ?: ""
@@ -156,9 +139,13 @@ class MapDetailFragment : Fragment(), OnMapReadyCallback {
                             placeCall.text = placeDetail.phoneNumber
                             placeDistance.text = "${String.format("%.2f", placeDetail.distance)}km"
                             placeStatus.text = if (placeDetail.open) "영업중" else "영업종료"
+
+                            // 영업시간 설정
                             placeDetail.businessHours?.let { hours ->
                                 placeTime.text = formatBusinessHours(hours)
                             }
+
+                            // 홈페이지 설정
                             placeDetail.homepageUrl?.let { url ->
                                 if (url.isNotEmpty()) {
                                     placeUrl.text = url
@@ -175,12 +162,35 @@ class MapDetailFragment : Fragment(), OnMapReadyCallback {
                                 placeUrl.text = "정보가 없습니다."
                                 placeUrl.setOnClickListener(null)
                             }
+
                             placeIntro.text = placeDetail.description
-                            placeFacility.text = formatFacilities(placeDetail.facilities)
+                            placeDetail.additionalInfo?.let { info ->
+                                binding.additionalInfo.visibility = View.VISIBLE
+                                binding.additionalInfo.text = info
+                            } ?: run {
+                                binding.additionalInfo.visibility = View.GONE
+                                val params = binding.imageView9.layoutParams as ConstraintLayout.LayoutParams
+                                params.topMargin = (32 * resources.displayMetrics.density).toInt()
+                                params.topToBottom = binding.cardView2.id
+                                binding.imageView9.layoutParams = params
+                            }
+
+                            // 리뷰 관련 뷰 visibility 설정
+                            textView7.visibility = if (isHospital) View.GONE else View.VISIBLE
+                            reviewRV.visibility = if (isHospital) View.GONE else View.VISIBLE
+                            reviewPlus.visibility = if (isHospital) View.GONE else View.VISIBLE
+                            addButton.visibility = if (isHospital) View.GONE else View.VISIBLE
+                            imageView3.visibility = if (isHospital) View.GONE else View.VISIBLE
+
+                            // 예약 버튼은 호텔일 때만 보이도록 설정
+                            reserveButton.visibility = if (isHotel) View.VISIBLE else View.GONE
+
+                            // 찜하기 버튼 설정
                             wishButton.setImageResource(
-                                if (placeDetail.wished) R.drawable.ic_wish_check // 찜한 상태의 이미지
-                                else R.drawable.ic_wish // 찜하지 않은 상태의 이미지
+                                if (placeDetail.wished) R.drawable.ic_wish_check
+                                else R.drawable.ic_wish
                             )
+
                             wishButton.setOnClickListener {
                                 lifecycleScope.launch {
                                     try {
@@ -227,13 +237,23 @@ class MapDetailFragment : Fragment(), OnMapReadyCallback {
                                 }
                             }
 
+                            // 특성 카드 설정
+                            placeDetail.keywords?.let { keywords ->
+                                setupCharacteristicCards(placeDetail.category, keywords)
+                            }
+
+                            // 이미지 업데이트
+                            updateImages(placeDetail.imageUrls)
+
+                            // 병원이 아닐 경우에만 리뷰 업데이트
+                            if (!isHospital) {
+                                updateReviews(placeDetail.recentReviews)
+                            }
+
                             // 지도 위치 업데이트
                             if (::naverMap.isInitialized) {
                                 updateMapLocation(placeDetail.latitude, placeDetail.longitude)
                             }
-
-                            updateImages(placeDetail.imageUrls)
-
                         }
                     }
                 } else {
@@ -246,6 +266,314 @@ class MapDetailFragment : Fragment(), OnMapReadyCallback {
             } catch (e: Exception) {
                 handleError(e)
             }
+        }
+    }
+
+    private fun setupCharacteristicCards(category: String, keywords: List<String>) {
+        val (backgroundColor, textColor) = when (category) {
+            "HOSPITAL" -> "#EAF2FE" to "#276CCB"  // 동물병원용 색상
+            "HOTEL" -> "#FEEEEA" to "#F36037"     // 호텔용 색상
+            "RESTAURANT", "CAFE" -> "#FFFBF1" to "#FF8D41"  // 음식점/카페용 색상
+            else -> "#EAF2FE" to "#276CCB"  // 기본값
+        }
+
+        binding.apply {
+            // 기존 카드들 모두 제거
+            characteristicsContainer.removeAllViews()
+
+            // 각 키워드에 대해 동적으로 카드 생성
+            keywords.forEach { keyword ->
+                val cardView = CardView(requireContext()).apply {
+                    layoutParams = FlexboxLayout.LayoutParams(
+                        ViewGroup.LayoutParams.WRAP_CONTENT,
+                        ViewGroup.LayoutParams.WRAP_CONTENT
+                    ).apply {
+                        setMargins(
+                            0,
+                            0,
+                            resources.getDimensionPixelSize(R.dimen.spacing_14),
+                            resources.getDimensionPixelSize(R.dimen.spacing_8)
+                        )
+                    }
+                    radius = resources.getDimension(R.dimen.radius_4)
+                    cardElevation = 0f
+                    setCardBackgroundColor(Color.parseColor(backgroundColor))
+                    val strokeWidth = resources.getDimensionPixelSize(R.dimen.stroke_1)
+                    setContentPadding(strokeWidth, strokeWidth, strokeWidth, strokeWidth)
+
+                    val innerCard = CardView(requireContext()).apply {
+                        layoutParams = ViewGroup.LayoutParams(
+                            ViewGroup.LayoutParams.WRAP_CONTENT,
+                            ViewGroup.LayoutParams.WRAP_CONTENT
+                        )
+                        setCardBackgroundColor(Color.parseColor(backgroundColor))
+                        radius = resources.getDimension(R.dimen.radius_4) - strokeWidth
+                        cardElevation = 0f
+
+                        val textView = TextView(context).apply {
+                            layoutParams = ViewGroup.MarginLayoutParams(
+                                ViewGroup.LayoutParams.WRAP_CONTENT,
+                                ViewGroup.LayoutParams.WRAP_CONTENT
+                            )
+                            text = keyword
+                            setTextColor(Color.parseColor(textColor))
+                            textSize = 14f
+                            setPadding(
+                                resources.getDimensionPixelSize(R.dimen.spacing_14),
+                                resources.getDimensionPixelSize(R.dimen.spacing_3),
+                                resources.getDimensionPixelSize(R.dimen.spacing_14),
+                                resources.getDimensionPixelSize(R.dimen.spacing_3)
+                            )
+                        }
+                        addView(textView)
+                    }
+                    addView(innerCard)
+                }
+                characteristicsContainer.addView(cardView)
+            }
+
+            // 정보추가하기 버튼 추가
+            val addButton = CardView(requireContext()).apply {
+                layoutParams = FlexboxLayout.LayoutParams(
+                    ViewGroup.LayoutParams.WRAP_CONTENT,
+                    ViewGroup.LayoutParams.WRAP_CONTENT
+                ).apply {
+                    setMargins(
+                        0,
+                        0,
+                        resources.getDimensionPixelSize(R.dimen.spacing_14),
+                        resources.getDimensionPixelSize(R.dimen.spacing_8)
+                    )
+                }
+                radius = resources.getDimension(R.dimen.radius_4)
+                cardElevation = 0f
+                setCardBackgroundColor(Color.parseColor(textColor))
+                val strokeWidth = resources.getDimensionPixelSize(R.dimen.stroke_1)
+                setContentPadding(strokeWidth, strokeWidth, strokeWidth, strokeWidth)
+
+                val innerCard = CardView(requireContext()).apply {
+                    layoutParams = ViewGroup.LayoutParams(
+                        ViewGroup.LayoutParams.WRAP_CONTENT,
+                        ViewGroup.LayoutParams.WRAP_CONTENT
+                    )
+                    setCardBackgroundColor(Color.WHITE)
+                    radius = resources.getDimension(R.dimen.radius_4) - strokeWidth
+                    cardElevation = 0f
+
+                    val textView = TextView(context).apply {
+                        layoutParams = ViewGroup.MarginLayoutParams(
+                            ViewGroup.LayoutParams.WRAP_CONTENT,
+                            ViewGroup.LayoutParams.WRAP_CONTENT
+                        )
+                        text = "+ 정보추가하기"
+                        setTextColor(Color.parseColor(textColor))
+                        textSize = 14f
+                        setPadding(
+                            resources.getDimensionPixelSize(R.dimen.spacing_14),
+                            resources.getDimensionPixelSize(R.dimen.spacing_3),
+                            resources.getDimensionPixelSize(R.dimen.spacing_14),
+                            resources.getDimensionPixelSize(R.dimen.spacing_3)
+                        )
+                    }
+                    addView(textView)
+                }
+                addView(innerCard)
+
+                setOnClickListener {
+                    val placeId = arguments?.getInt("placeId") ?: return@setOnClickListener
+                    val placeName = binding.placeName.text.toString()
+
+                    // 카테고리에 따른 기본 키워드 설정
+                    val defaultKeywords = when (category) {
+                        "HOSPITAL" -> listOf("고양이친화", "중성화수술", "CCTV")
+                        "HOTEL" -> listOf("고양이친화", "CCTV", "주차")
+                        "RESTAURANT", "CAFE" -> listOf("예약", "포장", "주차")
+                        else -> emptyList()
+                    }
+
+                    // MapAddKeywordFragment로 이동
+                    val fragment = MapAddKeywordFragment.newInstance(
+                        placeId = placeId,
+                        placeName = placeName,
+                        defaultKeywords = defaultKeywords.toTypedArray(),
+                        category = category,
+                        currentKeywords = keywords,
+                        additionalInfo = binding.additionalInfo.text.toString()
+                    )
+
+                    requireActivity().supportFragmentManager.beginTransaction()
+                        .setCustomAnimations(
+                            R.anim.slide_in_right,
+                            R.anim.slide_out_left,
+                            R.anim.slide_in_left,
+                            R.anim.slide_out_right
+                        )
+                        .hide(this@MapDetailFragment)
+                        .add(R.id.main_frm, fragment)
+                        .addToBackStack(null)
+                        .commit()
+                }
+            }
+
+            characteristicsContainer.addView(addButton)
+        }
+    }
+
+    private fun setupNaverMap() {
+        val fm = childFragmentManager
+        val mapFragment = fm.findFragmentById(R.id.mapView2) as MapFragment?
+            ?: MapFragment.newInstance().also {
+                fm.beginTransaction().add(R.id.mapView2, it).commit()
+            }
+
+        mapFragment.getMapAsync(this)
+    }
+
+    override fun onMapReady(map: NaverMap) {
+        naverMap = map
+
+        naverMap.uiSettings.apply {
+            isZoomControlEnabled = false
+            isScrollGesturesEnabled = false
+            isRotateGesturesEnabled = false
+            isTiltGesturesEnabled = false
+            isZoomGesturesEnabled = false
+        }
+
+        val latitude = actualPlaceLatitude ?: placeLatitude
+        val longitude = actualPlaceLongitude ?: placeLongitude
+
+        updateMapLocation(latitude, longitude)
+    }
+
+    private fun updateMapLocation(lat: Double, lng: Double) {
+        val location = LatLng(lat, lng)
+        Log.d("MapEtcFragment", "Updating map location to: lat=$lat, lng=$lng")
+
+        currentMarker?.setMap(null)
+
+        naverMap.moveCamera(CameraUpdate.scrollAndZoomTo(
+            location,
+            15.0
+        ))
+
+        currentMarker = Marker().apply {
+            position = location
+            icon = OverlayImage.fromResource(R.drawable.ic_marker)
+            setMap(naverMap)
+        }
+    }
+
+    private fun updateImages(imageUrls: List<String>?) {
+        if (imageUrls.isNullOrEmpty()) {
+            // RecyclerView 숨기고 기본 이미지 표시
+            binding.detailImgRV.visibility = View.GONE
+            binding.defaultDetailImage.visibility = View.VISIBLE
+            binding.defaultImgText.visibility = View.VISIBLE
+
+            // imageView7의 제약 조건 변경
+            val constraintSet = ConstraintSet()
+            constraintSet.clone(binding.scrollView3.getChildAt(0) as ConstraintLayout)
+            constraintSet.connect(
+                R.id.imageView7,
+                ConstraintSet.TOP,
+                R.id.defaultDetailImage,
+                ConstraintSet.BOTTOM,
+                (16 * resources.displayMetrics.density).toInt() // 16dp를 픽셀로 변환
+            )
+            constraintSet.applyTo(binding.scrollView3.getChildAt(0) as ConstraintLayout)
+        } else {
+            // 기본 이미지 숨기고 RecyclerView 표시
+            binding.defaultDetailImage.visibility = View.GONE
+            binding.detailImgRV.visibility = View.VISIBLE
+            binding.defaultImgText.visibility = View.GONE
+
+            // imageView7의 제약 조건을 원래대로 복원
+            val constraintSet = ConstraintSet()
+            constraintSet.clone(binding.scrollView3.getChildAt(0) as ConstraintLayout)
+            constraintSet.connect(
+                R.id.imageView7,
+                ConstraintSet.TOP,
+                R.id.detailImgRV,
+                ConstraintSet.BOTTOM,
+                (16 * resources.displayMetrics.density).toInt() // 16dp를 픽셀로 변환
+            )
+            constraintSet.applyTo(binding.scrollView3.getChildAt(0) as ConstraintLayout)
+
+            // RecyclerView 데이터 업데이트
+            imgDatas.clear()
+            imageUrls.forEach { url ->
+                if (!url.isNullOrBlank()) {
+                    imgDatas.add(DetailImg(url))
+                }
+            }
+
+            binding.detailImgRV.post {
+                if (binding.detailImgRV.adapter == null) {
+                    val detailImgRVAdapter = DetailImgRVAdapter(imgDatas)
+                    binding.detailImgRV.apply {
+                        adapter = detailImgRVAdapter
+                        layoutManager = LinearLayoutManager(
+                            context,
+                            LinearLayoutManager.HORIZONTAL,
+                            false
+                        )
+                    }
+                } else {
+                    binding.detailImgRV.adapter = DetailImgRVAdapter(ArrayList(imgDatas))
+                }
+            }
+        }
+    }
+
+    private fun updateReviews(apiReviews: List<MapReview>?) {
+        reviewDatas.clear()
+
+        if (!apiReviews.isNullOrEmpty()) {
+            // 리뷰가 있는 경우
+            reviewDatas.addAll(apiReviews)
+            binding.reviewCount.text = reviewDatas.size.toString()
+
+            // 리뷰 관련 뷰들 표시
+            binding.reviewRV.visibility = View.VISIBLE
+            binding.defaultReviewImage.visibility = View.GONE
+            binding.defaultReviewText.visibility = View.GONE
+            binding.reviewPlus.visibility = View.VISIBLE
+            binding.addButton.visibility = View.VISIBLE
+            binding.imageView3.visibility = View.VISIBLE
+
+            val displayedReviews = ArrayList<MapReview>().apply {
+                addAll(reviewDatas.take(2))
+            }
+
+            val mapReviewRVAdapter = MapReviewRVAdapter(displayedReviews)
+            binding.reviewRV.apply {
+                adapter = mapReviewRVAdapter
+                layoutManager = LinearLayoutManager(context, LinearLayoutManager.VERTICAL, false)
+            }
+        } else {
+            // 리뷰가 없는 경우
+            binding.reviewCount.text = "0"
+
+            // 리뷰 관련 뷰들 숨기기/표시
+            binding.reviewRV.visibility = View.GONE
+            binding.defaultReviewImage.visibility = View.VISIBLE
+            binding.defaultReviewText.visibility = View.VISIBLE
+            binding.reviewPlus.visibility = View.GONE
+            binding.addButton.visibility = View.VISIBLE  // 리뷰 추가 버튼은 계속 표시
+            binding.imageView3.visibility = View.VISIBLE
+
+            // 리뷰가 없을 때의 제약 조건 변경
+            val constraintSet = ConstraintSet()
+            constraintSet.clone(binding.scrollView3.getChildAt(0) as ConstraintLayout)
+            constraintSet.connect(
+                R.id.addButton,
+                ConstraintSet.TOP,
+                R.id.defaultReviewImage,
+                ConstraintSet.BOTTOM,
+                (24 * resources.displayMetrics.density).toInt()
+            )
+            constraintSet.applyTo(binding.scrollView3.getChildAt(0) as ConstraintLayout)
         }
     }
 
@@ -291,69 +619,12 @@ class MapDetailFragment : Fragment(), OnMapReadyCallback {
             } ?: "정보가 없습니다."
     }
 
-    private fun updateImages(imageUrls: List<String>?) {
-        imgDatas.clear()
-
-        if (imageUrls.isNullOrEmpty()) {
-            Log.d("MapDetailFragment", "이미지 URL이 없어서 기본 이미지를 사용합니다")
-            imgDatas.add(DetailImg(R.drawable.ic_place_img_default))
-        } else {
-            Log.d("MapDetailFragment", "수신된 이미지 URL 개수: ${imageUrls.size}")
-            imageUrls.forEach { url ->
-                if (!url.isNullOrBlank()) {
-                    Log.d("MapDetailFragment", "이미지 URL 추가: $url")
-                    imgDatas.add(DetailImg(url))
-                }
-            }
-        }
-
-        // UI 업데이트는 메인 스레드에서 실행되도록 보장
-        binding.detailImgRV.post {
-            if (binding.detailImgRV.adapter == null) {
-                val detailImgRVAdapter = DetailImgRVAdapter(imgDatas)
-                binding.detailImgRV.apply {
-                    adapter = detailImgRVAdapter
-                    layoutManager = LinearLayoutManager(
-                        context,
-                        LinearLayoutManager.HORIZONTAL,
-                        false
-                    )
-                }
-            } else {
-                // RecyclerView 완전 새로고침
-                binding.detailImgRV.adapter = DetailImgRVAdapter(ArrayList(imgDatas))
-            }
-        }
-    }
-
-    private fun updateMapLocation(lat: Double, lng: Double) {
-        val location = LatLng(lat, lng)
-        Log.d("MapDetailFragment", "Updating map location to: lat=$lat, lng=$lng")
-
-        // 기존 마커 제거
-        currentMarker?.setMap(null)
-
-        // 카메라 이동
-        naverMap.moveCamera(CameraUpdate.scrollAndZoomTo(
-            location,
-            15.0
-        ))
-
-        // 새 마커 추가
-        currentMarker = Marker().apply {
-            position = location
-            icon = OverlayImage.fromResource(R.drawable.ic_marker)
-            setMap(naverMap)
-        }
-    }
-
     private fun convertCategory(category: String): String {
         return when (category) {
             "HOSPITAL" -> "동물병원"
-            "PARK" -> "산책로"
-            "CAFE" -> "카페"
-            "RESTAURANT" -> "식당"
             "HOTEL" -> "호텔"
+            "RESTAURANT" -> "식당"
+            "CAFE" -> "카페"
             else -> category
         }
     }
@@ -379,6 +650,7 @@ class MapDetailFragment : Fragment(), OnMapReadyCallback {
         Toast.makeText(requireContext(), errorMessage, Toast.LENGTH_SHORT).show()
     }
 
+    // 기존 함수들은 유지
     private fun setupBackButton() {
         binding.backButton.setOnClickListener {
             requireActivity().supportFragmentManager.popBackStack()
@@ -386,11 +658,29 @@ class MapDetailFragment : Fragment(), OnMapReadyCallback {
     }
 
     private fun setupRecyclerView() {
-        // 이미지 리사이클러뷰 설정
+        // 기본 RecyclerView 설정
         val detailImgRVAdapter = DetailImgRVAdapter(imgDatas)
         binding.detailImgRV.apply {
             adapter = detailImgRVAdapter
             layoutManager = LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false)
+        }
+
+        binding.reviewPlus.setOnClickListener {
+            val mapReviewFragment = MapReviewFragment()
+            requireActivity().supportFragmentManager.beginTransaction()
+                .replace(R.id.main_frm, mapReviewFragment)
+                .addToBackStack(null)
+                .commit()
+        }
+    }
+
+    private fun setupAddReviewButton() {
+        binding.addButton.setOnClickListener {
+            val mapAddReviewFragment = MapAddReviewFragment()
+            requireActivity().supportFragmentManager.beginTransaction()
+                .replace(R.id.main_frm, mapAddReviewFragment)
+                .addToBackStack(null)
+                .commit()
         }
     }
 
@@ -413,9 +703,15 @@ class MapDetailFragment : Fragment(), OnMapReadyCallback {
         _binding = null
     }
 
+    fun refreshPlaceDetails() {
+        arguments?.getInt("placeId")?.let { id ->
+            loadPlaceDetails(id)
+        }
+    }
+
     companion object {
-        fun newInstance(placeId: Int, latitude: Double, longitude: Double): MapEtcFragment {
-            return MapEtcFragment().apply {
+        fun newInstance(placeId: Int, latitude: Double, longitude: Double): MapDetailFragment {
+            return MapDetailFragment().apply {
                 arguments = Bundle().apply {
                     putInt("placeId", placeId)
                     putDouble("latitude", latitude)
@@ -424,5 +720,4 @@ class MapDetailFragment : Fragment(), OnMapReadyCallback {
             }
         }
     }
-
 }

@@ -18,6 +18,14 @@ import com.example.dogcatsquare.data.model.home.DDay
 import com.example.dogcatsquare.data.model.home.GetAllDDayResponse
 import com.example.dogcatsquare.data.network.RetrofitObj
 import com.example.dogcatsquare.databinding.ActivityBoardCreateBinding
+import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
+import com.example.dogcatsquare.R
+import com.example.dogcatsquare.api.RetrofitClient
+import com.example.dogcatsquare.data.community.BoardRequestDto
+import com.example.dogcatsquare.data.community.BoardResponseDto
+import com.example.dogcatsquare.databinding.ActivityBoardCreateBinding
+import com.google.gson.Gson
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -51,6 +59,15 @@ class BoardCreateActivity : AppCompatActivity() {
                 val currentLength = s?.length ?: 0
                 binding.boardNameCount.text = "$currentLength/8"
                 isTitle = currentLength > 0
+
+        // 🔹 뒤로가기 버튼 설정
+        binding.ivBack.setOnClickListener { finish() }
+
+        // 🔹 입력값 변경 시 버튼 활성화 체크
+        val textWatcher = object : TextWatcher {
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
                 updateCompleteButtonState()
             }
 
