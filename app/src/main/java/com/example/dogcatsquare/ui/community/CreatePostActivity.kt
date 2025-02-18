@@ -9,9 +9,13 @@ import android.os.Bundle
 import android.provider.MediaStore
 import android.text.Editable
 import android.text.TextWatcher
+import android.view.LayoutInflater
 import android.view.View
+import android.view.ViewGroup
 import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.example.dogcatsquare.R
 import com.example.dogcatsquare.data.network.RetrofitObj
@@ -36,9 +40,13 @@ class CreatePostActivity : AppCompatActivity() {
     private lateinit var etLink: EditText
     private lateinit var ivBack: ImageView
     private lateinit var addPhoto: RelativeLayout
-    private lateinit var imagePreview: ImageView
 
-    private var selectedImageFile: File? = null
+    // RecyclerView로 미리보기할 예정 (XML에 RecyclerView 추가: id="rv_image_preview")
+    private lateinit var rvImagePreview: RecyclerView
+    private lateinit var imageAdapter: ImagePreviewAdapter
+
+    // 단일 파일 대신 선택된 이미지 파일들을 저장
+    private val selectedImageFiles = mutableListOf<File>()
     private val PICK_IMAGE_REQUEST = 1
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -51,12 +59,14 @@ class CreatePostActivity : AppCompatActivity() {
         etLink = findViewById(R.id.edit_link)
         ivBack = findViewById(R.id.iv_back)
         addPhoto = findViewById(R.id.add_photo)
-        imagePreview = findViewById(R.id.image_preview)  // XML에 추가한 image_preview
+        // RecyclerView 초기화 (미리보기용)
+        rvImagePreview = findViewById(R.id.rv_image_preview)
+        rvImagePreview.layoutManager = LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
+        imageAdapter = ImagePreviewAdapter(selectedImageFiles)
+        rvImagePreview.adapter = imageAdapter
 
         ivBack.setOnClickListener { finish() }
-
         addPhoto.setOnClickListener { openGallery() }
-
         btnComplete.setOnClickListener { createPost() }
 
         val textWatcher = object : TextWatcher {
@@ -86,26 +96,39 @@ class CreatePostActivity : AppCompatActivity() {
     private fun openGallery() {
         val intent = Intent(Intent.ACTION_PICK)
         intent.type = "image/*"
+        // 다중 선택 허용
+        intent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true)
         startActivityForResult(intent, PICK_IMAGE_REQUEST)
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
 
-        if (requestCode == PICK_IMAGE_REQUEST && resultCode == Activity.RESULT_OK && data?.data != null) {
-            val imageUri: Uri = data.data!!
-            selectedImageFile = getCompressedImageFile(imageUri)
+        if (requestCode == PICK_IMAGE_REQUEST && resultCode == Activity.RESULT_OK) {
+            // 기존에 선택한 이미지 초기화
+            selectedImageFiles.clear()
 
-            imagePreview.visibility = View.VISIBLE
-            Glide.with(this)
-                .load(selectedImageFile)
-                .into(imagePreview)
+            // 여러 이미지가 선택된 경우
+            if (data?.clipData != null) {
+                val count = data.clipData!!.itemCount
+                for (i in 0 until count) {
+                    val imageUri: Uri = data.clipData!!.getItemAt(i).uri
+                    val file = getCompressedImageFile(imageUri)
+                    selectedImageFiles.add(file)
+                }
+            } else if (data?.data != null) {
+                // 단일 이미지 선택한 경우
+                val imageUri: Uri = data.data!!
+                val file = getCompressedImageFile(imageUri)
+                selectedImageFiles.add(file)
+            }
+            imageAdapter.notifyDataSetChanged()
         }
     }
 
     private fun getCompressedImageFile(uri: Uri): File {
         val bitmap = MediaStore.Images.Media.getBitmap(this.contentResolver, uri)
-        val compressedFile = File(this.cacheDir, "compressed_image.jpg")
+        val compressedFile = File(this.cacheDir, "compressed_${System.currentTimeMillis()}.jpg")
         FileOutputStream(compressedFile).use { outputStream ->
             bitmap.compress(Bitmap.CompressFormat.JPEG, 85, outputStream)
             outputStream.flush()
@@ -151,9 +174,13 @@ class CreatePostActivity : AppCompatActivity() {
         val jsonPostRequest = Gson().toJson(postRequest)
         val requestBody = RequestBody.create("application/json".toMediaTypeOrNull(), jsonPostRequest)
 
-        val imageParts: List<MultipartBody.Part>? = selectedImageFile?.let { file ->
-            val requestFile = RequestBody.create("image/*".toMediaTypeOrNull(), file)
-            listOf(MultipartBody.Part.createFormData("images", file.name, requestFile))
+        val imageParts: List<MultipartBody.Part>? = if (selectedImageFiles.isNotEmpty()) {
+            selectedImageFiles.map { file ->
+                val requestFile = RequestBody.create("image/*".toMediaTypeOrNull(), file)
+                MultipartBody.Part.createFormData("images", file.name, requestFile)
+            }
+        } else {
+            null
         }
 
         val call = RetrofitObj.getRetrofit().create(BoardApiService::class.java)
@@ -173,5 +200,23 @@ class CreatePostActivity : AppCompatActivity() {
                 Toast.makeText(this@CreatePostActivity, "네트워크 오류: ${t.message}", Toast.LENGTH_SHORT).show()
             }
         })
+    }
+
+    // RecyclerView 어댑터 클래스: 각 항목에 선택된 이미지를 미리보기로 표시
+    class ImagePreviewAdapter(private val images: List<File>) : RecyclerView.Adapter<ImagePreviewAdapter.ViewHolder>() {
+        class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+            val imageView: ImageView = itemView.findViewById(R.id.item_image_preview)
+        }
+        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
+            val view = LayoutInflater.from(parent.context).inflate(R.layout.item_image_preview, parent, false)
+            return ViewHolder(view)
+        }
+        override fun onBindViewHolder(holder: ViewHolder, position: Int) {
+            Glide.with(holder.imageView.context)
+                .load(images[position])
+                .centerCrop()
+                .into(holder.imageView)
+        }
+        override fun getItemCount(): Int = images.size
     }
 }

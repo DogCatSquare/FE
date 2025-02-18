@@ -9,12 +9,16 @@ import android.provider.MediaStore
 import android.text.Editable
 import android.text.TextWatcher
 import android.util.Log
+import android.view.LayoutInflater
 import android.view.View
+import android.view.ViewGroup
 import android.widget.EditText
 import android.widget.ImageView
 import android.widget.RelativeLayout
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.example.dogcatsquare.R
 import com.example.dogcatsquare.data.community.ApiResponse
@@ -39,14 +43,20 @@ class EditPostActivity : AppCompatActivity() {
     private lateinit var etLink: EditText
     private lateinit var ivBack: ImageView
     private lateinit var addPhoto: RelativeLayout
-    private lateinit var imagePreview: ImageView
+    // 기존의 imagePreview 대신 RecyclerView 사용
+    private lateinit var rvImagePreview: RecyclerView
+    private lateinit var imageAdapter: ImagePreviewAdapter
 
-    private var selectedImageFile: File? = null
+    // ImageItem: file가 있으면 새로운 선택, url이 있으면 기존 이미지
+    data class ImageItem(val file: File? = null, val url: String? = null)
+
+    // 새로 선택한 이미지와 기존 이미지를 함께 저장하는 리스트
+    private val imageItems = mutableListOf<ImageItem>()
     private val PICK_IMAGE_REQUEST = 1
     private var postId: Long = -1L
     private var originalImageUrl: String? = null
 
-    // 게시글 종류 ("post" 또는 "tip") – UI 구분용으로만 사용할 수 있음.
+    // 게시글 종류 ("post" 또는 "tip") – UI 구분용으로만 사용
     private var postType: String = "post"
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -59,7 +69,11 @@ class EditPostActivity : AppCompatActivity() {
         etLink = findViewById(R.id.edit_link)
         ivBack = findViewById(R.id.iv_back)
         addPhoto = findViewById(R.id.add_photo)
-        imagePreview = findViewById(R.id.image_preview)
+        // RecyclerView 초기화 (미리보기용)
+        rvImagePreview = findViewById(R.id.rv_image_preview)
+        rvImagePreview.layoutManager = LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
+        imageAdapter = ImagePreviewAdapter(imageItems)
+        rvImagePreview.adapter = imageAdapter
 
         ivBack.setOnClickListener { finish() }
 
@@ -77,11 +91,10 @@ class EditPostActivity : AppCompatActivity() {
         etLink.setText(intent.getStringExtra("videoUrl")) // 꿀팁인 경우 빈 문자열을 보낼 수 있음
 
         originalImageUrl = intent.getStringExtra("imageUrl")
+        // 기존 이미지가 있다면 리스트에 추가하여 미리보기로 보여줌
         if (!originalImageUrl.isNullOrEmpty()) {
-            imagePreview.visibility = View.VISIBLE
-            Glide.with(this).load(originalImageUrl).into(imagePreview)
-        } else {
-            imagePreview.visibility = View.GONE
+            imageItems.add(ImageItem(url = originalImageUrl))
+            imageAdapter.notifyDataSetChanged()
         }
 
         addPhoto.setOnClickListener { openGallery() }
@@ -111,22 +124,36 @@ class EditPostActivity : AppCompatActivity() {
     private fun openGallery() {
         val intent = Intent(Intent.ACTION_PICK)
         intent.type = "image/*"
+        // 다중 선택 허용
+        intent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true)
         startActivityForResult(intent, PICK_IMAGE_REQUEST)
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
-        if (requestCode == PICK_IMAGE_REQUEST && resultCode == Activity.RESULT_OK && data?.data != null) {
-            val imageUri: Uri = data.data!!
-            selectedImageFile = getCompressedImageFile(imageUri)
-            imagePreview.visibility = View.VISIBLE
-            Glide.with(this).load(selectedImageFile).into(imagePreview)
+        if (requestCode == PICK_IMAGE_REQUEST && resultCode == Activity.RESULT_OK) {
+            // 새로운 이미지 선택 시 기존 이미지(원본 URL)는 대체합니다.
+            imageItems.clear()
+
+            if (data?.clipData != null) {
+                val count = data.clipData!!.itemCount
+                for (i in 0 until count) {
+                    val imageUri: Uri = data.clipData!!.getItemAt(i).uri
+                    val file = getCompressedImageFile(imageUri)
+                    imageItems.add(ImageItem(file = file))
+                }
+            } else if (data?.data != null) {
+                val imageUri: Uri = data.data!!
+                val file = getCompressedImageFile(imageUri)
+                imageItems.add(ImageItem(file = file))
+            }
+            imageAdapter.notifyDataSetChanged()
         }
     }
 
     private fun getCompressedImageFile(uri: Uri): File {
         val bitmap: Bitmap = MediaStore.Images.Media.getBitmap(this.contentResolver, uri)
-        val compressedFile = File(this.cacheDir, "compressed_image.jpg")
+        val compressedFile = File(this.cacheDir, "compressed_${System.currentTimeMillis()}.jpg")
         FileOutputStream(compressedFile).use { outputStream ->
             bitmap.compress(Bitmap.CompressFormat.JPEG, 85, outputStream)
             outputStream.flush()
@@ -144,8 +171,7 @@ class EditPostActivity : AppCompatActivity() {
             return
         }
 
-        // PostRequest 객체를 생성합니다.
-        // 꿀팁일 경우 videoUrl 등 필요하지 않은 필드는 빈 문자열로 보낼 수 있습니다.
+        // PostRequest 객체 생성
         val postRequest = PostRequest(
             boardId = 1,
             title = title,
@@ -157,10 +183,17 @@ class EditPostActivity : AppCompatActivity() {
         val jsonPostRequest = Gson().toJson(postRequest)
         val requestBody = RequestBody.create("application/json".toMediaTypeOrNull(), jsonPostRequest)
 
-        val imageParts: List<MultipartBody.Part>? = selectedImageFile?.let { file ->
-            val requestFile = RequestBody.create("image/*".toMediaTypeOrNull(), file)
-            listOf(MultipartBody.Part.createFormData("communityImages", file.name, requestFile))
-        }
+        // 새로 선택한 이미지(File)가 있다면 MultipartBody.Part로 변환합니다.
+        // 만약 사용자가 이미지를 선택하지 않았다면 imageParts는 null로 두어 서버에서 기존 이미지를 유지하도록 합니다.
+        val imageParts: List<MultipartBody.Part>? =
+            if (imageItems.any { it.file != null }) {
+                imageItems.filter { it.file != null }.map { item ->
+                    val requestFile = RequestBody.create("image/*".toMediaTypeOrNull(), item.file!!)
+                    MultipartBody.Part.createFormData("communityImages", item.file!!.name, requestFile)
+                }
+            } else {
+                null
+            }
 
         val call = RetrofitObj.getRetrofit().create(BoardApiService::class.java)
             .updatePost(postId, requestBody, imageParts)
@@ -173,7 +206,8 @@ class EditPostActivity : AppCompatActivity() {
                         putExtra("UPDATED_TITLE", title)
                         putExtra("UPDATED_CONTENT", content)
                         putExtra("UPDATED_VIDEO_URL", videoUrl)
-                        putExtra("UPDATED_IMAGE_URL", selectedImageFile?.absolutePath ?: originalImageUrl)
+                        // 새 이미지가 있다면 첫 번째 파일 경로, 없으면 기존 URL 사용
+                        putExtra("UPDATED_IMAGE_URL", imageItems.firstOrNull { it.file != null }?.file?.absolutePath ?: originalImageUrl)
                     }
                     setResult(Activity.RESULT_OK, resultIntent)
                     finish()
@@ -187,5 +221,31 @@ class EditPostActivity : AppCompatActivity() {
                 Toast.makeText(this@EditPostActivity, "네트워크 오류", Toast.LENGTH_SHORT).show()
             }
         })
+    }
+
+    // 리사이클러뷰 어댑터: ImageItem을 받아서 파일 또는 URL을 로드하여 미리보기로 표시
+    class ImagePreviewAdapter(private val items: List<ImageItem>) : RecyclerView.Adapter<ImagePreviewAdapter.ViewHolder>() {
+        class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+            val imageView: ImageView = itemView.findViewById(R.id.item_image_preview)
+        }
+        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
+            val view = LayoutInflater.from(parent.context).inflate(R.layout.item_image_preview, parent, false)
+            return ViewHolder(view)
+        }
+        override fun onBindViewHolder(holder: ViewHolder, position: Int) {
+            val item = items[position]
+            if (item.file != null) {
+                Glide.with(holder.imageView.context)
+                    .load(item.file)
+                    .centerCrop()
+                    .into(holder.imageView)
+            } else if (!item.url.isNullOrEmpty()) {
+                Glide.with(holder.imageView.context)
+                    .load(item.url)
+                    .centerCrop()
+                    .into(holder.imageView)
+            }
+        }
+        override fun getItemCount(): Int = items.size
     }
 }

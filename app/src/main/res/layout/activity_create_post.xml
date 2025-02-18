@@ -114,14 +114,12 @@
     </RelativeLayout>
 
     <!-- 이미지 미리보기 추가 -->
-    <ImageView
-        android:id="@+id/image_preview"
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rv_image_preview"
         android:layout_width="match_parent"
         android:layout_height="200dp"
         android:layout_below="@id/add_photo"
-        android:layout_marginTop="8dp"
-        android:scaleType="centerCrop"
-        android:visibility="gone" />
+        android:layout_marginTop="8dp" />
 
     <!-- 완료 버튼 -->
     <ImageView
