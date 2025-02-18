@@ -1,5 +1,6 @@
 package com.example.dogcatsquare.ui.community
 
+import android.content.Context
 import android.os.Bundle
 import android.util.Log
 import android.view.KeyEvent
@@ -24,6 +25,11 @@ class SearchBoardActivity : AppCompatActivity() {
     private lateinit var recyclerView: RecyclerView
     private lateinit var boardAdapter: BoardAdapter
 
+    private fun getToken(): String? {
+        val sharedPref = getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
+        return sharedPref?.getString("token", null)
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_search_board)
@@ -32,9 +38,11 @@ class SearchBoardActivity : AppCompatActivity() {
         btnSearch = findViewById(R.id.btnSearchBoard)
         recyclerView = findViewById(R.id.recyclerView)
 
-        recyclerView.layoutManager = LinearLayoutManager(this)
-        boardAdapter = BoardAdapter(emptyList())
-        recyclerView.adapter = boardAdapter
+//        recyclerView.layoutManager = LinearLayoutManager(this)
+//        boardAdapter = BoardAdapter(this) { myBoard ->
+//            addMyBoard(myBoard)
+//        }
+//        recyclerView.adapter = boardAdapter
 
         // 앱 실행 시 모든 게시판 조회
         getAllBoards()
@@ -65,7 +73,8 @@ class SearchBoardActivity : AppCompatActivity() {
 
     // 모든 게시판 조회 API 호출
     private fun getAllBoards() {
-        RetrofitClient.instance.getAllBoards()
+        val token = getToken()
+        RetrofitClient.instance.getAllBoards("Bearer $token")
             .enqueue(object : Callback<BoardSearchResponseDto> {
                 override fun onResponse(
                     call: Call<BoardSearchResponseDto>,
@@ -76,20 +85,29 @@ class SearchBoardActivity : AppCompatActivity() {
                         boardAdapter.submitList(boardList) // RecyclerView 업데이트
                         Log.d("SearchBoardActivity", "모든 게시판 조회 완료: ${boardList.size}개")
                     } else {
-                        Toast.makeText(this@SearchBoardActivity, "게시판 조회 실패: ${response.message()}", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(
+                            this@SearchBoardActivity,
+                            "게시판 조회 실패: ${response.message()}",
+                            Toast.LENGTH_SHORT
+                        ).show()
                     }
                 }
 
                 override fun onFailure(call: Call<BoardSearchResponseDto>, t: Throwable) {
                     Log.e("SearchBoardActivity", "서버 연결 실패", t)
-                    Toast.makeText(this@SearchBoardActivity, "서버 연결 실패: ${t.message}", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(
+                        this@SearchBoardActivity,
+                        "서버 연결 실패: ${t.message}",
+                        Toast.LENGTH_SHORT
+                    ).show()
                 }
             })
     }
 
     // 검색 API 호출
     private fun searchBoard(boardName: String) {
-        RetrofitClient.instance.searchBoard(boardName)
+        val token = getToken()
+        RetrofitClient.instance.searchBoard("Bearer $token", boardName)
             .enqueue(object : Callback<BoardSearchResponseDto> {
                 override fun onResponse(
                     call: Call<BoardSearchResponseDto>,
@@ -100,14 +118,17 @@ class SearchBoardActivity : AppCompatActivity() {
 
                         // 검색어 포함 여부에 따라 정렬 우선순위 적용
                         val sortedList = boardList.sortedByDescending { board ->
-                            val isExactTitleMatch = board.boardName.equals(boardName, ignoreCase = true)
-                            val isTitleContains = board.boardName.contains(boardName, ignoreCase = true)
-                            val isKeywordMatch = board.keywords.any { it.contains(boardName, ignoreCase = true) }
+                            val isExactTitleMatch =
+                                board.boardName.equals(boardName, ignoreCase = true)
+                            val isTitleContains =
+                                board.boardName.contains(boardName, ignoreCase = true)
+                            val isKeywordMatch =
+                                board.keywords?.any { it.contains(boardName, ignoreCase = true) }
 
                             when {
                                 isExactTitleMatch -> 3
                                 isTitleContains -> 2
-                                isKeywordMatch -> 1
+                                isKeywordMatch == true -> 1
                                 else -> 0
                             }
                         }
@@ -115,13 +136,21 @@ class SearchBoardActivity : AppCompatActivity() {
                         boardAdapter.submitList(sortedList) // RecyclerView 업데이트
                         Log.d("SearchBoardActivity", "검색 결과 업데이트 완료: ${sortedList.size}개")
                     } else {
-                        Toast.makeText(this@SearchBoardActivity, "검색 실패: ${response.message()}", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(
+                            this@SearchBoardActivity,
+                            "검색 실패: ${response.message()}",
+                            Toast.LENGTH_SHORT
+                        ).show()
                     }
                 }
 
                 override fun onFailure(call: Call<BoardSearchResponseDto>, t: Throwable) {
                     Log.e("SearchBoardActivity", "서버 연결 실패", t)
-                    Toast.makeText(this@SearchBoardActivity, "서버 연결 실패: ${t.message}", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(
+                        this@SearchBoardActivity,
+                        "서버 연결 실패: ${t.message}",
+                        Toast.LENGTH_SHORT
+                    ).show()
                 }
             })
     }

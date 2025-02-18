@@ -3,7 +3,7 @@ package com.example.dogcatsquare.data.community
 import com.google.gson.annotations.SerializedName
 
 data class Post(
-    val id: Long,
+    val id: Int,
     val board: String,
     val username: String,
     val dogbreed: String,

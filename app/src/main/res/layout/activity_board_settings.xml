@@ -1,8 +1,8 @@
-<LinearLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    xmlns:tools="http://schemas.android.com/tools"
     android:orientation="vertical"
     android:gravity="center_horizontal"
     android:padding="8dp"
@@ -33,12 +33,22 @@
             android:textStyle="bold" />
     </RelativeLayout>
 
+    <!-- 검색 결과 게시판 리스트 (RecyclerView로 변경) -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/addMyBoardRecyclerView"
+        android:layout_width="match_parent"
+        android:layout_height="150dp"
+        android:layout_marginTop="16dp"
+        android:scrollbars="vertical"
+        tools:itemCount="5" />
+
     <!-- 게시판 만들기 버튼 -->
     <ImageButton
         android:id="@+id/btnCreateBoard"
         android:layout_width="180dp"
         android:layout_height="48dp"
         android:layout_marginBottom="16dp"
+        android:layout_marginTop="16dp"
         android:layout_gravity="center_horizontal"
         android:src="@drawable/bt_create_board"
         app:backgroundTint="#FFFBF1"
@@ -48,11 +58,11 @@
     <!-- 게시판 검색 -->
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="40dp"
         android:background="@drawable/bg_search_board"
+        android:gravity="center_vertical"
         android:orientation="horizontal"
-        android:padding="8dp"
-        android:gravity="center_vertical">
+        android:padding="8dp">
 
         <EditText
             android:id="@+id/etSearchBoard"
@@ -61,20 +71,21 @@
             android:layout_weight="1"
             android:background="@null"
             android:hint="게시판 검색"
+            android:imeOptions="actionSearch"
+            android:inputType="text"
             android:paddingStart="8dp"
             android:textColor="#000000"
-            android:textSize="14sp"
-            android:imeOptions="actionSearch"
-            android:inputType="text" />
+            android:textSize="14sp" />
 
         <ImageView
             android:id="@+id/btnSearchBoard"
-            android:layout_width="24dp"
-            android:layout_height="24dp"
-            android:src="@drawable/ic_search"
-            android:contentDescription="검색"
+            android:layout_width="18dp"
+            android:layout_height="18dp"
+            android:layout_marginEnd="8dp"
             android:clickable="true"
-            android:focusable="true"/>
+            android:contentDescription="검색"
+            android:focusable="true"
+            android:src="@drawable/ic_search" />
     </LinearLayout>
 
     <!-- 검색 결과 게시판 리스트 (RecyclerView로 변경) -->
@@ -82,6 +93,7 @@
         android:id="@+id/recyclerView"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        tools:itemCount="8"
         android:layout_marginTop="16dp"
         android:scrollbars="vertical"/>
 </LinearLayout>

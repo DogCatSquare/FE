@@ -4,6 +4,9 @@ import com.example.dogcatsquare.data.community.ApiResponse
 import com.example.dogcatsquare.data.community.BoardRequestDto
 import com.example.dogcatsquare.data.community.BoardResponseDto
 import com.example.dogcatsquare.data.community.BoardSearchResponseDto
+import com.example.dogcatsquare.data.community.DeleteMyBoardResponse
+import com.example.dogcatsquare.data.community.GetMyBoardHomeResponse
+import com.example.dogcatsquare.data.community.MyBoardResponse
 import com.example.dogcatsquare.data.community.PostDetailResponse
 import com.example.dogcatsquare.data.community.PostListResponse
 import com.example.dogcatsquare.data.community.PostResponse
@@ -15,10 +18,10 @@ import retrofit2.http.*
 
 interface BoardApiService {
     // 게시판 생성 API
-    @POST("/api/board")
+    @POST("api/board")
     fun createBoard(
         @Header("Authorization") token: String,
-        @Body boardRequest: BoardRequestDto
+        @Body createBoardRequestDto: BoardRequestDto
     ): Call<BoardResponseDto>
 
     // 게시글 등록 API
@@ -33,7 +36,7 @@ interface BoardApiService {
 
     // 게시글 수정 API
     @Multipart
-    @PUT("/api/board/post/{postId}")
+    @PUT("api/board/post/{postId}")
     fun updatePost(
         @Path("postId") postId: Long,
         @Part("request") request: RequestBody,
@@ -54,14 +57,27 @@ interface BoardApiService {
     ): Call<PostListResponse>
 
     // 모든 게시판 조회 API
-    @GET("/api/board/all")
-    fun getAllBoards(): Call<BoardSearchResponseDto>
+    @GET("api/board/all")
+    fun getAllBoards(@Header("Authorization") token: String): Call<BoardSearchResponseDto>
 
-    // 게시판 검색 API
+    @GET("api/myboard")
+    fun getMyBoards(@Header("Authorization") token: String): Call<MyBoardResponse>
+
+    @POST("api/myboard")
+    fun addMyBoard(@Header("Authorization") token: String, @Query("boardId") boardId: Int): Call<MyBoardResponse>
+
+    @DELETE("api/myboard/{myBoardId}")
+    fun deleteMyBoard(@Header("Authorization") token: String, @Path("myBoardId") boardId: Int): Call<DeleteMyBoardResponse>
+
+    @GET("api/myboard/home")
+    fun getMyBoardHome(@Header("Authorization") token: String): Call<MyBoardResponse>
+
+    @GET("api/board/search")
+    fun searchBoard(@Header("Authorization") token: String, @Query("boardName") boardName: String): Call<BoardSearchResponseDto>
+
     @GET("/api/board/search")
     fun searchBoard(@Query("boardName") boardName: String): Call<BoardSearchResponseDto>
 
     @GET("api/board/posts/popular")
     fun getPopularPost(@Header("Authorization") token: String): Call<PopularPostResponse>
-
 }
