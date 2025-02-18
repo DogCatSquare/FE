@@ -71,6 +71,14 @@ class CommunityFragment : Fragment() {
         }
     }
 
+    override fun onResume() {
+        super.onResume()
+        val token = getToken()
+        if (token != null) {
+            getMyBoardHome()
+        }
+    }
+
     // 상단바 소개 설정 -> 추후 뷰모델로 수정
     private fun setInfo() {
         val token = getToken()

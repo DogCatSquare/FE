@@ -14,16 +14,7 @@ import com.example.dogcatsquare.R
 import com.example.dogcatsquare.data.api.BoardApiService
 import com.example.dogcatsquare.data.community.BoardRequestDto
 import com.example.dogcatsquare.data.community.BoardResponseDto
-import com.example.dogcatsquare.data.model.home.DDay
-import com.example.dogcatsquare.data.model.home.GetAllDDayResponse
 import com.example.dogcatsquare.data.network.RetrofitObj
-import com.example.dogcatsquare.databinding.ActivityBoardCreateBinding
-import android.widget.Toast
-import androidx.appcompat.app.AppCompatActivity
-import com.example.dogcatsquare.R
-import com.example.dogcatsquare.api.RetrofitClient
-import com.example.dogcatsquare.data.community.BoardRequestDto
-import com.example.dogcatsquare.data.community.BoardResponseDto
 import com.example.dogcatsquare.databinding.ActivityBoardCreateBinding
 import com.google.gson.Gson
 import retrofit2.Call
@@ -59,6 +50,11 @@ class BoardCreateActivity : AppCompatActivity() {
                 val currentLength = s?.length ?: 0
                 binding.boardNameCount.text = "$currentLength/8"
                 isTitle = currentLength > 0
+            }
+
+            override fun afterTextChanged(s: Editable?) {
+            }
+        })
 
         // 🔹 뒤로가기 버튼 설정
         binding.ivBack.setOnClickListener { finish() }
@@ -72,7 +68,7 @@ class BoardCreateActivity : AppCompatActivity() {
             }
 
             override fun afterTextChanged(s: Editable?) {}
-        })
+        }
 
         binding.editBoardDescription.addTextChangedListener(object : TextWatcher {
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
