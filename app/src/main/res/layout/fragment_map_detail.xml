@@ -91,6 +91,16 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent">
 
+            <TextView
+                android:id="@+id/additionalInfo"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:text="기타"
+                app:layout_constraintEnd_toStartOf="@+id/guideline2"
+                app:layout_constraintStart_toStartOf="@+id/guideline1"
+                app:layout_constraintTop_toBottomOf="@+id/cardView2" />
+
             <androidx.constraintlayout.widget.Guideline
                 android:id="@+id/guideline1"
                 android:layout_width="0dp"
@@ -301,17 +311,6 @@
                 app:layout_constraintTop_toBottomOf="@+id/textView15" />
 
             <TextView
-                android:id="@+id/textView23"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
-                android:text="편의시설"
-                android:textSize="14dp"
-                android:textStyle="bold"
-                app:layout_constraintStart_toStartOf="@+id/guideline1"
-                app:layout_constraintTop_toBottomOf="@+id/placeUrl" />
-
-            <TextView
                 android:id="@+id/textView25"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -320,7 +319,7 @@
                 android:textSize="14dp"
                 android:textStyle="bold"
                 app:layout_constraintStart_toStartOf="@+id/guideline1"
-                app:layout_constraintTop_toBottomOf="@+id/placeFacility" />
+                app:layout_constraintTop_toBottomOf="@+id/placeUrl" />
 
             <TextView
                 android:id="@+id/placeStatus"
@@ -387,30 +386,16 @@
                 app:layout_constraintTop_toTopOf="@+id/textView16" />
 
             <TextView
-                android:id="@+id/placeFacility"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="16dp"
-                android:text="무선인터넷, 주차, 예약, 대기공간"
-                android:textColor="#696969"
-                android:textSize="14dp"
-                app:layout_constraintBottom_toBottomOf="@+id/textView23"
-
-                app:layout_constraintStart_toEndOf="@+id/textView23"
-                app:layout_constraintTop_toTopOf="@+id/textView23" />
-
-            <TextView
                 android:id="@+id/placeLocationFull"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="16dp"
                 android:layout_marginEnd="8dp"
                 android:text="서울시 성북구 월곡동 77"
                 android:textColor="#696969"
                 android:textSize="14dp"
 
                 app:layout_constraintEnd_toStartOf="@+id/direction"
-                app:layout_constraintStart_toEndOf="@+id/textView23"
+                app:layout_constraintStart_toStartOf="@+id/placeUrl"
                 app:layout_constraintTop_toTopOf="@+id/textView25" />
 
             <TextView
@@ -420,7 +405,6 @@
                 android:text="길찾기"
                 android:textColor="#696969"
                 android:textSize="14dp"
-                app:layout_constraintBottom_toBottomOf="@+id/placeLocationFull"
                 app:layout_constraintEnd_toEndOf="@id/guideline2"
                 app:layout_constraintTop_toTopOf="@+id/placeLocationFull" />
 
@@ -448,7 +432,7 @@
                 android:src="@drawable/ic_map_contour_place"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/cardView2" />
+                app:layout_constraintTop_toBottomOf="@+id/additionalInfo" />
 
             <TextView
                 android:id="@+id/textView32"
@@ -465,7 +449,7 @@
             <androidx.cardview.widget.CardView
                 android:id="@+id/cardView"
                 android:layout_width="0dp"
-                android:layout_height="200dp"
+                android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"
                 app:cardCornerRadius="16dp"
                 app:layout_constraintEnd_toEndOf="@id/guideline2"
@@ -482,7 +466,7 @@
                     <TextView
                         android:id="@+id/placeIntro"
                         android:layout_width="0dp"
-                        android:layout_height="0dp"
+                        android:layout_height="wrap_content"
                         android:layout_marginStart="16dp"
                         android:layout_marginTop="16dp"
                         android:layout_marginEnd="16dp"
@@ -544,6 +528,32 @@
 
                 app:layout_constraintTop_toBottomOf="@+id/textView7"
                 tools:listitem="@layout/item_map_review" />
+
+            <ImageView
+                android:id="@+id/defaultReviewImage"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:scaleType="centerCrop"
+                android:src="@drawable/img_detail_default"
+                android:visibility="gone"
+                app:layout_constraintEnd_toEndOf="@id/guideline2"
+                app:layout_constraintStart_toStartOf="@id/guideline1"
+                app:layout_constraintTop_toBottomOf="@+id/textView7" />
+
+            <TextView
+                android:id="@+id/defaultReviewText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="아직 작성된 후기가 없어요\n이웃들을 위해 첫번째 후기를 남겨보세요"
+                android:textAlignment="center"
+                android:textColor="#9E9E9E"
+                android:textSize="14dp"
+                android:visibility="gone"
+                app:layout_constraintBottom_toBottomOf="@+id/defaultReviewImage"
+                app:layout_constraintEnd_toEndOf="@+id/defaultReviewImage"
+                app:layout_constraintStart_toStartOf="@+id/defaultReviewImage"
+                app:layout_constraintTop_toTopOf="@+id/defaultReviewImage" />
 
             <ImageView
                 android:id="@+id/imageView3"

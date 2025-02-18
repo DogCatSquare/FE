@@ -2,14 +2,13 @@ package com.example.dogcatsquare.ui.map
 
 import android.content.Context
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.example.dogcatsquare.R
 import com.example.dogcatsquare.RetrofitClient
 import com.example.dogcatsquare.data.map.MapPlace
@@ -30,8 +29,35 @@ class SearchResultFragment : Fragment() {
     private lateinit var mapPlaceRVAdapter: MapPlaceRVAdapter
     private var searchQuery: String? = null
 
+    private var currentPage = 0
+    private var isLastPage = false
+    private var isLoading = false
+    private val ITEMS_PER_PAGE = 10
+
     private var latitude: Double = 37.5665
     private var longitude: Double = 126.9780
+
+    private var shouldRefresh = false
+
+    private val scrollListener = object : RecyclerView.OnScrollListener() {
+        override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
+            super.onScrolled(recyclerView, dx, dy)
+
+            val layoutManager = recyclerView.layoutManager as LinearLayoutManager
+            val visibleItemCount = layoutManager.childCount
+            val totalItemCount = layoutManager.itemCount
+            val firstVisibleItemPosition = layoutManager.findFirstVisibleItemPosition()
+            val loadTriggerPosition = (currentPage * ITEMS_PER_PAGE) + 5
+
+            if (!isLoading && !isLastPage) {
+                val lastVisibleItemPosition = firstVisibleItemPosition + visibleItemCount - 1
+                if (firstVisibleItemPosition <= loadTriggerPosition &&
+                    loadTriggerPosition <= lastVisibleItemPosition) {
+                    loadMorePlaces()
+                }
+            }
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -51,13 +77,12 @@ class SearchResultFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
         setupRecyclerView()
         setupClickListeners()
 
-        // 검색어가 있다면 검색 실행
         searchQuery?.let { query ->
-            loadPlaces(query)
+            resetPagingState()
+            loadPlaces(query, 0, true)
         }
     }
 
@@ -65,31 +90,9 @@ class SearchResultFragment : Fragment() {
         mapPlaceRVAdapter = MapPlaceRVAdapter(placeDatas, object : MapPlaceRVAdapter.OnItemClickListener {
             override fun onItemClick(place: MapPlace) {
                 when (place.placeType) {
-                    "동물병원" -> {
-                        val fragment = MapDetailFragment().apply {
-                            arguments = Bundle().apply {
-                                putInt("placeId", place.id)
-                                val (lat, lng) = getCurrentLocation()
-                                putDouble("latitude", lat)
-                                putDouble("longitude", lng)
-                            }
-                        }
-                        navigateToFragment(fragment)
-                    }
-                    "산책로" -> {
-                        navigateToFragment(WalkingStartViewFragment())
-                    }
-                    else -> {
-                        val fragment = MapDetailFragment().apply {
-                            arguments = Bundle().apply {
-                                putInt("placeId", place.id)
-                                val (lat, lng) = getCurrentLocation()
-                                putDouble("latitude", lat)
-                                putDouble("longitude", lng)
-                            }
-                        }
-                        navigateToFragment(fragment)
-                    }
+                    "동물병원" -> navigateToDetailFragment(place.id)
+                    "산책로" -> navigateToFragment(WalkingStartViewFragment())
+                    else -> navigateToDetailFragment(place.id)
                 }
             }
         })
@@ -97,6 +100,7 @@ class SearchResultFragment : Fragment() {
         binding.mapPlaceRV.apply {
             adapter = mapPlaceRVAdapter
             layoutManager = LinearLayoutManager(context)
+            addOnScrollListener(scrollListener)
         }
     }
 
@@ -106,18 +110,17 @@ class SearchResultFragment : Fragment() {
         }
     }
 
-    private fun loadPlaces(keyword: String) {
-        val token = getToken()
-        if (token == null) {
-            Toast.makeText(requireContext(), "로그인이 필요합니다.", Toast.LENGTH_SHORT).show()
-            return
+    private fun loadMorePlaces() {
+        searchQuery?.let { query ->
+            loadPlaces(query, currentPage + 1, false)
         }
+    }
 
-        Log.d("SearchResultFragment", "원본 검색어: '$keyword'")
+    private fun loadPlaces(keyword: String, page: Int, isNewSearch: Boolean) {
+        if (isLoading) return
+        val token = getToken() ?: return
 
-        val formattedKeyword = formatSearchKeyword(keyword)
-        Log.d("SearchResultFragment", "전처리된 검색어: '$formattedKeyword'")
-
+        isLoading = true
         lifecycleScope.launch {
             try {
                 val searchRequest = SearchPlacesRequest(
@@ -128,17 +131,14 @@ class SearchResultFragment : Fragment() {
                 val response = withContext(Dispatchers.IO) {
                     RetrofitClient.placesApiService.searchPlaces(
                         token = "Bearer $token",
-//                        cityId = getCityId(),
-//                        keyword = keyword,
+                        keyword = keyword,
+                        page = page,
                         request = searchRequest
                     )
                 }
 
-                Log.d("SearchResultFragment", "API 응답: isSuccess=${response.isSuccess}, " +
-                        "결과 수=${response.result?.content?.size ?: 0}")
-
                 if (response.isSuccess) {
-                    val places = response.result?.content?.map { place ->
+                    val newPlaces = response.result?.content?.map { place ->
                         MapPlace(
                             id = place.id,
                             placeName = place.name,
@@ -148,34 +148,26 @@ class SearchResultFragment : Fragment() {
                             placeCall = place.phoneNumber,
                             isOpen = if (place.open) "영업중" else "영업종료",
                             placeImgUrl = place.imgUrl,
-                            reviewCount = place.reviewCount
+                            reviewCount = place.reviewCount,
+                            keywords = place.keywords ?: emptyList()
                         )
                     } ?: emptyList()
 
-                    updateRecyclerView(places)
+                    currentPage = response.result?.number ?: 0
+                    isLastPage = response.result?.last ?: true
 
-                    // 검색 결과 수 표시
-                    Toast.makeText(
-                        requireContext(),
-                        "총 ${places.size}개의 검색 결과를 찾았습니다.",
-                        Toast.LENGTH_SHORT
-                    ).show()
-                } else {
-                    Toast.makeText(
-                        requireContext(),
-                        response.message ?: "검색 결과를 불러오는데 실패했습니다.",
-                        Toast.LENGTH_SHORT
-                    ).show()
+                    if (isNewSearch) {
+                        updateRecyclerView(newPlaces)
+                    } else {
+                        appendToRecyclerView(newPlaces)
+                    }
                 }
             } catch (e: Exception) {
-                handleError(e)
+                // 에러 발생 시 처리
+            } finally {
+                isLoading = false
             }
         }
-    }
-
-    private fun formatSearchKeyword(keyword: String): String {
-        // 검색어 전처리
-        return keyword.trim()  // 기본적인 공백 제거
     }
 
     private fun updateRecyclerView(newPlaces: List<MapPlace>) {
@@ -184,49 +176,21 @@ class SearchResultFragment : Fragment() {
         mapPlaceRVAdapter.notifyDataSetChanged()
     }
 
-    private fun convertCategory(category: String): String {
-        return when (category) {
-            "HOSPITAL" -> "동물병원"
-            "PARK" -> "산책로"
-            "CAFE" -> "카페"
-            "RESTAURANT" -> "식당"
-            "HOTEL" -> "호텔"
-            else -> category
-        }
+    private fun appendToRecyclerView(newPlaces: List<MapPlace>) {
+        val startPos = placeDatas.size
+        placeDatas.addAll(newPlaces)
+        mapPlaceRVAdapter.notifyItemRangeInserted(startPos, newPlaces.size)
     }
 
-    private fun getCurrentLocation(): Pair<Double, Double> {
-        return Pair(latitude, longitude)
-    }
-
-    private fun getToken(): String? {
-        return activity?.getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
-            ?.getString("token", null)
-    }
-
-    private fun getCityId(): Int {
-        return activity?.getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
-            ?.getInt("city_id", 1) ?: 1
-    }
-
-    private fun handleError(e: Exception) {
-        val errorMessage = when (e) {
-            is retrofit2.HttpException -> {
-                when (e.code()) {
-                    401 -> "로그인이 필요합니다."
-                    403 -> "권한이 없습니다."
-                    404 -> "검색 결과를 찾을 수 없습니다."
-                    else -> "서버 오류가 발생했습니다. (${e.code()})"
-                }
+    private fun navigateToDetailFragment(placeId: Int) {
+        val fragment = MapDetailFragment().apply {
+            arguments = Bundle().apply {
+                putInt("placeId", placeId)
+                putDouble("latitude", latitude)
+                putDouble("longitude", longitude)
             }
-            is java.io.IOException -> "네트워크 연결을 확인해주세요."
-            else -> "알 수 없는 오류가 발생했습니다: ${e.message}"
         }
-
-        activity?.runOnUiThread {
-            Toast.makeText(requireContext(), errorMessage, Toast.LENGTH_SHORT).show()
-        }
-        Log.e("SearchResultFragment", "검색 중 오류 발생", e)
+        navigateToFragment(fragment)
     }
 
     private fun navigateToFragment(fragment: Fragment) {
@@ -243,20 +207,66 @@ class SearchResultFragment : Fragment() {
             .commit()
     }
 
+    private fun convertCategory(category: String): String {
+        return when (category) {
+            "HOSPITAL" -> "동물병원"
+            "PARK" -> "산책로"
+            "CAFE" -> "카페"
+            "RESTAURANT" -> "식당"
+            "HOTEL" -> "호텔"
+            else -> category
+        }
+    }
+
+    private fun getToken(): String? {
+        return activity?.getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
+            ?.getString("token", null)
+    }
+
+    private fun resetPagingState() {
+        currentPage = 0
+        isLastPage = false
+        isLoading = false
+        placeDatas.clear()
+        mapPlaceRVAdapter.notifyDataSetChanged()
+    }
+
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
     }
 
+    override fun onResume() {
+        super.onResume()
+        // 이전 화면에서 돌아왔을 때 데이터 새로고침
+        if (shouldRefresh) {
+            searchQuery?.let { query ->
+                resetPagingState()
+                loadPlaces(query, 0, true)
+            }
+            shouldRefresh = false
+        }
+    }
+
+    override fun onPause() {
+        super.onPause()
+        // 다른 프래그먼트로 이동할 때 새로고침 플래그 설정
+        shouldRefresh = true
+    }
+
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
         outState.putString("searchQuery", searchQuery)
+        outState.putInt("currentPage", currentPage)
+        outState.putBoolean("isLastPage", isLastPage)
     }
 
     override fun onViewStateRestored(savedInstanceState: Bundle?) {
         super.onViewStateRestored(savedInstanceState)
         savedInstanceState?.let { bundle ->
             searchQuery = bundle.getString("searchQuery")
+            currentPage = bundle.getInt("currentPage", 0)
+            isLastPage = bundle.getBoolean("isLastPage", false)
         }
     }
 }
