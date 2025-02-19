@@ -157,7 +157,7 @@
         android:id="@+id/characteristicsContainer"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginEnd="16dp"
+        android:layout_marginEnd="5dp"
         app:alignItems="center"
         app:flexWrap="wrap"
         app:justifyContent="flex_start"
