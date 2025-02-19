@@ -200,6 +200,10 @@ class MapFragment : Fragment(), OnMapReadyCallback {
                 .commit()
         }
 
+        binding.researchButton.setOnClickListener {
+            refreshMap()
+        }
+
     }
 
     private fun setupLocationCallback() {
@@ -1388,6 +1392,47 @@ class MapFragment : Fragment(), OnMapReadyCallback {
                     ).show()
                 }
                 Log.e("MapFragment", "moveToCurrentLocation 오류", e)
+            }
+        }
+    }
+
+    private fun refreshMap() {
+        lifecycleScope.launch {
+            try {
+                // 로딩 표시
+                withContext(Dispatchers.Main) {
+                    Toast.makeText(requireContext(), "지도를 새로고침하는 중...", Toast.LENGTH_SHORT).show()
+                }
+
+                // 페이징 상태 초기화
+                resetPagingState()
+
+                // 카테고리 선택 초기화
+                resetCategoryAndPaging()
+
+                // 현재 정렬 방식에 따라 다른 처리
+                when (currentSortType) {
+                    "위치기준" -> moveToCurrentLocation()
+                    "주소기준" -> moveToUserAddress()
+                    else -> {
+                        // 데이터 새로 로드
+                        loadAllCategories()
+                    }
+                }
+
+                // 성공 메시지
+                withContext(Dispatchers.Main) {
+                    Toast.makeText(requireContext(), "새로고침 완료", Toast.LENGTH_SHORT).show()
+                }
+            } catch (e: Exception) {
+                withContext(Dispatchers.Main) {
+                    handleError(e)
+                    Toast.makeText(
+                        requireContext(),
+                        "새로고침 중 오류가 발생했습니다: ${e.message}",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
             }
         }
     }
