@@ -35,6 +35,20 @@ class MapReviewFragment : Fragment() {
 
     private fun setupBackButton() {
         binding.backButton.setOnClickListener {
+            // 뒤로가기 시 부모 프래그먼트 표시
+            requireActivity().supportFragmentManager.fragments
+                .filterIsInstance<MapDetailFragment>()
+                .firstOrNull()?.let { detailFragment ->
+                    requireActivity().supportFragmentManager.beginTransaction()
+                        .setCustomAnimations(
+                            R.anim.slide_in_left,   // 이전 프래그먼트가 왼쪽에서 들어옴
+                            R.anim.slide_out_right, // 현재 프래그먼트가 오른쪽으로 나감
+                            R.anim.slide_in_right,  // 새 프래그먼트가 오른쪽에서 들어옴
+                            R.anim.slide_out_left   // 현재 프래그먼트가 왼쪽으로 나감
+                        )
+                        .show(detailFragment)
+                        .commit()
+                }
             requireActivity().supportFragmentManager.popBackStack()
         }
     }
@@ -101,7 +115,14 @@ class MapReviewFragment : Fragment() {
             val mapAddReviewFragment = MapAddReviewFragment()
 
             requireActivity().supportFragmentManager.beginTransaction()
-                .replace(R.id.main_frm, mapAddReviewFragment)
+                .setCustomAnimations(
+                    R.anim.slide_in_right,  // 새 프래그먼트가 오른쪽에서 들어옴
+                    R.anim.slide_out_left,  // 현재 프래그먼트가 왼쪽으로 나감
+                    R.anim.slide_in_left,   // 뒤로가기 시 현재 프래그먼트가 왼쪽에서 들어옴
+                    R.anim.slide_out_right  // 새 프래그먼트가 오른쪽으로 나감
+                )
+                .hide(this)  // replace 대신 hide 사용
+                .add(R.id.main_frm, mapAddReviewFragment)  // add로 새 프래그먼트 추가
                 .addToBackStack(null)
                 .commit()
         }
@@ -109,6 +130,20 @@ class MapReviewFragment : Fragment() {
 
     override fun onDestroyView() {
         super.onDestroyView()
+        // 프래그먼트가 제거될 때 부모 프래그먼트 표시
+        requireActivity().supportFragmentManager.fragments
+            .filterIsInstance<MapDetailFragment>()
+            .firstOrNull()?.let { detailFragment ->
+                requireActivity().supportFragmentManager.beginTransaction()
+                    .setCustomAnimations(
+                        R.anim.slide_in_left,   // 이전 프래그먼트가 왼쪽에서 들어옴
+                        R.anim.slide_out_right, // 현재 프래그먼트가 오른쪽으로 나감
+                        R.anim.slide_in_right,  // 새 프래그먼트가 오른쪽에서 들어옴
+                        R.anim.slide_out_left   // 현재 프래그먼트가 왼쪽으로 나감
+                    )
+                    .show(detailFragment)
+                    .commit()
+            }
         _binding = null
     }
 }

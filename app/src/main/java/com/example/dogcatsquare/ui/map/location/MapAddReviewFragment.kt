@@ -88,6 +88,20 @@ class MapAddReviewFragment : Fragment() {
 
     private fun setupBackButton() {
         binding.backButton.setOnClickListener {
+            // 부모 프래그먼트(MapDetailFragment) 표시
+            requireActivity().supportFragmentManager.fragments
+                .filterIsInstance<MapDetailFragment>()
+                .firstOrNull()?.let { detailFragment ->
+                    requireActivity().supportFragmentManager.beginTransaction()
+                        .setCustomAnimations(
+                            R.anim.slide_in_left,   // 이전 프래그먼트가 왼쪽에서 들어옴
+                            R.anim.slide_out_right, // 현재 프래그먼트가 오른쪽으로 나감
+                            R.anim.slide_in_right,  // 새 프래그먼트가 오른쪽에서 들어옴
+                            R.anim.slide_out_left   // 현재 프래그먼트가 왼쪽으로 나감
+                        )
+                        .show(detailFragment)
+                        .commit()
+                }
             requireActivity().supportFragmentManager.popBackStack()
         }
     }
@@ -228,8 +242,24 @@ class MapAddReviewFragment : Fragment() {
 
                 if (response.isSuccess) {
                     Toast.makeText(requireContext(), "리뷰가 성공적으로 등록되었습니다.", Toast.LENGTH_SHORT).show()
+
+                    requireActivity().supportFragmentManager.fragments
+                        .filterIsInstance<MapDetailFragment>()
+                        .firstOrNull()?.let { detailFragment ->
+                            requireActivity().supportFragmentManager.beginTransaction()
+                                .setCustomAnimations(
+                                    R.anim.slide_in_left,   // 이전 프래그먼트가 왼쪽에서 들어옴
+                                    R.anim.slide_out_right, // 현재 프래그먼트가 오른쪽으로 나감
+                                    R.anim.slide_in_right,  // 새 프래그먼트가 오른쪽에서 들어옴
+                                    R.anim.slide_out_left   // 현재 프래그먼트가 왼쪽으로 나감
+                                )
+                                .show(detailFragment)
+                                .commit()
+
+                            // 부모 프래그먼트의 데이터 새로고침
+                            detailFragment.refreshPlaceDetails()
+                        }
                     requireActivity().supportFragmentManager.popBackStack()
-                    (parentFragment as? MapDetailFragment)?.refreshPlaceDetails()
                 } else {
                     Toast.makeText(requireContext(), response.message ?: "리뷰 등록에 실패했습니다.", Toast.LENGTH_SHORT).show()
                 }
@@ -277,6 +307,20 @@ class MapAddReviewFragment : Fragment() {
 
     override fun onDestroyView() {
         super.onDestroyView()
+        // 프래그먼트가 제거될 때 부모 프래그먼트 표시
+        requireActivity().supportFragmentManager.fragments
+            .filterIsInstance<MapDetailFragment>()
+            .firstOrNull()?.let { detailFragment ->
+                requireActivity().supportFragmentManager.beginTransaction()
+                    .setCustomAnimations(
+                        R.anim.slide_in_left,   // 이전 프래그먼트가 왼쪽에서 들어옴
+                        R.anim.slide_out_right, // 현재 프래그먼트가 오른쪽으로 나감
+                        R.anim.slide_in_right,  // 새 프래그먼트가 오른쪽에서 들어옴
+                        R.anim.slide_out_left   // 현재 프래그먼트가 왼쪽으로 나감
+                    )
+                    .show(detailFragment)
+                    .commit()
+            }
         _binding = null
     }
 

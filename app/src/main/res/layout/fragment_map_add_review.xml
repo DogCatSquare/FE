@@ -5,7 +5,8 @@
     android:id="@+id/addText"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".ui.map.location.MapAddReviewFragment">
+    tools:context=".ui.map.location.MapAddReviewFragment"
+    android:background="@color/white">
 
     <androidx.constraintlayout.widget.Guideline
         android:id="@+id/guideline_start"

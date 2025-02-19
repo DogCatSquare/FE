@@ -34,6 +34,7 @@ class MapReviewRVAdapter(private val reviewList: ArrayList<MapReview>): Recycler
                     .load(review.userImageUrl)
                     .fallback(R.drawable.ic_profile_img_default)
                     .error(R.drawable.ic_profile_img_default)
+                    .circleCrop() // 프로필 이미지를 원형으로 표시
                     .into(binding.reviewProfileImg)
             } else {
                 binding.reviewProfileImg.setImageResource(R.drawable.ic_profile_img_default)
@@ -53,6 +54,8 @@ class MapReviewRVAdapter(private val reviewList: ArrayList<MapReview>): Recycler
                     .load(review.placeReviewImageUrl.first())
                     .fallback(R.drawable.ic_place_img_default)
                     .error(R.drawable.ic_place_img_default)
+                    .centerCrop() // 이미지를 화면에 맞게 크롭
+                    .override(210, 210) // 이미지 크기를 70dp x 70dp (3배수)로 설정
                     .into(binding.reviewImg)
             } else {
                 binding.reviewImg.setImageResource(R.drawable.ic_place_img_default)
@@ -92,5 +95,11 @@ class MapReviewRVAdapter(private val reviewList: ArrayList<MapReview>): Recycler
                 }
             }
         }
+    }
+
+    fun updateReviews(newReviews: List<MapReview>) {
+        reviewList.clear()
+        reviewList.addAll(newReviews)
+        notifyDataSetChanged()
     }
 }

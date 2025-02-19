@@ -539,31 +539,72 @@ class MapDetailFragment : Fragment(), OnMapReadyCallback {
             binding.defaultReviewImage.visibility = View.GONE
             binding.defaultReviewText.visibility = View.GONE
             binding.reviewPlus.visibility = View.VISIBLE
+//            binding.reviewPlus.visibility = if (reviewDatas.size > 2) View.VISIBLE else View.GONE
             binding.addButton.visibility = View.VISIBLE
             binding.imageView3.visibility = View.VISIBLE
 
+            // 최대 2개의 리뷰만 표시
             val displayedReviews = ArrayList<MapReview>().apply {
                 addAll(reviewDatas.take(2))
             }
 
-            val mapReviewRVAdapter = MapReviewRVAdapter(displayedReviews)
-            binding.reviewRV.apply {
-                adapter = mapReviewRVAdapter
-                layoutManager = LinearLayoutManager(context, LinearLayoutManager.VERTICAL, false)
+            // 어댑터 설정 및 데이터 업데이트
+            if (binding.reviewRV.adapter == null) {
+                val mapReviewRVAdapter = MapReviewRVAdapter(displayedReviews)
+                binding.reviewRV.apply {
+                    adapter = mapReviewRVAdapter
+                    layoutManager = LinearLayoutManager(context).apply {
+                        orientation = LinearLayoutManager.VERTICAL
+                    }
+                }
+
+                // "더보기" 버튼 클릭 이벤트 설정
+                binding.reviewPlus.setOnClickListener {
+                    val mapReviewFragment = MapReviewFragment()
+                    requireActivity().supportFragmentManager.beginTransaction()
+                        .setCustomAnimations(
+                            R.anim.slide_in_right,
+                            R.anim.slide_out_left,
+                            R.anim.slide_in_left,
+                            R.anim.slide_out_right
+                        )
+                        .hide(this@MapDetailFragment)
+                        .add(R.id.main_frm, mapReviewFragment)
+                        .addToBackStack(null)
+                        .commit()
+                }
+            } else {
+                (binding.reviewRV.adapter as MapReviewRVAdapter).updateReviews(displayedReviews)
+            }
+
+            // 리뷰 작성 버튼 클릭 이벤트 설정
+            binding.addButton.setOnClickListener {
+                arguments?.getInt("placeId")?.let { placeId ->
+                    val mapAddReviewFragment = MapAddReviewFragment.newInstance(placeId)
+                    requireActivity().supportFragmentManager.beginTransaction()
+                        .setCustomAnimations(
+                            R.anim.slide_in_right,
+                            R.anim.slide_out_left,
+                            R.anim.slide_in_left,
+                            R.anim.slide_out_right
+                        )
+                        .hide(this@MapDetailFragment)
+                        .add(R.id.main_frm, mapAddReviewFragment)
+                        .addToBackStack(null)
+                        .commit()
+                }
             }
         } else {
             // 리뷰가 없는 경우
             binding.reviewCount.text = "0"
-
-            // 리뷰 관련 뷰들 숨기기/표시
             binding.reviewRV.visibility = View.GONE
             binding.defaultReviewImage.visibility = View.VISIBLE
             binding.defaultReviewText.visibility = View.VISIBLE
             binding.reviewPlus.visibility = View.GONE
-            binding.addButton.visibility = View.VISIBLE  // 리뷰 추가 버튼은 계속 표시
+            binding.addButton.visibility = View.VISIBLE
             binding.imageView3.visibility = View.VISIBLE
 
-            // 리뷰가 없을 때의 제약 조건 변경
+            // 제약 조건 변경
             val constraintSet = ConstraintSet()
             constraintSet.clone(binding.scrollView3.getChildAt(0) as ConstraintLayout)
             constraintSet.connect(
@@ -574,6 +615,17 @@ class MapDetailFragment : Fragment(), OnMapReadyCallback {
                 (24 * resources.displayMetrics.density).toInt()
             )
             constraintSet.applyTo(binding.scrollView3.getChildAt(0) as ConstraintLayout)
+
+            // 리뷰가 없는 경우의 리뷰 작성 버튼 클릭 이벤트
+            binding.addButton.setOnClickListener {
+                arguments?.getInt("placeId")?.let { placeId ->
+                    val mapAddReviewFragment = MapAddReviewFragment.newInstance(placeId)
+                    requireActivity().supportFragmentManager.beginTransaction()
+                        .replace(R.id.main_frm, mapAddReviewFragment)
+                        .addToBackStack(null)
+                        .commit()
+                }
+            }
         }
     }
 
@@ -668,7 +720,14 @@ class MapDetailFragment : Fragment(), OnMapReadyCallback {
         binding.reviewPlus.setOnClickListener {
             val mapReviewFragment = MapReviewFragment()
             requireActivity().supportFragmentManager.beginTransaction()
-                .replace(R.id.main_frm, mapReviewFragment)
+                .setCustomAnimations(
+                    R.anim.slide_in_right,  // 새 프래그먼트가 오른쪽에서 들어옴
+                    R.anim.slide_out_left,  // 현재 프래그먼트가 왼쪽으로 나감
+                    R.anim.slide_in_left,   // 뒤로가기 시 현재 프래그먼트가 왼쪽에서 들어옴
+                    R.anim.slide_out_right  // 새 프래그먼트가 오른쪽으로 나감
+                )
+                .hide(this@MapDetailFragment)  // replace 대신 hide 사용
+                .add(R.id.main_frm, mapReviewFragment)  // add로 새 프래그먼트 추가
                 .addToBackStack(null)
                 .commit()
         }
@@ -679,12 +738,20 @@ class MapDetailFragment : Fragment(), OnMapReadyCallback {
             arguments?.getInt("placeId")?.let { placeId ->
                 val mapAddReviewFragment = MapAddReviewFragment.newInstance(placeId)
                 requireActivity().supportFragmentManager.beginTransaction()
-                    .replace(R.id.main_frm, mapAddReviewFragment)
+                    .setCustomAnimations(
+                        R.anim.slide_in_right,  // 새 프래그먼트가 오른쪽에서 들어옴
+                        R.anim.slide_out_left,  // 현재 프래그먼트가 왼쪽으로 나감
+                        R.anim.slide_in_left,   // 뒤로가기 시 현재 프래그먼트가 왼쪽에서 들어옴
+                        R.anim.slide_out_right  // 새 프래그먼트가 오른쪽으로 나감
+                    )
+                    .hide(this)  // replace 대신 hide 사용
+                    .add(R.id.main_frm, mapAddReviewFragment)  // add로 새 프래그먼트 추가
                     .addToBackStack(null)
                     .commit()
             }
         }
     }
+
 
     private fun showSearchOptions() {
         val bottomSheetDialog = BottomSheetDialog(requireContext())
