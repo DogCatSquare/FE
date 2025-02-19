@@ -47,12 +47,12 @@
         <EditText
             android:id="@+id/edit_board_name"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
+            android:layout_height="50dp"
             android:background="@android:color/transparent"
-            android:maxLength="8"
             android:gravity="top|start"
             android:hint="게시판 이름"
             android:inputType="text"
+            android:maxLength="8"
             android:padding="16dp"
             android:textSize="14sp" />
 

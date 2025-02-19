@@ -46,10 +46,10 @@ class BoardSettingsActivity : AppCompatActivity() {
         }
 
         // 게시판 만들기 버튼
-//        binding.btnCreateBoard.setOnClickListener {
-//            val intent = Intent(this, BoardCreateActivity::class.java)
-//            startActivity(intent)
-//        }
+        binding.btnCreateBoard.setOnClickListener {
+            val intent = Intent(this, BoardCreateActivity::class.java)
+            startActivity(intent)
+        }
 
         // RecyclerView 초기화 (XML과 ID 확인!)
         binding.recyclerView.layoutManager = LinearLayoutManager(this)

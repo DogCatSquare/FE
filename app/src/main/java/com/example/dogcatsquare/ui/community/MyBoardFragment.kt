@@ -43,6 +43,13 @@ class MyBoardFragment : Fragment() {
 
         setupBoardPostRecyclerView(boardId)
 
+        binding.ivCreatePost.setOnClickListener {
+            val intent = Intent(requireContext(), CreatePostActivity::class.java).apply {
+                putExtra("BOARD_ID", boardId)
+            }
+            startActivity(intent)
+        }
+
         return binding.root
     }
 
@@ -64,7 +71,9 @@ class MyBoardFragment : Fragment() {
         // 인기 게시물 recycler view
         val boardPostRVAdapter = MyBoardPostRVAdapter(boardPostDatas)
         binding.rvPosts.adapter = boardPostRVAdapter
-        binding.rvPosts.layoutManager = LinearLayoutManager(context, LinearLayoutManager.VERTICAL, false)
+        binding.rvPosts.layoutManager = LinearLayoutManager(context, LinearLayoutManager.VERTICAL, true).apply {
+            stackFromEnd = true
+        }
 
         // 클릭 인터페이스
         boardPostRVAdapter.setMyItemClickListener(object : MyBoardPostRVAdapter.OnItemClickListener {

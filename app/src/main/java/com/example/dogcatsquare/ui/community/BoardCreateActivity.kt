@@ -50,6 +50,7 @@ class BoardCreateActivity : AppCompatActivity() {
                 val currentLength = s?.length ?: 0
                 binding.boardNameCount.text = "$currentLength/8"
                 isTitle = currentLength > 0
+                updateCompleteButtonState()
             }
 
             override fun afterTextChanged(s: Editable?) {

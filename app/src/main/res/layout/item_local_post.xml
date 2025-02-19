@@ -126,6 +126,36 @@
                 android:background="@drawable/rounded_thumbnail"
                 android:clipToOutline="true" />
 
+            <ImageView
+                android:id="@+id/ivPostImage3"
+                android:layout_width="200dp"
+                android:layout_height="200dp"
+                android:scaleType="centerCrop"
+                android:src="@drawable/sample_image2"
+                android:layout_marginEnd="8dp"
+                android:background="@drawable/rounded_thumbnail"
+                android:clipToOutline="true" />
+
+            <ImageView
+                android:id="@+id/ivPostImage4"
+                android:layout_width="200dp"
+                android:layout_height="200dp"
+                android:scaleType="centerCrop"
+                android:src="@drawable/sample_image2"
+                android:layout_marginEnd="8dp"
+                android:background="@drawable/rounded_thumbnail"
+                android:clipToOutline="true" />
+
+            <ImageView
+                android:id="@+id/ivPostImage5"
+                android:layout_width="200dp"
+                android:layout_height="200dp"
+                android:scaleType="centerCrop"
+                android:src="@drawable/sample_image2"
+                android:layout_marginEnd="8dp"
+                android:background="@drawable/rounded_thumbnail"
+                android:clipToOutline="true" />
+
         </LinearLayout>
     </HorizontalScrollView>
 

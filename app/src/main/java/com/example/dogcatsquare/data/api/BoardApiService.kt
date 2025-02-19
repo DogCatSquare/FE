@@ -44,11 +44,8 @@ interface BoardApiService {
     ): Call<ApiResponse>
 
     // 특정 게시글 조회 API
-    @GET("api/board/{boardType}/post/{postId}")
-    fun getPost(
-        @Path("boardType") boardType: String,
-        @Path("postId") postId: Long
-    ): Call<PostDetailResponse>
+    @GET("api/board/post/{postId}")
+    fun getPost(@Path("postId") postId: Int): Call<PostDetailResponse>
 
     // 특정게시판에 있는 게시글들 조회
     @GET("api/board/{boardId}/posts")
