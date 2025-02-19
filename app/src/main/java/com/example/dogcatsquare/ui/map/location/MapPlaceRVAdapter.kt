@@ -24,7 +24,7 @@ enum class PlaceType(val value: String, @DrawableRes val defaultImage: Int) {
     PARK("산책로", R.drawable.img_walk_default),
     RESTAURANT("식당", R.drawable.img_cafe_default),
     CAFE("카페", R.drawable.img_cafe_default),
-    UNKNOWN("", R.drawable.ic_place_img_default);
+    UNKNOWN("", R.drawable.ic_profile_default);
 
     companion object {
         fun fromString(value: String?): PlaceType {
@@ -94,7 +94,7 @@ class MapPlaceRVAdapter(
             }
 
             // 전화번호 관련 처리
-            if (place.placeCall == "0" || place.placeCall == null) {
+            if (place.placeCall == "0" || place.placeCall == null || place.placeCall == "") {
                 binding.call.visibility = View.GONE
                 binding.placeCall.visibility = View.GONE
             } else {

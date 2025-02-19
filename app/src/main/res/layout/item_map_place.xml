@@ -30,13 +30,14 @@
         app:layout_constraintEnd_toStartOf="@+id/guideline2"
         app:layout_constraintTop_toTopOf="@+id/titleCategoryContainer"
         app:layout_constraintVertical_bias="0"
-        app:srcCompat="@drawable/ic_place_img_default" />
+        app:srcCompat="@drawable/ic_profile_default" />
 
     <ImageView
         android:id="@+id/call"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
+        android:tint="@color/gray5"
         app:layout_constraintStart_toStartOf="@+id/guideline1"
         app:layout_constraintTop_toBottomOf="@+id/placeLocation"
         app:srcCompat="@drawable/ic_call" />
@@ -150,7 +151,7 @@
         app:flexWrap="wrap"
         app:justifyContent="flex_start"
         app:layout_constraintEnd_toStartOf="@+id/placeImg"
-        app:layout_constraintStart_toStartOf="@+id/review2"
+        app:layout_constraintStart_toStartOf="@+id/guideline1"
         app:layout_constraintTop_toBottomOf="@+id/placeReview">
 
         <androidx.cardview.widget.CardView
@@ -234,7 +235,7 @@
         android:layout_width="12dp"
         android:layout_height="12dp"
         android:layout_marginTop="8dp"
-        app:layout_constraintStart_toStartOf="@+id/call"
+        app:layout_constraintStart_toStartOf="@+id/guideline1"
         app:layout_constraintTop_toBottomOf="@+id/placeCall"
         app:srcCompat="@drawable/ic_mypage"
         app:tint="#696969" />

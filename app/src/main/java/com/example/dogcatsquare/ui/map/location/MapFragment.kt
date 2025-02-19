@@ -356,58 +356,6 @@ class MapFragment : Fragment(), OnMapReadyCallback {
         placeDatas.clear()
         originalPlaceDatas.clear()
 
-        val dummyPlaces = listOf(
-            MapPlace(
-                id = 0,
-                placeName = "가나다 동물병원",
-                placeType = "동물병원",
-                placeDistance = "0.55km",
-                placeLocation = "서울시 성북구 월곡동 77",
-                placeCall = "02-1234-5678",
-                placeImgUrl = null,
-                isOpen = "영업중",
-                keywords = listOf("24시간", "예약가능", "주차가능")
-            ),
-            MapPlace(
-                id = 0,
-                placeName = "서대문 안산자락길",
-                placeType = "산책로",
-                placeDistance = "0.55km",
-                placeLocation = "서울시 서대문구 봉원사길 75-66",
-                placeCall = "02-1234-5678",
-                placeImgUrl = null,
-                isOpen = "영업중",
-                reviewCount = 2,
-                keywords = listOf("잔디밭", "벤치있음", "화장실")
-            ),
-            MapPlace(
-                id = 0,
-                placeName = "고양이호텔",
-                placeType = "호텔",
-                placeDistance = "0.55km",
-                placeLocation = "서울시 성북구 월곡동 77",
-                placeCall = "02-1234-5678",
-                placeImgUrl = null,
-                isOpen = "영업중",
-                reviewCount = 13,
-                keywords = listOf("1:1케어", "CCTV", "샤워가능")
-            ),
-            MapPlace(
-                id = 0,
-                placeName = "반려동물 카페",
-                placeType = "카페",
-                placeDistance = "0.55km",
-                placeLocation = "서울시 성북구 월곡동 77",
-                placeCall = "02-1234-5678",
-                placeImgUrl = null,
-                isOpen = "영업중",
-                keywords = listOf("대형견가능", "야외좌석", "주차가능")
-            )
-        )
-
-        originalPlaceDatas.addAll(dummyPlaces)
-        placeDatas.addAll(dummyPlaces)
-
         buttonDatas.apply {
             add(MapButton("전체"))
             add(MapButton("병원", R.drawable.btn_hospital))

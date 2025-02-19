@@ -1,6 +1,5 @@
 package com.example.dogcatsquare.data.api
 
-import com.example.dogcatsquare.data.community.ApiResponse
 import com.example.dogcatsquare.data.map.BaseResponse
 import com.example.dogcatsquare.data.map.GetHotPlaceRequest
 import com.example.dogcatsquare.data.map.GetHotPlaceResponse
