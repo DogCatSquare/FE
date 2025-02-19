@@ -247,6 +247,7 @@ class MapDetailFragment : Fragment(), OnMapReadyCallback {
 
                             // 병원이 아닐 경우에만 리뷰 업데이트
                             if (!isHospital) {
+                                binding.reviewCount.text = placeDetail.reviewCount.toString()
                                 updateReviews(placeDetail.recentReviews)
                             }
 
@@ -532,14 +533,12 @@ class MapDetailFragment : Fragment(), OnMapReadyCallback {
         if (!apiReviews.isNullOrEmpty()) {
             // 리뷰가 있는 경우
             reviewDatas.addAll(apiReviews)
-            binding.reviewCount.text = reviewDatas.size.toString()
 
             // 리뷰 관련 뷰들 표시
             binding.reviewRV.visibility = View.VISIBLE
             binding.defaultReviewImage.visibility = View.GONE
             binding.defaultReviewText.visibility = View.GONE
             binding.reviewPlus.visibility = View.VISIBLE
-//            binding.reviewPlus.visibility = if (reviewDatas.size > 2) View.VISIBLE else View.GONE
             binding.addButton.visibility = View.VISIBLE
             binding.imageView3.visibility = View.VISIBLE
 
@@ -560,7 +559,8 @@ class MapDetailFragment : Fragment(), OnMapReadyCallback {
 
                 // "더보기" 버튼 클릭 이벤트 설정
                 binding.reviewPlus.setOnClickListener {
-                    val mapReviewFragment = MapReviewFragment()
+                    val placeId = arguments?.getInt("placeId") ?: return@setOnClickListener
+                    val mapReviewFragment = MapReviewFragment.newInstance(placeId)
                     requireActivity().supportFragmentManager.beginTransaction()
                         .setCustomAnimations(
                             R.anim.slide_in_right,
@@ -718,16 +718,17 @@ class MapDetailFragment : Fragment(), OnMapReadyCallback {
         }
 
         binding.reviewPlus.setOnClickListener {
-            val mapReviewFragment = MapReviewFragment()
+            val placeId = arguments?.getInt("placeId") ?: return@setOnClickListener
+            val mapReviewFragment = MapReviewFragment.newInstance(placeId)
             requireActivity().supportFragmentManager.beginTransaction()
                 .setCustomAnimations(
-                    R.anim.slide_in_right,  // 새 프래그먼트가 오른쪽에서 들어옴
-                    R.anim.slide_out_left,  // 현재 프래그먼트가 왼쪽으로 나감
-                    R.anim.slide_in_left,   // 뒤로가기 시 현재 프래그먼트가 왼쪽에서 들어옴
-                    R.anim.slide_out_right  // 새 프래그먼트가 오른쪽으로 나감
+                    R.anim.slide_in_right,
+                    R.anim.slide_out_left,
+                    R.anim.slide_in_left,
+                    R.anim.slide_out_right
                 )
-                .hide(this@MapDetailFragment)  // replace 대신 hide 사용
-                .add(R.id.main_frm, mapReviewFragment)  // add로 새 프래그먼트 추가
+                .hide(this@MapDetailFragment)
+                .add(R.id.main_frm, mapReviewFragment)
                 .addToBackStack(null)
                 .commit()
         }
