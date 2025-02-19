@@ -4,6 +4,8 @@ import com.example.dogcatsquare.data.community.ApiResponse
 import com.example.dogcatsquare.data.community.BoardRequestDto
 import com.example.dogcatsquare.data.community.BoardResponseDto
 import com.example.dogcatsquare.data.community.BoardSearchResponseDto
+import com.example.dogcatsquare.data.community.CommentResponse
+import com.example.dogcatsquare.data.community.CommonResponse
 import com.example.dogcatsquare.data.community.DeleteMyBoardResponse
 import com.example.dogcatsquare.data.community.GetMyBoardHomeResponse
 import com.example.dogcatsquare.data.community.MyBoardResponse
@@ -77,4 +79,5 @@ interface BoardApiService {
 
     @GET("api/board/posts/popular")
     fun getPopularPost(@Header("Authorization") token: String): Call<PopularPostResponse>
+
 }
