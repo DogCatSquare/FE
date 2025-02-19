@@ -34,6 +34,7 @@ import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.RecyclerView
 import com.example.dogcatsquare.LocationViewModel
+import com.example.dogcatsquare.data.api.UserRetrofitItf
 import com.example.dogcatsquare.data.map.SearchPlacesRequest
 import com.example.dogcatsquare.data.map.WalkListRequest
 import com.google.android.gms.location.LocationCallback
@@ -73,7 +74,7 @@ class MapFragment : Fragment(), OnMapReadyCallback {
     private val LOCATION_PERMISSION_REQUEST_CODE = 1000
 
     private lateinit var sortTextView: TextView
-    private var currentSortType = "주소기준"
+    private var currentSortType = "위치기준"
 
     private var currentLocation: LatLng? = null
     private lateinit var locationCallback: LocationCallback
@@ -87,6 +88,8 @@ class MapFragment : Fragment(), OnMapReadyCallback {
     private val ITEMS_PER_PAGE = 20
 
     var shouldRefresh = false
+
+    private var userAddress: String = ""
 
     // RecyclerView 스크롤 리스너
     private val scrollListener = object : RecyclerView.OnScrollListener() {
@@ -118,6 +121,10 @@ class MapFragment : Fragment(), OnMapReadyCallback {
         locationSource = FusedLocationSource(this, LOCATION_PERMISSION_REQUEST_CODE)
         setupLocationCallback()
 
+        lifecycleScope.launch {
+            fetchUserAddress()
+        }
+
         // 프래그먼트 백스택 변경 리스너 등록
         requireActivity().supportFragmentManager.addOnBackStackChangedListener {
             if (isVisible && shouldRefresh) {
@@ -142,6 +149,8 @@ class MapFragment : Fragment(), OnMapReadyCallback {
         super.onViewCreated(view, savedInstanceState)
 
         sortTextView = binding.sortButton.findViewById(R.id.sortText)
+
+        userAddress = getSavedUserAddress()
 
         setupRecyclerView()
         setupBottomSheet()
@@ -968,7 +977,7 @@ class MapFragment : Fragment(), OnMapReadyCallback {
         super.onViewStateRestored(savedInstanceState)
         // 상태가 복원된 후에 필요한 UI 업데이트
         savedInstanceState?.let { bundle ->
-            currentSortType = bundle.getString("currentSortType", "주소기준")
+            currentSortType = bundle.getString("currentSortType", "위치기준")
             sortTextView.text = currentSortType
         }
     }
@@ -991,7 +1000,110 @@ class MapFragment : Fragment(), OnMapReadyCallback {
         return Pair(37.5665, 126.9780) // 서울 시청 기본값
     }
 
+    // 사용자 정보를 가져오는 함수
+    private fun fetchUserAddress() {
+        lifecycleScope.launch {
+            try {
+                val token = getToken() ?: run {
+                    Log.e("MapFragment", "토큰이 없습니다.")
+                    withContext(Dispatchers.Main) {
+                        Toast.makeText(requireContext(), "토큰이 없습니다.", Toast.LENGTH_SHORT).show()
+                    }
+                    return@launch
+                }
 
+                // API 호출
+                val response = withContext(Dispatchers.IO) {
+                    RetrofitClient.userApiService.getUser("Bearer $token").execute()
+                }
+
+                if (response.isSuccessful) {
+                    val userResponse = response.body()
+                    if (userResponse != null && userResponse.isSuccess) {
+                        userResponse.result?.let { userInfo ->
+                            userAddress = buildString {
+                                append(userInfo.doName)
+                                if (userInfo.si.isNotEmpty()) {
+                                    append(" ")
+                                    append(userInfo.si)
+                                }
+                                if (userInfo.gu.isNotEmpty()) {
+                                    append(" ")
+                                    append(userInfo.gu)
+                                }
+                            }
+
+                            withContext(Dispatchers.Main) {
+                                saveUserAddress(userAddress)
+                                Log.d("MapFragment", "사용자 주소 설정 완료: $userAddress")
+                                Toast.makeText(
+                                    requireContext(),
+                                    "사용자 주소: $userAddress",
+                                    Toast.LENGTH_SHORT
+                                ).show()
+                            }
+                        } ?: run {
+                            Log.w("MapFragment", "사용자 정보가 없습니다.")
+                            withContext(Dispatchers.Main) {
+                                Toast.makeText(
+                                    requireContext(),
+                                    "사용자 정보가 없습니다.",
+                                    Toast.LENGTH_SHORT
+                                ).show()
+                            }
+                        }
+                    } else {
+                        Log.e("MapFragment", "사용자 정보 조회 실패: ${userResponse?.message}")
+                        withContext(Dispatchers.Main) {
+                            Toast.makeText(
+                                requireContext(),
+                                "사용자 정보 조회 실패: ${userResponse?.message}",
+                                Toast.LENGTH_SHORT
+                            ).show()
+                        }
+                    }
+                } else {
+                    Log.e("MapFragment", "서버 응답 실패: ${response.code()}")
+                    withContext(Dispatchers.Main) {
+                        Toast.makeText(
+                            requireContext(),
+                            "서버 응답 실패: ${response.code()}",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    }
+                }
+            } catch (e: Exception) {
+                Log.e("MapFragment", "사용자 주소 가져오기 중 예외 발생", e)
+                withContext(Dispatchers.Main) {
+                    Toast.makeText(
+                        requireContext(),
+                        "오류 발생: ${e.message}",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
+            }
+        }
+    }
+
+    // SharedPreferences에 주소 저장하는 함수
+    private fun saveUserAddress(address: String) {
+        val sharedPref = requireActivity().getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
+        with(sharedPref.edit()) {
+            putString("user_address", address)
+            apply()
+        }
+        Toast.makeText(
+            requireContext(),
+            "주소 저장됨: $address",
+            Toast.LENGTH_SHORT
+        ).show()
+    }
+
+    // SharedPreferences에서 주소 가져오는 함수
+    private fun getSavedUserAddress(): String {
+        val sharedPref = requireActivity().getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
+        return sharedPref.getString("user_address", "") ?: ""
+    }
 
     override fun onDestroyView() {
         super.onDestroyView()

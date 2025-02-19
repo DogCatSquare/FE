@@ -20,6 +20,9 @@ android {
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables.useSupportLibrary = true
+
+        buildConfigField("String", "NAVER_CLIENT_ID", "\"${project.findProperty("naver.client.id") ?: ""}\"")
+        buildConfigField("String", "NAVER_CLIENT_SECRET", "\"${project.findProperty("naver.client.secret") ?: ""}\"")
     }
 
     buildTypes {
@@ -57,6 +60,10 @@ android {
             excludes += ("/META-INF/notice.txt")
             excludes += ("/META-INF/*.kotlin_module")
         }
+    }
+
+    buildFeatures {
+        buildConfig = true
     }
 
 }
