@@ -42,13 +42,19 @@ class CommentsAdapter(
             .load(comment.profileImageUrl)
             .into(holder.ivProfile)
 
-        // ✅ List<String> → List<Reply> 변환
-        val repliesList = comment.replies.map { replyContent ->
-            Reply(id = 0, content = replyContent, name = "", dogBreed = "", profileImageUrl = "", timestamp = "")
-        }.toMutableList()
+    // ✅ 대댓글을 `List<Comment>`에서 `List<Reply>`로 변환하여 사용
+        val repliesList = comments.filter { it.parentId == comment.id.toString() }.map { comment ->
+            Reply(
+                id = comment.id,
+                content = comment.content,
+                name = comment.name,
+                dogBreed = "",  // 필요하면 여기에 데이터를 추가
+                profileImageUrl = comment.profileImageUrl,
+                timestamp = comment.timestamp
+            )
+        }.toMutableList()  // ✅ `MutableList<Reply>` 변환
 
-        // ✅ 기존 Adapter가 있으면 `updateReplies()` 사용, 없으면 새로 생성
-        if (comment.replies.isNotEmpty()) {
+        if (repliesList.isNotEmpty()) {
             holder.rvReplies.visibility = View.VISIBLE
             holder.rvReplies.layoutManager = LinearLayoutManager(holder.itemView.context)
 
