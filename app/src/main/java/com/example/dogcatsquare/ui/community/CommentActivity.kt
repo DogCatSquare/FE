@@ -127,15 +127,15 @@ class CommentActivity : AppCompatActivity(), CommentActionListener {
                     val newComment = response.body()?.result
                     if (newComment != null) {
                         if (parentId.isEmpty()) {
-                            // 일반 댓글 추가
+                            // ✅ 일반 댓글 추가
                             comments.add(newComment)
                             commentAdapter.notifyItemInserted(comments.size - 1)
                         } else {
-                            // 대댓글 추가 시, `comments` 리스트에 추가하지 않음
+                            // ✅ 대댓글 추가 시, `comments` 리스트에 추가하지 않고 부모 댓글의 `replies`에 추가
                             val parentIndex = comments.indexOfFirst { it.id.toString() == parentId }
                             if (parentIndex != -1) {
                                 val updatedReplies = comments[parentIndex].replies.toMutableList()
-                                updatedReplies.add(newComment.content) // 대댓글 내용 추가
+                                updatedReplies.add(newComment.content)
                                 comments[parentIndex] = comments[parentIndex].copy(replies = updatedReplies)
 
                                 // `loadComments(postId)`를 호출하지 않고 UI만 갱신
@@ -158,10 +158,16 @@ class CommentActivity : AppCompatActivity(), CommentActionListener {
         commentApi.deleteComment(postId, commentId).enqueue(object : Callback<CommonResponse> {
             override fun onResponse(call: Call<CommonResponse>, response: Response<CommonResponse>) {
                 if (response.isSuccessful && response.body()?.isSuccess == true) {
+                    // ✅ 삭제할 댓글 ID에 해당하는 부모 댓글 찾기
                     val index = comments.indexOfFirst { it.id == commentId.toInt() }
                     if (index != -1) {
+                        val deletedComment = comments[index]
                         comments.removeAt(index)
-                        commentAdapter.notifyItemRemoved(index)
+
+                        // ✅ 삭제된 댓글의 대댓글도 함께 제거
+                        comments.removeAll { it.parentId == deletedComment.id.toString() }
+
+                        commentAdapter.notifyDataSetChanged()
                     }
                     Toast.makeText(this@CommentActivity, "댓글 삭제 성공", Toast.LENGTH_SHORT).show()
                 } else {
@@ -174,6 +180,7 @@ class CommentActivity : AppCompatActivity(), CommentActionListener {
             }
         })
     }
+
 
     // CommentActionListener 구현 - 대댓글 등록
     override fun onReplyClicked(comment: Comment) {
