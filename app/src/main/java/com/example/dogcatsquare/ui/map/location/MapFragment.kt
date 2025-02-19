@@ -884,6 +884,9 @@ class MapFragment : Fragment(), OnMapReadyCallback {
             // 기존 마커 제거
             clearMarkers()
 
+            allPlaceDatas.clear()
+            allPlaceDatas.addAll(places)
+
             // RecyclerView 데이터 업데이트
             originalPlaceDatas.clear()
             originalPlaceDatas.addAll(places)
