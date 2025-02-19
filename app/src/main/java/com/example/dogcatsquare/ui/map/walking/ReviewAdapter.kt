@@ -12,11 +12,16 @@ import com.example.dogcatsquare.databinding.ItemMapwalingReviewBinding
 import com.example.dogcatsquare.ui.map.walking.data.Response.WalkReview
 import com.example.dogcatsquare.ui.map.walking.data.Review
 
-class ReviewAdapter(private val reviews: List<WalkReview>) : RecyclerView.Adapter<ReviewAdapter.ReviewViewHolder>() {
+class ReviewAdapter(private var reviews: List<WalkReview>) : RecyclerView.Adapter<ReviewAdapter.ReviewViewHolder>() {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ReviewViewHolder {
         val view = LayoutInflater.from(parent.context).inflate(R.layout.item_mapwaling_review, parent, false)
         return ReviewViewHolder(view)
+    }
+
+    fun updateData(newReviews: List<WalkReview>) {
+        reviews = newReviews
+        notifyDataSetChanged()  // 변경 사항을 RecyclerView에 알림
     }
 
     override fun onBindViewHolder(holder: ReviewViewHolder, position: Int) {

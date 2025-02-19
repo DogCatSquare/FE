@@ -30,7 +30,7 @@
             android:id="@+id/review_rv"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            tools:listitem="@layout/item_mapwalking" />
+            tools:listitem="@layout/item_mapwaling_review" />
 
     </ScrollView>
 

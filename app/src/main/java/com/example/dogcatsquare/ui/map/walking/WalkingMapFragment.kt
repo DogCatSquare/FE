@@ -13,16 +13,20 @@ import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.dogcatsquare.R
+import com.example.dogcatsquare.ui.map.walking.data.Response.WalkReview
 import com.example.dogcatsquare.ui.map.walking.data.ViewModel.WalkDetailState
 import com.example.dogcatsquare.ui.map.walking.data.ViewModel.WalkDetailViewModel
+import com.example.dogcatsquare.ui.map.walking.data.ViewModel.WalkReviewViewModel
 import com.google.android.gms.maps.model.Polyline
+import com.google.android.material.button.MaterialButton
 import com.naver.maps.geometry.LatLng
 import com.naver.maps.map.MapFragment
 import com.naver.maps.map.NaverMap
 
 class WalkingMapFragment : Fragment() {
 
-    private lateinit var reviewAdapter: WalkingReviewAdapter
+    private lateinit var reviewAdapter: ReviewAdapter
+    private val walkReviewViewModel: WalkReviewViewModel by viewModels()
 
     val address = arguments?.getString("address", "서대문 안산지락길")
     private var placeId : Int = 3
@@ -49,32 +53,32 @@ class WalkingMapFragment : Fragment() {
     ): View? {
         val view: View = inflater.inflate(R.layout.fragment_mapwalking, container, false)
 
-        Log.d("WalkMapFragment", "${placeId}")
-        // API 호출
-        if (placeId != -1) {
-            Log.d("WalkMapFragment", "API 호출")
-            walkDetailViewModel.fetchWalkDetail(placeId)
-        }
-
-        walkDetailViewModel.walkDetailState.observe(viewLifecycleOwner) { state ->
-            when (state) {
-                is WalkDetailState.Success -> {
-                    Log.d("WalkingMapFragment", "Walk Detail Success: ${state.walkDetail}")
-                    val walkDetail = state.walkDetail
-                    if (walkDetail != null) {
-                        val placeName : TextView = view.findViewById(R.id.placeName)
-                        placeName.text = walkDetail.title
-                    } else {
-                        Log.d("WalkingMapFragment", "데이터가 없습니다.")
-                    }
-                }
-                is WalkDetailState.Error -> {
-                    Log.e("WalkingMapFragment", "API 호출 실패: ${state.message}")
-                }
-
-                WalkDetailState.Loading -> TODO()
-            }
-        }
+//        Log.d("WalkMapFragment", "${placeId}")
+//        // API 호출
+//        if (placeId != -1) {
+//            Log.d("WalkMapFragment", "API 호출")
+//            walkDetailViewModel.fetchWalkDetail(placeId)
+//        }
+//
+//        walkDetailViewModel.walkDetailState.observe(viewLifecycleOwner) { state ->
+//            when (state) {
+//                is WalkDetailState.Success -> {
+//                    Log.d("WalkingMapFragment", "Walk Detail Success: ${state.walkDetail}")
+//                    val walkDetail = state.walkDetail
+//                    if (walkDetail != null) {
+//                        val placeName : TextView = view.findViewById(R.id.placeName)
+//                        placeName.text = walkDetail.title
+//                    } else {
+//                        Log.d("WalkingMapFragment", "데이터가 없습니다.")
+//                    }
+//                }
+//                is WalkDetailState.Error -> {
+//                    Log.e("WalkingMapFragment", "API 호출 실패: ${state.message}")
+//                }
+//
+//                WalkDetailState.Loading -> TODO()
+//            }
+//        }
 
         // 산책로 위시 지정
         val wishBt: ImageButton = view.findViewById(R.id.wishButton)
@@ -89,56 +93,41 @@ class WalkingMapFragment : Fragment() {
         val recyclerView: RecyclerView = view.findViewById(R.id.review_rv)
         recyclerView.layoutManager = LinearLayoutManager(context)
 
-        val reviews: MutableList<WalkMapReview> = mutableListOf()
+        reviewAdapter = ReviewAdapter(emptyList())
+        recyclerView.adapter = reviewAdapter
 
-        // ✅ 더미 데이터 추가
-        reviews.add(
-            WalkMapReview(
-                userName = "홍길동",
-                petType = "강아지",
-                walkTime = "30분",
-                walkKm = "2.5km",
-                walkText = "산책로가 너무 좋아요!",
-                walkDate = "2024-02-19",
-                userImgUrl = "https://example.com/user1.jpg",
-                walkImgUrl = "https://example.com/walk1.jpg",
-                profileImgUrl = "https://example.com/profile1.jpg"
-            )
-        )
-
-        reviews.add(
-            WalkMapReview(
-                userName = "김철수",
-                petType = "고양이",
-                walkTime = "40분",
-                walkKm = "3.0km",
-                walkText = "길이 넓고 한적해서 좋아요!",
-                walkDate = "2024-02-18",
-                userImgUrl = "https://example.com/user2.jpg",
-                walkImgUrl = "https://example.com/walk2.jpg",
-                profileImgUrl = "https://example.com/profile2.jpg"
-            )
-        )
-
-        // RecyclerView 설정
-        reviewAdapter = WalkingReviewAdapter(reviews, maxItemCount = 2) { item ->
-            // 아이템 클릭 시 다른 프래그먼트로 이동
-            val bundle = Bundle().apply {
-                putString("itemName", item.userName) // 아이템의 데이터를 전달
-            }
-
-            val detailFragment = WalkingStartViewFragment().apply {
-                arguments = bundle
-            }
-
-            // 프래그먼트 트랜잭션을 사용하여 이동
-            parentFragmentManager.beginTransaction()
-                .replace(R.id.main_frm, WalkingStartViewFragment())
-                .addToBackStack(null)
-                .commit()
+        // API 호출
+        if (placeId != -1) {
+            walkReviewViewModel.getWalkReviews(placeId)
+            Log.d("WalkingMapFragment", placeId.toString())
         }
 
-        recyclerView.adapter = reviewAdapter
+        // 산책로 후기
+        walkReviewViewModel.reviewResponse.observe(viewLifecycleOwner) { response ->
+            if (response != null) {
+                val reviews = response.result?.walkReviews?.map { walkReview ->
+                    WalkReview(
+                        reviewId = walkReview.reviewId,
+                        walkId = walkReview.walkId,
+                        content = walkReview.content,
+                        walkReviewImageUrl = walkReview.walkReviewImageUrl,
+                        createdAt = walkReview.createdAt,
+                        updatedAt = walkReview.updatedAt,
+                        createdBy = walkReview.createdBy
+                    )
+                } ?: emptyList()
+
+                val reviewSubtitle: TextView = view.findViewById(R.id.rightText)
+                val reviewCount = reviews.size
+                reviewSubtitle.text = "$reviewCount"
+
+                Log.d("WalkingMapFragment", "Reviews: ${reviews.size}")  // 리뷰 개수 로그 확인
+
+                reviewAdapter.updateData(reviews)  // 데이터 업데이트
+            } else {
+                Log.e("WalkingMapFragment", "Failed to load reviews.")
+            }
+        }
 
         // MapFragment 설정
         val mapFragment = childFragmentManager.findFragmentById(R.id.mapView3) as MapFragment?
@@ -149,7 +138,15 @@ class WalkingMapFragment : Fragment() {
         val reviewAll : ImageButton = view.findViewById(R.id.reviewAll_bt)
         reviewAll.setOnClickListener {
             parentFragmentManager.beginTransaction()
-                .replace(R.id.main_frm, WalkingMapReviewAllFragment())
+                .replace(R.id.main_frm, WalkingReviewAllFragment())
+                .addToBackStack(null)
+                .commit()
+        }
+
+        val button: MaterialButton = view.findViewById(R.id.addButton)
+        button.setOnClickListener {
+            parentFragmentManager.beginTransaction()
+                .replace(R.id.main_frm, WalkingMapViewFragment())
                 .addToBackStack(null)
                 .commit()
         }

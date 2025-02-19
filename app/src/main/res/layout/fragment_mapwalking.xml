@@ -240,7 +240,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginStart="30dp"
                 android:layout_marginTop="27dp"
-                android:text="이웃들의 추천코스"
+                android:text="이웃들의 후기"
                 android:textColor="#0E0E0E"
                 android:textStyle="bold"
                 android:textSize="20sp"
@@ -283,7 +283,7 @@
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/reviewAll_bt"
                 app:layout_constraintVertical_bias="0.107"
-                tools:listitem="@layout/item_mapwalking" />
+                tools:listitem="@layout/item_mapwaling_review" />
 
             <Button
                 android:id="@+id/addButton"

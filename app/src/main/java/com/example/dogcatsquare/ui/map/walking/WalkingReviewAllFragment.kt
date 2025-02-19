@@ -7,6 +7,8 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageButton
+import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.widget.Toolbar
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -19,7 +21,7 @@ class WalkingReviewAllFragment : Fragment() {
 
     private lateinit var reviewAdapter: ReviewAdapter
     private val walkReviewViewModel: WalkReviewViewModel by viewModels()
-    val placeId = arguments?.getInt("placeId") ?: 3
+    val placeId = arguments?.getInt("placeId") ?: 4
 
     @SuppressLint("MissingInflatedId")
     override fun onCreateView(
@@ -28,6 +30,17 @@ class WalkingReviewAllFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
         val view = inflater.inflate(R.layout.fragment_mapwalking_reviewall, container, false)
+
+        (activity as? AppCompatActivity)?.apply {
+            val toolbar: Toolbar = view.findViewById(R.id.walking_review_toolbar)
+            setSupportActionBar(toolbar)
+            supportActionBar?.title = "이웃들의 후기"
+            supportActionBar?.setDisplayHomeAsUpEnabled(true)
+
+            toolbar.setNavigationOnClickListener {
+                parentFragmentManager.popBackStack()
+            }
+        }
 
         val recyclerView: RecyclerView = view.findViewById(R.id.review_rv)
         recyclerView.layoutManager = LinearLayoutManager(context)
@@ -60,11 +73,6 @@ class WalkingReviewAllFragment : Fragment() {
             } else {
                 Log.e("WalkingReviewAll", "Failed to load reviews.")
             }
-        }
-
-        val backBtn: ImageButton = view.findViewById(R.id.back_btn)
-        backBtn.setOnClickListener {
-            parentFragmentManager.popBackStack()
         }
 
         return view

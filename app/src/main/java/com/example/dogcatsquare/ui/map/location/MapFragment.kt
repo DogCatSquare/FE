@@ -37,6 +37,7 @@ import com.example.dogcatsquare.LocationViewModel
 import com.example.dogcatsquare.data.api.UserRetrofitItf
 import com.example.dogcatsquare.data.map.SearchPlacesRequest
 import com.example.dogcatsquare.data.map.WalkListRequest
+import com.example.dogcatsquare.ui.map.walking.WalkingMapFragment
 import com.google.android.gms.location.LocationCallback
 import com.google.android.gms.location.LocationRequest
 import com.google.android.gms.location.LocationResult
@@ -461,7 +462,7 @@ class MapFragment : Fragment(), OnMapReadyCallback {
                 when (place.placeType) {
                     "산책로" -> {
                         val (currentLat, currentLng) = getMapCurrentPosition()
-                        val fragment = WalkingStartViewFragment().apply {
+                        val fragment = WalkingMapFragment().apply {
                             arguments = Bundle().apply {
                                 putInt("placeId", place.id)
                                 putDouble("latitude", currentLat)
