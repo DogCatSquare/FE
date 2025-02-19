@@ -64,6 +64,7 @@ class MapFragment : Fragment(), OnMapReadyCallback {
     private lateinit var bottomSheetBehavior: BottomSheetBehavior<View>
 
     private val buttonDatas by lazy { ArrayList<MapButton>() }
+    private val allPlaceDatas = ArrayList<MapPlace>()
     private val originalPlaceDatas = ArrayList<MapPlace>()  // 원본 데이터 저장용
     private val placeDatas by lazy { ArrayList<MapPlace>() }
     private val markers = mutableListOf<Marker>()
@@ -89,12 +90,16 @@ class MapFragment : Fragment(), OnMapReadyCallback {
 
     var shouldRefresh = false
 
+    private var currentCategory = "전체"
+
     private var userAddress: String = ""
 
     // RecyclerView 스크롤 리스너
     private val scrollListener = object : RecyclerView.OnScrollListener() {
         override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
             super.onScrolled(recyclerView, dx, dy)
+
+            if (currentCategory != "전체") return
 
             val layoutManager = recyclerView.layoutManager as LinearLayoutManager
             val visibleItemCount = layoutManager.childCount            // 현재 화면에 보이는 아이템 수
@@ -105,7 +110,7 @@ class MapFragment : Fragment(), OnMapReadyCallback {
             val lastVisibleItemPosition = firstVisibleItemPosition + visibleItemCount - 1
 
             // 페이지 로드 트리거 포지션 (현재 페이지의 6-7번째 아이템)
-            val loadTriggerPosition = (currentPage * ITEMS_PER_PAGE) + 5  // 6번째 아이템부터
+            val loadTriggerPosition = (currentPage * ITEMS_PER_PAGE) + 15 // 16번째 아이템부터
 
             if (!isLoading && !isLastPage) {
                 // 현재 보이는 아이템들 중에 트리거 포지션이 포함되어 있는지 확인
@@ -198,6 +203,14 @@ class MapFragment : Fragment(), OnMapReadyCallback {
                     currentLocation = newLocation
                     locationViewModel.updateLocation(newLocation)
 
+                    // 현재위치 모드일 때만 지도 이동
+                    if (currentSortType == "위치기준") {
+                        naverMap.moveCamera(
+                            CameraUpdate.scrollTo(newLocation)
+                                .animate(CameraAnimation.Easing)
+                        )
+                    }
+
                     Log.d("MapFragment", "위치 업데이트 완료: currentLocation = $currentLocation")
                 }
             }
@@ -220,20 +233,6 @@ class MapFragment : Fragment(), OnMapReadyCallback {
             }
 
             val fusedLocationClient = LocationServices.getFusedLocationProviderClient(requireActivity())
-            fusedLocationClient.lastLocation.addOnSuccessListener { location ->
-                location?.let {
-                    Log.d("MapFragment", "최초 위치 받아옴: lat=${it.latitude}, lng=${it.longitude}")
-                    currentLocation = LatLng(it.latitude, it.longitude)
-                    if (::naverMap.isInitialized) {
-                        Log.d("MapFragment", "지도를 현재 위치로 이동")
-                        naverMap.moveCamera(
-                            CameraUpdate.scrollTo(currentLocation!!)
-                                .animate(CameraAnimation.Easing)
-                        )
-                    }
-                } ?: Log.d("MapFragment", "최초 위치를 받아올 수 없음")
-            }
-
             fusedLocationClient.requestLocationUpdates(
                 locationRequest,
                 locationCallback,
@@ -418,31 +417,35 @@ class MapFragment : Fragment(), OnMapReadyCallback {
 
         val mapButtonRVAdapter = MapButtonRVAdapter(buttonDatas, object : MapButtonRVAdapter.OnItemClickListener {
             override fun onItemClick(position: Int, buttonName: String) {
-                Log.d("MapFragment", "버튼 클릭: $buttonName")
-                Log.d("MapFragment", "원본 데이터 크기: ${originalPlaceDatas.size}")
+                currentCategory = buttonName
 
-                // 원본 데이터를 기준으로 필터링
+                Log.d("MapFragment", "버튼 클릭: $buttonName")
+                Log.d("MapFragment", "현재까지 불러온 데이터 크기: ${allPlaceDatas.size}")
+
+                // 현재까지 불러온 데이터에서만 필터링
                 val filtered = when (buttonName) {
-                    "전체" -> originalPlaceDatas
-                    "병원" -> originalPlaceDatas.filter { it.placeType == "동물병원" }
-                    "산책로" -> originalPlaceDatas.filter { it.placeType == "산책로" }
-                    "음식/카페" -> originalPlaceDatas.filter { it.placeType in listOf("카페", "식당") }
-                    "호텔" -> originalPlaceDatas.filter { it.placeType == "호텔" }
-                    else -> originalPlaceDatas
+                    "전체" -> allPlaceDatas
+                    "병원" -> allPlaceDatas.filter { it.placeType == "동물병원" }
+                    "산책로" -> allPlaceDatas.filter { it.placeType == "산책로" }
+                    "음식/카페" -> allPlaceDatas.filter { it.placeType in listOf("카페", "식당") }
+                    "호텔" -> allPlaceDatas.filter { it.placeType == "호텔" }
+                    else -> allPlaceDatas
                 }
 
                 Log.d("MapFragment", "필터링 결과 개수: ${filtered.size}")
                 Log.d("MapFragment", "필터링된 장소들: ${filtered.map { it.placeName }}")
 
                 // UI 업데이트
-                (binding.mapPlaceRV.adapter as? MapPlaceRVAdapter)?.let { adapter ->
-                    adapter.updateList(filtered)
-                    Log.d("MapFragment", "어댑터 업데이트 완료")
-                }
+                originalPlaceDatas.clear()
+                originalPlaceDatas.addAll(filtered)
+
+                placeDatas.clear()
+                placeDatas.addAll(filtered)
+                binding.mapPlaceRV.adapter?.notifyDataSetChanged()
 
                 // 마커 업데이트
-                clearMarkers() // 기존 마커 모두 제거
-                filtered.forEach { place -> // 필터링된 장소들에 대해서만 마커 생성
+                clearMarkers()
+                filtered.forEach { place ->
                     createMarker(place)
                 }
             }
@@ -584,7 +587,7 @@ class MapFragment : Fragment(), OnMapReadyCallback {
                     isLastPage = pageResponse.last
                 }
 
-                return response.result?.content?.map { place ->
+                val newPlaces = response.result?.content?.map { place ->
                     MapPlace(
                         id = place.id,
                         placeName = place.name,
@@ -600,6 +603,14 @@ class MapFragment : Fragment(), OnMapReadyCallback {
                         keywords = place.keywords
                     )
                 } ?: emptyList()
+
+                if (page == 0) {
+                    allPlaceDatas.clear()
+                }
+                allPlaceDatas.addAll(newPlaces)
+
+                return newPlaces
+
             } else {
                 Toast.makeText(requireContext(), response.message, Toast.LENGTH_SHORT).show()
                 return emptyList()
@@ -648,6 +659,7 @@ class MapFragment : Fragment(), OnMapReadyCallback {
         currentPage = 0
         isLastPage = false
         isLoading = false
+        allPlaceDatas.clear()
         placeDatas.clear()
         clearMarkers()
         binding.mapPlaceRV.adapter?.notifyDataSetChanged()
@@ -771,29 +783,43 @@ class MapFragment : Fragment(), OnMapReadyCallback {
         }
 
         try {
-            // 병렬로 두 API 호출 실행
-            val allPlaces = withContext(Dispatchers.IO) {
-                val placesDeferred = async { loadPlacesData() }
-                val walksDeferred = async { loadWalkData() }
-
-                // 두 결과를 기다리고 합치기
-                val places = placesDeferred.await()
-                val walks = walksDeferred.await()
-
-                // 두 리스트 합치기
-                places + walks
+            withContext(Dispatchers.Main) {
+                // 로딩 표시
+                Toast.makeText(requireContext(), "데이터를 불러오는 중...", Toast.LENGTH_SHORT).show()
             }
+
+            // 순차적으로 데이터 로드 (병렬 처리 대신)
+            val places = withContext(Dispatchers.IO) {
+                try {
+                    loadPlacesData()
+                } catch (e: Exception) {
+                    Log.e("MapFragment", "일반 장소 로드 실패", e)
+                    emptyList()
+                }
+            }
+
+            val walks = withContext(Dispatchers.IO) {
+                try {
+                    loadWalkData()
+                } catch (e: Exception) {
+                    Log.e("MapFragment", "산책로 로드 실패", e)
+                    emptyList()
+                }
+            }
+
+            val allPlaces = places + walks
 
             // UI 업데이트
             updateUI(allPlaces)
 
             Log.d("MapFragment", "총 ${allPlaces.size}개의 장소 로드 완료 " +
-                    "(일반 장소: ${allPlaces.count { it.placeType != "산책로" }}, " +
-                    "산책로: ${allPlaces.count { it.placeType == "산책로" }})")
+                    "(일반 장소: ${places.size}, 산책로: ${walks.size})")
 
         } catch (e: Exception) {
             Log.e("MapFragment", "데이터 로드 중 오류 발생", e)
-            handleError(e)
+            withContext(Dispatchers.Main) {
+                handleError(e)
+            }
         }
     }
 
@@ -890,25 +916,28 @@ class MapFragment : Fragment(), OnMapReadyCallback {
         }
     }
 
-    private fun handleError(e: Exception) {
-        val errorMessage = when (e) {
-            is HttpException -> {
-                when (e.code()) {
-                    401 -> "로그인이 필요합니다."
-                    403 -> "권한이 없습니다."
-                    404 -> "데이터를 찾을 수 없습니다."
-                    else -> "서버 오류가 발생했습니다. (${e.code()})"
+    private suspend fun handleError(e: Exception) {
+        withContext(Dispatchers.Main) {
+            val errorMessage = when (e) {
+                is HttpException -> {
+                    when (e.code()) {
+                        401 -> "로그인이 필요합니다."
+                        403 -> "권한이 없습니다."
+                        404 -> "데이터를 찾을 수 없습니다."
+                        else -> "서버 오류가 발생했습니다. (${e.code()})"
+                    }
                 }
+                is IOException -> "네트워크 연결을 확인해주세요."
+                else -> "알 수 없는 오류가 발생했습니다: ${e.message}"
             }
-            is IOException -> "네트워크 연결을 확인해주세요."
-            else -> "알 수 없는 오류가 발생했습니다: ${e.message}"
+
+            context?.let {
+                Toast.makeText(it, errorMessage, Toast.LENGTH_SHORT).show()
+            } ?: run {
+                Log.w("MapFragment", "Fragment가 Activity에 연결되지 않아 Toast를 표시할 수 없습니다.")
+            }
+            Log.e("MapFragment", "API 오류", e)
         }
-        context?.let { // context가 null이 아닌 경우에만 Toast를 표시
-            Toast.makeText(it, errorMessage, Toast.LENGTH_SHORT).show()
-        } ?: run {
-            Log.w("MapFragment", "Fragment가 Activity에 연결되지 않아 Toast를 표시할 수 없습니다.")
-        }
-        Log.e("MapFragment", "API 오류", e)
     }
 
 
@@ -967,11 +996,23 @@ class MapFragment : Fragment(), OnMapReadyCallback {
         activity?.runOnUiThread {
             try {
                 sortTextView.text = sortType
+
+                // MapButtonRVAdapter의 선택 상태를 "전체"로 리셋
+                (binding.mapButtonRV.adapter as? MapButtonRVAdapter)?.let { adapter ->
+                    adapter.resetSelection()  // 모든 버튼 선택 해제
+                    adapter.updateSelectedButton(0)  // "전체" 버튼 선택 (첫 번째 버튼)
+                }
+
+                when (sortType) {
+                    "주소기준" -> moveToUserAddress()
+                    "위치기준" -> moveToCurrentLocation()
+                }
             } catch (e: Exception) {
                 Log.e("MapFragment", "Error updating sort text: ${e.message}")
             }
         }
     }
+
 
     override fun onViewStateRestored(savedInstanceState: Bundle?) {
         super.onViewStateRestored(savedInstanceState)
@@ -1103,6 +1144,126 @@ class MapFragment : Fragment(), OnMapReadyCallback {
     private fun getSavedUserAddress(): String {
         val sharedPref = requireActivity().getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
         return sharedPref.getString("user_address", "") ?: ""
+    }
+
+    private fun moveToUserAddress() {
+        lifecycleScope.launch {
+            try {
+                val savedAddress = getSavedUserAddress()
+                if (savedAddress.isEmpty()) {
+                    Toast.makeText(requireContext(), "저장된 주소가 없습니다.", Toast.LENGTH_SHORT).show()
+                    return@launch
+                }
+
+                withContext(Dispatchers.Main) {
+                    Toast.makeText(requireContext(), "주소 기준으로 이동 중...", Toast.LENGTH_SHORT).show()
+                }
+
+                try {
+                    // Naver Geocoding API로 주소를 좌표로 변환
+                    val geocodeResponse = withContext(Dispatchers.IO) {
+                        RetrofitClient.naverGeocodeService.geocode(savedAddress)
+                    }
+
+                    val address = geocodeResponse.addresses.firstOrNull()
+                    if (address != null) {
+                        val latitude = address.latitude.toDouble()
+                        val longitude = address.longitude.toDouble()
+
+                        // 새로운 위치 정보 저장
+                        currentLocation = LatLng(latitude, longitude)
+
+                        withContext(Dispatchers.Main) {
+                            if (::naverMap.isInitialized) {
+                                // 지도 이동
+                                naverMap.moveCamera(
+                                    CameraUpdate.scrollAndZoomTo(
+                                        LatLng(latitude, longitude),
+                                        13.0
+                                    ).animate(CameraAnimation.Easing)
+                                )
+
+                                Toast.makeText(
+                                    requireContext(),
+                                    "위치로 이동 완료: $savedAddress",
+                                    Toast.LENGTH_SHORT
+                                ).show()
+
+                                // 위치가 업데이트된 후에 데이터 다시 로드
+                                resetPagingState() // 페이징 상태 초기화
+                                loadAllCategories() // 새로운 위치 기준으로 데이터 로드
+                            }
+                        }
+                    } else {
+                        withContext(Dispatchers.Main) {
+                            Toast.makeText(
+                                requireContext(),
+                                "주소를 찾을 수 없습니다.",
+                                Toast.LENGTH_SHORT
+                            ).show()
+                        }
+                    }
+                } catch (e: Exception) {
+                    withContext(Dispatchers.Main) {
+                        Toast.makeText(
+                            requireContext(),
+                            "주소 변환 중 오류가 발생했습니다: ${e.message}",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    }
+                    Log.e("MapFragment", "Geocoding 오류", e)
+                }
+            } catch (e: Exception) {
+                withContext(Dispatchers.Main) {
+                    Toast.makeText(
+                        requireContext(),
+                        "오류가 발생했습니다: ${e.message}",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
+                Log.e("MapFragment", "moveToUserAddress 오류", e)
+            }
+        }
+    }
+
+    private fun moveToCurrentLocation() {
+        lifecycleScope.launch {
+            try {
+                if (!hasLocationPermission()) {
+                    withContext(Dispatchers.Main) {
+                        Toast.makeText(requireContext(), "위치 권한이 필요합니다.", Toast.LENGTH_SHORT).show()
+                    }
+                    requestLocationPermission()
+                    return@launch
+                }
+
+                withContext(Dispatchers.Main) {
+                    Toast.makeText(requireContext(), "현재 위치로 이동 중...", Toast.LENGTH_SHORT).show()
+
+                    // 위치 추적 모드 활성화
+                    naverMap.locationTrackingMode = LocationTrackingMode.Follow
+
+                    // 지도 줌 레벨 설정
+                    naverMap.moveCamera(CameraUpdate.zoomTo(14.0))
+
+                    // 위치 업데이트 시작
+                    startLocationUpdates()
+
+                    // 한 번만 데이터 새로고침
+                    resetPagingState()
+                    loadAllCategories()
+                }
+            } catch (e: Exception) {
+                withContext(Dispatchers.Main) {
+                    Toast.makeText(
+                        requireContext(),
+                        "현재 위치로 이동 중 오류가 발생했습니다: ${e.message}",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
+                Log.e("MapFragment", "moveToCurrentLocation 오류", e)
+            }
+        }
     }
 
     override fun onDestroyView() {
