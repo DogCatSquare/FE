@@ -1,5 +1,6 @@
 package com.example.dogcatsquare.ui.wish
 
+import android.content.Context
 import android.os.Bundle
 import android.util.Log
 import androidx.fragment.app.Fragment
@@ -11,9 +12,17 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.dogcatsquare.data.map.MapButton
 import com.example.dogcatsquare.ui.map.location.MapButtonRVAdapter
 import com.example.dogcatsquare.R
-import com.example.dogcatsquare.data.wish.WishPlace
+import com.example.dogcatsquare.data.api.WishRetrofitObj
+import com.example.dogcatsquare.data.map.MyLocation
+import com.example.dogcatsquare.data.model.wish.GetMyWishResponse
+import com.example.dogcatsquare.data.model.wish.WishPlace
+import com.example.dogcatsquare.data.network.RetrofitObj
 import com.example.dogcatsquare.databinding.FragmentWishPlaceBinding
+import com.example.dogcatsquare.ui.map.location.MapDetailFragment
 import com.example.dogcatsquare.ui.map.location.SortDialogFragment
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
 
 class WishPlaceFragment : Fragment() {
     private var _binding: FragmentWishPlaceBinding? = null
@@ -24,6 +33,19 @@ class WishPlaceFragment : Fragment() {
 
     private val buttonDatas by lazy { ArrayList<MapButton>() }
     private val placeDatas by lazy { ArrayList<WishPlace>() }
+
+    private val categoryMap = mapOf(
+        "HOSPITAL" to "동물병원",
+        "CAFE" to "카페",
+        "RESTAURANT" to "식당",
+        "HOTEL" to "호텔",
+        "PARK" to "산책로"
+    )
+
+    private fun getToken(): String? {
+        val sharedPref = activity?.getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
+        return sharedPref?.getString("token", null)
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -57,32 +79,19 @@ class WishPlaceFragment : Fragment() {
 
         val mapButtonRVAdapter = MapButtonRVAdapter(buttonDatas, object : MapButtonRVAdapter.OnItemClickListener {
             override fun onItemClick(position: Int, buttonName: String) {
-                when (buttonName) {
-                    "전체" -> {
-                        placeDatas.clear()
-                        placeDatas.addAll(getAllPlaces())
-                        binding.wishPlaceRV.adapter?.notifyDataSetChanged()
-                    }
-                    "병원" -> {
-                        placeDatas.clear()
-                        placeDatas.addAll(getAllPlaces().filter { it.placeType == "동물병원" })
-                        binding.wishPlaceRV.adapter?.notifyDataSetChanged()
-                    }
-                    "산책로" -> {
-                        placeDatas.clear()
-                        placeDatas.addAll(getAllPlaces().filter { it.placeType == "산책로" })
-                        binding.wishPlaceRV.adapter?.notifyDataSetChanged()
-                    }
-                    "음식/카페" -> {
-                        placeDatas.clear()
-                        placeDatas.addAll(getAllPlaces().filter { it.placeType == "식당" || it.placeType == "카페" })
-                        binding.wishPlaceRV.adapter?.notifyDataSetChanged()
-                    }
-                    "호텔" -> {
-                        placeDatas.clear()
-                        placeDatas.addAll(getAllPlaces().filter { it.placeType == "호텔" })
-                        binding.wishPlaceRV.adapter?.notifyDataSetChanged()
-                    }
+                getAllPlaces { places ->
+                    placeDatas.clear()
+                    placeDatas.addAll(
+                        when (buttonName) {
+                            "전체" -> places
+                            "병원" -> places.filter { it.category == "동물병원" }
+                            "산책로" -> places.filter { it.category == "산책로" }
+                            "음식/카페" -> places.filter { it.category == "식당" || it.category == "카페" }
+                            "호텔" -> places.filter { it.category == "호텔" }
+                            else -> emptyList()
+                        }
+                    )
+                    binding.wishPlaceRV.adapter?.notifyDataSetChanged()
                 }
             }
         })
@@ -92,74 +101,83 @@ class WishPlaceFragment : Fragment() {
             layoutManager = LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false)
         }
 
-        // 초기 데이터 설정 (전체)
-        placeDatas.addAll(getAllPlaces())
-
-        val wishPlaceRVAdapter = WishPlaceRVAdapter(placeDatas)
+        val wishPlaceRVAdapter = WishPlaceRVAdapter(placeDatas, getToken())
         binding.wishPlaceRV.apply {
             adapter = wishPlaceRVAdapter
             layoutManager = LinearLayoutManager(context, LinearLayoutManager.VERTICAL, false)
         }
+
+        // 🔥 초기 데이터 로드
+        getAllPlaces { places ->
+            placeDatas.addAll(places)
+            binding.wishPlaceRV.adapter?.notifyDataSetChanged()
+        }
+
+        wishPlaceRVAdapter.setMyItemClickListener(object : WishPlaceRVAdapter.OnItemClickListener{
+            override fun onItemClick(place: WishPlace) {
+                // placeType에 따라 다른 Fragment로 전환
+                if (place.category == "병원") {
+                    val fragment = MapDetailFragment.newInstance(place.id, 0.0, 0.0)
+                    requireActivity().supportFragmentManager.beginTransaction()
+                        .replace(R.id.main_frm, fragment)
+                        .addToBackStack(null)
+                        .commitAllowingStateLoss()
+                } else {
+                    val fragment = MapDetailFragment.newInstance(place.id, 0.0, 0.0)
+                    requireActivity().supportFragmentManager.beginTransaction()
+                        .replace(R.id.main_frm, fragment)
+                        .addToBackStack(null)
+                        .commitAllowingStateLoss()
+                }
+            }
+
+        })
     }
 
-    private fun getAllPlaces(): List<WishPlace> {
-        return listOf(
-            WishPlace(
-                "ABC 고양이 호텔",
-                "호텔",
-                "0.55km",
-                "서울시 양천구 중앙로 222 3층",
-                "02-1234-5678",
-                "고양이탁묘",    // char1Text
-                "수영장",       // char2Text
-                null,     // char3Text
-                R.drawable.ic_place_img_default,
-                "리뷰(18)"),
-            WishPlace(
-                "멍멍 동물병원",
-                "동물병원",
-                "0.75km",
-                "서울시 강서구 화곡로 123",
-                "02-2345-6789",
-                "24시간 진료",  // char1Text
-                "예방접종",     // char2Text
-                null,  // char3Text
-                R.drawable.ic_place_img_default,
-                "리뷰(25)"),
-            WishPlace(
-                "행복한 산책로",
-                "산책로",
-                "1.2km",
-                "서울시 마포구 망원동 45-1",
-                null,
-                "난이도 하",    // char1Text
-                "쓰레기통",     // char2Text
-                null,          // char3Text
-                R.drawable.ic_place_img_default,
-                "리뷰(32)"),
-            WishPlace(
-                "펫프렌들리 카페",
-                "카페",
-                "0.3km",
-                "서울시 서대문구 연희동 89",
-                "02-3456-7890",
-                "야외 테라스",  // char1Text
-                "반려동물 간식", // char2Text
-                null,     // char3Text
-                R.drawable.ic_place_img_default,
-                "리뷰(15)"),
-            WishPlace(
-                "럭셔리 펫호텔",
-                "호텔",
-                "1.5km",
-                "서울시 강남구 역삼동 123",
-                "02-4567-8901",
-                "수영장",      // char1Text
-                "호텔식 사료",  // char2Text
-                null,  // char3Text
-                R.drawable.ic_place_img_default,
-                "리뷰(42)")
-        )
+    private fun getAllPlaces(callback: (List<WishPlace>) -> Unit) {
+        val token = getToken()
+
+        val getMyWishService = RetrofitObj.getRetrofit().create(WishRetrofitObj::class.java)
+        // 위도 경도 기본값 -> 추후 수정
+        getMyWishService.getMyWish("Bearer $token", 0, MyLocation(37.5665, 126.9780)).enqueue(object : Callback<GetMyWishResponse> {
+            override fun onResponse(call: Call<GetMyWishResponse>, response: Response<GetMyWishResponse>) {
+                Log.d("GetMyWish/SUCCESS", response.toString())
+                val resp: GetMyWishResponse = response.body()!!
+
+                if (resp != null) {
+                    if (resp.isSuccess) {
+                        Log.d("GetMyWish", "내 위시 전체 조회 성공")
+
+                        val wishes = resp.result.content.map { wish ->
+                            WishPlace(
+                                id = wish.id,
+                                name = wish.name,
+                                address = wish.address,
+                                category = categoryMap[wish.category] ?: wish.category,
+                                phoneNumber = wish.phoneNumber ?: "",
+                                longitude = wish.longitude,
+                                latitude = wish.latitude,
+                                distance = wish.distance,
+                                open = wish.open ?: false,
+                                imgUrl = wish.imgUrl ?: "",
+                                reviewCount = wish.reviewCount,
+                                keywords = wish.keywords,
+                                isWish = true
+                            )
+                        }
+
+                        callback(wishes)
+                    }
+                } else {
+                    callback(emptyList())
+                }
+            }
+
+            override fun onFailure(call: Call<GetMyWishResponse>, t: Throwable) {
+                Log.d("RETROFIT/FAILURE", t.message.toString())
+            }
+
+        })
     }
 
     private fun setupSortButton() {
