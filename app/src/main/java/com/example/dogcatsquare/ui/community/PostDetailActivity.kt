@@ -15,11 +15,15 @@ import com.bumptech.glide.Glide
 import com.example.dogcatsquare.R
 import com.example.dogcatsquare.data.api.CommentApiService
 import com.example.dogcatsquare.data.community.Comment
+import com.example.dogcatsquare.data.community.CommentListResponse
 import com.example.dogcatsquare.data.community.CommentRequest
 import com.example.dogcatsquare.data.community.CommentResponse
 import com.example.dogcatsquare.data.community.CommonResponse
 import com.example.dogcatsquare.data.community.LikeResponse
 import com.example.dogcatsquare.data.community.PostDetailResponse
+import com.example.dogcatsquare.data.community.Reply
+import com.example.dogcatsquare.data.model.home.Event
+import com.example.dogcatsquare.data.model.home.GetAllEventsResponse
 import com.example.dogcatsquare.data.network.RetrofitObj
 import com.example.dogcatsquare.databinding.ActivityPostDetailBinding
 import com.example.dogcatsquare.ui.viewmodel.PostViewModel
@@ -31,7 +35,6 @@ class PostDetailActivity : AppCompatActivity(), CommentActionListener {
 
     private lateinit var binding: ActivityPostDetailBinding
     private lateinit var commentAdapter: CommentsAdapter
-    private lateinit var comments: MutableList<Comment>
 
     // 클래스 멤버 변수로 선언하여 모든 메서드에서 접근 가능하게 함
     private val currentUserId: Long = 1L  // 실제 앱에서는 로그인한 사용자 ID 사용
@@ -39,6 +42,8 @@ class PostDetailActivity : AppCompatActivity(), CommentActionListener {
     private var postId: Int = -1
     private var isLiked: Boolean = false  // 현재 좋아요 상태 저장
     private var likeCount: Int = 0  // 좋아요 개수 저장
+
+    private var commentDatas = ArrayList<Comment>()
 
     private fun getToken(): String? {
         val sharedPref = getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
@@ -69,30 +74,31 @@ class PostDetailActivity : AppCompatActivity(), CommentActionListener {
 
         // 댓글 RecyclerView 설정
         // 임시 데이터: 실제 API 응답 시 id가 올바르게 채워져 있어야 함
-        comments = mutableListOf(
-            Comment(
-                id = 1,
-                content = "더 열심히 놀아주세요!",
-                name = "닉네임1",
-                animalType = "",
-                profileImageUrl = "",
-                timestamp = "2021.01.01",
-                replies = listOf("첫 번째 대댓글", "두 번째 대댓글")
-            ),
-            Comment(
-                id = 2,
-                content = "대댓",
-                name = "닉네임2",
-                animalType = "",
-                profileImageUrl = "",
-                timestamp = "2021.01.01",
-                replies = emptyList()
-            )
-        )
+//        comments = mutableListOf(
+//            Comment(
+//                id = 1,
+//                content = "더 열심히 놀아주세요!",
+//                name = "닉네임1",
+//                animalType = "",
+//                profileImageUrl = "",
+//                timestamp = "2021.01.01",
+//                replies = listOf("첫 번째 대댓글", "두 번째 대댓글")
+//            ),
+//            Comment(
+//                id = 2,
+//                content = "대댓",
+//                name = "닉네임2",
+//                animalType = "",
+//                profileImageUrl = "",
+//                timestamp = "2021.01.01",
+//                replies = emptyList()
+//            )
+//        )
 
-        commentAdapter = CommentsAdapter(comments, this)
+        commentAdapter = CommentsAdapter(commentDatas, this)
         binding.rvComments.layoutManager = LinearLayoutManager(this)
         binding.rvComments.adapter = commentAdapter
+        getComment(postId.toLong(), commentAdapter)
 
         // 댓글 입력 후 전송 버튼 클릭 시 처리
         binding.ivSend.setOnClickListener {
@@ -107,18 +113,55 @@ class PostDetailActivity : AppCompatActivity(), CommentActionListener {
         loadPostDetail(postId.toInt())
     }
 
+    // 댓글 조회
+    private fun getComment(postId: Long, adapter: CommentsAdapter) {
+        val token = getToken()
+
+        val getCommentService = RetrofitObj.getRetrofit().create(CommentApiService::class.java)
+        getCommentService.getComments("Bearer $token", postId).enqueue(object : Callback<CommentListResponse> {
+            override fun onResponse(call: Call<CommentListResponse>, response: Response<CommentListResponse>) {
+                response.body()?.let { resp ->
+                    if (resp.isSuccess) {
+                        Log.d("GetComment", "댓글 전체 조회 성공")
+
+                        val comments = resp.result
+                        if (comments != null) {
+                            commentDatas.clear() // 기존 데이터 삭제 후 추가
+                            commentDatas.addAll(comments)
+
+                            Log.d("CommentList", commentDatas.toString())
+                            adapter.notifyDataSetChanged() // UI 갱신
+                        } else {
+                            Log.d("GetComment", "댓글이 없음")
+                        }
+                    } else {
+                        Log.e("GetComment/FAILURE", "응답 실패: ${resp.code}, 메시지: ${resp.message}")
+                    }
+                } ?: run {
+                    Log.e("GetComment/ERROR", "서버 응답이 null임")
+                }
+            }
+            override fun onFailure(call: Call<CommentListResponse>, t: Throwable) {
+                Toast.makeText(this@PostDetailActivity, "네트워크 오류: ${t.message}", Toast.LENGTH_SHORT).show()
+                Log.d("RETROFIT/FAILURE", t.message.toString())
+            }
+        })
+    }
+
     // 댓글 등록 API 호출 함수 (클래스 멤버 함수)
     private fun postComment(postId: Long, userId: Long, content: String, parentId: String) {
+        val token = getToken()
+
         val commentApi = RetrofitObj.getRetrofit().create(CommentApiService::class.java)
         val request = CommentRequest(content = content, parentId = parentId)
-        commentApi.createComment(postId, userId, request).enqueue(object : Callback<CommentResponse> {
+        commentApi.createComment("Bearer $token", postId, userId, request).enqueue(object : Callback<CommentResponse> {
             override fun onResponse(call: Call<CommentResponse>, response: Response<CommentResponse>) {
                 if (response.isSuccessful) {
                     val newComment = response.body()?.result
                     if (newComment != null) {
-                        comments.add(newComment)
-                        commentAdapter.notifyItemInserted(comments.size - 1)
-                        binding.rvComments.scrollToPosition(comments.size - 1)
+                        commentDatas.add(newComment)
+                        commentAdapter.notifyItemInserted(commentDatas.size - 1)
+                        binding.rvComments.scrollToPosition(commentDatas.size - 1)
                         binding.etComment.text.clear()
                         Toast.makeText(this@PostDetailActivity, "댓글 등록 성공", Toast.LENGTH_SHORT).show()
                     }
@@ -128,19 +171,22 @@ class PostDetailActivity : AppCompatActivity(), CommentActionListener {
             }
             override fun onFailure(call: Call<CommentResponse>, t: Throwable) {
                 Toast.makeText(this@PostDetailActivity, "네트워크 오류: ${t.message}", Toast.LENGTH_SHORT).show()
+                Log.d("RETROFIT/FAILURE", t.message.toString())
             }
         })
     }
 
     // 댓글 삭제 API 호출 함수 (클래스 멤버 함수)
     private fun deleteComment(postId: Long, commentId: Long) {
+        val token = getToken()
+
         val commentApi = RetrofitObj.getRetrofit().create(CommentApiService::class.java)
-        commentApi.deleteComment(postId, commentId).enqueue(object : Callback<CommonResponse> {
+        commentApi.deleteComment("Bearer $token", postId, commentId).enqueue(object : Callback<CommonResponse> {
             override fun onResponse(call: Call<CommonResponse>, response: Response<CommonResponse>) {
                 if (response.isSuccessful && response.body()?.isSuccess == true) {
-                    val index = comments.indexOfFirst { it.id == commentId.toInt() }
+                    val index = commentDatas.indexOfFirst { it.id == commentId.toInt() }
                     if (index != -1) {
-                        comments.removeAt(index)
+                        commentDatas.removeAt(index)
                         commentAdapter.notifyItemRemoved(index)
                     }
                     Toast.makeText(this@PostDetailActivity, "댓글 삭제 성공", Toast.LENGTH_SHORT).show()
@@ -168,11 +214,20 @@ class PostDetailActivity : AppCompatActivity(), CommentActionListener {
                 postComment(postId.toLong(), currentUserId, replyText, comment.id.toString())
 
                 // 로컬 업데이트: 기존 댓글의 replies 필드만 업데이트
-                val index = comments.indexOfFirst { it.id == comment.id }
+                val index = commentDatas.indexOfFirst { it.id == comment.id }
                 if (index != -1) {
-                    val updatedReplies = comment.replies.toMutableList().apply { add(replyText) }
+                    val newReply = Reply(
+                        id = 0, // 실제 id는 서버에서 받아오거나 적절한 값을 할당하세요.
+                        content = replyText,
+                        name = "내 닉네임", // 현재 사용자 닉네임을 넣으세요.
+                        dogBreed = "", // 필요 시 적절한 값을 넣으세요.
+                        profileImageUrl = "", // 사용자 프로필 이미지 URL
+                        timestamp = System.currentTimeMillis().toString() // 또는 원하는 포맷의 시간
+                    )
+
+                    val updatedReplies = comment.replies.toMutableList().apply { add(newReply) }
                     // 부모 댓글 객체를 복사하여 replies 필드만 업데이트
-                    comments[index] = comment.copy(replies = updatedReplies)
+                    commentDatas[index] = comment.copy(replies = updatedReplies)
                     commentAdapter.notifyItemChanged(index)
                 }
             } else {
