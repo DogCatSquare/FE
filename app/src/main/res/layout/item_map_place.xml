@@ -25,8 +25,11 @@
         android:id="@+id/placeImg"
         android:layout_width="90dp"
         android:layout_height="90dp"
+        android:layout_marginBottom="20dp"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toStartOf="@+id/guideline2"
-        app:layout_constraintTop_toTopOf="@+id/placeName"
+        app:layout_constraintTop_toTopOf="@+id/titleCategoryContainer"
+        app:layout_constraintVertical_bias="0"
         app:srcCompat="@drawable/ic_place_img_default" />
 
     <ImageView
@@ -38,29 +41,41 @@
         app:layout_constraintTop_toBottomOf="@+id/placeLocation"
         app:srcCompat="@drawable/ic_call" />
 
-    <TextView
-        android:id="@+id/placeName"
-        android:layout_width="wrap_content"
+    <com.google.android.flexbox.FlexboxLayout
+        android:id="@+id/titleCategoryContainer"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginTop="15dp"
-        android:text="가나다 동물병원"
-        android:textSize="16dp"
-        android:fontFamily="@font/pretendard_semibold"
-        android:textColor="@color/black"
+        android:layout_marginEnd="16dp"
+        app:alignItems="center"
+        app:flexWrap="wrap"
+        app:justifyContent="flex_start"
+        app:layout_constraintEnd_toStartOf="@+id/placeImg"
         app:layout_constraintStart_toStartOf="@+id/guideline1"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent">
 
-    <TextView
-        android:id="@+id/placeType"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="8dp"
-        android:fontFamily="@font/pretendard_regular"
-        android:text="동물병원"
-        android:textColor="@color/gray5"
-        android:textSize="14dp"
-        app:layout_constraintBottom_toBottomOf="@+id/placeName"
-        app:layout_constraintStart_toEndOf="@+id/placeName" />
+        <TextView
+            android:id="@+id/placeName"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:fontFamily="@font/pretendard_semibold"
+            android:text="가나다 동물병원"
+            android:textColor="@color/black"
+            android:textSize="18dp" />
+
+        <TextView
+            android:id="@+id/placeType"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="5dp"
+            android:fontFamily="@font/pretendard_regular"
+            android:text="동물병원"
+            android:textColor="@color/gray5"
+            android:textSize="14dp"
+            app:layout_constraintBottom_toBottomOf="@+id/placeName"
+            app:layout_constraintStart_toEndOf="@+id/placeName"
+            app:layout_constraintTop_toTopOf="@+id/placeName" />
+    </com.google.android.flexbox.FlexboxLayout>
 
     <TextView
         android:id="@+id/placeDistance"
@@ -70,7 +85,7 @@
         android:fontFamily="@font/pretendard_regular"
         android:text="0.55km"
         app:layout_constraintStart_toStartOf="@+id/guideline1"
-        app:layout_constraintTop_toBottomOf="@+id/placeName"
+        app:layout_constraintTop_toBottomOf="@+id/titleCategoryContainer"
         android:textSize="12dp"
         android:textColor="@color/gray5"/>
 
@@ -79,7 +94,7 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="5dp"
-        android:layout_marginEnd="5dp"
+        android:layout_marginEnd="16dp"
         android:fontFamily="@font/pretendard_regular"
         android:text="서울시 성북구 월곡동 77"
         android:textColor="@color/gray5"
@@ -106,62 +121,57 @@
         android:id="@+id/contour2"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="15dp"
+        android:layout_marginTop="10dp"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/characteristicsContainer"
         app:srcCompat="@drawable/ic_map_contour_place" />
+
+    <TextView
+        android:id="@+id/placeReview"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:fontFamily="@font/pretendard_regular"
+        android:text="리뷰(18)"
+        android:textColor="@color/gray5"
+        android:textSize="12dp"
+        app:layout_constraintBottom_toBottomOf="@+id/review2"
+        app:layout_constraintStart_toEndOf="@+id/review2"
+        app:layout_constraintTop_toTopOf="@+id/review2" />
 
     <com.google.android.flexbox.FlexboxLayout
         android:id="@+id/characteristicsContainer"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="3dp"
         android:layout_marginEnd="16dp"
         app:alignItems="center"
         app:flexWrap="wrap"
         app:justifyContent="flex_start"
         app:layout_constraintEnd_toStartOf="@+id/placeImg"
-        app:layout_constraintStart_toStartOf="@+id/guideline1"
-        app:layout_constraintTop_toBottomOf="@+id/call">
-
-        <ImageView
-            android:id="@+id/ImageView"
-            android:layout_width="12dp"
-            android:layout_height="12dp"
-            android:layout_gravity="center_vertical"
-            app:srcCompat="@drawable/ic_mypage"
-            app:tint="#696969" />
-
-        <TextView
-            android:id="@+id/placeReview"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="4dp"
-            android:layout_marginEnd="8dp"
-            android:fontFamily="@font/pretendard_regular"
-            android:text="리뷰(18)"
-            android:textColor="@color/gray5"
-            android:textSize="12dp" />
+        app:layout_constraintStart_toStartOf="@+id/review2"
+        app:layout_constraintTop_toBottomOf="@+id/placeReview">
 
         <androidx.cardview.widget.CardView
             android:id="@+id/char1"
             android:layout_width="wrap_content"
-            android:layout_height="24dp"
-            android:layout_marginEnd="8dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="6dp"
+            android:layout_marginBottom="6dp"
             android:background="#EAF2FE"
-            app:cardCornerRadius="4dp"
-            app:cardElevation="0dp">
+            app:cardCornerRadius="8dp"
+            app:layout_constraintStart_toEndOf="@+id/placeReview"
+            app:layout_constraintTop_toBottomOf="@+id/placeCall">
 
             <TextView
                 android:id="@+id/char1Text"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:gravity="center"
-                android:paddingStart="8dp"
-                android:paddingEnd="8dp"
+                android:layout_marginStart="8dp"
+                android:layout_marginTop="1dp"
+                android:layout_marginEnd="8dp"
+                android:layout_marginBottom="1dp"
                 android:text="고양이친화"
                 android:textColor="#276CCB"
                 android:textSize="12dp" />
@@ -171,49 +181,62 @@
         <androidx.cardview.widget.CardView
             android:id="@+id/char2"
             android:layout_width="wrap_content"
-            android:layout_height="24dp"
-            android:layout_marginEnd="8dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:layout_marginTop="6dp"
+            android:layout_marginBottom="6dp"
             android:background="#EAF2FE"
-            app:cardCornerRadius="4dp"
-            app:cardElevation="0dp">
+            app:cardCornerRadius="8dp"
+            app:layout_constraintStart_toEndOf="@+id/char1"
+            app:layout_constraintTop_toBottomOf="@+id/placeCall">
 
             <TextView
                 android:id="@+id/char2Text"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:gravity="center"
-                android:paddingStart="8dp"
-                android:paddingEnd="8dp"
-                android:text="고양이친화"
+                android:layout_marginStart="8dp"
+                android:layout_marginTop="1dp"
+                android:layout_marginEnd="8dp"
+                android:layout_marginBottom="1dp"
+                android:text="예방접종"
                 android:textColor="#276CCB"
                 android:textSize="12dp" />
-
         </androidx.cardview.widget.CardView>
 
         <androidx.cardview.widget.CardView
             android:id="@+id/char3"
             android:layout_width="wrap_content"
-            android:layout_height="24dp"
-            android:layout_marginEnd="8dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:layout_marginTop="6dp"
+            android:layout_marginBottom="6dp"
             android:background="#EAF2FE"
-            app:cardCornerRadius="4dp"
-            app:cardElevation="0dp">
+            app:cardCornerRadius="8dp"
+            app:layout_constraintStart_toEndOf="@+id/char2"
+            app:layout_constraintTop_toBottomOf="@+id/placeCall">
 
             <TextView
                 android:id="@+id/char3Text"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:gravity="center"
-                android:paddingStart="8dp"
-                android:paddingEnd="8dp"
-                android:text="고양이친화"
+                android:layout_marginStart="8dp"
+                android:layout_marginTop="1dp"
+                android:layout_marginEnd="8dp"
+                android:layout_marginBottom="1dp"
+                android:text="24시"
                 android:textColor="#276CCB"
                 android:textSize="12dp" />
-
         </androidx.cardview.widget.CardView>
-
     </com.google.android.flexbox.FlexboxLayout>
+
+    <ImageView
+        android:id="@+id/review2"
+        android:layout_width="12dp"
+        android:layout_height="12dp"
+        android:layout_marginTop="8dp"
+        app:layout_constraintStart_toStartOf="@+id/call"
+        app:layout_constraintTop_toBottomOf="@+id/placeCall"
+        app:srcCompat="@drawable/ic_mypage"
+        app:tint="#696969" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
