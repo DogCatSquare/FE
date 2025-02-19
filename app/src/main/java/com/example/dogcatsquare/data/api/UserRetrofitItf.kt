@@ -2,6 +2,7 @@ package com.example.dogcatsquare.data.api
 
 import com.example.dogcatsquare.data.model.login.CheckEmailResponse
 import com.example.dogcatsquare.data.model.login.CheckNicknameResponse
+import com.example.dogcatsquare.data.model.login.DeleteUserResponse
 import com.example.dogcatsquare.data.model.login.LoginRequest
 import com.example.dogcatsquare.data.model.login.LoginResponse
 import com.example.dogcatsquare.data.model.login.RefreshTokenResponse
@@ -17,6 +18,7 @@ import okhttp3.MultipartBody
 import okhttp3.RequestBody
 import retrofit2.Call
 import retrofit2.http.Body
+import retrofit2.http.DELETE
 import retrofit2.http.GET
 import retrofit2.http.Header
 import retrofit2.http.Headers
@@ -55,4 +57,7 @@ interface UserRetrofitItf {
     @Multipart
     @PUT("api/users/update")
     fun fetchUser(@Header("Authorization") token: String, @Part("request") request: RequestBody, @Part profileImage: MultipartBody.Part?): Call<FetchUserResponse>
+
+    @DELETE("api/users")
+    fun deleteUser(@Header("Authorization") token: String): Call<DeleteUserResponse>
 }

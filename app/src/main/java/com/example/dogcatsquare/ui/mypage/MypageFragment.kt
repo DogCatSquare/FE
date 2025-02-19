@@ -14,6 +14,7 @@ import com.bumptech.glide.signature.ObjectKey
 import com.example.dogcatsquare.R
 import com.example.dogcatsquare.data.network.RetrofitObj
 import com.example.dogcatsquare.data.api.UserRetrofitItf
+import com.example.dogcatsquare.data.model.login.DeleteUserResponse
 import com.example.dogcatsquare.data.model.mypage.GetUserResponse
 import com.example.dogcatsquare.databinding.FragmentMypageBinding
 import com.example.dogcatsquare.ui.login.LoginDetailActivity
@@ -103,15 +104,41 @@ class MypageFragment : Fragment() {
         val dialog = CustomDeleteDialog(requireContext())
 
         dialog.setItemClickListener(object : CustomDeleteDialog.ItemClickListener{
-            override fun onClick(message: String) {
-                Toast.makeText(requireContext(), "${message}", Toast.LENGTH_SHORT).show()
+            override fun onClick() {
+                val token = getToken()
+
+                val deleteUserService = RetrofitObj.getRetrofit().create(UserRetrofitItf::class.java)
+                deleteUserService.deleteUser("Bearer $token").enqueue(object : Callback<DeleteUserResponse> {
+                    override fun onResponse(
+                        call: Call<DeleteUserResponse>,
+                        response: Response<DeleteUserResponse>
+                    ) {
+                        if(response.isSuccessful) {
+                            navigateToLogin()
+                        } else {
+                            Toast.makeText(context, "회원 탈퇴에 실패했습니다", Toast.LENGTH_SHORT).show()
+                        }
+                    }
+
+                    override fun onFailure(call: Call<DeleteUserResponse>, t: Throwable) {
+                        Log.d("RETROFIT/FAILURE", t.message.toString())
+                    }
+
+                })
             }
         })
 
         dialog.show()
     }
 
-    // onResume 메서드는 프래그먼트가 사용자와 상호작용을 재개할 때 호출 됨. 즉, 마이페이지 조회 시 최신 정보를 불러옴
+    private fun navigateToLogin() {
+        val intent = Intent(context, LoginDetailActivity::class.java)
+        intent.flags =
+            Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK // 모든 액티비티 삭제 후 이동
+        startActivity(intent)
+    }
+
+        // onResume 메서드는 프래그먼트가 사용자와 상호작용을 재개할 때 호출 됨. 즉, 마이페이지 조회 시 최신 정보를 불러옴
     override fun onResume() {
         super.onResume()
         val token = getToken()

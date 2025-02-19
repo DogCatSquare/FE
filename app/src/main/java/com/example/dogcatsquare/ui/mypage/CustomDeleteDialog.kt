@@ -2,18 +2,33 @@ package com.example.dogcatsquare.ui.mypage
 
 import android.app.Dialog
 import android.content.Context
+import android.content.Intent
 import android.graphics.Color
 import android.graphics.Point
 import android.graphics.drawable.ColorDrawable
 import android.os.Build
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.WindowManager
+import android.widget.Toast
+import com.example.dogcatsquare.data.api.UserRetrofitItf
+import com.example.dogcatsquare.data.model.login.DeleteUserResponse
+import com.example.dogcatsquare.data.network.RetrofitObj
 import com.example.dogcatsquare.databinding.DialogDeleteBinding
+import com.example.dogcatsquare.ui.login.LoginDetailActivity
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
 
 class CustomDeleteDialog(context: Context): Dialog(context) {
     private lateinit var itemClickListener: ItemClickListener
     private lateinit var binding: DialogDeleteBinding
+
+    private fun getToken(): String? {
+        val sharedPref = context.getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
+        return sharedPref?.getString("token", null)
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -39,9 +54,35 @@ class CustomDeleteDialog(context: Context): Dialog(context) {
 
         binding.deleteBtn.setOnClickListener {
             // 탈퇴 로직 임시
-            itemClickListener.onClick("탈퇴")
+            itemClickListener.onClick()
+//            val token = getToken()
+//
+//            val deleteUserService = RetrofitObj.getRetrofit().create(UserRetrofitItf::class.java)
+//            deleteUserService.deleteUser("Bearer $token").enqueue(object : Callback<DeleteUserResponse> {
+//                override fun onResponse(
+//                    call: Call<DeleteUserResponse>,
+//                    response: Response<DeleteUserResponse>
+//                ) {
+//                    if(response.isSuccessful) {
+//                        navigateToLogin()
+//                    } else {
+//                        Toast.makeText(context, "회원 탈퇴에 실패했습니다", Toast.LENGTH_SHORT).show()
+//                    }
+//                }
+//
+//                override fun onFailure(call: Call<DeleteUserResponse>, t: Throwable) {
+//                    Log.d("RETROFIT/FAILURE", t.message.toString())
+//                }
+//
+//            })
             dismiss()
         }
+    }
+
+    private fun navigateToLogin() {
+        val intent = Intent(context, LoginDetailActivity::class.java)
+        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK // 모든 액티비티 삭제 후 이동
+        context.startActivity(intent)
     }
 
     // 사이즈를 조절하고 싶을 때 사용 (use it when you want to resize dialog)
@@ -65,7 +106,7 @@ class CustomDeleteDialog(context: Context): Dialog(context) {
     }
 
     interface ItemClickListener {
-        fun onClick(message: String)
+        fun onClick()
     }
 
     fun setItemClickListener(itemClickListener: ItemClickListener) {
