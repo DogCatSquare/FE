@@ -395,16 +395,16 @@
                 app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
                 tools:listitem="@layout/item_mapwaling_review" />
 
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/ReviewWriting_bt"
-                android:layout_width="match_parent"
-                android:layout_height="50dp"
-                android:layout_marginTop="20dp"
-                android:layout_marginBottom="20dp"
-                android:text="산책 시작하기"
-                style="@style/CustomMaterialButton8"
-                android:insetTop="0dp"
-                android:insetBottom="0dp" />
+<!--            <com.google.android.material.button.MaterialButton-->
+<!--                android:id="@+id/ReviewWriting_bt"-->
+<!--                android:layout_width="match_parent"-->
+<!--                android:layout_height="50dp"-->
+<!--                android:layout_marginTop="20dp"-->
+<!--                android:layout_marginBottom="20dp"-->
+<!--                android:text="산책 시작하기"-->
+<!--                style="@style/CustomMaterialButton8"-->
+<!--                android:insetTop="0dp"-->
+<!--                android:insetBottom="0dp" />-->
 
         </LinearLayout>
 
