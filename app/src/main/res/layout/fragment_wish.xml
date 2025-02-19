@@ -29,15 +29,29 @@
         android:orientation="vertical"
         app:layout_constraintGuide_percent="0.8" />
 
-    <ImageView
+    <EditText
         android:id="@+id/searchBox"
         android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
+        android:layout_height="40dp"
+        android:layout_marginTop="15dp"
+        android:background="@drawable/bg_rounded_et"
+        android:hint="검색어를 입력해주세요"
+        android:textSize="14sp"
+        android:focusable="false"
+        android:clickable="true"
+        android:cursorVisible="false"
         app:layout_constraintEnd_toEndOf="@+id/guideline_mid"
-        app:layout_constraintStart_toStartOf="@id/guideline_start"
-        app:layout_constraintTop_toTopOf="parent"
-        app:srcCompat="@drawable/ic_search_box" />
+        app:layout_constraintStart_toStartOf="@+id/guideline_start"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <ImageView
+        android:layout_width="15dp"
+        android:layout_height="15dp"
+        android:layout_marginEnd="15dp"
+        android:src="@drawable/ic_search"
+        app:layout_constraintBottom_toBottomOf="@+id/searchBox"
+        app:layout_constraintEnd_toEndOf="@+id/searchBox"
+        app:layout_constraintTop_toTopOf="@+id/searchBox" />
 
     <ImageView
         android:id="@+id/filter"
@@ -51,46 +65,29 @@
         app:layout_constraintTop_toTopOf="@+id/searchBox"
         app:srcCompat="@drawable/ic_filter" />
 
-    <TextView
-        android:id="@+id/placeButton"
-        android:layout_width="wrap_content"
+    <!-- 🔥 TabLayout 추가 -->
+    <com.google.android.material.tabs.TabLayout
+        android:id="@+id/tabLayout"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        android:layout_marginEnd="24dp"
-        android:text="장소"
-        app:layout_constraintEnd_toStartOf="@+id/walkButton"
-        app:layout_constraintHorizontal_bias="0.5"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/searchBox" />
-
-    <TextView
-        android:id="@+id/walkButton"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="24dp"
-        android:layout_marginTop="8dp"
-        android:text="산책로"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.5"
-        app:layout_constraintStart_toEndOf="@+id/placeButton"
-        app:layout_constraintTop_toBottomOf="@+id/searchBox" />
-
-    <ImageView
-        android:id="@+id/imageView11"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
+        android:layout_marginTop="15dp"
+        android:background="@color/white"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/placeButton"
-        app:srcCompat="@drawable/ic_map_contour_place" />
+        app:layout_constraintTop_toBottomOf="@+id/searchBox"
+        app:tabIndicatorColor="@color/main_color1"
+        app:tabSelectedTextColor="@color/main_color1"
+        app:tabTextColor="@color/gray4">
 
-    <FrameLayout
-        android:id="@+id/wish_frm"
+    </com.google.android.material.tabs.TabLayout>
+
+    <!-- 🔥 ViewPager2 추가 -->
+    <androidx.viewpager2.widget.ViewPager2
+        android:id="@+id/viewPager"
         android:layout_width="match_parent"
         android:layout_height="0dp"
+        app:layout_constraintTop_toBottomOf="@+id/tabLayout"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/imageView11"/>
+        app:layout_constraintEnd_toEndOf="parent" />
 </androidx.constraintlayout.widget.ConstraintLayout>
