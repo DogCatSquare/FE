@@ -13,7 +13,7 @@ import com.example.dogcatsquare.data.community.Comment
 import com.example.dogcatsquare.data.community.Reply
 
 class CommentsAdapter(
-    private val comments: List<Comment>,
+    private val comments: ArrayList<Comment>,
     private val actionListener: CommentActionListener // 액션 처리를 위한 콜백 인터페이스
 ) : RecyclerView.Adapter<CommentsAdapter.CommentViewHolder>() {
 
