@@ -494,7 +494,7 @@ class HomeFragment : Fragment() {
         return if (latitude != -1f && longitude != -1f) {
             Pair(latitude.toDouble(), longitude.toDouble())
         } else {
-            null // 위치 정보가 없는 경우
+            Pair(37.4683517, 127.0389883)
         }
     }
 
