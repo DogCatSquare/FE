@@ -45,7 +45,7 @@ interface BoardApiService {
 
     // 특정 게시글 조회 API
     @GET("api/board/post/{postId}")
-    fun getPost(@Path("postId") postId: Int): Call<PostDetailResponse>
+    fun getPost(@Header("Authorization") token: String, @Path("postId") postId: Int): Call<PostDetailResponse>
 
     // 특정게시판에 있는 게시글들 조회
     @GET("api/board/{boardId}/posts")

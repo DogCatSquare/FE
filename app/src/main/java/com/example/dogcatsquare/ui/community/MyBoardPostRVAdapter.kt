@@ -1,18 +1,33 @@
 package com.example.dogcatsquare.ui.community
 
+import PostApiService
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.lifecycle.LifecycleOwner
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.example.dogcatsquare.R
 import com.example.dogcatsquare.data.community.BoardPost
+import com.example.dogcatsquare.data.community.LikeResponse
 import com.example.dogcatsquare.data.model.post.Post
+import com.example.dogcatsquare.data.network.RetrofitObj
 import com.example.dogcatsquare.databinding.ItemHomeHotPostBinding
 import com.example.dogcatsquare.databinding.ItemLocalPostBinding
 import com.example.dogcatsquare.ui.home.HomeHotPostRVAdapter
+import com.example.dogcatsquare.ui.viewmodel.PostViewModel
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
 
-class MyBoardPostRVAdapter(private val boardPost: ArrayList<Post>)  : RecyclerView.Adapter<MyBoardPostRVAdapter.MyBoardPostRVAdapterViewHolder>() {
+class MyBoardPostRVAdapter(
+    private val boardPost: ArrayList<Post>,
+    private val postViewModel: PostViewModel,
+    private val userId: Int?,
+    private val token: String?,
+    private val lifecycleOwner: LifecycleOwner
+)  : RecyclerView.Adapter<MyBoardPostRVAdapter.MyBoardPostRVAdapterViewHolder>() {
     //    private var d_days: List<DDay> = listOf()
     interface OnItemClickListener {
         fun onItemClick(post: Post)
@@ -82,7 +97,6 @@ class MyBoardPostRVAdapter(private val boardPost: ArrayList<Post>)  : RecyclerVi
                 binding.ivPostImage4.visibility = View.GONE
                 binding.ivPostImage5.visibility = View.GONE
             }
-
         }
     }
 }

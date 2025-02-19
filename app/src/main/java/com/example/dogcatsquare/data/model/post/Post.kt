@@ -8,7 +8,7 @@ data class Post(
     val content: String,
     val video_URL: String?,
     val thumbnail_URL: String?,
-    val like_count: Int,
+    var like_count: Int,
     val comment_count: Int,
     val createdAt: String,
     val profileImage_URL: String?,
