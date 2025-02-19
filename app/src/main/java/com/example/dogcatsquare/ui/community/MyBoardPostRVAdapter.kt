@@ -42,10 +42,11 @@ class MyBoardPostRVAdapter(private val boardPost: ArrayList<Post>)  : RecyclerVi
     inner class MyBoardPostRVAdapterViewHolder(val binding: ItemLocalPostBinding) : RecyclerView.ViewHolder(binding.root) {
         fun bind(boardPost: Post) {
             binding.tvUsername.text = boardPost.username
-            binding.tvContent.text = boardPost.title ?: "제목 없음"
+            binding.tvTitle.text = boardPost.title ?: "제목 없음"
             binding.tvContent.text = boardPost.content ?: "내용 없음"
             binding.tvLikeCount.text = boardPost.like_count.toString()
             binding.tvCommentCount.text = boardPost.comment_count.toString()
+            binding.tvDate.text = boardPost.createdAt
             Glide.with(itemView.context)
                 .load(boardPost.profileImage_URL)
                 .placeholder(R.drawable.ic_profile_placeholder)
@@ -53,29 +54,35 @@ class MyBoardPostRVAdapter(private val boardPost: ArrayList<Post>)  : RecyclerVi
 
             // 이미지가 존재하는 경우 표시, 없으면 GONE 처리
             if (!boardPost.images.isNullOrEmpty()) {
-                binding.ivPostImage1.visibility = View.VISIBLE
-                binding.ivPostImage2.visibility = View.VISIBLE
+                val imageViews = listOf(
+                    binding.ivPostImage1,
+                    binding.ivPostImage2,
+                    binding.ivPostImage3,
+                    binding.ivPostImage4,
+                    binding.ivPostImage5
+                )
 
-                Glide.with(itemView.context)
-                    .load(boardPost.images.getOrNull(0)) // 첫 번째 이미지
-                    .placeholder(R.drawable.ic_placeholder)
-                    .into(binding.ivPostImage1)
-
-                // 두 번째 이미지가 있는 경우 표시, 없으면 GONE
-                if (boardPost.images.size > 1) {
-                    binding.ivPostImage2.visibility = View.VISIBLE
-                    Glide.with(itemView.context)
-                        .load(boardPost.images.getOrNull(1))
-                        .placeholder(R.drawable.ic_placeholder)
-                        .into(binding.ivPostImage2)
-                } else {
-                    binding.ivPostImage2.visibility = View.GONE
+                // 이미지 최대 5개까지 표시
+                for (i in imageViews.indices) {
+                    if (i < boardPost.images.size) {
+                        imageViews[i].visibility = View.VISIBLE
+                        Glide.with(itemView.context)
+                            .load(boardPost.images[i])
+                            .placeholder(R.drawable.ic_placeholder)
+                            .into(imageViews[i])
+                    } else {
+                        imageViews[i].visibility = View.GONE
+                    }
                 }
             } else {
-                // 이미지가 없으면 숨기기
+                // 이미지가 없으면 모든 ImageView 숨기기
                 binding.ivPostImage1.visibility = View.GONE
                 binding.ivPostImage2.visibility = View.GONE
+                binding.ivPostImage3.visibility = View.GONE
+                binding.ivPostImage4.visibility = View.GONE
+                binding.ivPostImage5.visibility = View.GONE
             }
+
         }
     }
 }

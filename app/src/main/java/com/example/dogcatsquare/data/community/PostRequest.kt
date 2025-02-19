@@ -3,7 +3,7 @@ package com.example.dogcatsquare.data.community
 import com.google.gson.annotations.SerializedName
 
 data class PostRequest(
-    val boardId: Long,
+    val boardId: Int,
     val title: String,
     val content: String,
     @SerializedName("videoUrl") val video_URL: String,

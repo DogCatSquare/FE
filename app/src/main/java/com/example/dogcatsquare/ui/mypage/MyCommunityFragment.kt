@@ -49,7 +49,9 @@ class MyCommunityFragment : Fragment() {
 
         val myCommunityRVAdpater = MyCommunityRVAdpater(communityDatas)
         binding.myCommunityRv.adapter = myCommunityRVAdpater
-        binding.myCommunityRv.layoutManager = LinearLayoutManager(context, LinearLayoutManager.VERTICAL, false)
+        binding.myCommunityRv.layoutManager = LinearLayoutManager(context, LinearLayoutManager.VERTICAL, true).apply {
+            stackFromEnd = true
+        }
 
         getMyPost(myCommunityRVAdpater)
     }

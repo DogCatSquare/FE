@@ -58,12 +58,6 @@ class CommunityFragment : Fragment() {
         binding.tabLayout.setSelectedTabIndicatorColor(Color.parseColor("#FFB200"))
         binding.tabLayout.tabRippleColor = null
 
-        // 게시글 작성
-        binding.ivNotification.setOnClickListener {
-            val intent = Intent(requireContext(), CreatePostActivity::class.java)
-            startActivity(intent)
-        }
-
         // 톱니바퀴 클릭 이벤트 설정
         binding.ivSettings.setOnClickListener {
             val intent = Intent(requireContext(), BoardSettingsActivity::class.java)

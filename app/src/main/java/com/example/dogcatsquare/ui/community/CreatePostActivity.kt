@@ -14,6 +14,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
@@ -32,9 +33,9 @@ import retrofit2.Response
 import java.io.File
 import java.io.FileOutputStream
 
-class CreatePostActivity : AppCompatActivity() {
+class CreatePostActivity() : AppCompatActivity() {
 
-    private lateinit var btnComplete: ImageView
+    private lateinit var btnComplete: Button
     private lateinit var etTitle: EditText
     private lateinit var etContent: EditText
     private lateinit var etLink: EditText
@@ -49,9 +50,13 @@ class CreatePostActivity : AppCompatActivity() {
     private val selectedImageFiles = mutableListOf<File>()
     private val PICK_IMAGE_REQUEST = 1
 
+    private var boardId: Int = -1
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_create_post)
+
+        boardId = intent.getIntExtra("BOARD_ID", -1)
 
         btnComplete = findViewById(R.id.btnComplete)
         etTitle = findViewById(R.id.etTitle)
@@ -74,22 +79,45 @@ class CreatePostActivity : AppCompatActivity() {
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
         }
-        etTitle.addTextChangedListener(textWatcher)
-        etContent.addTextChangedListener(textWatcher)
+        etTitle.addTextChangedListener(object : TextWatcher {
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
 
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+                updateButtonState()
+            }
+
+            override fun afterTextChanged(s: Editable?) {}
+        })
+
+        etContent.addTextChangedListener(object : TextWatcher {
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+                val currentLength = s?.length ?: 0
+                findViewById<TextView>(R.id.char_count).text = "$currentLength/20"
+                updateButtonState()
+            }
+
+            override fun afterTextChanged(s: Editable?) {}
+        })
         updateButtonState()
     }
 
     private fun updateButtonState() {
         val title = etTitle.text.toString().trim()
         val content = etContent.text.toString().trim()
-        val isEnabled = title.isNotEmpty() && content.isNotEmpty()
+
+        val isTitleValid = title.length >= 2
+
+        val isEnabled = isTitleValid && content.isNotEmpty()
         btnComplete.isEnabled = isEnabled
 
         if (isEnabled) {
-            btnComplete.setImageResource(R.drawable.bt_activated_complete)
+            btnComplete.setBackgroundColor(ContextCompat.getColor(this, R.color.main_color1)) // 활성화된 버튼 이미지
+            btnComplete.setTextColor(ContextCompat.getColor(this, R.color.white))
         } else {
-            btnComplete.setImageResource(R.drawable.bt_deactivated_complete)
+            btnComplete.setBackgroundColor(ContextCompat.getColor(this, R.color.gray1)) // 활성화된 버튼 이미지
+            btnComplete.setTextColor(ContextCompat.getColor(this, R.color.gray4))
         }
     }
 
@@ -164,7 +192,7 @@ class CreatePostActivity : AppCompatActivity() {
         }
 
         val postRequest = PostRequest(
-            boardId = 1,
+            boardId = boardId,
             title = title,
             content = content,
             video_URL = if (videoUrl.isBlank()) "" else videoUrl,

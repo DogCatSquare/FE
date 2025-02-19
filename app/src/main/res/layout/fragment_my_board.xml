@@ -1,6 +1,7 @@
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:padding="8dp">
 
     <!-- RecyclerView -->
@@ -12,4 +13,14 @@
         android:paddingBottom="16dp"
         android:overScrollMode="never" />
 
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/ivCreatePost"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|end"
+        android:layout_marginBottom="16dp"
+        app:tint="@null"
+        app:elevation="0dp"
+        android:src="@drawable/ic_create_post_fab"
+        app:backgroundTint="@color/main_color1" />
 </FrameLayout>

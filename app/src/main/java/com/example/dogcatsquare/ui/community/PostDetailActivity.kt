@@ -2,6 +2,7 @@ package com.example.dogcatsquare.ui.community
 
 import android.os.Bundle
 import android.util.Log
+import android.view.View
 import android.widget.EditText
 import android.widget.ImageView
 import android.widget.TextView
@@ -9,62 +10,53 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.bumptech.glide.Glide
 import com.example.dogcatsquare.R
 import com.example.dogcatsquare.data.community.PostDetailResponse
 import com.example.dogcatsquare.data.network.RetrofitObj
+import com.example.dogcatsquare.databinding.ActivityPostDetailBinding
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
 
 class PostDetailActivity : AppCompatActivity() {
-
+    private lateinit var binding: ActivityPostDetailBinding
     private lateinit var commentAdapter: CommentAdapter
     private lateinit var comments: MutableList<Comment>
 
-    // 게시글 정보를 표시할 TextView
-    private lateinit var tvPostTitle: TextView
-    private lateinit var tvPostContent: TextView
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_post_detail)
+        binding = ActivityPostDetailBinding.inflate(layoutInflater)
+        setContentView(binding.root) // 🔥 ViewBinding 적용
 
-        // postId를 Long 타입으로 받아옴
-        val postId: Long = intent.getLongExtra("postId", -1L)
-
-        // 뷰 초기화
-        val ivBack = findViewById<ImageView>(R.id.ivBack)
-        val rvComments = findViewById<RecyclerView>(R.id.rvComments)
-        val etComment = findViewById<EditText>(R.id.etComment)
-        val ivSend = findViewById<ImageView>(R.id.ivSend)
-        tvPostTitle = findViewById(R.id.tvPostTitle)
-        tvPostContent = findViewById(R.id.tvPostContent)
+        val postId = intent.getIntExtra("postId", -1)
 
         // 뒤로가기 버튼
-        ivBack.setOnClickListener { finish() }
+        binding.ivBack.setOnClickListener { finish() }
 
-        // 댓글 기능 (더미 데이터 사용)
+        // 댓글 RecyclerView 설정
         comments = mutableListOf(
             Comment("닉네임1", "더 열심히 놀아주세요!", "2021.01.01"),
             Comment("닉네임2", "대댓", "2021.01.01")
         )
         commentAdapter = CommentAdapter(comments)
-        rvComments.layoutManager = LinearLayoutManager(this)
-        rvComments.adapter = commentAdapter
+        binding.rvComments.layoutManager = LinearLayoutManager(this)
+        binding.rvComments.adapter = commentAdapter
 
-        ivSend.setOnClickListener {
-            val commentText = etComment.text.toString()
+        // 댓글 입력 후 전송 버튼 클릭 시 처리
+        binding.ivSend.setOnClickListener {
+            val commentText = binding.etComment.text.toString()
             if (commentText.isNotBlank()) {
                 comments.add(Comment("나", commentText, "방금 전"))
                 commentAdapter.notifyItemInserted(comments.size - 1)
-                rvComments.scrollToPosition(comments.size - 1)
-                etComment.text.clear()
+                binding.rvComments.scrollToPosition(comments.size - 1)
+                binding.etComment.text.clear()
             }
         }
 
-        // 전달받은 postId 확인 (Long 타입 비교)
+        // postId 확인 후 API 호출
         Log.d("PostDetailActivity", "Received postId: $postId")
-        if (postId != -1L) {
+        if (postId != -1) {
             loadPostDetail(postId)
         } else {
             Toast.makeText(this, "게시글 ID가 전달되지 않았습니다.", Toast.LENGTH_SHORT).show()
@@ -72,11 +64,11 @@ class PostDetailActivity : AppCompatActivity() {
         }
     }
 
-    private fun loadPostDetail(postId: Long) {
+    private fun loadPostDetail(postId: Int) {
         val boardApiService = RetrofitObj.getRetrofit().create(
             com.example.dogcatsquare.data.api.BoardApiService::class.java
         )
-        boardApiService.getPost("community", postId).enqueue(object : Callback<PostDetailResponse> {
+        boardApiService.getPost(postId).enqueue(object : Callback<PostDetailResponse> {
             override fun onResponse(
                 call: Call<PostDetailResponse>,
                 response: Response<PostDetailResponse>
@@ -86,8 +78,46 @@ class PostDetailActivity : AppCompatActivity() {
                     val postDetail = response.body()?.result
                     Log.d("PostDetailActivity", "Post detail received: $postDetail")
                     if (postDetail != null) {
-                        tvPostTitle.text = postDetail.title
-                        tvPostContent.text = postDetail.content
+                        binding.tvPostTitle.text = postDetail.title
+                        binding.tvPostContent.text = postDetail.content
+                        binding.tvLikeCount.text = postDetail.likeCount.toString()
+                        binding.tvCommentCount.text = postDetail.commentCount.toString()
+                        binding.tvDate.text = postDetail.createdAt
+                        Glide.with(this@PostDetailActivity)
+                            .load(postDetail.profileImageUrl)
+                            .placeholder(R.drawable.ic_profile_placeholder)
+                            .into(binding.ivProfile)
+
+                        // 이미지가 존재하는 경우 표시, 없으면 GONE 처리
+                        if (!postDetail.images.isNullOrEmpty()) {
+                            val imageViews = listOf(
+                                binding.ivPostImage1,
+                                binding.ivPostImage2,
+                                binding.ivPostImage3,
+                                binding.ivPostImage4,
+                                binding.ivPostImage5
+                            )
+
+                            // 이미지 최대 5개까지 표시
+                            for (i in imageViews.indices) {
+                                if (i < postDetail.images.size) {
+                                    imageViews[i].visibility = View.VISIBLE
+                                    Glide.with(this@PostDetailActivity)
+                                        .load(postDetail.images[i])
+                                        .placeholder(R.drawable.ic_placeholder)
+                                        .into(imageViews[i])
+                                } else {
+                                    imageViews[i].visibility = View.GONE
+                                }
+                            }
+                        } else {
+                            // 이미지가 없으면 모든 ImageView 숨기기
+                            binding.ivPostImage1.visibility = View.GONE
+                            binding.ivPostImage2.visibility = View.GONE
+                            binding.ivPostImage3.visibility = View.GONE
+                            binding.ivPostImage4.visibility = View.GONE
+                            binding.ivPostImage5.visibility = View.GONE
+                        }
                     } else {
                         Toast.makeText(
                             this@PostDetailActivity,
@@ -114,5 +144,4 @@ class PostDetailActivity : AppCompatActivity() {
             }
         })
     }
-
 }

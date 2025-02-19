@@ -60,13 +60,64 @@
 
     <!-- 이미지 -->
 
-    <!-- 날짜 및 좋아요, 댓글 -->
-    <androidx.recyclerview.widget.RecyclerView
-        android:layout_width="match_parent"
-        android:layout_height="200dp"
-        android:layout_marginBottom="8dp">
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
 
-    </androidx.recyclerview.widget.RecyclerView>
+        <!-- 첫 번째 이미지 -->
+        <ImageView
+            android:id="@+id/ivPostImage1"
+            android:layout_width="200dp"
+            android:layout_height="200dp"
+            android:scaleType="centerCrop"
+            android:src="@drawable/sample_image1"
+            android:layout_marginEnd="8dp"
+            android:background="@drawable/rounded_thumbnail"
+            android:clipToOutline="true" />
+
+        <!-- 두 번째 이미지 -->
+        <ImageView
+            android:id="@+id/ivPostImage2"
+            android:layout_width="200dp"
+            android:layout_height="200dp"
+            android:scaleType="centerCrop"
+            android:src="@drawable/sample_image2"
+            android:layout_marginEnd="8dp"
+            android:background="@drawable/rounded_thumbnail"
+            android:clipToOutline="true" />
+
+        <ImageView
+            android:id="@+id/ivPostImage3"
+            android:layout_width="200dp"
+            android:layout_height="200dp"
+            android:scaleType="centerCrop"
+            android:src="@drawable/sample_image2"
+            android:layout_marginEnd="8dp"
+            android:background="@drawable/rounded_thumbnail"
+            android:clipToOutline="true" />
+
+        <ImageView
+            android:id="@+id/ivPostImage4"
+            android:layout_width="200dp"
+            android:layout_height="200dp"
+            android:scaleType="centerCrop"
+            android:src="@drawable/sample_image2"
+            android:layout_marginEnd="8dp"
+            android:background="@drawable/rounded_thumbnail"
+            android:clipToOutline="true" />
+
+        <ImageView
+            android:id="@+id/ivPostImage5"
+            android:layout_width="200dp"
+            android:layout_height="200dp"
+            android:scaleType="centerCrop"
+            android:src="@drawable/sample_image2"
+            android:layout_marginEnd="8dp"
+            android:background="@drawable/rounded_thumbnail"
+            android:clipToOutline="true" />
+
+    </LinearLayout>
 
     <LinearLayout
         android:layout_width="match_parent"
