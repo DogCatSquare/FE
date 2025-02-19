@@ -671,9 +671,16 @@ class MapFragment : Fragment(), OnMapReadyCallback {
     }
 
     @SuppressLint("MissingPermission")
-    private suspend fun loadWalkData(): List<MapPlace> {
+    private suspend fun loadWalkData(radius: Double = 0.0): List<MapPlace> {
+        // 시작 시 토스트 메시지
+        withContext(Dispatchers.Main) {
+            Toast.makeText(requireContext(), "산책로 데이터를 불러오는 중...", Toast.LENGTH_SHORT).show()
+        }
+
         val token = getToken() ?: run {
-            Toast.makeText(requireContext(), "로그인이 필요합니다.", Toast.LENGTH_SHORT).show()
+            withContext(Dispatchers.Main) {
+                Toast.makeText(requireContext(), "로그인이 필요합니다.", Toast.LENGTH_SHORT).show()
+            }
             return emptyList()
         }
 
@@ -694,11 +701,13 @@ class MapFragment : Fragment(), OnMapReadyCallback {
                             }
                         }
                         .addOnFailureListener { e ->
+                            Log.e("MapFragment", "위치 정보 획득 실패", e)
                             val defaultLocation = naverMap.cameraPosition.target
                             continuation.resume(defaultLocation)
                         }
                 }
             } catch (e: Exception) {
+                Log.e("MapFragment", "위치 정보 획득 중 예외 발생", e)
                 naverMap.cameraPosition.target
             }
         }
@@ -706,10 +715,10 @@ class MapFragment : Fragment(), OnMapReadyCallback {
         val walkRequest = WalkListRequest(
             latitude = userLocation.latitude,
             longitude = userLocation.longitude,
-            radius = 5.0 // 기본 반경 5km로 설정 (필요에 따라 조정 가능)
+            radius = radius
         )
 
-        try {
+        return try {
             val response = withContext(Dispatchers.IO) {
                 RetrofitClient.placesApiService.getWalkList(
                     token = "Bearer $token",
@@ -717,35 +726,63 @@ class MapFragment : Fragment(), OnMapReadyCallback {
                 )
             }
 
-            if (response.isSuccess) {
-                return response.result?.walks?.map { walk ->
-                    MapPlace(
-                        id = walk.walkId,
-                        placeName = walk.title,
-                        placeType = "산책로",
-                        placeDistance = "${String.format("%.2f", walk.distance)}km",
-                        placeLocation = walk.description,
-                        placeCall = "", // 산책로는 전화번호 없음
-                        isOpen = "이용가능", // 산책로는 항상 이용 가능으로 설정
-                        placeImgUrl = walk.walkImageUrl.firstOrNull(),
-                        reviewCount = walk.reviewCount,
-                        latitude = walk.coordinates.firstOrNull()?.latitude,
-                        longitude = walk.coordinates.firstOrNull()?.longitude,
-                        // 산책로 전용 추가 정보
-                        walkTime = walk.time,
-                        walkDifficulty = walk.difficulty,
-                        walkSpecial = walk.special,
-                        walkCoordinates = walk.coordinates,
-                        createdBy = walk.createdBy
-                    )
-                } ?: emptyList()
-            } else {
-                Toast.makeText(requireContext(), "산책로 데이터를 불러오는데 실패했습니다.", Toast.LENGTH_SHORT).show()
+            if (!response.isSuccess) {
+                withContext(Dispatchers.Main) {
+                    Toast.makeText(
+                        requireContext(),
+                        "산책로 데이터를 불러오는데 실패했습니다: ${response.message}",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
                 return emptyList()
             }
+
+            val walks = response.result?.walks?.mapNotNull { walk ->
+                val coordinates = walk.coordinates.firstOrNull() ?: return@mapNotNull null
+
+                MapPlace(
+                    id = walk.walkId,
+                    placeName = walk.title,
+                    placeType = "산책로",
+                    placeDistance = String.format("%.2f", walk.distance) + "km",
+                    placeLocation = walk.description,
+                    placeCall = "", // 산책로는 전화번호 없음
+                    isOpen = "이용가능",
+                    placeImgUrl = walk.walkImageUrl.firstOrNull(),
+                    reviewCount = walk.reviewCount,
+                    latitude = coordinates.latitude,
+                    longitude = coordinates.longitude,
+                    walkTime = walk.time,
+                    walkDifficulty = walk.difficulty,
+                    walkSpecial = walk.special,
+                    walkCoordinates = walk.coordinates,
+                    createdBy = walk.createdBy
+                )
+            } ?: emptyList()
+
+            // 성공적으로 데이터를 불러왔을 때 토스트 메시지
+            withContext(Dispatchers.Main) {
+                val message = if (walks.isEmpty()) {
+                    "주변에 산책로가 없습니다."
+                } else {
+                    "총 ${walks.size}개의 산책로를 불러왔습니다."
+                }
+                Toast.makeText(requireContext(), message, Toast.LENGTH_SHORT).show()
+            }
+
+            walks
+
         } catch (e: Exception) {
-            handleError(e)
-            return emptyList()
+            Log.e("MapFragment", "산책로 데이터 로드 중 오류 발생", e)
+            withContext(Dispatchers.Main) {
+                handleError(e)
+                Toast.makeText(
+                    requireContext(),
+                    "산책로 데이터 로드 중 오류가 발생했습니다.",
+                    Toast.LENGTH_SHORT
+                ).show()
+            }
+            emptyList()
         }
     }
 
@@ -807,7 +844,7 @@ class MapFragment : Fragment(), OnMapReadyCallback {
                 }
             }
 
-            val allPlaces = places + walks
+            val allPlaces = walks + places
 
             // UI 업데이트
             updateUI(allPlaces)
