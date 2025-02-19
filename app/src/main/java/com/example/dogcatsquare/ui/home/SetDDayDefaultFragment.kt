@@ -130,6 +130,10 @@ class SetDDayDefaultFragment : Fragment() {
             setDDay(dayId, dateFormat.format(currentDate), 1, true)
         }
 
+        binding.backBtn.setOnClickListener {
+            parentFragmentManager.popBackStack()
+        }
+
         return binding.root
     }
 

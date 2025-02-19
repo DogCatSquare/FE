@@ -14,9 +14,17 @@ import com.example.dogcatsquare.ui.map.walking.data.Review
 
 class ReviewAdapter(private var reviews: List<WalkReview>) : RecyclerView.Adapter<ReviewAdapter.ReviewViewHolder>() {
 
+    // 클릭 리스너 변수 선언
+    private var onItemClickListener: ((WalkReview) -> Unit)? = null
+
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ReviewViewHolder {
         val view = LayoutInflater.from(parent.context).inflate(R.layout.item_mapwaling_review, parent, false)
         return ReviewViewHolder(view)
+    }
+
+    // 클릭 리스너 설정 메소드
+    fun setOnItemClickListener(listener: (WalkReview) -> Unit) {
+        onItemClickListener = listener
     }
 
     fun updateData(newReviews: List<WalkReview>) {
@@ -27,18 +35,26 @@ class ReviewAdapter(private var reviews: List<WalkReview>) : RecyclerView.Adapte
     override fun onBindViewHolder(holder: ReviewViewHolder, position: Int) {
         val review = reviews[position]
 
+        // 텍스트 뷰에 데이터 바인딩
         holder.nicknameTextView.text = review.createdBy.nickname
         holder.breedTextView.text = review.createdBy.breed
         holder.contentTextView.text = review.content
 
+        // 프로필 이미지 로드
         Glide.with(holder.itemView.context)
             .load(review.createdBy.profileImageUrl)
             .into(holder.profileImageView)
 
+        // 리뷰 이미지가 있으면 로드
         if (review.walkReviewImageUrl.isNotEmpty()) {
             Glide.with(holder.itemView.context)
                 .load(review.walkReviewImageUrl[0]) // 첫 번째 이미지만 예시로 사용
                 .into(holder.reviewImageView)
+        }
+
+        // 아이템 클릭 시 리스너 호출
+        holder.itemView.setOnClickListener {
+            onItemClickListener?.invoke(review)
         }
     }
 

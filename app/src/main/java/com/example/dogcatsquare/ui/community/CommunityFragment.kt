@@ -88,7 +88,7 @@ class CommunityFragment : Fragment() {
 
                         // UI 적용
                         binding.tvNickname.text = resp.result.nickname
-                        Glide.with(this@CommunityFragment)
+                        Glide.with(requireContext())
                             .load(resp.result.profileImageUrl)
                             .signature(ObjectKey(System.currentTimeMillis().toString())) // 캐시 무효화
                             .placeholder(R.drawable.ic_profile_default)

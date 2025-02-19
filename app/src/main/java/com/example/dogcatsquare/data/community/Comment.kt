@@ -19,7 +19,7 @@ data class Comment(
     val profileImageUrl: String = "",
     @SerializedName("created_at")
     val timestamp: String,
-    val replies: List<String> = emptyList(),
+    val replies: List<Reply>,
     val parentId: String? = ""  // 기본값은 빈 문자열 또는 null로 설정
 )
 
