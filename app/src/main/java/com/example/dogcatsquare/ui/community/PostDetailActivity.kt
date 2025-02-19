@@ -72,29 +72,6 @@ class PostDetailActivity : AppCompatActivity(), CommentActionListener {
         // 뒤로가기 버튼
         binding.ivBack.setOnClickListener { finish() }
 
-        // 댓글 RecyclerView 설정
-        // 임시 데이터: 실제 API 응답 시 id가 올바르게 채워져 있어야 함
-//        comments = mutableListOf(
-//            Comment(
-//                id = 1,
-//                content = "더 열심히 놀아주세요!",
-//                name = "닉네임1",
-//                animalType = "",
-//                profileImageUrl = "",
-//                timestamp = "2021.01.01",
-//                replies = listOf("첫 번째 대댓글", "두 번째 대댓글")
-//            ),
-//            Comment(
-//                id = 2,
-//                content = "대댓",
-//                name = "닉네임2",
-//                animalType = "",
-//                profileImageUrl = "",
-//                timestamp = "2021.01.01",
-//                replies = emptyList()
-//            )
-//        )
-
         commentAdapter = CommentsAdapter(commentDatas, this)
         binding.rvComments.layoutManager = LinearLayoutManager(this)
         binding.rvComments.adapter = commentAdapter
@@ -360,5 +337,14 @@ class PostDetailActivity : AppCompatActivity(), CommentActionListener {
 
     private fun setLikeButtonState(isLiked: Boolean) {
         binding.ivLike.setImageResource(if (isLiked) R.drawable.ic_wish else R.drawable.ic_like)
+    }
+
+    override fun onResume() {
+        super.onResume()
+        val token = getToken()
+        if (token != null) {
+            loadPostDetail(postId)
+            getComment(postId.toLong(), commentAdapter)
+        }
     }
 }

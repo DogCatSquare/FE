@@ -29,52 +29,15 @@
         android:orientation="vertical"
         app:layout_constraintGuide_percent="0.8" />
 
-    <EditText
-        android:id="@+id/searchBox"
-        android:layout_width="0dp"
-        android:layout_height="40dp"
-        android:layout_marginTop="15dp"
-        android:background="@drawable/bg_rounded_et"
-        android:hint="검색어를 입력해주세요"
-        android:textSize="14sp"
-        android:focusable="false"
-        android:clickable="true"
-        android:cursorVisible="false"
-        app:layout_constraintEnd_toEndOf="@+id/guideline_mid"
-        app:layout_constraintStart_toStartOf="@+id/guideline_start"
-        app:layout_constraintTop_toTopOf="parent" />
-
-    <ImageView
-        android:layout_width="15dp"
-        android:layout_height="15dp"
-        android:layout_marginEnd="15dp"
-        android:src="@drawable/ic_search"
-        app:layout_constraintBottom_toBottomOf="@+id/searchBox"
-        app:layout_constraintEnd_toEndOf="@+id/searchBox"
-        app:layout_constraintTop_toTopOf="@+id/searchBox" />
-
-    <ImageView
-        android:id="@+id/filter"
-        android:layout_width="40dp"
-        android:layout_height="40dp"
-        android:layout_marginStart="5dp"
-        app:layout_constraintBottom_toBottomOf="@+id/searchBox"
-        app:layout_constraintEnd_toEndOf="@id/guideline_end"
-        app:layout_constraintHorizontal_bias="1.0"
-        app:layout_constraintStart_toEndOf="@id/guideline_mid"
-        app:layout_constraintTop_toTopOf="@+id/searchBox"
-        app:srcCompat="@drawable/ic_filter" />
-
     <!-- 🔥 TabLayout 추가 -->
     <com.google.android.material.tabs.TabLayout
         android:id="@+id/tabLayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="15dp"
         android:background="@color/white"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/searchBox"
+        app:layout_constraintTop_toTopOf="parent"
         app:tabIndicatorColor="@color/main_color1"
         app:tabSelectedTextColor="@color/main_color1"
         app:tabTextColor="@color/gray4">
