@@ -127,7 +127,6 @@ class MapDetailFragment : Fragment(), OnMapReadyCallback {
                         actualPlaceLongitude = placeDetail.longitude
 
                         // 카테고리에 따른 뷰 visibility 설정
-                        val isHospital = placeDetail.category == "HOSPITAL"
                         val isHotel = placeDetail.category == "HOTEL"
 
                         binding.apply {
@@ -175,12 +174,12 @@ class MapDetailFragment : Fragment(), OnMapReadyCallback {
                                 binding.imageView9.layoutParams = params
                             }
 
-                            // 리뷰 관련 뷰 visibility 설정
-                            textView7.visibility = if (isHospital) View.GONE else View.VISIBLE
-                            reviewRV.visibility = if (isHospital) View.GONE else View.VISIBLE
-                            reviewPlus.visibility = if (isHospital) View.GONE else View.VISIBLE
-                            addButton.visibility = if (isHospital) View.GONE else View.VISIBLE
-                            imageView3.visibility = if (isHospital) View.GONE else View.VISIBLE
+                            // 리뷰 관련 뷰들 항상 표시
+                            textView7.visibility = View.VISIBLE
+                            reviewRV.visibility = View.VISIBLE
+                            reviewPlus.visibility = View.VISIBLE
+                            addButton.visibility = View.VISIBLE
+                            imageView3.visibility = View.VISIBLE
 
                             // 예약 버튼은 호텔일 때만 보이도록 설정
                             reserveButton.visibility = if (isHotel) View.VISIBLE else View.GONE
@@ -245,11 +244,9 @@ class MapDetailFragment : Fragment(), OnMapReadyCallback {
                             // 이미지 업데이트
                             updateImages(placeDetail.imageUrls)
 
-                            // 병원이 아닐 경우에만 리뷰 업데이트
-                            if (!isHospital) {
-                                binding.reviewCount.text = placeDetail.reviewCount.toString()
-                                updateReviews(placeDetail.recentReviews)
-                            }
+                            // 모든 카테고리에서 리뷰 업데이트
+                            reviewCount.text = placeDetail.reviewCount.toString()
+                            updateReviews(placeDetail.recentReviews)
 
                             // 지도 위치 업데이트
                             if (::naverMap.isInitialized) {
