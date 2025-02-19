@@ -9,6 +9,7 @@ import com.example.dogcatsquare.data.map.PageResponse
 import com.example.dogcatsquare.data.map.PlaceDetailRequest
 import com.example.dogcatsquare.data.map.PlaceDetailResponse
 import com.example.dogcatsquare.data.map.PlaceItem
+import com.example.dogcatsquare.data.map.PlaceReviewReportRequest
 import com.example.dogcatsquare.data.map.PlaceReviewRequest
 import com.example.dogcatsquare.data.map.PlaceUserInfoRequest
 import com.example.dogcatsquare.data.map.SearchPlacesRequest
@@ -86,4 +87,10 @@ interface PlacesApiService {
         @Query("page") page: Int
     ): BaseResponse<PageResponse<MapReview>>
 
+    @POST("api/places/place-reviews/{placeReviewId}/report")
+    suspend fun reportReview(
+        @Header("Authorization") token: String,
+        @Path("placeReviewId") placeReviewId: Int,
+        @Body request: PlaceReviewReportRequest
+    ): BaseResponse<Int>
 }

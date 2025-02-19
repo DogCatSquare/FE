@@ -84,7 +84,11 @@ class MapReviewRVAdapter(private val reviewList: ArrayList<MapReview>): Recycler
                 // 팝업 메뉴 클릭 리스너
                 popupView.setOnClickListener {
                     val activity = view.context as FragmentActivity
-                    val mapReportFragment = MapReportFragment()
+                    val mapReportFragment = MapReportFragment.newInstance(review.id)
+                    activity.supportFragmentManager.beginTransaction()
+                        .replace(R.id.main_frm, mapReportFragment)
+                        .addToBackStack(null)
+                        .commit()
 
                     activity.supportFragmentManager.beginTransaction()
                         .replace(R.id.main_frm, mapReportFragment)
