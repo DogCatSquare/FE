@@ -218,12 +218,9 @@ class MapFragment : Fragment(), OnMapReadyCallback {
                     currentLocation = newLocation
                     locationViewModel.updateLocation(newLocation)
 
-                    // 현재위치 모드일 때만 지도 이동
-                    if (currentSortType == "위치기준") {
-                        naverMap.moveCamera(
-                            CameraUpdate.scrollTo(newLocation)
-                                .animate(CameraAnimation.Easing)
-                        )
+                    // 위치 마커는 표시하되 지도는 이동하지 않도록 설정
+                    if (::naverMap.isInitialized && naverMap.locationTrackingMode == LocationTrackingMode.None) {
+                        naverMap.locationTrackingMode = LocationTrackingMode.NoFollow
                     }
 
                     Log.d("MapFragment", "위치 업데이트 완료: currentLocation = $currentLocation")
@@ -418,6 +415,7 @@ class MapFragment : Fragment(), OnMapReadyCallback {
         naverMap.moveCamera(CameraUpdate.zoomTo(14.0))
 
         naverMap.locationSource = locationSource
+        naverMap.locationTrackingMode = LocationTrackingMode.NoFollow
         naverMap.uiSettings.isLocationButtonEnabled = true
 
         // 위치 권한 확인 및 위치 업데이트 시작
