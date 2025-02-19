@@ -1,6 +1,5 @@
 package com.example.dogcatsquare.ui.map.location
 
-import android.content.Context
 import android.content.Intent
 import android.graphics.Color
 import android.net.Uri
@@ -39,6 +38,10 @@ import java.util.TimeZone
 import com.naver.maps.map.MapFragment
 import com.naver.maps.map.OnMapReadyCallback
 import com.naver.maps.map.NaverMap
+import android.content.ClipData
+import android.content.ClipboardManager
+import android.content.Context
+
 
 class MapDetailFragment : Fragment(), OnMapReadyCallback {
     private var _binding: FragmentMapDetailBinding? = null
@@ -135,7 +138,50 @@ class MapDetailFragment : Fragment(), OnMapReadyCallback {
                             placeLocationFull.text = placeDetail.address
                             placeLocation.text = placeDetail.address.split(" ").getOrNull(2) ?: ""
                             placeType.text = convertCategory(placeDetail.category)
-                            placeCall.text = placeDetail.phoneNumber
+                            placeCall.text = placeDetail.phoneNumber?.takeIf { it.isNotBlank() } ?: "정보가 없습니다"
+                            copy.visibility = if (placeDetail.phoneNumber.isNullOrBlank()) View.GONE else View.VISIBLE
+                            copy.setOnClickListener {
+                                if (!placeDetail.phoneNumber.isNullOrBlank()) {
+                                    val clipboardManager = requireContext().getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+                                    val clipData = ClipData.newPlainText("phone_number", placeDetail.phoneNumber)
+                                    clipboardManager.setPrimaryClip(clipData)
+                                    Toast.makeText(requireContext(), "전화번호가 복사되었습니다.", Toast.LENGTH_SHORT).show()
+                                }
+                            }
+                            direction.setOnClickListener {
+                                val latitude = placeDetail.latitude
+                                val longitude = placeDetail.longitude
+                                val address = placeLocationFull.text.toString()
+
+                                try {
+                                    // 네이버 지도 앱으로 길찾기 실행
+                                    val intent = Intent(Intent.ACTION_VIEW).apply {
+                                        // 위도/경도 정보가 있는 경우 좌표로 이동, 없는 경우 주소로 검색
+                                        data = if (latitude != null && longitude != null) {
+                                            Uri.parse("nmap://place?lat=$latitude&lng=$longitude&name=${Uri.encode(address)}&appname=${requireContext().packageName}")
+                                        } else {
+                                            Uri.parse("nmap://search?query=${Uri.encode(address)}&appname=${requireContext().packageName}")
+                                        }
+                                        setPackage("com.nhn.android.nmap")
+                                    }
+
+                                    startActivity(intent)
+                                } catch (e: Exception) {
+                                    try {
+                                        // 웹 브라우저에서 네이버 지도 열기
+                                        val webIntent = Intent(Intent.ACTION_VIEW).apply {
+                                            data = if (latitude != null && longitude != null) {
+                                                Uri.parse("https://map.naver.com/v5/?c=$longitude,$latitude,15,0,0,0,dh")
+                                            } else {
+                                                Uri.parse("https://map.naver.com/v5/search/${Uri.encode(address)}")
+                                            }
+                                        }
+                                        startActivity(webIntent)
+                                    } catch (e: Exception) {
+                                        Toast.makeText(requireContext(), "지도를 열 수 없습니다.", Toast.LENGTH_SHORT).show()
+                                    }
+                                }
+                            }
                             placeDistance.text = "${String.format("%.2f", placeDetail.distance)}km"
                             placeStatus.text = if (placeDetail.open) "영업중" else "영업종료"
 
