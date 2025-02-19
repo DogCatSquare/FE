@@ -90,8 +90,8 @@ class SearchResultFragment : Fragment() {
         mapPlaceRVAdapter = MapPlaceRVAdapter(placeDatas, object : MapPlaceRVAdapter.OnItemClickListener {
             override fun onItemClick(place: MapPlace) {
                 when (place.placeType) {
-                    "동물병원" -> navigateToDetailFragment(place.id)
-                    "산책로" -> navigateToFragment(WalkingStartViewFragment())
+                    "HOSPITAL" -> navigateToDetailFragment(place.id)
+                    "PARK" -> navigateToFragment(WalkingStartViewFragment())
                     else -> navigateToDetailFragment(place.id)
                 }
             }

@@ -66,8 +66,7 @@
         app:layout_constraintBottom_toBottomOf="@+id/userImg"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="@+id/userImg"
-        app:srcCompat="@drawable/btn_wish"
-        app:tint="#030303"/>
+        app:srcCompat="@drawable/btn_wish" />
 
     <ImageView
         android:id="@+id/walkImg"

@@ -105,10 +105,10 @@ class MapPlaceRVAdapter(
 
             // 리뷰 관련 처리
             if (place.reviewCount == 0 || place.reviewCount == null) {
-                binding.ImageView.visibility = View.GONE
+                binding.review2.visibility = View.GONE
                 binding.placeReview.visibility = View.GONE
             } else {
-                binding.ImageView.visibility = View.VISIBLE
+                binding.review2.visibility = View.VISIBLE
                 binding.placeReview.visibility = View.VISIBLE
                 binding.placeReview.text = "리뷰(${place.reviewCount})"
             }
