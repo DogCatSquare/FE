@@ -1,52 +1,51 @@
 package com.example.dogcatsquare.ui.map.walking
 
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageView
+import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
+import com.example.dogcatsquare.R
 import com.example.dogcatsquare.databinding.ItemMapwalingReviewBinding
+import com.example.dogcatsquare.ui.map.walking.data.Response.WalkReview
 import com.example.dogcatsquare.ui.map.walking.data.Review
 
-class ReviewAdapter(private val reviews: List<Review>) : RecyclerView.Adapter<ReviewAdapter.ReviewViewHolder>() {
+class ReviewAdapter(private val reviews: List<WalkReview>) : RecyclerView.Adapter<ReviewAdapter.ReviewViewHolder>() {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ReviewViewHolder {
-        val binding = ItemMapwalingReviewBinding.inflate(LayoutInflater.from(parent.context), parent, false)
-        return ReviewViewHolder(binding)
+        val view = LayoutInflater.from(parent.context).inflate(R.layout.item_mapwaling_review, parent, false)
+        return ReviewViewHolder(view)
     }
 
     override fun onBindViewHolder(holder: ReviewViewHolder, position: Int) {
         val review = reviews[position]
-        holder.bind(review)
-    }
 
-    override fun getItemCount(): Int = reviews.size
+        holder.nicknameTextView.text = review.createdBy.nickname
+        holder.breedTextView.text = review.createdBy.breed
+        holder.contentTextView.text = review.content
 
-    inner class ReviewViewHolder(private val binding: ItemMapwalingReviewBinding) : RecyclerView.ViewHolder(binding.root) {
+        Glide.with(holder.itemView.context)
+            .load(review.createdBy.profileImageUrl)
+            .into(holder.profileImageView)
 
-        fun bind(review: Review) {
-            // 프로필 이미지 설정
-            Glide.with(binding.root.context)
-                .load(review.profileImageUrl)
-                .circleCrop()
-                .into(binding.reviewImage)
-
-            // 닉네임, 품종 설정
-            binding.nameTitle.text = review.nickname
-            binding.nameTv.text = review.breed ?: "미정"
-
-            // 리뷰 내용 설정
-            binding.reviewTv.text = review.reviewContent
-
-            // 작성일 설정
-            binding.dateTv.text = review.reviewDate
-
-            // 리뷰 이미지 설정 (있으면)
-            if (review.reviewImageUrl != null) {
-                Glide.with(binding.root.context)
-                    .load(review.reviewImageUrl)
-                    .into(binding.reviewIv)
-            }
+        if (review.walkReviewImageUrl.isNotEmpty()) {
+            Glide.with(holder.itemView.context)
+                .load(review.walkReviewImageUrl[0]) // 첫 번째 이미지만 예시로 사용
+                .into(holder.reviewImageView)
         }
     }
-}
 
+    override fun getItemCount(): Int {
+        return reviews.size
+    }
+
+    class ReviewViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+        val profileImageView: ImageView = itemView.findViewById(R.id.review_image)
+        val nicknameTextView: TextView = itemView.findViewById(R.id.name_title)
+        val breedTextView: TextView = itemView.findViewById(R.id.name_tv)
+        val contentTextView: TextView = itemView.findViewById(R.id.review_tv)
+        val reviewImageView: ImageView = itemView.findViewById(R.id.review_image)
+    }
+}

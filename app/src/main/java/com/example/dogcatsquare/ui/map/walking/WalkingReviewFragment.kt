@@ -123,7 +123,7 @@ class WalkingReviewFragment : Fragment(), OnMapReadyCallback {
             val imageBase64 = bitmapToBase64(selectedBitmap!!)
             */
             // 이미지 없이 후기를 전송 (imageBase64 인자는 null)
-            viewModel.submitWalkReview(walkId, content, null)
+//            viewModel.submitWalkReview(walkId, content, null)
         }
 
 

@@ -18,6 +18,6 @@ data class Special(
 data class Coordinate(
     val latitude: Double,
     val longitude: Double,
-    val sequence: Int
+    val radius: Int
 )
 
