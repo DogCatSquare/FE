@@ -1,5 +1,6 @@
 package com.example.dogcatsquare.data.api
 
+import com.example.dogcatsquare.FilterPlacesRequest
 import com.example.dogcatsquare.data.map.BaseResponse
 import com.example.dogcatsquare.data.map.GetHotPlaceRequest
 import com.example.dogcatsquare.data.map.GetHotPlaceResponse
@@ -92,4 +93,11 @@ interface PlacesApiService {
         @Path("placeReviewId") placeReviewId: Int,
         @Body request: PlaceReviewReportRequest
     ): BaseResponse<Int>
+
+    @POST("/api/places/filter")
+    suspend fun getFilteredPlaces(
+        @Header("Authorization") token: String,
+        @Query("page") page: Int,
+        @Body request: FilterPlacesRequest
+    ): BaseResponse<PageResponse<PlaceItem>>
 }

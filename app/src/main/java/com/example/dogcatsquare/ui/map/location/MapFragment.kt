@@ -10,6 +10,7 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.CheckBox
 import android.widget.TextView
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
@@ -33,6 +34,7 @@ import android.widget.Toast
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.RecyclerView
+import com.example.dogcatsquare.FilterPlacesRequest
 import com.example.dogcatsquare.LocationViewModel
 import com.example.dogcatsquare.data.api.UserRetrofitItf
 import com.example.dogcatsquare.data.map.SearchPlacesRequest
@@ -42,6 +44,7 @@ import com.google.android.gms.location.LocationCallback
 import com.google.android.gms.location.LocationRequest
 import com.google.android.gms.location.LocationResult
 import com.google.android.gms.location.LocationServices
+import com.google.android.material.button.MaterialButton
 import com.naver.maps.geometry.LatLng
 import com.naver.maps.map.CameraAnimation
 import com.naver.maps.map.CameraUpdate
@@ -94,6 +97,13 @@ class MapFragment : Fragment(), OnMapReadyCallback {
     private var currentCategory = "전체"
 
     private var userAddress: String = ""
+
+    private var filterOptions = FilterOptions(false, false, false)
+    private data class FilterOptions(
+        var isCurrentlyOpen: Boolean,
+        var is24Hours: Boolean,
+        var hasParking: Boolean
+    )
 
     // RecyclerView 스크롤 리스너
     private val scrollListener = object : RecyclerView.OnScrollListener() {
@@ -251,8 +261,141 @@ class MapFragment : Fragment(), OnMapReadyCallback {
         val bottomSheetDialog = BottomSheetDialog(requireContext())
         val bottomSheetView = layoutInflater.inflate(R.layout.bottom_sheet_search_option, null)
         bottomSheetDialog.setContentView(bottomSheetView)
+
+        // CheckBox 참조
+        val openCheckBox = bottomSheetView.findViewById<CheckBox>(R.id.open_btn)
+        val hours24CheckBox = bottomSheetView.findViewById<CheckBox>(R.id.hours24_btn)
+        val parkCheckBox = bottomSheetView.findViewById<CheckBox>(R.id.park_btn)
+
+        // 현재 필터 상태 적용
+        openCheckBox.isChecked = filterOptions.isCurrentlyOpen
+        hours24CheckBox.isChecked = filterOptions.is24Hours
+        parkCheckBox.isChecked = filterOptions.hasParking
+
+        // 완료 버튼 클릭 리스너
+        bottomSheetView.findViewById<MaterialButton>(R.id.confirm_button).setOnClickListener {
+            val previousFilters = filterOptions.copy() // 이전 필터 상태 저장
+
+            // 새로운 필터 옵션 설정
+            filterOptions = FilterOptions(
+                isCurrentlyOpen = openCheckBox.isChecked,
+                is24Hours = hours24CheckBox.isChecked,
+                hasParking = parkCheckBox.isChecked
+            )
+
+            lifecycleScope.launch {
+                resetPagingState() // 페이징 상태 초기화
+
+                // 모든 필터가 해제되었는지 확인
+                if (!filterOptions.isCurrentlyOpen && !filterOptions.is24Hours && !filterOptions.hasParking) {
+                    // 모든 필터가 해제된 경우 기본 데이터 로드
+                    loadAllCategories()
+                } else {
+                    // 필터가 적용된 경우 필터링된 데이터 로드
+                    loadFilteredPlaces()
+                }
+            }
+
+            bottomSheetDialog.dismiss()
+        }
+
         bottomSheetDialog.show()
     }
+
+    private suspend fun loadFilteredPlaces(page: Int = 0) {
+        try {
+            val token = getToken() ?: run {
+                withContext(Dispatchers.Main) {
+                    Toast.makeText(requireContext(), "로그인이 필요합니다.", Toast.LENGTH_SHORT).show()
+                }
+                return
+            }
+
+            // 현재 위치 가져오기
+            val userLocation = currentLocation ?: naverMap.cameraPosition.target
+
+            // 필터링 요청 생성
+            val filterRequest = FilterPlacesRequest(
+                location = FilterPlacesRequest.Location(
+                    latitude = userLocation.latitude,
+                    longitude = userLocation.longitude
+                ),
+                is24Hours = filterOptions.is24Hours,
+                hasParking = filterOptions.hasParking,
+                isCurrentlyOpen = filterOptions.isCurrentlyOpen
+            )
+
+            withContext(Dispatchers.Main) {
+                Toast.makeText(requireContext(), "필터링된 장소를 불러오는 중...", Toast.LENGTH_SHORT).show()
+            }
+
+            // API 호출
+            val response = withContext(Dispatchers.IO) {
+                RetrofitClient.placesApiService.getFilteredPlaces(
+                    token = "Bearer $token",
+                    page = page,
+                    request = filterRequest
+                )
+            }
+
+            if (response.isSuccess) {
+                response.result?.let { pageResponse ->
+                    isLastPage = pageResponse.last
+                    currentPage = page
+
+                    val newPlaces = pageResponse.content.map { place ->
+                        MapPlace(
+                            id = place.id,
+                            placeName = place.name,
+                            placeType = convertCategory(place.category),
+                            placeDistance = "${String.format("%.2f", place.distance)}km",
+                            placeLocation = place.address,
+                            placeCall = place.phoneNumber,
+                            isOpen = if (place.open) "영업중" else "영업종료",
+                            placeImgUrl = place.imgUrl,
+                            reviewCount = place.reviewCount,
+                            latitude = place.latitude,
+                            longitude = place.longitude,
+                            keywords = place.keywords
+                        )
+                    }
+
+                    withContext(Dispatchers.Main) {
+                        if (page == 0) {
+                            allPlaceDatas.clear()
+                            placeDatas.clear()
+                            clearMarkers()
+                        }
+
+                        allPlaceDatas.addAll(newPlaces)
+                        placeDatas.addAll(newPlaces)
+                        binding.mapPlaceRV.adapter?.notifyDataSetChanged()
+
+                        // 마커 생성
+                        newPlaces.forEach { place ->
+                            createMarker(place)
+                        }
+
+                        Toast.makeText(
+                            requireContext(),
+                            "필터링된 ${newPlaces.size}개의 장소를 찾았습니다.",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    }
+                }
+            } else {
+                withContext(Dispatchers.Main) {
+                    Toast.makeText(requireContext(), response.message, Toast.LENGTH_SHORT).show()
+                }
+            }
+        } catch (e: Exception) {
+            withContext(Dispatchers.Main) {
+                handleError(e)
+            }
+        }
+    }
+
+
 
     private fun setupNaverMap() {
         val fm = childFragmentManager
@@ -576,24 +719,21 @@ class MapFragment : Fragment(), OnMapReadyCallback {
         isLoading = true
         lifecycleScope.launch {
             try {
-                val newPlaces = loadPlacesData(currentPage + 1)
-                if (newPlaces.isNotEmpty()) {
-                    currentPage++
-                    val currentList = ArrayList(placeDatas)
-                    currentList.addAll(newPlaces)
-                    placeDatas.clear()
-                    placeDatas.addAll(currentList)
-                    binding.mapPlaceRV.adapter?.notifyDataSetChanged()
-
-                    // 새로운 장소들에 대한 마커 생성
-                    newPlaces.forEach { place ->
-                        createMarker(place)
-                    }
-
-                    Log.d("MapFragment", "새로운 페이지 로드 완료: ${newPlaces.size}개의 새 장소, 마커 추가됨")
+                if (filterOptions.isCurrentlyOpen || filterOptions.is24Hours || filterOptions.hasParking) {
+                    loadFilteredPlaces(currentPage + 1)
                 } else {
-                    isLastPage = true
-                    Log.d("MapFragment", "마지막 페이지 도달")
+                    // 기존 일반 데이터 로드
+                    val newPlaces = loadPlacesData(currentPage + 1)
+                    if (newPlaces.isNotEmpty()) {
+                        currentPage++
+                        placeDatas.addAll(newPlaces)
+                        binding.mapPlaceRV.adapter?.notifyDataSetChanged()
+                        newPlaces.forEach { place ->
+                            createMarker(place)
+                        }
+                    } else {
+                        isLastPage = true
+                    }
                 }
             } catch (e: Exception) {
                 handleError(e)
