@@ -127,7 +127,6 @@ class MapDetailFragment : Fragment(), OnMapReadyCallback {
                         actualPlaceLongitude = placeDetail.longitude
 
                         // 카테고리에 따른 뷰 visibility 설정
-                        val isHospital = placeDetail.category == "HOSPITAL"
                         val isHotel = placeDetail.category == "HOTEL"
 
                         binding.apply {
@@ -175,12 +174,12 @@ class MapDetailFragment : Fragment(), OnMapReadyCallback {
                                 binding.imageView9.layoutParams = params
                             }
 
-                            // 리뷰 관련 뷰 visibility 설정
-                            textView7.visibility = if (isHospital) View.GONE else View.VISIBLE
-                            reviewRV.visibility = if (isHospital) View.GONE else View.VISIBLE
-                            reviewPlus.visibility = if (isHospital) View.GONE else View.VISIBLE
-                            addButton.visibility = if (isHospital) View.GONE else View.VISIBLE
-                            imageView3.visibility = if (isHospital) View.GONE else View.VISIBLE
+                            // 리뷰 관련 뷰들 항상 표시
+                            textView7.visibility = View.VISIBLE
+                            reviewRV.visibility = View.VISIBLE
+                            reviewPlus.visibility = View.VISIBLE
+                            addButton.visibility = View.VISIBLE
+                            imageView3.visibility = View.VISIBLE
 
                             // 예약 버튼은 호텔일 때만 보이도록 설정
                             reserveButton.visibility = if (isHotel) View.VISIBLE else View.GONE
@@ -245,10 +244,9 @@ class MapDetailFragment : Fragment(), OnMapReadyCallback {
                             // 이미지 업데이트
                             updateImages(placeDetail.imageUrls)
 
-                            // 병원이 아닐 경우에만 리뷰 업데이트
-                            if (!isHospital) {
-                                updateReviews(placeDetail.recentReviews)
-                            }
+                            // 모든 카테고리에서 리뷰 업데이트
+                            reviewCount.text = placeDetail.reviewCount.toString()
+                            updateReviews(placeDetail.recentReviews)
 
                             // 지도 위치 업데이트
                             if (::naverMap.isInitialized) {
@@ -532,7 +530,6 @@ class MapDetailFragment : Fragment(), OnMapReadyCallback {
         if (!apiReviews.isNullOrEmpty()) {
             // 리뷰가 있는 경우
             reviewDatas.addAll(apiReviews)
-            binding.reviewCount.text = reviewDatas.size.toString()
 
             // 리뷰 관련 뷰들 표시
             binding.reviewRV.visibility = View.VISIBLE
@@ -542,28 +539,69 @@ class MapDetailFragment : Fragment(), OnMapReadyCallback {
             binding.addButton.visibility = View.VISIBLE
             binding.imageView3.visibility = View.VISIBLE
 
+            // 최대 2개의 리뷰만 표시
             val displayedReviews = ArrayList<MapReview>().apply {
                 addAll(reviewDatas.take(2))
             }
 
-            val mapReviewRVAdapter = MapReviewRVAdapter(displayedReviews)
-            binding.reviewRV.apply {
-                adapter = mapReviewRVAdapter
-                layoutManager = LinearLayoutManager(context, LinearLayoutManager.VERTICAL, false)
+            // 어댑터 설정 및 데이터 업데이트
+            if (binding.reviewRV.adapter == null) {
+                val mapReviewRVAdapter = MapReviewRVAdapter(displayedReviews)
+                binding.reviewRV.apply {
+                    adapter = mapReviewRVAdapter
+                    layoutManager = LinearLayoutManager(context).apply {
+                        orientation = LinearLayoutManager.VERTICAL
+                    }
+                }
+
+                // "더보기" 버튼 클릭 이벤트 설정
+                binding.reviewPlus.setOnClickListener {
+                    val placeId = arguments?.getInt("placeId") ?: return@setOnClickListener
+                    val mapReviewFragment = MapReviewFragment.newInstance(placeId)
+                    requireActivity().supportFragmentManager.beginTransaction()
+                        .setCustomAnimations(
+                            R.anim.slide_in_right,
+                            R.anim.slide_out_left,
+                            R.anim.slide_in_left,
+                            R.anim.slide_out_right
+                        )
+                        .hide(this@MapDetailFragment)
+                        .add(R.id.main_frm, mapReviewFragment)
+                        .addToBackStack(null)
+                        .commit()
+                }
+            } else {
+                (binding.reviewRV.adapter as MapReviewRVAdapter).updateReviews(displayedReviews)
+            }
+
+            // 리뷰 작성 버튼 클릭 이벤트 설정
+            binding.addButton.setOnClickListener {
+                arguments?.getInt("placeId")?.let { placeId ->
+                    val mapAddReviewFragment = MapAddReviewFragment.newInstance(placeId)
+                    requireActivity().supportFragmentManager.beginTransaction()
+                        .setCustomAnimations(
+                            R.anim.slide_in_right,
+                            R.anim.slide_out_left,
+                            R.anim.slide_in_left,
+                            R.anim.slide_out_right
+                        )
+                        .hide(this@MapDetailFragment)
+                        .add(R.id.main_frm, mapAddReviewFragment)
+                        .addToBackStack(null)
+                        .commit()
+                }
             }
         } else {
             // 리뷰가 없는 경우
             binding.reviewCount.text = "0"
-
-            // 리뷰 관련 뷰들 숨기기/표시
             binding.reviewRV.visibility = View.GONE
             binding.defaultReviewImage.visibility = View.VISIBLE
             binding.defaultReviewText.visibility = View.VISIBLE
             binding.reviewPlus.visibility = View.GONE
-            binding.addButton.visibility = View.VISIBLE  // 리뷰 추가 버튼은 계속 표시
+            binding.addButton.visibility = View.VISIBLE
             binding.imageView3.visibility = View.VISIBLE
 
-            // 리뷰가 없을 때의 제약 조건 변경
+            // 제약 조건 변경
             val constraintSet = ConstraintSet()
             constraintSet.clone(binding.scrollView3.getChildAt(0) as ConstraintLayout)
             constraintSet.connect(
@@ -574,6 +612,17 @@ class MapDetailFragment : Fragment(), OnMapReadyCallback {
                 (24 * resources.displayMetrics.density).toInt()
             )
             constraintSet.applyTo(binding.scrollView3.getChildAt(0) as ConstraintLayout)
+
+            // 리뷰가 없는 경우의 리뷰 작성 버튼 클릭 이벤트
+            binding.addButton.setOnClickListener {
+                arguments?.getInt("placeId")?.let { placeId ->
+                    val mapAddReviewFragment = MapAddReviewFragment.newInstance(placeId)
+                    requireActivity().supportFragmentManager.beginTransaction()
+                        .replace(R.id.main_frm, mapAddReviewFragment)
+                        .addToBackStack(null)
+                        .commit()
+                }
+            }
         }
     }
 
@@ -666,9 +715,17 @@ class MapDetailFragment : Fragment(), OnMapReadyCallback {
         }
 
         binding.reviewPlus.setOnClickListener {
-            val mapReviewFragment = MapReviewFragment()
+            val placeId = arguments?.getInt("placeId") ?: return@setOnClickListener
+            val mapReviewFragment = MapReviewFragment.newInstance(placeId)
             requireActivity().supportFragmentManager.beginTransaction()
-                .replace(R.id.main_frm, mapReviewFragment)
+                .setCustomAnimations(
+                    R.anim.slide_in_right,
+                    R.anim.slide_out_left,
+                    R.anim.slide_in_left,
+                    R.anim.slide_out_right
+                )
+                .hide(this@MapDetailFragment)
+                .add(R.id.main_frm, mapReviewFragment)
                 .addToBackStack(null)
                 .commit()
         }
@@ -679,12 +736,20 @@ class MapDetailFragment : Fragment(), OnMapReadyCallback {
             arguments?.getInt("placeId")?.let { placeId ->
                 val mapAddReviewFragment = MapAddReviewFragment.newInstance(placeId)
                 requireActivity().supportFragmentManager.beginTransaction()
-                    .replace(R.id.main_frm, mapAddReviewFragment)
+                    .setCustomAnimations(
+                        R.anim.slide_in_right,  // 새 프래그먼트가 오른쪽에서 들어옴
+                        R.anim.slide_out_left,  // 현재 프래그먼트가 왼쪽으로 나감
+                        R.anim.slide_in_left,   // 뒤로가기 시 현재 프래그먼트가 왼쪽에서 들어옴
+                        R.anim.slide_out_right  // 새 프래그먼트가 오른쪽으로 나감
+                    )
+                    .hide(this)  // replace 대신 hide 사용
+                    .add(R.id.main_frm, mapAddReviewFragment)  // add로 새 프래그먼트 추가
                     .addToBackStack(null)
                     .commit()
             }
         }
     }
+
 
     private fun showSearchOptions() {
         val bottomSheetDialog = BottomSheetDialog(requireContext())

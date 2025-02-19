@@ -88,17 +88,38 @@ class MapAddReviewFragment : Fragment() {
 
     private fun setupBackButton() {
         binding.backButton.setOnClickListener {
+            // 부모 프래그먼트(MapDetailFragment) 표시
+            requireActivity().supportFragmentManager.fragments
+                .filterIsInstance<MapDetailFragment>()
+                .firstOrNull()?.let { detailFragment ->
+                    requireActivity().supportFragmentManager.beginTransaction()
+                        .setCustomAnimations(
+                            R.anim.slide_in_left,   // 이전 프래그먼트가 왼쪽에서 들어옴
+                            R.anim.slide_out_right, // 현재 프래그먼트가 오른쪽으로 나감
+                            R.anim.slide_in_right,  // 새 프래그먼트가 오른쪽에서 들어옴
+                            R.anim.slide_out_left   // 현재 프래그먼트가 왼쪽으로 나감
+                        )
+                        .show(detailFragment)
+                        .commit()
+                }
             requireActivity().supportFragmentManager.popBackStack()
         }
     }
 
     private fun setupDoneButton() {
         binding.doneButton.setOnClickListener {
-            val reviewText = binding.etReview.getText()
-            if (reviewText.length >= 20) {
+            if (checkValidReview()) {
                 uploadReviewWithImages()
             } else {
-                Toast.makeText(requireContext(), "리뷰는 20자 이상 작성해주세요.", Toast.LENGTH_SHORT).show()
+                val message = when {
+                    binding.etReview.getText().length < 20 && selectedImages.isEmpty() ->
+                        "리뷰는 20자 이상 작성하고 최소 1장의 사진을 추가해주세요."
+                    binding.etReview.getText().length < 20 ->
+                        "리뷰는 20자 이상 작성해주세요."
+                    else ->
+                        "최소 1장의 사진을 추가해주세요."
+                }
+                Toast.makeText(requireContext(), message, Toast.LENGTH_SHORT).show()
             }
         }
     }
@@ -108,7 +129,7 @@ class MapAddReviewFragment : Fragment() {
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
 
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-                updateDoneButtonState(s?.length ?: 0 >= 20)
+                updateDoneButtonState(checkValidReview())
             }
 
             override fun afterTextChanged(s: Editable?) {}
@@ -154,6 +175,12 @@ class MapAddReviewFragment : Fragment() {
         }
     }
 
+    private fun checkValidReview(): Boolean {
+        val hasEnoughText = binding.etReview.getText().length >= 20
+        val hasImages = selectedImages.isNotEmpty()
+        return hasEnoughText && hasImages
+    }
+
     private fun openGallery() {
         galleryLauncher.launch("image/*")
     }
@@ -180,6 +207,8 @@ class MapAddReviewFragment : Fragment() {
             setOnClickListener {
                 binding.imageContainer.removeView(this)
                 selectedImages.remove(imageUri)
+                // 이미지 삭제 시에도 버튼 상태 업데이트
+                updateDoneButtonState(checkValidReview())
             }
         }
 
@@ -187,6 +216,8 @@ class MapAddReviewFragment : Fragment() {
         container.removeView(binding.imageView14)
         container.addView(newImageView)
         container.addView(binding.imageView14)
+
+        updateDoneButtonState(checkValidReview())
     }
 
     private fun uploadReviewWithImages() {
@@ -228,8 +259,24 @@ class MapAddReviewFragment : Fragment() {
 
                 if (response.isSuccess) {
                     Toast.makeText(requireContext(), "리뷰가 성공적으로 등록되었습니다.", Toast.LENGTH_SHORT).show()
+
+                    requireActivity().supportFragmentManager.fragments
+                        .filterIsInstance<MapDetailFragment>()
+                        .firstOrNull()?.let { detailFragment ->
+                            requireActivity().supportFragmentManager.beginTransaction()
+                                .setCustomAnimations(
+                                    R.anim.slide_in_left,   // 이전 프래그먼트가 왼쪽에서 들어옴
+                                    R.anim.slide_out_right, // 현재 프래그먼트가 오른쪽으로 나감
+                                    R.anim.slide_in_right,  // 새 프래그먼트가 오른쪽에서 들어옴
+                                    R.anim.slide_out_left   // 현재 프래그먼트가 왼쪽으로 나감
+                                )
+                                .show(detailFragment)
+                                .commit()
+
+                            // 부모 프래그먼트의 데이터 새로고침
+                            detailFragment.refreshPlaceDetails()
+                        }
                     requireActivity().supportFragmentManager.popBackStack()
-                    (parentFragment as? MapDetailFragment)?.refreshPlaceDetails()
                 } else {
                     Toast.makeText(requireContext(), response.message ?: "리뷰 등록에 실패했습니다.", Toast.LENGTH_SHORT).show()
                 }
@@ -277,6 +324,20 @@ class MapAddReviewFragment : Fragment() {
 
     override fun onDestroyView() {
         super.onDestroyView()
+        // 프래그먼트가 제거될 때 부모 프래그먼트 표시
+        requireActivity().supportFragmentManager.fragments
+            .filterIsInstance<MapDetailFragment>()
+            .firstOrNull()?.let { detailFragment ->
+                requireActivity().supportFragmentManager.beginTransaction()
+                    .setCustomAnimations(
+                        R.anim.slide_in_left,   // 이전 프래그먼트가 왼쪽에서 들어옴
+                        R.anim.slide_out_right, // 현재 프래그먼트가 오른쪽으로 나감
+                        R.anim.slide_in_right,  // 새 프래그먼트가 오른쪽에서 들어옴
+                        R.anim.slide_out_left   // 현재 프래그먼트가 왼쪽으로 나감
+                    )
+                    .show(detailFragment)
+                    .commit()
+            }
         _binding = null
     }
 

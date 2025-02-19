@@ -57,7 +57,8 @@ data class PlaceDetailResponse(
     @SerializedName("wished") val wished: Boolean,
     @SerializedName("recentReviews") val recentReviews: List<MapReview>?,
     @SerializedName("keywords") val keywords: List<String>?,
-    @SerializedName("additionalInfo") val additionalInfo: String?
+    @SerializedName("additionalInfo") val additionalInfo: String?,
+    @SerializedName("reviewCount") val reviewCount: Int
 )
 
 data class PlaceDetailRequest(

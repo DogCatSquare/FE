@@ -4,10 +4,12 @@ import com.example.dogcatsquare.data.community.ApiResponse
 import com.example.dogcatsquare.data.map.BaseResponse
 import com.example.dogcatsquare.data.map.GetHotPlaceRequest
 import com.example.dogcatsquare.data.map.GetHotPlaceResponse
+import com.example.dogcatsquare.data.map.MapReview
 import com.example.dogcatsquare.data.map.PageResponse
 import com.example.dogcatsquare.data.map.PlaceDetailRequest
 import com.example.dogcatsquare.data.map.PlaceDetailResponse
 import com.example.dogcatsquare.data.map.PlaceItem
+import com.example.dogcatsquare.data.map.PlaceReviewReportRequest
 import com.example.dogcatsquare.data.map.PlaceReviewRequest
 import com.example.dogcatsquare.data.map.PlaceUserInfoRequest
 import com.example.dogcatsquare.data.map.SearchPlacesRequest
@@ -76,5 +78,19 @@ interface PlacesApiService {
         @Path("placeId") placeId: Int,
         @Part("request") request: PlaceReviewRequest,
         @Part images: List<MultipartBody.Part>
+    ): BaseResponse<Int>
+
+    @GET("api/places/{placeId}/reviews")
+    suspend fun getReviews(
+        @Header("Authorization") token: String,
+        @Path("placeId") placeId: Int,
+        @Query("page") page: Int
+    ): BaseResponse<PageResponse<MapReview>>
+
+    @POST("api/places/place-reviews/{placeReviewId}/report")
+    suspend fun reportReview(
+        @Header("Authorization") token: String,
+        @Path("placeReviewId") placeReviewId: Int,
+        @Body request: PlaceReviewReportRequest
     ): BaseResponse<Int>
 }
