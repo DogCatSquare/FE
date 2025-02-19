@@ -136,19 +136,29 @@ class CreatePostActivity() : AppCompatActivity() {
             // 기존에 선택한 이미지 초기화
             selectedImageFiles.clear()
 
-            // 여러 이미지가 선택된 경우
+            // 최대 5개 제한
+            val maxCount = 5
+
             if (data?.clipData != null) {
                 val count = data.clipData!!.itemCount
-                for (i in 0 until count) {
+                val allowedCount = minOf(count, maxCount)
+                for (i in 0 until allowedCount) {
                     val imageUri: Uri = data.clipData!!.getItemAt(i).uri
                     val file = getCompressedImageFile(imageUri)
                     selectedImageFiles.add(file)
                 }
+                if (count > maxCount) {
+                    Toast.makeText(this, "최대 5개까지 선택할 수 있습니다.", Toast.LENGTH_SHORT).show()
+                }
             } else if (data?.data != null) {
-                // 단일 이미지 선택한 경우
-                val imageUri: Uri = data.data!!
-                val file = getCompressedImageFile(imageUri)
-                selectedImageFiles.add(file)
+                // 단일 이미지 선택한 경우에도 현재 개수가 5개 미만인지 확인
+                if (selectedImageFiles.size < maxCount) {
+                    val imageUri: Uri = data.data!!
+                    val file = getCompressedImageFile(imageUri)
+                    selectedImageFiles.add(file)
+                } else {
+                    Toast.makeText(this, "최대 5개까지 선택할 수 있습니다.", Toast.LENGTH_SHORT).show()
+                }
             }
             imageAdapter.notifyDataSetChanged()
         }

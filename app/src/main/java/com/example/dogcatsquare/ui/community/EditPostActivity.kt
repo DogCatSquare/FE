@@ -132,20 +132,30 @@ class EditPostActivity : AppCompatActivity() {
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
         if (requestCode == PICK_IMAGE_REQUEST && resultCode == Activity.RESULT_OK) {
-            // 새로운 이미지 선택 시 기존 이미지(원본 URL)는 대체합니다.
-            imageItems.clear()
+            // 기존에 선택한 이미지 개수 확인 (수정 시 기존 이미지와 새 이미지 모두 포함)
+            val currentCount = imageItems.size
+            val maxCount = 5
 
             if (data?.clipData != null) {
                 val count = data.clipData!!.itemCount
-                for (i in 0 until count) {
+                val allowedCount = maxCount - currentCount
+                if (allowedCount <= 0) {
+                    Toast.makeText(this, "최대 5개까지 선택할 수 있습니다.", Toast.LENGTH_SHORT).show()
+                    return
+                }
+                for (i in 0 until minOf(count, allowedCount)) {
                     val imageUri: Uri = data.clipData!!.getItemAt(i).uri
                     val file = getCompressedImageFile(imageUri)
                     imageItems.add(ImageItem(file = file))
                 }
             } else if (data?.data != null) {
-                val imageUri: Uri = data.data!!
-                val file = getCompressedImageFile(imageUri)
-                imageItems.add(ImageItem(file = file))
+                if (currentCount < maxCount) {
+                    val imageUri: Uri = data.data!!
+                    val file = getCompressedImageFile(imageUri)
+                    imageItems.add(ImageItem(file = file))
+                } else {
+                    Toast.makeText(this, "최대 5개까지 선택할 수 있습니다.", Toast.LENGTH_SHORT).show()
+                }
             }
             imageAdapter.notifyDataSetChanged()
         }
