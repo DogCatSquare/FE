@@ -47,8 +47,8 @@ class HomeFragment : Fragment() {
 
     private val viewModel: WeatherViewModel by activityViewModels()
 
-
-    private val timer = Timer()
+    private var adTimer: Timer? = null
+    private var weatherTimer: Timer? = null
     private val handler = Handler(Looper.getMainLooper())
 
     private var dDayDatas = ArrayList<DDay>()
@@ -95,7 +95,10 @@ class HomeFragment : Fragment() {
 
     // auto slide
     private fun adAutoSlide(adapter: HomeAdVPAdapter) {
-        timer.scheduleAtFixedRate(object : TimerTask() {
+        adTimer?.cancel() // 기존 타이머 중지
+        adTimer = Timer() // 새로운 타이머 생성
+
+        adTimer?.scheduleAtFixedRate(object : TimerTask() {
             override fun run() {
                 handler.post {
                     val nextItem = binding.homeAdVp.currentItem + 1
@@ -106,11 +109,14 @@ class HomeFragment : Fragment() {
                     }
                 }
             }
-        }, 3000, 3000)
+        }, 4500, 4500)
     }
 
     private fun weatherAutoSlide(adapter: HomeWeatherVPAdapter) {
-        timer.scheduleAtFixedRate(object : TimerTask() {
+        weatherTimer?.cancel() // 기존 타이머 중지
+        weatherTimer = Timer() // 새로운 타이머 생성
+
+        weatherTimer?.scheduleAtFixedRate(object : TimerTask() {
             override fun run() {
                 handler.post {
                     val nextItem = binding.homeWeatherVp.currentItem + 1
@@ -162,7 +168,7 @@ class HomeFragment : Fragment() {
         dDayDatas.clear()
 
         // d-day recycler view
-        val dDayRVAdapter = HomeDDayRVAdapter(dDayDatas)
+        val dDayRVAdapter = HomeDDayRVAdapter(dDayDatas, requireContext())
         binding.homeDdayRv.adapter = dDayRVAdapter
         binding.homeDdayRv.layoutManager = LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false)
 
@@ -492,4 +498,9 @@ class HomeFragment : Fragment() {
         }
     }
 
+    override fun onDestroy() {
+        super.onDestroy()
+        adTimer?.cancel()
+        weatherTimer?.cancel()
+    }
 }

@@ -14,13 +14,18 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.viewModels
+import androidx.lifecycle.ViewModel
 import com.example.dogcatsquare.R
 import com.example.dogcatsquare.data.api.DDayRetrofitItf
+import com.example.dogcatsquare.data.model.home.DDay
 import com.example.dogcatsquare.data.model.home.DeleteDDayResponse
 import com.example.dogcatsquare.data.model.home.FetchDDayRequest
 import com.example.dogcatsquare.data.model.home.FetchDDayResponse
 import com.example.dogcatsquare.data.network.RetrofitObj
 import com.example.dogcatsquare.databinding.FragmentSetDDayPersonalBinding
+import com.example.dogcatsquare.ui.viewmodel.DDayViewModel
+import com.example.dogcatsquare.utils.AlarmHelper
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.button.MaterialButton
 import retrofit2.Call
@@ -37,6 +42,8 @@ class SetDDayPersonalFragment : Fragment() {
     private var dayTerm: Int =  -1
     private var isAlarm: Boolean = true
 
+    private val dDayViewModel: DDayViewModel by viewModels()
+
     private fun getToken(): String? {
         val sharedPref = activity?.getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
         return sharedPref?.getString("token", null)
@@ -50,6 +57,11 @@ class SetDDayPersonalFragment : Fragment() {
         binding = FragmentSetDDayPersonalBinding.inflate(inflater, container, false)
 
         requireActivity().window.statusBarColor = ContextCompat.getColor(requireContext(), R.color.white)
+
+        // ✅ ViewModel과 UI 연동
+        dDayViewModel.isAlarm.observe(viewLifecycleOwner) { isAlarm ->
+            binding.alarmBtn.isChecked = isAlarm
+        }
 
         // 배경화면 클릭 시 키보드 숨기기
         binding.setDDayPersonalFragment.setOnTouchListener { _, event ->
@@ -70,6 +82,8 @@ class SetDDayPersonalFragment : Fragment() {
             dayDay = it.getString("ddayDay", "")
             dayTerm = it.getInt("ddayTerm", -1)
             isAlarm = it.getBoolean("isAlarm", true)
+
+            dDayViewModel.setAlarmState(isAlarm)
         }
 
         binding.dayTitle.text = dayTitle
@@ -87,13 +101,24 @@ class SetDDayPersonalFragment : Fragment() {
         // 구매 주기 설정
         setWeek()
 
-        binding.alarmBtn.setOnClickListener {
-            switchToggle()
+        binding.alarmBtn.setOnCheckedChangeListener { _, isChecked ->
+            dDayViewModel.setAlarmState(isChecked) // ✅ ViewModel 업데이트
+
+            if (isChecked) {
+                // 패드 구매 알람 활성화
+                Toast.makeText(requireContext(), "알람이 설정되었습니다", Toast.LENGTH_SHORT).show()
+                AlarmHelper.setDdayAlarm(requireContext(), DDay(dayId, dayTitle, dayDay, dayTerm, 0, true, "", ""))
+            } else {
+                // 패드 구매 알람 비활성화
+                Toast.makeText(requireContext(), "알람이 해제되었습니다", Toast.LENGTH_SHORT).show()
+                AlarmHelper.cancelDdayAlarm(requireContext(), dayId)
+            }
         }
 
         // 수정 완료
         binding.fetchDayBtn.setOnClickListener {
             val day = binding.dateBtn.text.toString()
+            val isAlarm = dDayViewModel.isAlarm.value ?: true
             setDDay(dayId, day, dayTerm, isAlarm)
         }
 
@@ -255,19 +280,6 @@ class SetDDayPersonalFragment : Fragment() {
         dayTerm = count
     }
 
-    private fun switchToggle() {
-        // 알람 설정
-        binding.alarmBtn.setOnCheckedChangeListener { _, isChecked ->
-            if (isChecked) {
-                // 패드 구매 알람 활성화
-                Toast.makeText(requireContext(), "알람이 설정되었습니다", Toast.LENGTH_SHORT).show()
-            } else {
-                // 패드 구매 알람 비활성화
-                Toast.makeText(requireContext(), "알람이 해제되었습니다", Toast.LENGTH_SHORT).show()
-            }
-        }
-    }
-
     private fun setDDay(id: Int, day: String, term: Int,  isAlarm: Boolean) {
         val token = getToken()
 
@@ -284,6 +296,16 @@ class SetDDayPersonalFragment : Fragment() {
 
                             Toast.makeText(context, "디데이 수정이 완료되었습니다", Toast.LENGTH_SHORT).show()
                             parentFragmentManager.popBackStack()
+
+                            // ✅ ViewModel 업데이트
+                            dDayViewModel.setAlarmState(isAlarm)
+
+                            // ✅ 사용자가 설정한 isAlarm 값에 따라 알람 설정 또는 취소
+                            if (isAlarm) {
+                                AlarmHelper.setDdayAlarm(requireContext(), DDay(id, dayTitle, day, term, 0, true, "", ""))
+                            } else {
+                                AlarmHelper.cancelDdayAlarm(requireContext(), id)
+                            }
                         } else {
                             Log.e(
                                 "FetchDDay/FAILURE",
@@ -317,6 +339,9 @@ class SetDDayPersonalFragment : Fragment() {
 
                             Toast.makeText(context, "디데이 정보가 삭제되었습니다", Toast.LENGTH_SHORT).show()
                             parentFragmentManager.popBackStack()
+
+                            // ✅ 디데이가 삭제되었으므로 알람 취소
+                            AlarmHelper.cancelDdayAlarm(requireContext(), id)
                         } else {
                             Log.e("DeleteDay/FAILURE", "응답 코드: ${resp.code}, 응답 메시지: ${resp.message}")
                             Toast.makeText(context, "오류가 발생했습니다", Toast.LENGTH_SHORT).show()
