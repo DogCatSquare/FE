@@ -153,7 +153,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginStart="11dp"
-                    android:text="주소기준"
+                    android:text="위치기준"
                     android:textSize="14dp"
 
                     app:layout_constraintBottom_toBottomOf="parent"

@@ -1,0 +1,309 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/white">
+
+    <ImageView
+        android:id="@+id/filter"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:layout_marginEnd="7dp"
+        app:layout_constraintBottom_toBottomOf="@+id/searchBox"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/searchBox"
+        app:layout_constraintVertical_bias="0.571"
+        app:srcCompat="@drawable/btn_filter"
+        tools:ignore="MissingConstraints" />
+
+    <EditText
+        android:id="@+id/searchBox"
+        android:layout_width="293dp"
+        android:layout_height="47dp"
+        android:layout_marginStart="27dp"
+        android:layout_marginTop="12dp"
+        android:layout_marginEnd="21dp"
+        android:background="@drawable/bg_rounded_et"
+        android:clickable="true"
+        android:focusable="false"
+        android:hint="검색어를 입력해주세요"
+        android:textSize="14sp"
+        app:layout_constraintEnd_toStartOf="@+id/filter"
+        app:layout_constraintStart_toEndOf="@+id/backButton"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:ignore="MissingConstraints" />
+
+    <ImageView
+        android:layout_width="15dp"
+        android:layout_height="15dp"
+        android:layout_marginEnd="15dp"
+        android:src="@drawable/ic_search"
+        app:layout_constraintBottom_toBottomOf="@+id/searchBox"
+        app:layout_constraintEnd_toEndOf="@+id/searchBox"
+        app:layout_constraintTop_toTopOf="@+id/searchBox" />
+
+    <ImageView
+        android:id="@+id/backButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="15dp"
+        android:src="@drawable/ic_back_button"
+        app:layout_constraintBottom_toBottomOf="@+id/searchBox"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/searchBox" />
+
+    <ScrollView
+        android:id="@+id/scrollView3"
+        android:layout_marginTop="60dp"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:fillViewport="true"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/searchBox">
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+
+            <TextView
+                android:id="@+id/placeName"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="35dp"
+                android:layout_marginTop="15dp"
+                android:layout_marginEnd="235dp"
+                android:layout_marginBottom="4dp"
+                android:text="서대문 안산지락길"
+                android:textColor="#0E0E0E"
+                android:textSize="20sp"
+                android:textStyle="bold"
+                app:layout_constraintBottom_toTopOf="@+id/placeType"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <ImageView
+                android:id="@+id/imageView1"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="15dp"
+                android:layout_marginTop="55dp"
+                android:layout_marginBottom="10dp"
+                android:src="@drawable/ic_myreview"
+                app:layout_constraintBottom_toTopOf="@+id/mapView3"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:tint="#696969" />
+
+            <TextView
+                android:id="@+id/placeType"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="30dp"
+                android:layout_marginTop="4dp"
+                android:layout_marginBottom="7dp"
+                android:text=" 리뷰(3)"
+                android:textColor="#696969"
+                android:textSize="14sp"
+                app:layout_constraintBottom_toTopOf="@+id/mapView3"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/placeName" />
+
+            <ImageView
+                android:id="@+id/imageView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:src="@drawable/ic_map_contour"
+                app:layout_constraintBottom_toBottomOf="@+id/placeType"
+                app:layout_constraintStart_toEndOf="@+id/placeType"
+                app:layout_constraintTop_toTopOf="@+id/placeType"
+                app:tint="#696969" />
+
+            <TextView
+                android:id="@+id/placeLocation"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:text="산책로"
+                android:textColor="#696969"
+                android:textSize="14sp"
+                app:layout_constraintBottom_toBottomOf="@+id/placeType"
+                app:layout_constraintStart_toEndOf="@+id/imageView"
+                app:layout_constraintTop_toTopOf="@+id/placeType" />
+
+            <ImageView
+                android:id="@+id/imageView2"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:src="@drawable/ic_map_contour"
+                app:layout_constraintBottom_toBottomOf="@+id/placeLocation"
+                app:layout_constraintStart_toEndOf="@+id/placeLocation"
+                app:layout_constraintTop_toTopOf="@+id/placeLocation"
+                app:tint="#696969" />
+
+            <TextView
+                android:id="@+id/textView11"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:text="내 위치에서"
+                android:textColor="#696969"
+                android:textSize="14sp"
+                app:layout_constraintBottom_toBottomOf="@+id/placeLocation"
+                app:layout_constraintStart_toEndOf="@+id/imageView2"
+                app:layout_constraintTop_toTopOf="@+id/placeLocation" />
+
+            <TextView
+                android:id="@+id/placeDistance"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="5dp"
+                android:text="0.5km"
+                android:textColor="#696969"
+                android:textSize="14sp"
+                app:layout_constraintBottom_toBottomOf="@+id/textView11"
+                app:layout_constraintStart_toEndOf="@+id/textView11"
+                app:layout_constraintTop_toTopOf="@+id/textView11"
+                app:layout_constraintVertical_bias="1.0" />
+
+
+            <androidx.fragment.app.FragmentContainerView
+                android:id="@+id/mapView3"
+                android:layout_width="390dp"
+                android:layout_height="201dp"
+                android:layout_marginStart="10dp"
+                android:layout_marginTop="8dp"
+                android:layout_marginEnd="5dp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintHorizontal_bias="0.0"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/placeType" />
+
+            <ImageButton
+                android:id="@+id/wishButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="70dp"
+                android:backgroundTint="@color/white"
+                android:src="@drawable/ic_wish"
+                app:layout_constraintBottom_toBottomOf="@+id/placeDistance"
+                app:layout_constraintStart_toEndOf="@+id/placeDistance"
+                app:layout_constraintTop_toTopOf="@+id/placeDistance" />
+
+            <TextView
+                android:id="@+id/address_title"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="24dp"
+                android:layout_marginTop="10dp"
+                android:text="주소"
+                android:textColor="#0E0E0E"
+                android:textSize="16sp"
+                app:layout_constraintEnd_toStartOf="@+id/address_tv"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/mapView3" />
+
+            <TextView
+                android:id="@+id/address_tv"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="16dp"
+                android:layout_marginTop="10dp"
+                android:layout_marginEnd="178dp"
+                android:text="서울시 성북구 월곡동 77"
+                android:textColor="#616161"
+                android:textSize="16sp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toEndOf="@+id/address_title"
+                app:layout_constraintTop_toBottomOf="@+id/mapView3" />
+
+            <View
+                android:id="@+id/gray_line"
+                android:layout_width="match_parent"
+                android:layout_height="10dp"
+                android:layout_marginTop="16dp"
+                android:background="#F6F6F6"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/address_tv" />
+
+            <TextView
+                android:id="@+id/leftText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="30dp"
+                android:layout_marginTop="27dp"
+                android:text="이웃들의 추천코스"
+                android:textColor="#0E0E0E"
+                android:textStyle="bold"
+                android:textSize="20sp"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/gray_line" />
+
+            <TextView
+                android:id="@+id/rightText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="160dp"
+                android:layout_marginTop="30dp"
+                android:text="0"
+                android:textColor="#0E0E0E"
+                android:textSize="20sp"
+                android:textStyle="bold"
+                app:layout_constraintStart_toEndOf="@+id/leftText"
+                app:layout_constraintTop_toBottomOf="@+id/gray_line" />
+
+            <ImageButton
+                android:id="@+id/reviewAll_bt"
+                android:layout_width="23dp"
+                android:layout_height="50dp"
+                android:layout_marginTop="-10dp"
+                android:background="?attr/selectableItemBackground"
+                android:src="@drawable/ic_review_bt"
+                app:layout_constraintStart_toEndOf="@+id/rightText"
+                app:layout_constraintTop_toTopOf="@+id/rightText" />
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/review_rv"
+                android:layout_width="410dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="22dp"
+                android:layout_marginTop="8dp"
+                android:layout_marginEnd="17dp"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintHorizontal_bias="0.636"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/reviewAll_bt"
+                app:layout_constraintVertical_bias="0.107"
+                tools:listitem="@layout/item_mapwalking" />
+
+            <Button
+                android:id="@+id/addButton"
+                android:layout_width="374dp"
+                android:layout_height="56dp"
+                android:layout_marginStart="18dp"
+                android:layout_marginTop="10dp"
+                android:layout_marginEnd="19dp"
+                android:layout_marginBottom="10dp"
+                android:backgroundTint="#FFFBF1"
+                android:src="@drawable/btn_add_review"
+                android:text="산책 시작하기"
+                android:textColor="#FFB200"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/review_rv" />
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+    </ScrollView>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

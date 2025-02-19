@@ -114,10 +114,22 @@ class MapButtonRVAdapter(
         }
     }
 
+    // 선택 초기화 함수
     fun resetSelection() {
         val oldPosition = selectedPosition
         selectedPosition = 0
         notifyItemChanged(oldPosition)
         notifyItemChanged(selectedPosition)
+    }
+
+    // 선택된 버튼 업데이트 함수
+    fun updateSelectedButton(position: Int) {
+        selectedPosition = position
+        notifyDataSetChanged()
+    }
+
+    // 현재 선택된 카테고리 이름을 반환하는 함수
+    fun getSelectedButtonName(): String {
+        return buttonList.getOrNull(selectedPosition)?.buttonName ?: "전체"
     }
 }

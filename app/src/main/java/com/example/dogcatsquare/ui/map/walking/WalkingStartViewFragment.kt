@@ -1,12 +1,11 @@
 package com.example.dogcatsquare.ui.map.walking
 
-import android.graphics.Color
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Button
+import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.appcompat.widget.Toolbar
@@ -19,9 +18,16 @@ import com.bumptech.glide.Glide
 import com.example.dogcatsquare.R
 import com.example.dogcatsquare.ui.map.location.MapFragment
 import com.example.dogcatsquare.ui.map.walking.data.Response.Coordinate
+import com.example.dogcatsquare.ui.map.walking.data.Response.WalkDetail
+import com.example.dogcatsquare.ui.map.walking.data.Response.WalkReview
+import com.example.dogcatsquare.ui.map.walking.data.ViewModel.WalkDetailState
 import com.example.dogcatsquare.ui.map.walking.data.ViewModel.WalkDetailViewModel
+import com.example.dogcatsquare.ui.map.walking.data.ViewModel.WalkReviewViewModel
 import com.google.android.gms.maps.model.Polyline
+import com.google.android.material.button.MaterialButton
 import com.naver.maps.geometry.LatLng
+import com.naver.maps.geometry.LatLngBounds
+import com.naver.maps.map.CameraUpdate
 import com.naver.maps.map.NaverMap
 import com.naver.maps.map.overlay.Marker
 import com.naver.maps.map.overlay.OverlayImage
@@ -30,9 +36,10 @@ class WalkingStartViewFragment : Fragment() {
 
     private lateinit var reviewAdapter: ReviewAdapter
     private val walkDetailViewModel: WalkDetailViewModel by viewModels()
+    private val walkReviewViewModel : WalkReviewViewModel by viewModels()
 
     // Naver Map 객체 선언
-    private lateinit var naverMap: NaverMap
+    var naverMap: NaverMap? = null
     private val coords = mutableListOf<LatLng>()
     private lateinit var userPolyline: Polyline
 
@@ -40,11 +47,13 @@ class WalkingStartViewFragment : Fragment() {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-//        Log.d("WalkingStartViewFragment", "onCreateView 실행됨")
+        Log.d("WalkingStartView", "Created")
         val view = inflater.inflate(R.layout.fragment_mapwalking_startview, container, false)
 
         val address = arguments?.getString("address", "서대문 안산지락길")
-        val walkId = arguments?.getLong("walkId", -1) ?: -1 // 받아온 산책로 ID
+        val placeId = arguments?.getInt("placeId") ?: 3
+
+        Log.d("WalkingStartView", placeId.toString())
 
         // Toolbar 설정
         (activity as? AppCompatActivity)?.apply {
@@ -54,7 +63,6 @@ class WalkingStartViewFragment : Fragment() {
             supportActionBar?.setDisplayHomeAsUpEnabled(true)
 
             toolbar.setNavigationOnClickListener {
-                // replace 대신 popBackStack 사용
                 parentFragmentManager.popBackStack()
             }
         }
@@ -63,67 +71,90 @@ class WalkingStartViewFragment : Fragment() {
         val recyclerView: RecyclerView = view.findViewById(R.id.review_recycler_view)
         recyclerView.layoutManager = LinearLayoutManager(context)
 
-        val reviewSubtitle: TextView = view.findViewById(R.id.review_subtitle)
-//        val titleTextView: TextView = view.findViewById(R.id.walking_start_toolbar)
-        val descriptionTextView: TextView = view.findViewById(R.id.review_tv)
-        val lengthTextView: TextView = view.findViewById(R.id.length_tv)
-        val timeTextView: TextView = view.findViewById(R.id.time_tv)
-        val profileIg: ImageView = view.findViewById(R.id.profile_ig)
-        val profileNameTv: TextView = view.findViewById(R.id.profile_name_tv)
-        val profileTv: TextView = view.findViewById(R.id.profile_tv)
-
         reviewAdapter = ReviewAdapter(emptyList())
         recyclerView.adapter = reviewAdapter
 
-        // API 요청
-        if (walkId != -1L) {
-            walkDetailViewModel.fetchWalkDetail(walkId)
-        }
 
-        val difficultyImageView: ImageView = view.findViewById(R.id.difficulty_iv)
+        //산책로 위시 지정
+        val wishBt: ImageButton = view.findViewById(R.id.wish_bt)
+        var isChecked = false
 
-        walkDetailViewModel.walkDetail.observe(viewLifecycleOwner) { walkDetail ->
-            if (walkDetail == null) {
-                Log.d("API_RESPONSE", "walkDetail 데이터 없음")
+        wishBt.setOnClickListener {
+            isChecked = !isChecked
+            if (isChecked) {
+                wishBt.setImageResource(R.drawable.ic_wish_check)
             } else {
-                Log.d("API_RESPONSE", "walkDetail: $walkDetail")  // 정상적으로 데이터가 전달되면 이 로그가 출력됩니다.
-            }
-            walkDetail?.let {
-//                titleTextView.text = it.title
-                (requireActivity() as? AppCompatActivity)?.supportActionBar?.title = it.title
-
-                descriptionTextView.text = it.description
-//                reviewSubtitle.text = "${it.special.size} 개의 특징"
-
-                // 난이도에 따라 이미지 변경
-                val difficultyResId = when (it.difficulty) {
-                    "easy" -> R.drawable.ic_easy
-                    "normal" -> R.drawable.ic_normal
-                    "difficult" -> R.drawable.ic_difficulty
-                    else -> R.drawable.ic_normal // 기본값 (예외 처리)
-                }
-                difficultyImageView.setImageResource(difficultyResId)
-
-                lengthTextView.text = "${it.distance} km"
-                timeTextView.text = "${it.time} 분"
-
-                Glide.with(requireContext())
-                    .load(it.createdBy.profileImageUrl)
-                    .into(profileIg)
-
-                profileNameTv.text = it.createdBy.nickname
-                profileTv.text = it.createdBy.breed ?: "알 수 없음"
-
-                // 좌표 받아서 마커 및 경로 추가
-                val startCoordinate = it.startCoordinates.first()
-                val endCoordinate = it.endCoordinates.first()
-                setInitialMarker(startCoordinate, endCoordinate)
-//                drawRoute(it.startCoordinates, it.endCoordinates)
+                wishBt.setImageResource(R.drawable.ic_wish)
             }
         }
+
+
+        // API 호출
+        if (placeId != -1) {
+            walkDetailViewModel.fetchWalkDetail(placeId)
+            walkReviewViewModel.getWalkReviews(placeId)
+            Log.d("WalkingStartView", placeId.toString())
+        }
+
+        // 산책로 후기
+        walkReviewViewModel.reviewResponse.observe(viewLifecycleOwner) { response ->
+            if (response != null) {
+                val reviews = response.result?.walkReviews?.map { walkReview ->
+                    WalkReview(
+                        reviewId = walkReview.reviewId,
+                        walkId = walkReview.walkId,
+                        content = walkReview.content,
+                        walkReviewImageUrl = walkReview.walkReviewImageUrl,
+                        createdAt = walkReview.createdAt,
+                        updatedAt = walkReview.updatedAt,
+                        createdBy = walkReview.createdBy
+                    )
+                } ?: emptyList()
+
+                reviewAdapter = ReviewAdapter(reviews)
+                val recyclerView: RecyclerView = view.findViewById(R.id.review_recycler_view)
+                recyclerView.adapter = reviewAdapter
+                reviewAdapter.notifyDataSetChanged()
+
+                val reviewSubtitle: TextView = view.findViewById(R.id.review_subtitle)
+                val reviewCount = reviews.size
+                reviewSubtitle.text = "$reviewCount"
+            } else {
+                Log.e("WalkingStartView", "Failed to load reviews.")
+            }
+        }
+
+        val review_button : ImageButton = view.findViewById(R.id.review_button)
+        review_button.setOnClickListener {
+            parentFragmentManager.beginTransaction()
+                .replace(R.id.main_frm, WalkingReviewAllFragment())
+                .addToBackStack(null)
+                .commit()
+        }
+
+
+        walkDetailViewModel.walkDetailState.observe(viewLifecycleOwner) { state ->
+            when (state) {
+                is WalkDetailState.Success -> {
+                    Log.d("WalkingStartView", "Walk Detail Success: ${state.walkDetail}")
+                    val walkDetail = state.walkDetail
+                    if (walkDetail != null) {
+                        updateUI(view, walkDetail)
+                    } else {
+                        Log.d("WalkingStartView", "데이터가 없습니다.")
+                    }
+                }
+                is WalkDetailState.Error -> {
+                    Log.e("WalkingStartView", "API 호출 실패: ${state.message}")
+                }
+
+                WalkDetailState.Loading -> TODO()
+            }
+        }
+
 
         // 리뷰 작성 버튼 설정
-        val button: Button = view.findViewById(R.id.ReviewWriting_bt)
+        val button: MaterialButton = view.findViewById(R.id.ReviewWriting_bt)
         button.setOnClickListener {
             parentFragmentManager.beginTransaction()
                 .replace(R.id.main_frm, WalkingMapViewFragment())
@@ -134,47 +165,65 @@ class WalkingStartViewFragment : Fragment() {
         return view
     }
 
-    // 시작점과 끝점에 마커를 추가하는 함수
+    // UI 업데이트 함수
+    private fun updateUI(view: View, walkDetail: WalkDetail) {
+
+        val descriptionTextView: TextView = view.findViewById(R.id.review_tv)
+        val lengthTextView: TextView = view.findViewById(R.id.length_tv)
+        val timeTextView: TextView = view.findViewById(R.id.time_tv)
+        val profileIg: ImageView = view.findViewById(R.id.profile_ig)
+        val profileNameTv: TextView = view.findViewById(R.id.profile_name_tv)
+        val profileTv: TextView = view.findViewById(R.id.profile_tv)
+
+        descriptionTextView.text = walkDetail.description
+        lengthTextView.text = "${walkDetail.distance} km"
+        timeTextView.text = "${walkDetail.time} 분"
+
+        Glide.with(requireContext())
+            .load(walkDetail.createdBy.profileImageUrl)
+            .into(profileIg)
+
+        profileNameTv.text = walkDetail.createdBy.nickname
+        profileTv.text = walkDetail.createdBy.breed ?: "알 수 없음"
+
+        // 난이도에 따라 이미지 변경
+        val difficultyResId = when (walkDetail.difficulty) {
+            "LOW" -> R.drawable.ic_easy
+            "HIGH" -> R.drawable.ic_difficulty
+            else -> R.drawable.ic_normal
+        }
+        val difficultyImageView: ImageView = view.findViewById(R.id.difficulty_iv)
+        difficultyImageView.setImageResource(difficultyResId)
+
+        // 좌표 받아서 마커 및 경로 추가
+        val startCoordinate = walkDetail.startCoordinates.first()
+        val endCoordinate = walkDetail.endCoordinates.first()
+        setInitialMarker(startCoordinate, endCoordinate)
+    }
+
     private fun setInitialMarker(startCoordinate: Coordinate, endCoordinate: Coordinate) {
-        // 시작점 마커 추가
         val startMarker = Marker()
         startMarker.icon = OverlayImage.fromResource(R.drawable.ic_start_marker)
         startMarker.position = LatLng(startCoordinate.latitude, startCoordinate.longitude)
         startMarker.map = naverMap
 
-        // 끝점 마커 추가
         val endMarker = Marker()
         endMarker.icon = OverlayImage.fromResource(R.drawable.ic_end_marker)
         endMarker.position = LatLng(endCoordinate.latitude, endCoordinate.longitude)
         endMarker.map = naverMap
+
+        val startLatLng = LatLng(startCoordinate.latitude, startCoordinate.longitude)
+        val endLatLng = LatLng(endCoordinate.latitude, endCoordinate.longitude)
+        val bounds = LatLngBounds(startLatLng, endLatLng)
+
+        // bounds에 맞춰 카메라를 이동
+        val cameraUpdate = CameraUpdate.fitBounds(bounds, 100) // 100은 padding 값
+        naverMap?.moveCamera(cameraUpdate)
     }
 
-//    private fun drawRoute(startCoordinates: List<Coordinate>, endCoordinates: List<Coordinate>) {
-//        val routeCoordinates = mutableListOf<LatLng>()
-//
-//        // 경로 좌표 추가 (시작과 끝 좌표 외에도 중간 좌표를 추가할 수 있습니다)
-//        startCoordinates.forEach {
-//            routeCoordinates.add(LatLng(it.latitude, it.longitude))
-//        }
-//        endCoordinates.forEach {
-//            routeCoordinates.add(LatLng(it.latitude, it.longitude))
-//        }
-//
-//        // Polyline 객체 초기화
-//        if (!::userPolyline.isInitialized) {
-//            userPolyline = Polyline()
-//            userPolyline.map = naverMap // NaverMap 객체와 연결
-//        }
-//
-//        // Polyline의 좌표 업데이트
-//        userPolyline.setCoords(routeCoordinates) // setCoords 메서드 사용
-//        userPolyline.width = 10F // 선의 두께
-//        userPolyline.color = Color.parseColor("#FFB200") // 선의 색상
-//    }
 
     override fun onDestroyView() {
         super.onDestroyView()
-        // WalkingStartViewFragment가 제거될 때 숨겨져 있던 MapFragment를 다시 보여줌
         parentFragmentManager.fragments
             .filterIsInstance<MapFragment>()
             .firstOrNull()?.let { mapFragment ->
@@ -184,5 +233,3 @@ class WalkingStartViewFragment : Fragment() {
             }
     }
 }
-
-

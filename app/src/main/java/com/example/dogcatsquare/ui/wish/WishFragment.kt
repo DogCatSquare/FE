@@ -7,6 +7,7 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentTransaction
 import com.example.dogcatsquare.databinding.FragmentWishBinding
+import com.google.android.material.tabs.TabLayoutMediator
 
 class WishFragment : Fragment() {
     private var _binding: FragmentWishBinding? = null
@@ -19,27 +20,14 @@ class WishFragment : Fragment() {
     ): View {
         _binding = FragmentWishBinding.inflate(inflater, container, false)
 
-        // 기본적으로 WishPlaceFragment를 표시
-        if (savedInstanceState == null) {
-            childFragmentManager.beginTransaction()
-                .replace(binding.wishFrm.id, WishPlaceFragment())
-                .setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE)
-                .commit()
-        }
+        // 🔹 ViewPager2 어댑터 설정
+        val adapter = WishPagerAdapter(this)
+        binding.viewPager.adapter = adapter
 
-        binding.placeButton.setOnClickListener {
-            childFragmentManager.beginTransaction()
-                .replace(binding.wishFrm.id, WishPlaceFragment())
-                .setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE)
-                .commit()
-        }
-
-        binding.walkButton.setOnClickListener {
-            childFragmentManager.beginTransaction()
-                .replace(binding.wishFrm.id, WishWalkFragment())
-                .setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE)
-                .commit()
-        }
+        // 🔹 TabLayout과 ViewPager2 연결
+        TabLayoutMediator(binding.tabLayout, binding.viewPager) { tab, position ->
+            tab.text = if (position == 0) "장소" else "산책로"
+        }.attach()
 
         return binding.root
     }

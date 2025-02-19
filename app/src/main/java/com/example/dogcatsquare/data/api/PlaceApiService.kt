@@ -8,14 +8,19 @@ import com.example.dogcatsquare.data.map.PageResponse
 import com.example.dogcatsquare.data.map.PlaceDetailRequest
 import com.example.dogcatsquare.data.map.PlaceDetailResponse
 import com.example.dogcatsquare.data.map.PlaceItem
+import com.example.dogcatsquare.data.map.PlaceReviewRequest
 import com.example.dogcatsquare.data.map.PlaceUserInfoRequest
 import com.example.dogcatsquare.data.map.SearchPlacesRequest
 import com.example.dogcatsquare.data.map.WalkListRequest
 import com.example.dogcatsquare.data.map.WalkListResponse
+import okhttp3.MultipartBody
 import retrofit2.Call
 import retrofit2.http.POST
 import retrofit2.http.Body
+import retrofit2.http.GET
 import retrofit2.http.Header
+import retrofit2.http.Multipart
+import retrofit2.http.Part
 import retrofit2.http.Path
 import retrofit2.http.Query
 
@@ -63,4 +68,13 @@ interface PlacesApiService {
         @Path("placeId") placeId: Int,
         @Body request: PlaceUserInfoRequest
     ): BaseResponse<String>
+
+    @Multipart
+    @POST("api/places/{placeId}/reviews")
+    suspend fun createPlaceReview(
+        @Header("Authorization") token: String,
+        @Path("placeId") placeId: Int,
+        @Part("request") request: PlaceReviewRequest,
+        @Part images: List<MultipartBody.Part>
+    ): BaseResponse<Int>
 }

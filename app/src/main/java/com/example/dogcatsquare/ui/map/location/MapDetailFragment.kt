@@ -676,11 +676,13 @@ class MapDetailFragment : Fragment(), OnMapReadyCallback {
 
     private fun setupAddReviewButton() {
         binding.addButton.setOnClickListener {
-            val mapAddReviewFragment = MapAddReviewFragment()
-            requireActivity().supportFragmentManager.beginTransaction()
-                .replace(R.id.main_frm, mapAddReviewFragment)
-                .addToBackStack(null)
-                .commit()
+            arguments?.getInt("placeId")?.let { placeId ->
+                val mapAddReviewFragment = MapAddReviewFragment.newInstance(placeId)
+                requireActivity().supportFragmentManager.beginTransaction()
+                    .replace(R.id.main_frm, mapAddReviewFragment)
+                    .addToBackStack(null)
+                    .commit()
+            }
         }
     }
 

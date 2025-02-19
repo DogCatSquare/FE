@@ -47,13 +47,15 @@
         android:id="@+id/searchBox"
         android:layout_width="0dp"
         android:layout_height="40dp"
-        android:layout_marginTop="15dp"
         android:layout_marginStart="15dp"
+        android:layout_marginTop="15dp"
+        android:layout_marginBottom="15dp"
         android:background="@drawable/bg_rounded_et"
+        android:clickable="true"
+        android:focusable="false"
         android:hint="검색어를 입력해주세요"
         android:textSize="14sp"
-        android:focusable="false"
-        android:clickable="true"
+        app:layout_constraintBottom_toTopOf="@+id/scrollView3"
         app:layout_constraintEnd_toEndOf="@+id/guideline_mid"
         app:layout_constraintStart_toStartOf="@+id/guideline_start"
         app:layout_constraintTop_toTopOf="parent" />
@@ -375,13 +377,14 @@
 
             <TextView
                 android:id="@+id/placeUrl"
-                android:layout_width="wrap_content"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="16dp"
                 android:text="http://blog.naver.com/\nhttp://blog.naver.com/"
                 android:textColor="#696969"
                 android:textSize="14dp"
 
+                app:layout_constraintEnd_toStartOf="@+id/guideline2"
                 app:layout_constraintStart_toEndOf="@+id/textView16"
                 app:layout_constraintTop_toTopOf="@+id/textView16" />
 

@@ -9,6 +9,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.dogcatsquare.data.api.BoardApiService
 import com.example.dogcatsquare.data.community.BoardPost
@@ -17,6 +18,7 @@ import com.example.dogcatsquare.data.model.post.Post
 import com.example.dogcatsquare.data.network.RetrofitObj
 import com.example.dogcatsquare.databinding.FragmentMyBoardBinding
 import com.example.dogcatsquare.ui.home.HomeHotPostRVAdapter
+import com.example.dogcatsquare.ui.viewmodel.PostViewModel
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -25,10 +27,17 @@ class MyBoardFragment : Fragment() {
     lateinit var binding: FragmentMyBoardBinding
 
     private var boardPostDatas = ArrayList<Post>()
+    private lateinit var postViewModel: PostViewModel
+    private var boardId: Int = -1
 
     private fun getToken(): String? {
         val sharedPref = activity?.getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
         return sharedPref?.getString("token", null)
+    }
+
+    private fun getUserId(): Int? {
+        val sharedPref = activity?.getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
+        return sharedPref?.getInt("userId", -1)
     }
 
     override fun onCreateView(
@@ -36,10 +45,11 @@ class MyBoardFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
+        postViewModel = ViewModelProvider(this)[PostViewModel::class.java]
         binding = FragmentMyBoardBinding.inflate(inflater, container, false)
 
         val boardName = arguments?.getString("board_name") ?: "마이게시판"
-        val boardId = arguments?.getInt("board_id") ?: -1
+        boardId = arguments?.getInt("board_id") ?: -1
 
         setupBoardPostRecyclerView(boardId)
 
@@ -69,7 +79,7 @@ class MyBoardFragment : Fragment() {
         boardPostDatas.clear()
 
         // 인기 게시물 recycler view
-        val boardPostRVAdapter = MyBoardPostRVAdapter(boardPostDatas)
+        val boardPostRVAdapter = MyBoardPostRVAdapter(boardPostDatas, postViewModel, getUserId(), getToken(), viewLifecycleOwner)
         binding.rvPosts.adapter = boardPostRVAdapter
         binding.rvPosts.layoutManager = LinearLayoutManager(context, LinearLayoutManager.VERTICAL, true).apply {
             stackFromEnd = true
@@ -141,4 +151,11 @@ class MyBoardFragment : Fragment() {
         })
     }
 
+    override fun onResume() {
+        super.onResume()
+        val token = getToken()
+        if (token != null) {
+            setupBoardPostRecyclerView(boardId)
+        }
+    }
 }

@@ -1,6 +1,8 @@
 package com.example.dogcatsquare.api
 
+import com.example.dogcatsquare.RetrofitClient.retrofit
 import com.example.dogcatsquare.data.api.BoardApiService
+import com.example.dogcatsquare.data.api.UserRetrofitItf
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
@@ -24,5 +26,9 @@ object RetrofitClient {
             .client(client)
             .build()
             .create(BoardApiService::class.java)
+    }
+
+    val userApiService: UserRetrofitItf by lazy {
+        retrofit.create(UserRetrofitItf::class.java)
     }
 }
