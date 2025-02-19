@@ -1,5 +1,6 @@
 package com.example.dogcatsquare.ui.home
 
+import android.content.Context
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
@@ -7,8 +8,9 @@ import com.bumptech.glide.Glide
 import com.example.dogcatsquare.R
 import com.example.dogcatsquare.data.model.home.DDay
 import com.example.dogcatsquare.databinding.ItemHomeCardBinding
+import com.example.dogcatsquare.utils.AlarmHelper
 
-class HomeDDayRVAdapter(private val dDayList: ArrayList<DDay>) : RecyclerView.Adapter<HomeDDayRVAdapter.HomeDDayAdapterViewHolder>() {
+class HomeDDayRVAdapter(private val dDayList: ArrayList<DDay>, private val context: Context) : RecyclerView.Adapter<HomeDDayRVAdapter.HomeDDayAdapterViewHolder>() {
     interface OnItemClickListener {
         fun onItemClick(d_day: DDay)
     }
@@ -30,6 +32,10 @@ class HomeDDayRVAdapter(private val dDayList: ArrayList<DDay>) : RecyclerView.Ad
             mItemClickListener.onItemClick(dDayList[position])
         }
         holder.bind(d_day)
+
+        if (d_day.isAlarm) {
+            AlarmHelper.setDdayAlarm(context, d_day)
+        }
     }
 
     override fun getItemCount(): Int = dDayList.size
