@@ -2,6 +2,7 @@ package com.example.dogcatsquare.ui.map.location
 
 import android.content.Context
 import android.os.Bundle
+import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
@@ -55,30 +56,47 @@ class MapReviewFragment : Fragment() {
     }
 
     private fun setupRecyclerView() {
-        reviewAdapter = MapReviewRVAdapter(reviewDatas)
-        binding.reviewRV.apply {
-            adapter = reviewAdapter
-            layoutManager = LinearLayoutManager(context)
+        lifecycleScope.launch {
+            val nickname = fetchUserNickname()
 
-            // 스크롤 리스너 추가하여 페이징 구현
-            addOnScrollListener(object : RecyclerView.OnScrollListener() {
-                override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
-                    super.onScrolled(recyclerView, dx, dy)
+            reviewAdapter = MapReviewRVAdapter(
+                reviewList = reviewDatas,
+                currentUserNickname = nickname,
+                onReviewDeleted = {
+                    // 리뷰가 삭제되면 현재 페이지부터 다시 로드
+                    currentPage = 0
+                    loadReviews()
 
-                    val layoutManager = recyclerView.layoutManager as LinearLayoutManager
-                    val visibleItemCount = layoutManager.childCount
-                    val totalItemCount = layoutManager.itemCount
-                    val firstVisibleItemPosition = layoutManager.findFirstVisibleItemPosition()
+                    // MapDetailFragment도 새로고침
+                    requireActivity().supportFragmentManager.fragments
+                        .filterIsInstance<MapDetailFragment>()
+                        .firstOrNull()?.refreshPlaceDetails()
+                }
+            )
 
-                    if (!isLoading && !isLastPage) {
-                        if ((visibleItemCount + firstVisibleItemPosition) >= totalItemCount
-                            && firstVisibleItemPosition >= 0
-                        ) {
-                            loadMoreReviews()
+            binding.reviewRV.apply {
+                adapter = reviewAdapter
+                layoutManager = LinearLayoutManager(context)
+
+                addOnScrollListener(object : RecyclerView.OnScrollListener() {
+                    override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
+                        super.onScrolled(recyclerView, dx, dy)
+
+                        val layoutManager = recyclerView.layoutManager as LinearLayoutManager
+                        val visibleItemCount = layoutManager.childCount
+                        val totalItemCount = layoutManager.itemCount
+                        val firstVisibleItemPosition = layoutManager.findFirstVisibleItemPosition()
+
+                        if (!isLoading && !isLastPage) {
+                            if ((visibleItemCount + firstVisibleItemPosition) >= totalItemCount
+                                && firstVisibleItemPosition >= 0
+                            ) {
+                                loadMoreReviews()
+                            }
                         }
                     }
-                }
-            })
+                })
+            }
         }
     }
 
@@ -181,6 +199,29 @@ class MapReviewFragment : Fragment() {
     private fun getToken(): String? {
         return activity?.getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
             ?.getString("token", null)
+    }
+
+    private suspend fun fetchUserNickname(): String {
+        try {
+            val token = getToken() ?: run {
+                Toast.makeText(requireContext(), "로그인이 필요합니다.", Toast.LENGTH_SHORT).show()
+                return ""
+            }
+
+            val response = withContext(Dispatchers.IO) {
+                RetrofitClient.userApiService.getUser("Bearer $token").execute()
+            }
+
+            if (response.isSuccessful) {
+                val userResponse = response.body()
+                if (userResponse != null && userResponse.isSuccess) {
+                    return userResponse.result?.nickname ?: ""
+                }
+            }
+        } catch (e: Exception) {
+            Log.e("MapReviewFragment", "사용자 정보 가져오기 중 예외 발생", e)
+        }
+        return ""
     }
 
     private fun handleError(e: Exception) {

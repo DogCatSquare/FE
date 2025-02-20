@@ -1,22 +1,33 @@
 package com.example.dogcatsquare.ui.map.location
 
+import android.content.Context
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.PopupWindow
+import android.widget.Toast
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.FragmentActivity
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.example.dogcatsquare.R
+import com.example.dogcatsquare.RetrofitClient
 import com.example.dogcatsquare.data.map.MapReview
 import com.example.dogcatsquare.databinding.ItemMapReviewBinding
 import com.example.dogcatsquare.databinding.ItemMapReviewMultipleBinding
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
-class MapReviewRVAdapter(private val reviewList: ArrayList<MapReview>) :
-    RecyclerView.Adapter<RecyclerView.ViewHolder>() {
+class MapReviewRVAdapter(
+    private val reviewList: ArrayList<MapReview>,
+    private val currentUserNickname: String = "",
+    private val onReviewDeleted: () -> Unit = {}
+) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
     private val SINGLE_IMAGE_TYPE = 0
     private val MULTIPLE_IMAGES_TYPE = 1
@@ -94,7 +105,7 @@ class MapReviewRVAdapter(private val reviewList: ArrayList<MapReview>) :
                 binding.reviewImg.setImageResource(R.drawable.ic_place_img_default)
             }
 
-            setupEtcButton(binding.etcButton, review.id)
+            setupEtcButton(binding.etcButton, review)
         }
     }
 
@@ -102,6 +113,13 @@ class MapReviewRVAdapter(private val reviewList: ArrayList<MapReview>) :
         RecyclerView.ViewHolder(binding.root) {
 
         fun bind(review: MapReview) {
+            Log.d("MapReviewRVAdapter", """
+                바인딩 정보:
+                - 리뷰 ID: ${review.id}
+                - 리뷰 작성자 ID: ${review.userId}
+                - 닉네임: ${review.nickname}
+            """.trimIndent())
+
             // 프로필 이미지 설정
             if (!review.userImageUrl.isNullOrEmpty()) {
                 Glide.with(itemView.context)
@@ -148,14 +166,27 @@ class MapReviewRVAdapter(private val reviewList: ArrayList<MapReview>) :
                 binding.reviewImagesContainer.addView(imageView)
             }
 
-            setupEtcButton(binding.etcButton, review.id)
+            setupEtcButton(binding.etcButton, review)
         }
     }
 
-    private fun setupEtcButton(etcButton: View, reviewId: Int) {
+    private fun setupEtcButton(etcButton: View, review: MapReview) {
+        val isCurrentUserReview = review.nickname == currentUserNickname && currentUserNickname.isNotEmpty()
+
+        Log.d("MapReviewRVAdapter", """
+            리뷰 정보:
+            - 리뷰 닉네임: ${review.nickname}
+            - 현재 사용자 닉네임: $currentUserNickname
+            - isCurrentUserReview: $isCurrentUserReview
+        """.trimIndent())
+
         etcButton.setOnClickListener { view ->
             val popupView = LayoutInflater.from(view.context)
-                .inflate(R.layout.popup_menu_custom, null)
+                .inflate(
+                    if (isCurrentUserReview) R.layout.popup_menu_my_review
+                    else R.layout.popup_menu_custom,
+                    null
+                )
 
             val popupWindow = PopupWindow(
                 popupView,
@@ -167,18 +198,73 @@ class MapReviewRVAdapter(private val reviewList: ArrayList<MapReview>) :
                 elevation = 10f
             }
 
+            if (isCurrentUserReview) {
+                // 내가 작성한 리뷰인 경우 - 바로 삭제
+                popupView.setOnClickListener {
+                    deleteReview(view.context, review.placeId, review.id)
+                    popupWindow.dismiss()
+                }
+            } else {
+                // 다른 사람의 리뷰인 경우 - 신고하기 기능
+                popupView.setOnClickListener {
+                    val activity = view.context as FragmentActivity
+                    val mapReportFragment = MapReportFragment.newInstance(review.id)
+
+                    activity.supportFragmentManager.beginTransaction()
+                        .replace(R.id.main_frm, mapReportFragment)
+                        .addToBackStack(null)
+                        .commit()
+
+                    popupWindow.dismiss()
+                }
+            }
+
             popupWindow.showAsDropDown(view, 0, 0)
+        }
+    }
 
-            popupView.setOnClickListener {
-                val activity = view.context as FragmentActivity
-                val mapReportFragment = MapReportFragment.newInstance(reviewId)
+    private fun deleteReview(context: Context, placeId: Int, reviewId: Int) {
+        val token = context.getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
+            .getString("token", null)
 
-                activity.supportFragmentManager.beginTransaction()
-                    .replace(R.id.main_frm, mapReportFragment)
-                    .addToBackStack(null)
-                    .commit()
+        if (token == null) {
+            Toast.makeText(context, "로그인이 필요합니다.", Toast.LENGTH_SHORT).show()
+            return
+        }
 
-                popupWindow.dismiss()
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
+                val response = RetrofitClient.placesApiService.deleteReview(
+                    token = "Bearer $token",
+                    placeId = placeId,
+                    reviewId = reviewId
+                )
+
+                withContext(Dispatchers.Main) {
+                    if (response.isSuccess) {
+                        Toast.makeText(context, "리뷰가 삭제되었습니다.", Toast.LENGTH_SHORT).show()
+                        val position = reviewList.indexOfFirst { it.id == reviewId }
+                        if (position != -1) {
+                            reviewList.removeAt(position)
+                            notifyItemRemoved(position)
+                        }
+                        onReviewDeleted()
+                    } else {
+                        Toast.makeText(
+                            context,
+                            response.message ?: "리뷰 삭제에 실패했습니다.",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    }
+                }
+            } catch (e: Exception) {
+                withContext(Dispatchers.Main) {
+                    Toast.makeText(
+                        context,
+                        "오류가 발생했습니다: ${e.message}",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
             }
         }
     }
