@@ -44,7 +44,7 @@
     <EditText
         android:id="@+id/searchBox"
         android:layout_width="293dp"
-        android:layout_height="47dp"
+        android:layout_height="0dp"
         android:layout_marginStart="15dp"
         android:layout_marginTop="15dp"
         android:background="@drawable/bg_rounded_et"
@@ -77,9 +77,9 @@
 
     <ScrollView
         android:id="@+id/scrollView3"
-        android:layout_marginTop="60dp"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="0dp"
+        android:layout_marginTop="15dp"
         android:fillViewport="true"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
