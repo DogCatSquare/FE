@@ -33,6 +33,10 @@ class EventFragment: Fragment() {
 
         setupEventRecyclerView()
 
+        binding.backBtn.setOnClickListener {
+            parentFragmentManager.popBackStack()
+        }
+
         return binding.root
     }
 

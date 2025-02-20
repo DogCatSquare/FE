@@ -1,5 +1,8 @@
 package com.example.dogcatsquare.ui.wish
 
+import android.graphics.Color
+import android.icu.text.DecimalFormat
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -7,7 +10,18 @@ import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.transition.TransitionManager
+import com.bumptech.glide.Glide
+import com.example.dogcatsquare.R
+import com.example.dogcatsquare.data.api.WishRetrofitObj
+import com.example.dogcatsquare.data.model.wish.FetchMyWishPlaceResponse
+import com.example.dogcatsquare.data.model.wish.WishPlace
+import com.example.dogcatsquare.data.network.RetrofitObj
+import com.example.dogcatsquare.databinding.ItemWishPlaceBinding
 import com.example.dogcatsquare.databinding.ItemWishWalkBinding
+import com.example.dogcatsquare.ui.wish.WishPlaceRVAdapter.ViewHolder
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
 
 data class WalkItem(
     val placeName: String,
@@ -16,99 +30,81 @@ data class WalkItem(
     val details: List<WalkDetailItem>
 )
 
-class WishWalkAdapter : RecyclerView.Adapter<WishWalkAdapter.ViewHolder>() {
-    private var walkList = mutableListOf<WalkItem>()
-
-    inner class ViewHolder(private val binding: ItemWishWalkBinding) :
-        RecyclerView.ViewHolder(binding.root) {
-
-        private var isExpanded = false
-        private val detailAdapter = WishWalkDetailAdapter()
-
-        init {
-            binding.detailsRecyclerView.apply {
-                adapter = detailAdapter
-                layoutManager = LinearLayoutManager(context)
-            }
-
-            binding.expandButton.setOnClickListener {
-                isExpanded = !isExpanded
-                toggleExpansion(binding, isExpanded)
-            }
-        }
-
-        private fun toggleExpansion(binding: ItemWishWalkBinding, isExpanded: Boolean) {
-            TransitionManager.beginDelayedTransition(binding.root as ViewGroup)
-            binding.expandableLayout.visibility = if (isExpanded) View.VISIBLE else View.GONE
-            binding.expandButton.rotation = if (isExpanded) 90f else -90f
-        }
-
-        fun bind(item: WalkItem) {
-            binding.apply {
-                placeName.text = item.placeName
-                placeDistance.text = item.placeDistance
-                placeLocation.text = item.placeLocation
-
-                if (item.details.size >= 2) {
-                    // 이미지와 카운트 표시
-                    imageView20.visibility = View.VISIBLE
-                    itemCount.visibility = View.VISIBLE
-                    itemCount.text = "+ ${item.details.size - 1}"
-
-                    // 이미지 크기 조정
-                    val newSize = itemView.dpToPx(43)
-
-                    // placeImg의 왼쪽 마진을 8dp로 변경
-                    placeImg.layoutParams = (placeImg.layoutParams as ConstraintLayout.LayoutParams).apply {
-                        width = newSize
-                        height = newSize
-                        marginStart = itemView.dpToPx(13)  // 8dp로 변경
-                    }
-
-                    imageView20.layoutParams = (imageView20.layoutParams as ConstraintLayout.LayoutParams).apply {
-                        width = newSize
-                        height = newSize
-                    }
-                } else {
-                    // 이미지와 카운트 숨기기
-                    imageView20.visibility = View.GONE
-                    itemCount.visibility = View.GONE
-
-                    // 원래 크기와 마진으로 복원
-                    placeImg.layoutParams = (placeImg.layoutParams as ConstraintLayout.LayoutParams).apply {
-                        width = itemView.dpToPx(48)
-                        height = itemView.dpToPx(48)
-                        marginStart = itemView.dpToPx(16)  // 16dp로 복원
-                    }
-                }
-            }
-            detailAdapter.submitList(item.details)
-        }
-
-        private fun View.dpToPx(dp: Int): Int {
-            val scale = resources.displayMetrics.density
-            return (dp * scale + 0.5f).toInt()
-        }
+class WishWalkAdapter(private val walkList: ArrayList<WishPlace>, private val bearer_token: String?) : RecyclerView.Adapter<WishWalkAdapter.ViewHolder>() {
+    interface OnItemClickListener {
+        fun onItemClick(place: WishPlace)
     }
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
-        val binding = ItemWishWalkBinding.inflate(
-            LayoutInflater.from(parent.context),
-            parent,
-            false
-        )
+    private lateinit var mItemClickListener: OnItemClickListener
+
+    fun setMyItemClickListener(itemClickListener: OnItemClickListener) {
+        mItemClickListener = itemClickListener
+    }
+
+    override fun onCreateViewHolder(viewGroup: ViewGroup, viewType: Int): ViewHolder {
+        val binding: ItemWishWalkBinding =
+            ItemWishWalkBinding.inflate(LayoutInflater.from(viewGroup.context), viewGroup, false)
         return ViewHolder(binding)
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         holder.bind(walkList[position])
+        holder.itemView.setOnClickListener {
+            mItemClickListener.onItemClick(walkList[position])
+        }
     }
 
-    override fun getItemCount() = walkList.size
+    override fun getItemCount(): Int = walkList.size
 
-    fun submitList(list: List<WalkItem>) {
-        walkList.clear()
-        walkList.addAll(list)
-        notifyDataSetChanged()
+    inner class ViewHolder(val binding: ItemWishWalkBinding) :
+        RecyclerView.ViewHolder(binding.root) {
+        fun bind(place: WishPlace) {
+            binding.placeName.text = place.name
+
+            val decimalFormat = DecimalFormat("#.##")
+            val formattedDistance = decimalFormat.format(place.distance)
+            binding.placeDistance.text = "${formattedDistance}km"
+            binding.placeLocation.text = place.address
+
+            Glide.with(itemView.context)
+                .load(place.imgUrl)
+                .placeholder(R.drawable.ic_profile_default)
+                .into(binding.placeImg)
+
+            binding.ivWish.setOnClickListener {
+                toggleWishStatus(place, adapterPosition)
+            }
+        }
+    }
+
+    private fun toggleWishStatus(place: WishPlace, position: Int) {
+        val token = "Bearer $bearer_token"
+
+        val wishService = RetrofitObj.getRetrofit().create(WishRetrofitObj::class.java)
+        wishService.fetchMyWishPlaceList(token, place.id).enqueue(object :
+            Callback<FetchMyWishPlaceResponse> {
+            override fun onResponse(
+                call: Call<FetchMyWishPlaceResponse>,
+                response: Response<FetchMyWishPlaceResponse>
+            ) {
+                if (response.isSuccessful) {
+                    val result = response.body()?.result ?: false
+                    if (!result) { // ❌ result == false 이면 삭제
+                        walkList.removeAt(position)
+                        notifyItemRemoved(position)
+                        Log.d("WishPlaceRVAdapter", "위시 삭제 성공: ${place.name}")
+                    }
+                } else {
+                    Log.e("WishPlaceRVAdapter", "위시 변경 실패: ${response.errorBody()?.string()}")
+                }
+            }
+
+            override fun onFailure(
+                call: Call<FetchMyWishPlaceResponse>,
+                t: Throwable
+            ) {
+                Log.e("WishPlaceRVAdapter", "위시 변경 실패", t)
+            }
+        })
     }
 }

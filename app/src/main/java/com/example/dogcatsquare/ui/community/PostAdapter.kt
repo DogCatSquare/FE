@@ -34,8 +34,8 @@ class PostAdapter(private val hotPostList: ArrayList<GetAllPostResult>) :
         private val thumbnail: ImageView = itemView.findViewById(R.id.ivThumbnail)
         private val likeCountText: TextView = itemView.findViewById(R.id.tvLikeCount)
         private val commentCountText: TextView = itemView.findViewById(R.id.tvCommentCount)
-        private val username: TextView = itemView.findViewById(R.id.tvUsername)
-        private val breed: TextView = itemView.findViewById(R.id.tvBreed)
+        private val username: TextView = itemView.findViewById(R.id.tvNickname)
+        private val breed: TextView = itemView.findViewById(R.id.tvDogBreed)
         private val profile: ImageView = itemView.findViewById(R.id.post_profile_iv)
 
         fun bind(post: GetAllPostResult) {
@@ -44,7 +44,7 @@ class PostAdapter(private val hotPostList: ArrayList<GetAllPostResult>) :
             likeCountText.text = post.likeCount.toString()
             commentCountText.text = post.commentCount.toString()
             username.text = post.username
-//            breed.text = post.
+            breed.text = post.animal_type
 
             Glide.with(itemView.context)
                 .load(post.profileImageURL)

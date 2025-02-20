@@ -41,7 +41,7 @@ class GetAllPostAdapter(private val allPostList: ArrayList<GetAllPostResult>) :
                 commentCountText.text = post.commentCount.toString()
                 commentCountText.text = post.commentCount.toString()
                 username.text = post.username
-//            breed.text = post.
+                breed.text = post.animal_type
 
                 Glide.with(itemView.context)
                     .load(post.profileImageURL)

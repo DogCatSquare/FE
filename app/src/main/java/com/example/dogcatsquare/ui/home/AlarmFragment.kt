@@ -23,6 +23,10 @@ class AlarmFragment : Fragment() {
 
         setupAlarmRecyclerView()
 
+        binding.backBtn.setOnClickListener {
+            parentFragmentManager.popBackStack()
+        }
+
         return binding.root
     }
 

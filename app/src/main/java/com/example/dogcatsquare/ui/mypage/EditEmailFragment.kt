@@ -66,6 +66,10 @@ class EditEmailFragment : Fragment() {
 
         checkEmail()
 
+        binding.backBtn.setOnClickListener {
+            parentFragmentManager.popBackStack()
+        }
+
         return binding.root
     }
 

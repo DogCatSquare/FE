@@ -170,6 +170,10 @@ class EditInfoFragment : Fragment() {
             updateProfile(imagePart, requestBody)
         }
 
+        binding.backBtn.setOnClickListener {
+            parentFragmentManager.popBackStack()
+        }
+
         return binding.root
     }
 

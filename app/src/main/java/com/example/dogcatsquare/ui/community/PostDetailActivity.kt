@@ -156,25 +156,28 @@ class PostDetailActivity : AppCompatActivity(), CommentActionListener {
     // 댓글 삭제 API 호출 함수 (클래스 멤버 함수)
     private fun deleteComment(postId: Long, commentId: Long) {
         val token = getToken()
+        val userId = getUserId()
 
         val commentApi = RetrofitObj.getRetrofit().create(CommentApiService::class.java)
-        commentApi.deleteComment("Bearer $token", postId, commentId).enqueue(object : Callback<CommonResponse> {
-            override fun onResponse(call: Call<CommonResponse>, response: Response<CommonResponse>) {
-                if (response.isSuccessful && response.body()?.isSuccess == true) {
-                    val index = commentDatas.indexOfFirst { it.id == commentId.toInt() }
-                    if (index != -1) {
-                        commentDatas.removeAt(index)
-                        commentAdapter.notifyItemRemoved(index)
+        if (userId != null) {
+            commentApi.deleteComment("Bearer $token", postId, commentId, userId.toInt()).enqueue(object : Callback<CommonResponse> {
+                override fun onResponse(call: Call<CommonResponse>, response: Response<CommonResponse>) {
+                    if (response.isSuccessful && response.body()?.isSuccess == true) {
+                        val index = commentDatas.indexOfFirst { it.id == commentId.toInt() }
+                        if (index != -1) {
+                            commentDatas.removeAt(index)
+                            commentAdapter.notifyItemRemoved(index)
+                        }
+                        Toast.makeText(this@PostDetailActivity, "댓글을 삭제하였습니다", Toast.LENGTH_SHORT).show()
+                    } else {
+                        Toast.makeText(this@PostDetailActivity, "내가 작성한 댓글이 아닙니다", Toast.LENGTH_SHORT).show()
                     }
-                    Toast.makeText(this@PostDetailActivity, "댓글 삭제 성공", Toast.LENGTH_SHORT).show()
-                } else {
-                    Toast.makeText(this@PostDetailActivity, "댓글 삭제 실패", Toast.LENGTH_SHORT).show()
                 }
-            }
-            override fun onFailure(call: Call<CommonResponse>, t: Throwable) {
-                Toast.makeText(this@PostDetailActivity, "네트워크 오류: ${t.message}", Toast.LENGTH_SHORT).show()
-            }
-        })
+                override fun onFailure(call: Call<CommonResponse>, t: Throwable) {
+                    Toast.makeText(this@PostDetailActivity, "네트워크 오류: ${t.message}", Toast.LENGTH_SHORT).show()
+                }
+            })
+        }
     }
 
     // CommentActionListener 구현 - 대댓글 등록
