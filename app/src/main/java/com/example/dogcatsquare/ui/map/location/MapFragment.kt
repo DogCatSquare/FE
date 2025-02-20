@@ -130,7 +130,7 @@ class MapFragment : Fragment(), OnMapReadyCallback {
             val lastVisibleItemPosition = firstVisibleItemPosition + visibleItemCount - 1
 
             // 페이지 로드 트리거 포지션 (현재 페이지의 6-7번째 아이템)
-            val loadTriggerPosition = (currentPage * ITEMS_PER_PAGE) + 15 // 16번째 아이템부터
+            val loadTriggerPosition = (currentPage * ITEMS_PER_PAGE) + 9 // 16번째 아이템부터
 
             if (!isLoading && !isLastPage) {
                 // 현재 보이는 아이템들 중에 트리거 포지션이 포함되어 있는지 확인
@@ -152,11 +152,15 @@ class MapFragment : Fragment(), OnMapReadyCallback {
             fetchUserAddress()
         }
 
-        // 프래그먼트 백스택 변경 리스너 등록
+        // 프래그먼트 백스택 변경 리스너 추가
         requireActivity().supportFragmentManager.addOnBackStackChangedListener {
-            if (isVisible && shouldRefresh) {
+            if (isVisible && shouldRefresh && this::sortTextView.isInitialized) {
                 lifecycleScope.launch {
-                    loadAllCategories()
+                    when (sortTextView.text.toString()) {
+                        "위치기준" -> moveToCurrentLocation()
+                        "주소기준" -> moveToUserAddress()
+                        else -> loadAllCategories()
+                    }
                 }
                 shouldRefresh = false
             }
@@ -1661,16 +1665,20 @@ class MapFragment : Fragment(), OnMapReadyCallback {
         _binding = null
     }
 
-    override fun onResume() {
-        super.onResume()
-        // 이전 화면에서 돌아왔을 때 데이터 새로고침
-        if (shouldRefresh) {
-            lifecycleScope.launch {
-                loadAllCategories()  // 모든 카테고리 데이터 새로고침
-            }
-            shouldRefresh = false
-        }
-    }
+//    override fun onResume() {
+//        super.onResume()
+//        // 이전 화면에서 돌아왔을 때 데이터 새로고침
+//        if (shouldRefresh && this::sortTextView.isInitialized) {
+//            lifecycleScope.launch {
+//                when (sortTextView.text.toString()) {
+//                    "위치기준" -> moveToCurrentLocation()
+//                    "주소기준" -> moveToUserAddress()
+//                    else -> loadAllCategories()
+//                }
+//            }
+//            shouldRefresh = false
+//        }
+//    }
 
     override fun onPause() {
         super.onPause()
