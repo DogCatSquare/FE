@@ -28,7 +28,8 @@ class MapButtonRVAdapter(
             "병원" to R.color.blue,
             "산책로" to R.color.green,
             "음식/카페" to R.color.main_color1,
-            "호텔" to R.color.red
+            "호텔" to R.color.red,
+            "기타" to R.color.gray4
         )
     }
 

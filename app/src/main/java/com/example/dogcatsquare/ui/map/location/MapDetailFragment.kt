@@ -218,6 +218,8 @@ class MapDetailFragment : Fragment(), OnMapReadyCallback {
                             }
 
                             placeIntro.text = placeDetail.description
+
+                            // additionalInfo 처리
                             placeDetail.additionalInfo?.let { info ->
                                 binding.additionalInfo.visibility = View.VISIBLE
                                 binding.additionalInfo.text = info
@@ -327,7 +329,8 @@ class MapDetailFragment : Fragment(), OnMapReadyCallback {
             "HOSPITAL" -> "#EAF2FE" to "#276CCB"  // 동물병원용 색상
             "HOTEL" -> "#FEEEEA" to "#F36037"     // 호텔용 색상
             "RESTAURANT", "CAFE" -> "#FFFBF1" to "#FF8D41"  // 음식점/카페용 색상
-            else -> "#EAF2FE" to "#276CCB"  // 기본값
+            "ETC" -> "#F6F6F6" to "#9E9E9E" //기타용 색상
+            else -> "#F6F6F6" to "#9E9E9E"  // 기본값
         }
 
         binding.apply {
@@ -755,6 +758,7 @@ class MapDetailFragment : Fragment(), OnMapReadyCallback {
             "HOTEL" -> "호텔"
             "RESTAURANT" -> "식당"
             "CAFE" -> "카페"
+            "ETC" -> "기타"
             else -> category
         }
     }
