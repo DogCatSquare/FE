@@ -267,48 +267,43 @@
                 android:id="@+id/leftText"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="30dp"
                 android:layout_marginTop="27dp"
                 android:text="이웃들의 후기"
                 android:textColor="#0E0E0E"
-                android:textStyle="bold"
                 android:textSize="20sp"
-                app:layout_constraintStart_toStartOf="parent"
+                android:textStyle="bold"
+                app:layout_constraintStart_toStartOf="@+id/guideline_start2"
                 app:layout_constraintTop_toBottomOf="@id/gray_line" />
 
             <TextView
                 android:id="@+id/rightText"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="160dp"
                 android:layout_marginTop="30dp"
                 android:text="0"
                 android:textColor="#0E0E0E"
                 android:textSize="20sp"
                 android:textStyle="bold"
-                app:layout_constraintStart_toEndOf="@+id/leftText"
+                app:layout_constraintEnd_toStartOf="@+id/reviewAll_bt"
                 app:layout_constraintTop_toBottomOf="@+id/gray_line" />
 
             <ImageButton
                 android:id="@+id/reviewAll_bt"
                 android:layout_width="23dp"
                 android:layout_height="50dp"
-                android:layout_marginTop="-10dp"
                 android:background="?attr/selectableItemBackground"
                 android:src="@drawable/ic_review_bt"
-                app:layout_constraintStart_toEndOf="@+id/rightText"
+                app:layout_constraintBottom_toBottomOf="@+id/rightText"
+                app:layout_constraintEnd_toStartOf="@+id/guideline_end2"
                 app:layout_constraintTop_toTopOf="@+id/rightText" />
 
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/review_rv"
                 android:layout_width="410dp"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="22dp"
                 android:layout_marginTop="8dp"
-                android:layout_marginEnd="17dp"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintHorizontal_bias="0.636"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/reviewAll_bt"
                 app:layout_constraintVertical_bias="0.107"

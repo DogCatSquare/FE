@@ -1,14 +1,7 @@
-package com.example.dogcatsquare
+package com.example.dogcatsquare.data.walk
 
 data class WalkSearchResponse(
-    val isSuccess: Boolean,
-    val code: Int,
-    val message: String,
-    val result: List<Walk>  // walks가 아닌 result로 변경
-)
-
-data class WalksResult(
-    val walks: List<Walk>
+    val walks: List<Walk>  // result가 아닌 walks로 변경
 )
 
 data class Walk(

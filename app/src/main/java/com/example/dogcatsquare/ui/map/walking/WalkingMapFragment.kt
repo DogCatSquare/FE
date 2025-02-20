@@ -35,6 +35,7 @@ class WalkingMapFragment : Fragment(), OnMapReadyCallback {
     private lateinit var naverMap: NaverMap
     private var currentMarker: Marker? = null
     private var isWished = false
+    private lateinit var walkRVAdapter: WalkRVAdapter
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -58,10 +59,19 @@ class WalkingMapFragment : Fragment(), OnMapReadyCallback {
         super.onViewCreated(view, savedInstanceState)
 
         setupNaverMap()
+        setupRecyclerView()
         setupButtons()
 
         if (placeId != -1) {
             loadPlaceDetails(placeId)
+        }
+    }
+
+    private fun setupRecyclerView() {
+        walkRVAdapter = WalkRVAdapter()
+        binding.reviewRv.apply {
+            adapter = walkRVAdapter
+            layoutManager = LinearLayoutManager(context)
         }
     }
 
@@ -104,25 +114,23 @@ class WalkingMapFragment : Fragment(), OnMapReadyCallback {
         lifecycleScope.launch {
             try {
                 val response = withContext(Dispatchers.IO) {
-                    RetrofitClient.walkApiService.searchWalks(title = placeName)
+                    RetrofitClient.walkApiService.searchWalks(
+                        title = placeName  // title parameter 사용
+                    )
                 }
 
-                if (response.isSuccess) {
-                    // walks가 아닌 result로 변경
-                    val walkCount = response.result.size
-                    binding.rightText.text = walkCount.toString()
+                // walks 리스트 사용
+                val walkCount = response.walks.size
+                binding.rightText.text = walkCount.toString()
 
-                    if (walkCount == 0) {
-                        Toast.makeText(requireContext(), "등록된 산책로가 없습니다.", Toast.LENGTH_SHORT).show()
-                    }
+                if (walkCount == 0) {
+                    Toast.makeText(requireContext(), "등록된 산책로가 없습니다.", Toast.LENGTH_SHORT).show()
+                }
 
-                    // 로그로 확인
-                    Log.d("WalkingMapFragment", "검색된 산책로 수: $walkCount")
-                    response.result.forEach { walk ->
-                        Log.d("WalkingMapFragment", "산책로: ${walk.title}")
-                    }
-                } else {
-                    Toast.makeText(requireContext(), response.message, Toast.LENGTH_SHORT).show()
+                // 로그로 확인
+                Log.d("WalkingMapFragment", "검색된 산책로 수: $walkCount")
+                response.walks.forEach { walk ->
+                    Log.d("WalkingMapFragment", "산책로: ${walk.title}")
                 }
 
             } catch (e: Exception) {
@@ -155,15 +163,22 @@ class WalkingMapFragment : Fragment(), OnMapReadyCallback {
 
                 if (response.isSuccess) {
                     response.result?.let { placeDetail ->
+                        // 먼저 산책로 검색을 수행하여 개수를 가져옴
+                        val walkResponse = withContext(Dispatchers.IO) {
+                            RetrofitClient.walkApiService.searchWalks(
+                                title = placeDetail.name
+                            )
+                        }
+
+                        val walkCount = walkResponse.walks.size
+
                         binding.apply {
                             placeName.text = placeDetail.name
                             placeLocation.text = placeDetail.address.split(" ").getOrNull(2) ?: ""
-                            placeType.text = convertCategory(placeDetail.category)
+                            placeType.text = "리뷰(${walkCount})"  // 여기서 산책로 개수 표시
                             placeDistance.text = "${String.format("%.2f", placeDetail.distance)}km"
                             addressTv.text = placeDetail.address
-
-                            // 장소 이름으로 산책로 검색 수행
-                            performSearch(placeDetail.name)
+                            rightText.text = walkCount.toString()
 
                             isWished = placeDetail.wished
                             wishButton.setImageResource(
@@ -174,6 +189,12 @@ class WalkingMapFragment : Fragment(), OnMapReadyCallback {
 
                         if (::naverMap.isInitialized) {
                             updateMapLocation(placeDetail.latitude, placeDetail.longitude)
+                        }
+
+                        // 로그로 확인
+                        Log.d("WalkingMapFragment", "검색된 산책로 수: $walkCount")
+                        walkResponse.walks.forEach { walk ->
+                            Log.d("WalkingMapFragment", "산책로: ${walk.title}")
                         }
                     }
                 } else {
@@ -278,17 +299,6 @@ class WalkingMapFragment : Fragment(), OnMapReadyCallback {
         }
         Toast.makeText(requireContext(), errorMessage, Toast.LENGTH_SHORT).show()
         Log.e("WalkingMapFragment", "Error: ", e)
-    }
-
-    private fun convertCategory(category: String): String {
-        return when (category) {
-            "HOSPITAL" -> "동물병원"
-            "HOTEL" -> "호텔"
-            "RESTAURANT" -> "식당"
-            "CAFE" -> "카페"
-            "ETC" -> "기타"
-            else -> category
-        }
     }
 
     override fun onDestroyView() {
