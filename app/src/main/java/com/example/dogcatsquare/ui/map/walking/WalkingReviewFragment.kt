@@ -1,12 +1,14 @@
 package com.example.dogcatsquare.ui.map.walking
 
+import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.Color
 import android.location.Location
+import android.net.Uri
 import android.os.Bundle
 import android.provider.MediaStore
-import android.util.Base64
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -19,6 +21,8 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.AppCompatImageButton
 import androidx.appcompat.widget.Toolbar
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentTransaction
 import androidx.lifecycle.ViewModelProvider
@@ -29,7 +33,15 @@ import com.naver.maps.map.*
 import com.naver.maps.map.overlay.Marker
 import com.naver.maps.map.overlay.OverlayImage
 import com.naver.maps.map.overlay.PolylineOverlay
+import okhttp3.MediaType
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
+import okhttp3.MultipartBody
+import okhttp3.RequestBody
 import java.io.ByteArrayOutputStream
+import java.io.File
+import java.io.FileOutputStream
+import java.io.IOException
+import java.util.jar.Manifest
 
 class WalkingReviewFragment : Fragment(), OnMapReadyCallback {
 
@@ -46,7 +58,7 @@ class WalkingReviewFragment : Fragment(), OnMapReadyCallback {
     private lateinit var viewModel: WalkReviewViewModel
 
     private val PICK_IMAGE_REQUEST = 1001
-    private var selectedBitmap: Bitmap? = null
+    private var selectedImageUri: Uri? = null
 
     // 예시 산책로 ID (실제 값으로 초기화 필요)
     private var walkId: Long = 20L
@@ -55,6 +67,7 @@ class WalkingReviewFragment : Fragment(), OnMapReadyCallback {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
+
         return inflater.inflate(R.layout.fragment_mapwalking_review, container, false)
     }
 
@@ -115,14 +128,19 @@ class WalkingReviewFragment : Fragment(), OnMapReadyCallback {
                 return@setOnClickListener
             }
 
-            if (selectedBitmap == null) {
+            if (selectedImageUri == null) {
                 Toast.makeText(requireContext(), "후기 이미지는 필수입니다.", Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
 
-            val imageBase64 = bitmapToBase64(selectedBitmap!!)
-            // 후기 제출 API 호출
-            viewModel.saveWalkReview(walkId, content, imageBase64)
+            val token = getToken()
+            Log.d("Token", "Token: $token")
+            if (token == null) {
+                Toast.makeText(requireContext(), "로그인이 필요합니다.", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+            // 후기 저장 API 호출
+            viewModel.saveWalkReview(walkId, content, selectedImageUri, requireContext())
         }
 
         // 후기 제출 성공 시 처리
@@ -147,11 +165,12 @@ class WalkingReviewFragment : Fragment(), OnMapReadyCallback {
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
         if (requestCode == PICK_IMAGE_REQUEST && resultCode == AppCompatActivity.RESULT_OK && data != null) {
-            val selectedImageUri = data.data
+            selectedImageUri = data.data
             try {
                 val bitmap: Bitmap = MediaStore.Images.Media.getBitmap(requireContext().contentResolver, selectedImageUri)
-                selectedBitmap = bitmap
-                addedImageView.setImageBitmap(bitmap)
+                selectedImageUri?.let {
+                    addedImageView.setImageBitmap(bitmap)
+                }
             } catch (e: Exception) {
                 e.printStackTrace()
             }
@@ -191,6 +210,11 @@ class WalkingReviewFragment : Fragment(), OnMapReadyCallback {
         }
     }
 
+    private fun getToken(): String? {
+        return activity?.getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
+            ?.getString("token", null)
+    }
+
     private fun calculateTotalDistance(coords: List<LatLng>): Float {
         var totalDistance = 0f
         for (i in 0 until coords.size - 1) {
@@ -205,13 +229,5 @@ class WalkingReviewFragment : Fragment(), OnMapReadyCallback {
             totalDistance += results[0]
         }
         return totalDistance / 1000f
-    }
-
-    // Bitmap을 Base64 문자열로 변환하는 함수
-    private fun bitmapToBase64(bitmap: Bitmap): String {
-        val outputStream = ByteArrayOutputStream()
-        bitmap.compress(Bitmap.CompressFormat.JPEG, 80, outputStream)
-        val byteArray = outputStream.toByteArray()
-        return Base64.encodeToString(byteArray, Base64.NO_WRAP)
     }
 }
