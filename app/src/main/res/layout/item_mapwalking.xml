@@ -67,15 +67,6 @@
         app:layout_constraintTop_toTopOf="@+id/walkTime" />
 
     <!-- Wish Icon -->
-    <ImageView
-        android:id="@+id/imageView28"
-        android:layout_width="14dp"
-        android:layout_height="18dp"
-        android:layout_marginEnd="16dp"
-        app:layout_constraintBottom_toBottomOf="@+id/userImg"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="@+id/userImg"
-        app:srcCompat="@drawable/ic_wish" />
 
     <!-- Map View -->
 

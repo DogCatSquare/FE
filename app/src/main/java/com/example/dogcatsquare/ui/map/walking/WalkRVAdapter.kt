@@ -1,5 +1,6 @@
 package com.example.dogcatsquare.ui.map.walking
 
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
@@ -40,10 +41,17 @@ class WalkRVAdapter : RecyclerView.Adapter<WalkRVAdapter.ViewHolder>() {
                 }
 
                 // 날짜 포맷팅 (2025-02-20T11:29:10Z -> 25.02.20)
-                val inputFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.getDefault())
-                val outputFormat = SimpleDateFormat("yy.MM.dd", Locale.getDefault())
-                val date = inputFormat.parse(walk.createdAt)
-                walkDate.text = date?.let { outputFormat.format(it) } ?: ""
+                try {
+                    val dateStr = walk.createdAt.split(".")[0] // 마이크로초 부분 제거
+                    val inputFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.getDefault())
+                    val outputFormat = SimpleDateFormat("yy.MM.dd", Locale.getDefault())
+                    val date = inputFormat.parse(dateStr)
+                    walkDate.text = date?.let { outputFormat.format(it) } ?: ""
+                } catch (e: Exception) {
+                    Log.e("WalkRVAdapter", "Date parsing error", e)
+                    walkDate.text = "" // 파싱 실패시 빈 문자열 표시
+                }
+
 
                 // 난이도에 따른 프로필 이미지 설정
                 val profileDrawable = when (walk.difficulty.lowercase()) {
