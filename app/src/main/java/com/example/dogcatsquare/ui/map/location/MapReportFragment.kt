@@ -139,7 +139,11 @@ class MapReportFragment : Fragment() {
                 else -> return@setOnClickListener
             }
 
-            val otherReason = if (reportType == "OTHER") binding.etOtherReason.getText() else null
+            val otherReason = if (reportType == "OTHER") {
+                binding.etOtherReason.getText()
+            } else {
+                "stringstri"
+            }
 
             submitReport(reportType, otherReason)
         }
@@ -156,7 +160,7 @@ class MapReportFragment : Fragment() {
         return true
     }
 
-    private fun submitReport(reportType: String, otherReason: String?) {
+    private fun submitReport(reportType: String, otherReason: String) {
         lifecycleScope.launch {
             try {
                 val token = getToken()
