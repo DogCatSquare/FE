@@ -57,7 +57,7 @@ class WalkRVAdapter : RecyclerView.Adapter<WalkRVAdapter.ViewHolder>() {
                 val profileDrawable = when (walk.difficulty.lowercase()) {
                     "easy" -> R.drawable.ic_easy
                     "normal" -> R.drawable.ic_normal
-                    "hard" -> R.drawable.ic__difficulty
+                    "hard" -> R.drawable.ic_difficulty
                     else -> R.drawable.ic_normal
                 }
                 profileIv.setImageResource(profileDrawable)
