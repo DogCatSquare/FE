@@ -507,6 +507,7 @@ class MapFragment : Fragment(), OnMapReadyCallback {
             add(MapButton("산책로", R.drawable.btn_walk))
             add(MapButton("음식/카페", R.drawable.btn_restaurant))
             add(MapButton("호텔", R.drawable.btn_hotel))
+            add(MapButton("기타", R.drawable.btn_etc))
         }
 
         val mapButtonRVAdapter = MapButtonRVAdapter(buttonDatas, object : MapButtonRVAdapter.OnItemClickListener {
@@ -523,6 +524,7 @@ class MapFragment : Fragment(), OnMapReadyCallback {
                     "산책로" -> allPlaceDatas.filter { it.placeType == "산책로" }
                     "음식/카페" -> allPlaceDatas.filter { it.placeType in listOf("카페", "식당") }
                     "호텔" -> allPlaceDatas.filter { it.placeType == "호텔" }
+                    "기타" -> allPlaceDatas.filter { it.placeType == "기타" }
                     else -> allPlaceDatas
                 }
 
@@ -614,6 +616,7 @@ class MapFragment : Fragment(), OnMapReadyCallback {
             "CAFE" -> "카페"
             "RESTAURANT" -> "식당"
             "HOTEL" -> "호텔"
+            "ETC" -> "기타"
             else -> category
         }
     }
@@ -964,6 +967,7 @@ class MapFragment : Fragment(), OnMapReadyCallback {
             "카페" -> R.drawable.ic_marker_cafe // 카페 마커 아이콘
             "식당" -> R.drawable.ic_marker_cafe // 식당 마커 아이콘
             "호텔" -> R.drawable.ic_marker_hotel // 호텔 마커 아이콘
+            "기타" -> R.drawable.ic_marker_etc //기타 마커 아이콘
             else -> R.drawable.ic_marker // 기본 마커 아이콘
         }
     }

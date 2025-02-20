@@ -43,7 +43,8 @@ class MapAddKeywordFragment : Fragment() {
         "HOSPITAL" to Pair("#EAF2FE", "#276CCB"),  // 배경색, 텍스트색
         "HOTEL" to Pair("#FEEEEA", "#F36037"),
         "RESTAURANT" to Pair("#FFFBF1", "#FF8D41"),
-        "CAFE" to Pair("#FFFBF1", "#FF8D41")
+        "CAFE" to Pair("#FFFBF1", "#FF8D41"),
+        "ETC" to Pair("#F6F6F6", "#9E9E9E")
     )
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -245,7 +246,7 @@ class MapAddKeywordFragment : Fragment() {
         binding.flexboxLayout.removeView(binding.addChar)
 
         val (defaultBgColor, defaultTextColor) = categoryColors[category] ?:
-        categoryColors["HOSPITAL"]!!
+        categoryColors["ETC"]!!
 
         val allKeywords = mutableSetOf<String>()
         allKeywords.addAll(defaultKeywords)
@@ -320,7 +321,7 @@ class MapAddKeywordFragment : Fragment() {
     }
 
     private fun addEditableCharacteristic() {
-        val (defaultBgColor, defaultTextColor) = categoryColors[category] ?: categoryColors["HOSPITAL"]!!
+        val (defaultBgColor, defaultTextColor) = categoryColors[category] ?: categoryColors["ETC"]!!
 
         val editText = EditText(requireContext()).apply {
             layoutParams = ViewGroup.MarginLayoutParams(

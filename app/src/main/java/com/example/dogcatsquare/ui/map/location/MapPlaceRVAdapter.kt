@@ -24,6 +24,7 @@ enum class PlaceType(val value: String, @DrawableRes val defaultImage: Int) {
     PARK("산책로", R.drawable.img_walk_default),
     RESTAURANT("식당", R.drawable.img_cafe_default),
     CAFE("카페", R.drawable.img_cafe_default),
+    ETC("기타", R.drawable.img_etc_default),
     UNKNOWN("", R.drawable.ic_profile_default);
 
     companion object {
@@ -188,6 +189,7 @@ class MapPlaceRVAdapter(
                 "호텔" -> setCardsStyle("#FEEEEA", "#F36037")
                 "산책로" -> setCardsStyle("#F4FCF5", "#3E7C43")
                 "식당", "카페" -> setCardsStyle("#FFFBF1", "#FF8D41")
+                "기타" -> setCardsStyle("#F6F6F6", "#9E9E9E")
             }
 
             // 아이템 클릭 리스너 설정
