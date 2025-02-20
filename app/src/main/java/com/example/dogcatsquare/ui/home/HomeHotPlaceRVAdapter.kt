@@ -5,10 +5,14 @@ import android.view.ViewGroup
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
+import com.bumptech.glide.load.MultiTransformation
+import com.bumptech.glide.load.resource.bitmap.CenterCrop
+import com.bumptech.glide.load.resource.bitmap.RoundedCorners
 import com.example.dogcatsquare.data.map.MapPlace
 import com.example.dogcatsquare.R
 import com.example.dogcatsquare.data.map.Place
 import com.example.dogcatsquare.databinding.ItemHomeHotPlaceBinding
+import com.example.dogcatsquare.ui.map.location.PlaceType
 
 class HomeHotPlaceRVAdapter(private val placeList: ArrayList<Place>) : RecyclerView.Adapter<HomeHotPlaceRVAdapter.HomeHotPlaceAdapterViewHolder>() {
     interface OnItemClickListener {
@@ -47,10 +51,27 @@ class HomeHotPlaceRVAdapter(private val placeList: ArrayList<Place>) : RecyclerV
             binding.hotPlaceTv.text = hot_place.name
             binding.hotPlaceLocTv.text = "${hot_place.distance.toInt().toString().take(2)}km"
             binding.hotPlaceFilterTv.text = hot_place.category
-            Glide.with(binding.root.context)
-                .load(hot_place.imgUrl)
-                .placeholder(R.drawable.ic_profile_default)
-                .into(binding.hotPlaceIv)
+
+            // 카테고리별 기본 이미지 설정
+            val defaultImageRes = PlaceType.fromString(hot_place.category).defaultImage
+
+            // 이미지 처리
+            if (hot_place.imgUrl != null) {
+                Glide.with(binding.hotPlaceIv.context)
+                    .load(hot_place.imgUrl)
+                    .override(300, 300)
+                    .transform(
+                        MultiTransformation(
+                            CenterCrop(),
+                            RoundedCorners((8 * binding.root.resources.displayMetrics.density).toInt())
+                        )
+                    )
+                    .placeholder(defaultImageRes)
+                    .error(defaultImageRes)
+                    .into(binding.hotPlaceIv)
+            } else {
+                binding.hotPlaceIv.setImageResource(defaultImageRes)
+            }
         }
     }
 }

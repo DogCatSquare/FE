@@ -6,8 +6,12 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.annotation.DrawableRes
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
+import com.bumptech.glide.load.MultiTransformation
+import com.bumptech.glide.load.resource.bitmap.CenterCrop
+import com.bumptech.glide.load.resource.bitmap.RoundedCorners
 import com.example.dogcatsquare.R
 import com.example.dogcatsquare.data.api.WishRetrofitObj
 import com.example.dogcatsquare.data.model.wish.FetchMyWishPlaceResponse
@@ -17,6 +21,23 @@ import com.example.dogcatsquare.databinding.ItemWishPlaceBinding
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
+
+// PlaceType enum class 추가
+enum class PlaceType(val value: String, @DrawableRes val defaultImage: Int) {
+    HOSPITAL("동물병원", R.drawable.img_hospital_dafault),
+    HOTEL("호텔", R.drawable.img_hotel_dafault),
+    PARK("산책로", R.drawable.img_walk_default),
+    RESTAURANT("식당", R.drawable.img_cafe_default),
+    CAFE("카페", R.drawable.img_cafe_default),
+    ETC("기타", R.drawable.img_etc_default),
+    UNKNOWN("", R.drawable.ic_profile_default);
+
+    companion object {
+        fun fromString(value: String?): PlaceType {
+            return values().find { it.value == value } ?: UNKNOWN
+        }
+    }
+}
 
 class WishPlaceRVAdapter(private val placeList: ArrayList<WishPlace>, private val bearer_token: String?): RecyclerView.Adapter<WishPlaceRVAdapter.ViewHolder>() {
     interface OnItemClickListener {
@@ -54,10 +75,26 @@ class WishPlaceRVAdapter(private val placeList: ArrayList<WishPlace>, private va
             binding.placeLocation.text = place.address
             binding.placeCall.text = place.phoneNumber
 
-            Glide.with(itemView.context)
-                .load(place.imgUrl)
-                .placeholder(R.drawable.ic_profile_default)
-                .into(binding.placeImg)
+            // 카테고리별 기본 이미지 설정
+            val defaultImageRes = com.example.dogcatsquare.ui.map.location.PlaceType.fromString(place.category).defaultImage
+
+            // 이미지 처리
+            if (place.imgUrl != null) {
+                Glide.with(binding.placeImg.context)
+                    .load(place.imgUrl)
+                    .override(300, 300)
+                    .transform(
+                        MultiTransformation(
+                            CenterCrop(),
+                            RoundedCorners((8 * binding.root.resources.displayMetrics.density).toInt())
+                        )
+                    )
+                    .placeholder(defaultImageRes)
+                    .error(defaultImageRes)
+                    .into(binding.placeImg)
+            } else {
+                binding.placeImg.setImageResource(defaultImageRes)
+            }
 
             binding.placeReview.text = "리뷰(${place.reviewCount})"
 

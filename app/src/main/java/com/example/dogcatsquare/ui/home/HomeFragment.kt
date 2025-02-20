@@ -1,8 +1,11 @@
 package com.example.dogcatsquare.ui.home
 
 import WeatherViewModel
+import android.Manifest
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
+import android.location.Location
 import android.net.Uri
 import android.os.Bundle
 import android.os.Handler
@@ -11,6 +14,7 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
@@ -36,6 +40,9 @@ import com.example.dogcatsquare.databinding.FragmentHomeBinding
 import com.example.dogcatsquare.ui.community.PostDetailActivity
 import com.example.dogcatsquare.ui.map.location.MapDetailFragment
 import com.example.dogcatsquare.ui.mypage.HorizontalSpacingItemDecoration
+import com.google.android.gms.location.FusedLocationProviderClient
+import com.google.android.gms.location.LocationServices
+import com.naver.maps.geometry.LatLng
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -66,6 +73,17 @@ class HomeFragment : Fragment() {
         return sharedPref?.getLong("cityId", 0)
     }
 
+    private val categoryMap = mapOf(
+        "HOSPITAL" to "동물병원",
+        "CAFE" to "카페",
+        "RESTAURANT" to "식당",
+        "HOTEL" to "호텔",
+        "ETC" to "기타"
+    )
+
+    private lateinit var fusedLocationClient: FusedLocationProviderClient
+    private var currentLocation: LatLng? = null
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -75,6 +93,9 @@ class HomeFragment : Fragment() {
 
         // 상단바 색깔
         requireActivity().window.statusBarColor = ContextCompat.getColor(requireContext(), R.color.light_blue)
+
+        fusedLocationClient = LocationServices.getFusedLocationProviderClient(requireActivity())
+        getCurrentLocation()
 
         fetchWeatherData()
         setupDDayRecyclerView()
@@ -91,6 +112,35 @@ class HomeFragment : Fragment() {
         }
 
         return binding.root
+    }
+
+    private fun getCurrentLocation() {
+        if (ActivityCompat.checkSelfPermission(requireContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
+            ActivityCompat.checkSelfPermission(requireContext(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            requestPermissions(arrayOf(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION), 1001)
+            return
+        }
+
+        fusedLocationClient.lastLocation.addOnSuccessListener { location: Location? ->
+            if (location != null) {
+                currentLocation = LatLng(location.latitude, location.longitude)
+                Log.d("HomeFragment", "현재 위치: ${currentLocation?.latitude}, ${currentLocation?.longitude}")
+
+                // SharedPreferences에 저장
+                saveCurrentLocation(location.latitude, location.longitude)
+            } else {
+                Log.e("HomeFragment", "현재 위치를 가져올 수 없습니다.")
+            }
+        }
+    }
+
+    private fun saveCurrentLocation(latitude: Double, longitude: Double) {
+        val sharedPref = requireActivity().getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
+        with(sharedPref.edit()) {
+            putFloat("current_latitude", latitude.toFloat())
+            putFloat("current_longitude", longitude.toFloat())
+            apply()
+        }
     }
 
     // auto slide
@@ -258,6 +308,18 @@ class HomeFragment : Fragment() {
         })
     }
 
+    private fun getSavedLocation(): Pair<Double, Double>? {
+        val sharedPref = requireActivity().getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
+        val latitude = sharedPref.getFloat("current_latitude", 0f)
+        val longitude = sharedPref.getFloat("current_longitude", 0f)
+
+        return if (latitude != -1f && longitude != -1f) {
+            Pair(latitude.toDouble(), longitude.toDouble())
+        } else {
+            Pair(37.4683517, 127.0389883)
+        }
+    }
+
     // hot place rv
     private fun setupHotPlaceRecyclerView() {
         // 데이터 초기화
@@ -316,7 +378,7 @@ class HomeFragment : Fragment() {
                                     id = place.id,
                                     name = place.name,
                                     address = place.address,
-                                    category = place.category,
+                                    category = categoryMap[place.category] ?: place.category,
                                     phoneNumber = place.phoneNumber,
                                     longitude = place.longitude,
                                     latitude = place.latitude,
@@ -484,18 +546,6 @@ class HomeFragment : Fragment() {
                 Log.d("RETROFIT/FAILURE", t.message.toString())
             }
         })
-    }
-
-    private fun getSavedLocation(): Pair<Double, Double>? {
-        val sharedPref = requireActivity().getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
-        val latitude = sharedPref.getFloat("current_latitude", 0f)
-        val longitude = sharedPref.getFloat("current_longitude", 0f)
-
-        return if (latitude != -1f && longitude != -1f) {
-            Pair(latitude.toDouble(), longitude.toDouble())
-        } else {
-            Pair(37.4683517, 127.0389883)
-        }
     }
 
     override fun onDestroy() {
