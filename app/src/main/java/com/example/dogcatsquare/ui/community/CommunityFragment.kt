@@ -10,6 +10,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import com.bumptech.glide.Glide
+import com.bumptech.glide.request.RequestOptions
 import com.bumptech.glide.signature.ObjectKey
 import com.example.dogcatsquare.R
 import com.example.dogcatsquare.api.RetrofitClient
@@ -90,6 +91,7 @@ class CommunityFragment : Fragment() {
                         binding.tvNickname.text = resp.result.nickname
                         Glide.with(requireContext())
                             .load(resp.result.profileImageUrl)
+                            .apply(RequestOptions.circleCropTransform())
                             .signature(ObjectKey(System.currentTimeMillis().toString())) // 캐시 무효화
                             .placeholder(R.drawable.ic_profile_default)
                             .into(binding.ivProfile)

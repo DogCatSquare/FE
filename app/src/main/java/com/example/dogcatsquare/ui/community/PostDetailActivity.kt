@@ -336,7 +336,7 @@ class PostDetailActivity : AppCompatActivity(), CommentActionListener {
     }
 
     private fun setLikeButtonState(isLiked: Boolean) {
-        binding.ivLike.setImageResource(if (isLiked) R.drawable.ic_wish else R.drawable.ic_like)
+        binding.ivLike.setImageResource(if (isLiked) R.drawable.ic_liked else R.drawable.ic_like)
     }
 
     override fun onResume() {

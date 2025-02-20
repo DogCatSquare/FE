@@ -5,13 +5,13 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.example.dogcatsquare.R
-import com.example.dogcatsquare.data.model.post.Post
+import com.example.dogcatsquare.data.community.Post
 import com.example.dogcatsquare.databinding.ItemHomeHotPostBinding
 
-class HomeHotPostRVAdapter(private val hotPostList: ArrayList<Post>) : RecyclerView.Adapter<HomeHotPostRVAdapter.HomeHotPostAdapterViewHolder>() {
+class HomeHotPostRVAdapter(private val hotPostList: ArrayList<com.example.dogcatsquare.data.model.post.Post>) : RecyclerView.Adapter<HomeHotPostRVAdapter.HomeHotPostAdapterViewHolder>() {
 //    private var d_days: List<DDay> = listOf()
     interface OnItemClickListener {
-        fun onItemClick(post: Post)
+        fun onItemClick(post: com.example.dogcatsquare.data.model.post.Post)
     }
 
     private lateinit var mItemClickListener: OnItemClickListener
@@ -36,7 +36,7 @@ class HomeHotPostRVAdapter(private val hotPostList: ArrayList<Post>) : RecyclerV
     override fun getItemCount(): Int = hotPostList.size
 
     inner class HomeHotPostAdapterViewHolder(val binding: ItemHomeHotPostBinding) : RecyclerView.ViewHolder(binding.root) {
-        fun bind(hotPost: Post) {
+        fun bind(hotPost: com.example.dogcatsquare.data.model.post.Post) {
             binding.postTitleTv.text = hotPost.title
             binding.postContentTv.text = hotPost.content
             binding.postNicknameTv.text = hotPost.username

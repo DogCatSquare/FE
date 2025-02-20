@@ -1,4 +1,5 @@
 import com.example.dogcatsquare.data.community.BoardPost
+import com.example.dogcatsquare.data.community.GetAllPostResponse
 import com.example.dogcatsquare.data.community.LikeResponse
 import com.example.dogcatsquare.data.community.PostDetail
 import com.example.dogcatsquare.data.community.PostResponse
@@ -32,4 +33,7 @@ interface PostApiService {
 
     @POST("api/board/post/{postId}/like")
     fun fetchLike(@Header("Authorization") token: String, @Path("postId") postId: Int, @Query("userId") userId: Int): Call<LikeResponse>
+
+    @GET("api/board/posts/all")
+    fun getAllPosts(@Header("Authorization") token: String): Call<GetAllPostResponse>
 }

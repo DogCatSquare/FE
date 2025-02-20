@@ -10,7 +10,7 @@ import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.dogcatsquare.data.api.MyPageRetrofitItf
 import com.example.dogcatsquare.data.model.mypage.GetMyPostResponse
-import com.example.dogcatsquare.data.model.post.Post
+import com.example.dogcatsquare.data.community.Post
 import com.example.dogcatsquare.data.network.RetrofitObj
 import com.example.dogcatsquare.databinding.FragmentMyCommunityBinding
 import retrofit2.Call
@@ -20,7 +20,7 @@ import retrofit2.Response
 class MyCommunityFragment : Fragment() {
     lateinit var binding: FragmentMyCommunityBinding
 
-    private var communityDatas = ArrayList<Post>()
+    private var communityDatas = ArrayList<com.example.dogcatsquare.data.model.post.Post>()
 
     private fun getToken(): String?{
         val sharedPref = activity?.getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
@@ -71,7 +71,7 @@ class MyCommunityFragment : Fragment() {
                         Log.d("GetMyPost", "내 게시물 전체 조회 성공")
 
                         val myPost = resp.result.map { post ->
-                            Post (
+                            com.example.dogcatsquare.data.model.post.Post (
                                 id = post.id,
                                 board = post.board,
                                 title = post.title,
