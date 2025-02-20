@@ -5,6 +5,7 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.content.pm.PackageManager
 import android.os.Bundle
+import android.os.Handler
 import android.os.Looper
 import android.util.Log
 import android.view.LayoutInflater
@@ -53,12 +54,15 @@ import com.naver.maps.map.overlay.Marker
 import com.naver.maps.map.overlay.OverlayImage
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import retrofit2.HttpException
 import java.io.IOException
 import java.util.concurrent.TimeUnit
 import kotlinx.coroutines.suspendCancellableCoroutine
+import java.util.Timer
+import java.util.TimerTask
 import kotlin.coroutines.resume
 
 
@@ -875,6 +879,7 @@ class MapFragment : Fragment(), OnMapReadyCallback {
         }
     }
 
+    // places.forEach에서 마커 생성이 완료된 후에 로딩 다이얼로그를 닫도록 수정
     private suspend fun updateUI(places: List<MapPlace>) {
         withContext(Dispatchers.Main) {
             // 기존 마커 제거
@@ -894,6 +899,11 @@ class MapFragment : Fragment(), OnMapReadyCallback {
             // 새로운 마커 생성
             places.forEach { place ->
                 createMarker(place)
+            }
+
+            // 모든 마커가 생성된 후에 콜백을 호출
+            if (loadingDialog.isShowing) {
+                loadingDialog.dismiss()
             }
         }
     }
@@ -1144,23 +1154,173 @@ class MapFragment : Fragment(), OnMapReadyCallback {
     }
 
     fun updateSortText(sortType: String) {
-        currentSortType = sortType // 현재 정렬 상태 저장
-        activity?.runOnUiThread {
+        lifecycleScope.launch {
             try {
-                sortTextView.text = sortType
+                withContext(Dispatchers.Main) {
+                    if (!loadingDialog.isShowing) {
+                        loadingDialog.show()
+                    }
+                }
 
-                // MapButtonRVAdapter의 선택 상태를 "전체"로 리셋
-                (binding.mapButtonRV.adapter as? MapButtonRVAdapter)?.let { adapter ->
-                    adapter.resetSelection()  // 모든 버튼 선택 해제
-                    adapter.updateSelectedButton(0)  // "전체" 버튼 선택 (첫 번째 버튼)
+                // 2. 초기 설정
+                resetPagingState()
+                clearMarkers()
+                currentSortType = sortType
+
+                withContext(Dispatchers.Main) {
+                    sortTextView.text = sortType
+                    (binding.mapButtonRV.adapter as? MapButtonRVAdapter)?.let { adapter ->
+                        adapter.resetSelection()
+                        adapter.updateSelectedButton(0)
+                    }
                 }
 
                 when (sortType) {
-                    "주소기준" -> moveToUserAddress()
-                    "위치기준" -> moveToCurrentLocation()
+                    "위치기준" -> {
+                        // MapFragment의 초기 로드 로직을 그대로 사용
+                        loadAllCategories()
+                    }
+                    "주소기준" -> {
+                        // 주소기준도 위와 동일한 패턴으로 수정
+                        try {
+                            withContext(Dispatchers.Main) {
+                                naverMap.locationTrackingMode = LocationTrackingMode.None
+                            }
+
+                            val savedAddress = getSavedUserAddress()
+                            if (savedAddress.isNotEmpty()) {
+                                val geocodeResponse = withContext(Dispatchers.IO) {
+                                    RetrofitClient.naverGeocodeService.geocode(savedAddress)
+                                }
+
+                                val address = geocodeResponse.addresses.firstOrNull()
+                                if (address != null) {
+                                    val latitude = address.latitude.toDouble()
+                                    val longitude = address.longitude.toDouble()
+                                    currentLocation = LatLng(latitude, longitude)
+
+                                    val places = withContext(Dispatchers.IO) { loadPlacesData() }
+
+                                    withContext(Dispatchers.Main) {
+                                        // 지도 이동
+                                        val cameraUpdate = CameraUpdate.scrollAndZoomTo(
+                                            LatLng(latitude, longitude),
+                                            14.0
+                                        ).animate(CameraAnimation.Easing, 300)
+
+                                        naverMap.moveCamera(cameraUpdate)
+
+                                        // 데이터 업데이트 및 마커 생성
+                                        clearMarkers()
+                                        allPlaceDatas.clear()
+                                        placeDatas.clear()
+                                        originalPlaceDatas.clear()
+
+                                        allPlaceDatas.addAll(places)
+                                        placeDatas.addAll(places)
+                                        originalPlaceDatas.addAll(places)
+
+                                        binding.mapPlaceRV.adapter?.notifyDataSetChanged()
+
+                                        // 마커 생성
+                                        places.forEach { place ->
+                                            createMarker(place)
+                                        }
+
+                                        // 마커 생성이 완료된 후 로딩 다이얼로그 닫기
+                                        if (loadingDialog.isShowing) {
+                                            loadingDialog.dismiss()
+                                        }
+                                    }
+                                }
+                            }
+                        } catch (e: Exception) {
+                            withContext(Dispatchers.Main) {
+                                handleError(e)
+                                if (loadingDialog.isShowing) {
+                                    loadingDialog.dismiss()
+                                }
+                            }
+                        }
+                    }
                 }
             } catch (e: Exception) {
-                Log.e("MapFragment", "Error updating sort text: ${e.message}")
+                withContext(Dispatchers.Main) {
+                    handleError(e)
+                    if (loadingDialog.isShowing) {
+                        loadingDialog.dismiss()
+                    }
+                }
+            }
+        }
+    }
+
+    private suspend fun getCurrentLocation(): LatLng = suspendCancellableCoroutine { continuation ->
+        try {
+            if (!hasLocationPermission()) {
+                continuation.resume(naverMap.cameraPosition.target)
+                return@suspendCancellableCoroutine
+            }
+
+            val fusedLocationClient = LocationServices.getFusedLocationProviderClient(requireActivity())
+
+            // 위치 요청 설정
+            val locationRequest = LocationRequest.create().apply {
+                priority = LocationRequest.PRIORITY_HIGH_ACCURACY
+                interval = 5000  // 5초
+                fastestInterval = 3000  // 3초
+            }
+
+            // 일회성 위치 업데이트 콜백
+            val locationCallback = object : LocationCallback() {
+                override fun onLocationResult(locationResult: LocationResult) {
+                    locationResult.lastLocation?.let { location ->
+                        val newLocation = LatLng(location.latitude, location.longitude)
+                        fusedLocationClient.removeLocationUpdates(this)
+                        if (continuation.isActive) {
+                            continuation.resume(newLocation)
+                        }
+                    } ?: run {
+                        fusedLocationClient.removeLocationUpdates(this)
+                        if (continuation.isActive) {
+                            continuation.resume(naverMap.cameraPosition.target)
+                        }
+                    }
+                }
+            }
+
+            // 위치 업데이트 요청
+            if (ActivityCompat.checkSelfPermission(
+                    requireContext(),
+                    Manifest.permission.ACCESS_FINE_LOCATION
+                ) == PackageManager.PERMISSION_GRANTED
+            ) {
+                fusedLocationClient.requestLocationUpdates(
+                    locationRequest,
+                    locationCallback,
+                    Looper.getMainLooper()
+                )
+
+                // 5초 타임아웃 설정
+                continuation.invokeOnCancellation {
+                    fusedLocationClient.removeLocationUpdates(locationCallback)
+                }
+
+                // 타임아웃 처리
+                lifecycleScope.launch {
+                    delay(5000)
+                    if (continuation.isActive) {
+                        fusedLocationClient.removeLocationUpdates(locationCallback)
+                        continuation.resume(naverMap.cameraPosition.target)
+                    }
+                }
+            } else {
+                continuation.resume(naverMap.cameraPosition.target)
+            }
+        } catch (e: Exception) {
+            Log.e("MapFragment", "위치 정보 획득 실패", e)
+            if (continuation.isActive) {
+                continuation.resume(naverMap.cameraPosition.target)
             }
         }
     }
