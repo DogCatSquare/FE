@@ -38,7 +38,8 @@ class WishPlaceFragment : Fragment() {
         "HOSPITAL" to "동물병원",
         "CAFE" to "카페",
         "RESTAURANT" to "식당",
-        "HOTEL" to "호텔"
+        "HOTEL" to "호텔",
+        "ETC" to "기타"
     )
 
     private fun getToken(): String? {
@@ -73,6 +74,7 @@ class WishPlaceFragment : Fragment() {
             add(MapButton("병원", R.drawable.btn_hospital))
             add(MapButton("음식/카페", R.drawable.btn_restaurant))
             add(MapButton("호텔", R.drawable.btn_hotel))
+            add(MapButton("기타", R.drawable.btn_etc))
         }
 
         val mapButtonRVAdapter = MapButtonRVAdapter(buttonDatas, object : MapButtonRVAdapter.OnItemClickListener {
@@ -85,6 +87,7 @@ class WishPlaceFragment : Fragment() {
                             "병원" -> places.filter { it.category == "동물병원" }
                             "음식/카페" -> places.filter { it.category == "식당" || it.category == "카페" }
                             "호텔" -> places.filter { it.category == "호텔" }
+                            "기타" -> places.filter { it.category == "기타" }
                             else -> emptyList()
                         }
                     )

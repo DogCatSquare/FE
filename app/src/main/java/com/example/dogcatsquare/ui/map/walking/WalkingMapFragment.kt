@@ -26,6 +26,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import androidx.constraintlayout.widget.ConstraintSet
+import com.example.dogcatsquare.ui.map.SearchFragment
 
 class WalkingMapFragment : Fragment(), OnMapReadyCallback {
     private var _binding: FragmentMapwalkingBinding? = null
@@ -54,6 +55,15 @@ class WalkingMapFragment : Fragment(), OnMapReadyCallback {
         savedInstanceState: Bundle?
     ): View {
         _binding = FragmentMapwalkingBinding.inflate(inflater, container, false)
+
+        binding.searchBox.setOnClickListener {
+            val searchFragment = SearchFragment()
+            requireActivity().supportFragmentManager.beginTransaction()
+                .replace(R.id.main_frm, searchFragment)
+                .addToBackStack(null)
+                .commit()
+        }
+
         return binding.root
     }
 

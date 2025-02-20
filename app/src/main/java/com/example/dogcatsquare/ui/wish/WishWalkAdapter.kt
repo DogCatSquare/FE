@@ -11,6 +11,9 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.transition.TransitionManager
 import com.bumptech.glide.Glide
+import com.bumptech.glide.load.MultiTransformation
+import com.bumptech.glide.load.resource.bitmap.CenterCrop
+import com.bumptech.glide.load.resource.bitmap.RoundedCorners
 import com.example.dogcatsquare.R
 import com.example.dogcatsquare.data.api.WishRetrofitObj
 import com.example.dogcatsquare.data.model.wish.FetchMyWishPlaceResponse
@@ -18,6 +21,7 @@ import com.example.dogcatsquare.data.model.wish.WishPlace
 import com.example.dogcatsquare.data.network.RetrofitObj
 import com.example.dogcatsquare.databinding.ItemWishPlaceBinding
 import com.example.dogcatsquare.databinding.ItemWishWalkBinding
+import com.example.dogcatsquare.ui.map.location.PlaceType
 import com.example.dogcatsquare.ui.wish.WishPlaceRVAdapter.ViewHolder
 import retrofit2.Call
 import retrofit2.Callback
@@ -66,10 +70,26 @@ class WishWalkAdapter(private val walkList: ArrayList<WishPlace>, private val be
             binding.placeDistance.text = "${formattedDistance}km"
             binding.placeLocation.text = place.address
 
-            Glide.with(itemView.context)
-                .load(place.imgUrl)
-                .placeholder(R.drawable.ic_profile_default)
-                .into(binding.placeImg)
+            // 카테고리별 기본 이미지 설정
+            val defaultImageRes = PlaceType.fromString(place.category).defaultImage
+
+            // 이미지 처리
+            if (place.imgUrl != null) {
+                Glide.with(binding.placeImg.context)
+                    .load(place.imgUrl)
+                    .override(300, 300)
+                    .transform(
+                        MultiTransformation(
+                            CenterCrop(),
+                            RoundedCorners((8 * binding.root.resources.displayMetrics.density).toInt())
+                        )
+                    )
+                    .placeholder(defaultImageRes)
+                    .error(defaultImageRes)
+                    .into(binding.placeImg)
+            } else {
+                binding.placeImg.setImageResource(defaultImageRes)
+            }
 
             binding.ivWish.setOnClickListener {
                 toggleWishStatus(place, adapterPosition)
