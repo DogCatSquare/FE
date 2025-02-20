@@ -19,6 +19,7 @@ import com.example.dogcatsquare.data.model.wish.WishPlace
 import com.example.dogcatsquare.data.network.RetrofitObj
 import com.example.dogcatsquare.databinding.FragmentWishPlaceBinding
 import com.example.dogcatsquare.ui.map.location.MapDetailFragment
+import com.example.dogcatsquare.ui.map.location.MapFragment
 import com.example.dogcatsquare.ui.map.location.SortDialogFragment
 import retrofit2.Call
 import retrofit2.Callback
@@ -115,15 +116,17 @@ class WishPlaceFragment : Fragment() {
 
         wishPlaceRVAdapter.setMyItemClickListener(object : WishPlaceRVAdapter.OnItemClickListener{
             override fun onItemClick(place: WishPlace) {
+                val (currentLat, currentLng) = MapFragment().getMapCurrentPosition()
+
                 // placeType에 따라 다른 Fragment로 전환
                 if (place.category == "병원") {
-                    val fragment = MapDetailFragment.newInstance(place.id, 0.0, 0.0)
+                    val fragment = MapDetailFragment.newInstance(place.id, currentLat, currentLng)
                     requireActivity().supportFragmentManager.beginTransaction()
                         .replace(R.id.main_frm, fragment)
                         .addToBackStack(null)
                         .commitAllowingStateLoss()
                 } else {
-                    val fragment = MapDetailFragment.newInstance(place.id, 0.0, 0.0)
+                    val fragment = MapDetailFragment.newInstance(place.id, currentLat, currentLng)
                     requireActivity().supportFragmentManager.beginTransaction()
                         .replace(R.id.main_frm, fragment)
                         .addToBackStack(null)

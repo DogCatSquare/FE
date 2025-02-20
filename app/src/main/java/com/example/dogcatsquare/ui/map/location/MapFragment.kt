@@ -1181,7 +1181,7 @@ class MapFragment : Fragment(), OnMapReadyCallback {
         outState.putString("currentSortType", currentSortType)
     }
 
-    private fun getMapCurrentPosition(): Pair<Double, Double> {
+    fun getMapCurrentPosition(): Pair<Double, Double> {
         // 지도가 초기화되었는지 확인
         if (::naverMap.isInitialized) {
             val mapCenter = naverMap.cameraPosition.target

@@ -39,6 +39,7 @@ import com.example.dogcatsquare.data.community.Post
 import com.example.dogcatsquare.databinding.FragmentHomeBinding
 import com.example.dogcatsquare.ui.community.PostDetailActivity
 import com.example.dogcatsquare.ui.map.location.MapDetailFragment
+import com.example.dogcatsquare.ui.map.location.MapFragment
 import com.example.dogcatsquare.ui.mypage.HorizontalSpacingItemDecoration
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
@@ -335,17 +336,17 @@ class HomeFragment : Fragment() {
         // 클릭 인터페이스
         homeHotPlaceRVAdapter.setMyItemClickListener(object : HomeHotPlaceRVAdapter.OnItemClickListener {
             override fun onItemClick(place: Place) {
-                val savedLocation = getSavedLocation()
+                val (currentLat, currentLng) = MapFragment().getMapCurrentPosition()
 
                 // placeType에 따라 다른 Fragment로 전환
                 if (place.category == "HOSPITAL") {
-                    val fragment = MapDetailFragment.newInstance(place.id, savedLocation?.first ?: 0.0, savedLocation?.second ?: 0.0)
+                    val fragment = MapDetailFragment.newInstance(place.id, currentLat, currentLng)
                     requireActivity().supportFragmentManager.beginTransaction()
                         .replace(R.id.main_frm, fragment)
                         .addToBackStack(null)
                         .commitAllowingStateLoss()
                 } else {
-                    val fragment = MapDetailFragment.newInstance(place.id, savedLocation?.first ?: 0.0, savedLocation?.second ?: 0.0)
+                    val fragment = MapDetailFragment.newInstance(place.id, currentLat, currentLng)
                     requireActivity().supportFragmentManager.beginTransaction()
                         .replace(R.id.main_frm, fragment)
                         .addToBackStack(null)
@@ -358,53 +359,49 @@ class HomeFragment : Fragment() {
     private fun getHotPlace(adapter: HomeHotPlaceRVAdapter) {
         val token = getToken()
         val cityId = getCityId()
-        val savedLocation = getSavedLocation()
-
-        Log.d("loc", "$cityId, $savedLocation")
+        val (currentLat, currentLng) = MapFragment().getMapCurrentPosition()
 
         val getPopularPlaceService = RetrofitObj.getRetrofit().create(PlacesApiService::class.java)
-        if (savedLocation != null) {
-            getPopularPlaceService.getHotPlace("Bearer $token", cityId, GetHotPlaceRequest(savedLocation.first, savedLocation.second)).enqueue(object : Callback<GetHotPlaceResponse> {
-                override fun onResponse(call: Call<GetHotPlaceResponse>, response: Response<GetHotPlaceResponse>) {
-                    Log.d("GetHotPlace/SUCCESS", response.toString())
-                    val resp: GetHotPlaceResponse = response.body()!!
+        getPopularPlaceService.getHotPlace("Bearer $token", cityId, GetHotPlaceRequest(currentLat, currentLng)).enqueue(object : Callback<GetHotPlaceResponse> {
+            override fun onResponse(call: Call<GetHotPlaceResponse>, response: Response<GetHotPlaceResponse>) {
+                Log.d("GetHotPlace/SUCCESS", response.toString())
+                val resp: GetHotPlaceResponse = response.body()!!
 
-                    if (resp != null) {
-                        if (resp.isSuccess) {
-                            Log.d("GetHotPlace", "핫플 전체 조회 성공")
+                if (resp != null) {
+                    if (resp.isSuccess) {
+                        Log.d("GetHotPlace", "핫플 전체 조회 성공")
 
-                            val places = resp.result.map { place ->
-                                Place (
-                                    id = place.id,
-                                    name = place.name,
-                                    address = place.address,
-                                    category = categoryMap[place.category] ?: place.category,
-                                    phoneNumber = place.phoneNumber,
-                                    longitude = place.longitude,
-                                    latitude = place.latitude,
-                                    distance = place.distance,
-                                    open = place.open,
-                                    imgUrl = place.imgUrl,
-                                    reviewCount = place.reviewCount
-                                )
-                            }.take(5)
+                        val places = resp.result.map { place ->
+                            Place (
+                                id = place.id,
+                                name = place.name,
+                                address = place.address,
+                                category = categoryMap[place.category] ?: place.category,
+                                phoneNumber = place.phoneNumber,
+                                longitude = place.longitude,
+                                latitude = place.latitude,
+                                distance = place.distance,
+                                open = place.open,
+                                imgUrl = place.imgUrl,
+                                reviewCount = place.reviewCount
+                            )
+                        }.take(5)
 
-                            placeDatas.addAll(places)
-                            Log.d("HotPlaceList", placeDatas.toString())
-                            adapter.notifyDataSetChanged()
-                        }
-
-                    } else {
-                        Log.e("GetHotPlace/ERROR", "응답 코드: ${response.code()}")
+                        placeDatas.addAll(places)
+                        Log.d("HotPlaceList", placeDatas.toString())
+                        adapter.notifyDataSetChanged()
                     }
-                }
 
-                override fun onFailure(call: Call<GetHotPlaceResponse>, t: Throwable) {
-                    Log.d("RETROFIT/FAILURE", t.message.toString())
+                } else {
+                    Log.e("GetHotPlace/ERROR", "응답 코드: ${response.code()}")
                 }
+            }
 
-            })
-        }
+            override fun onFailure(call: Call<GetHotPlaceResponse>, t: Throwable) {
+                Log.d("RETROFIT/FAILURE", t.message.toString())
+            }
+
+        })
     }
 
     // ad viewpager
