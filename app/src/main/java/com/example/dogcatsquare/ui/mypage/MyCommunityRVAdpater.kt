@@ -4,18 +4,16 @@ import android.content.Intent
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.core.content.ContextCompat.startActivity
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.example.dogcatsquare.R
-import com.example.dogcatsquare.data.model.post.Post
+import com.example.dogcatsquare.data.community.Post
 import com.example.dogcatsquare.databinding.ItemMyCommunityBinding
 import com.example.dogcatsquare.ui.community.PostDetailActivity
-import com.example.dogcatsquare.ui.home.HomeHotPostRVAdapter.OnItemClickListener
 
-class MyCommunityRVAdpater(private val myPostList: ArrayList<Post>) : RecyclerView.Adapter<MyCommunityRVAdpater.MyCommunityAdapterViewHolder>(){
+class MyCommunityRVAdpater(private val myPostList: ArrayList<com.example.dogcatsquare.data.model.post.Post>) : RecyclerView.Adapter<MyCommunityRVAdpater.MyCommunityAdapterViewHolder>(){
     interface OnItemClickListener {
-        fun onItemClick(myPost: Post)
+        fun onItemClick(myPost: com.example.dogcatsquare.data.model.post.Post)
     }
 
     private lateinit var mItemClickListener: OnItemClickListener
@@ -43,7 +41,7 @@ class MyCommunityRVAdpater(private val myPostList: ArrayList<Post>) : RecyclerVi
     override fun getItemCount(): Int = myPostList.size
 
     inner class MyCommunityAdapterViewHolder(val binding: ItemMyCommunityBinding) :RecyclerView.ViewHolder(binding.root) {
-        fun bind(myPost: Post) {
+        fun bind(myPost: com.example.dogcatsquare.data.model.post.Post) {
             binding.tvTitle.text = myPost.title
             binding.tvContent.text = myPost.content
             binding.tvLikeCount.text = myPost.like_count.toString()

@@ -31,7 +31,7 @@ import com.example.dogcatsquare.data.model.home.GetAllEventsResponse
 import com.example.dogcatsquare.data.model.home.WeatherResult
 import com.example.dogcatsquare.data.network.RetrofitObj
 import com.example.dogcatsquare.data.model.post.PopularPostResponse
-import com.example.dogcatsquare.data.model.post.Post
+import com.example.dogcatsquare.data.community.Post
 import com.example.dogcatsquare.databinding.FragmentHomeBinding
 import com.example.dogcatsquare.ui.community.PostDetailActivity
 import com.example.dogcatsquare.ui.map.location.MapDetailFragment
@@ -53,7 +53,7 @@ class HomeFragment : Fragment() {
 
     private var dDayDatas = ArrayList<DDay>()
     private var placeDatas = ArrayList<Place>()
-    private var hotPostDatas = ArrayList<Post>()
+    private var hotPostDatas = ArrayList<com.example.dogcatsquare.data.model.post.Post>()
     private var eventDatas = ArrayList<Event>()
 
     private fun getToken(): String? {
@@ -370,7 +370,7 @@ class HomeFragment : Fragment() {
 
         // 클릭 인터페이스
         homeHotPostRVAdapter.setMyItemClickListener(object : HomeHotPostRVAdapter.OnItemClickListener {
-            override fun onItemClick(post: Post) {
+            override fun onItemClick(post: com.example.dogcatsquare.data.model.post.Post) {
                 val intent = Intent(requireContext(), PostDetailActivity::class.java).apply {
                     putExtra("postId", post.id)
                 }
@@ -395,7 +395,7 @@ class HomeFragment : Fragment() {
                         Log.d("PopularPost", "인기게시물 전체 조회 성공")
 
                         val posts = resp.result.map { post ->
-                            Post (
+                            com.example.dogcatsquare.data.model.post.Post (
                                 id = post.id,
                                 board = post.board,
                                 title = post.title,

@@ -11,13 +11,10 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.example.dogcatsquare.data.api.BoardApiService
 import com.example.dogcatsquare.data.community.BoardPost
-import com.example.dogcatsquare.data.model.post.PopularPostResponse
-import com.example.dogcatsquare.data.model.post.Post
+import com.example.dogcatsquare.data.community.Post
 import com.example.dogcatsquare.data.network.RetrofitObj
 import com.example.dogcatsquare.databinding.FragmentMyBoardBinding
-import com.example.dogcatsquare.ui.home.HomeHotPostRVAdapter
 import com.example.dogcatsquare.ui.viewmodel.PostViewModel
 import retrofit2.Call
 import retrofit2.Callback
@@ -26,7 +23,7 @@ import retrofit2.Response
 class MyBoardFragment : Fragment() {
     lateinit var binding: FragmentMyBoardBinding
 
-    private var boardPostDatas = ArrayList<Post>()
+    private var boardPostDatas = ArrayList<com.example.dogcatsquare.data.model.post.Post>()
     private lateinit var postViewModel: PostViewModel
     private var boardId: Int = -1
 
@@ -87,7 +84,7 @@ class MyBoardFragment : Fragment() {
 
         // 클릭 인터페이스
         boardPostRVAdapter.setMyItemClickListener(object : MyBoardPostRVAdapter.OnItemClickListener {
-            override fun onItemClick(post: Post) {
+            override fun onItemClick(post: com.example.dogcatsquare.data.model.post.Post) {
                 val intent = Intent(requireContext(), PostDetailActivity::class.java).apply {
                     putExtra("postId", post.id)
                 }
@@ -111,7 +108,7 @@ class MyBoardFragment : Fragment() {
                             Log.d("GetBoardPost", "게시물 전체 조회 성공")
 
                             val posts = resp.result?.map { post ->
-                                Post(
+                                com.example.dogcatsquare.data.model.post.Post(
                                     id = post.id,
                                     board = post.board,
                                     title = post.title,

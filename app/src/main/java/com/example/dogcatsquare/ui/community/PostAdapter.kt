@@ -9,11 +9,13 @@ import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
+import com.bumptech.glide.request.RequestOptions
 import com.example.dogcatsquare.R
+import com.example.dogcatsquare.data.community.GetAllPostResult
 import com.example.dogcatsquare.data.community.Post
 import com.example.dogcatsquare.ui.home.HomeHotPostRVAdapter.OnItemClickListener
 
-class PostAdapter(private val hotPostList: ArrayList<com.example.dogcatsquare.data.model.post.Post>) :
+class PostAdapter(private val hotPostList: ArrayList<GetAllPostResult>) :
     RecyclerView.Adapter<PostAdapter.PostViewHolder>() {
 
     interface OnItemClickListener {
@@ -32,17 +34,28 @@ class PostAdapter(private val hotPostList: ArrayList<com.example.dogcatsquare.da
         private val thumbnail: ImageView = itemView.findViewById(R.id.ivThumbnail)
         private val likeCountText: TextView = itemView.findViewById(R.id.tvLikeCount)
         private val commentCountText: TextView = itemView.findViewById(R.id.tvCommentCount)
+        private val username: TextView = itemView.findViewById(R.id.tvUsername)
+        private val breed: TextView = itemView.findViewById(R.id.tvBreed)
+        private val profile: ImageView = itemView.findViewById(R.id.post_profile_iv)
 
-        fun bind(post: com.example.dogcatsquare.data.model.post.Post) {
+        fun bind(post: GetAllPostResult) {
             titleText.text = post.title ?: "제목 없음"
             contentPreview.text = post.content ?: "내용 없음"
-            likeCountText.text = post.like_count.toString()
-            commentCountText.text = post.comment_count.toString()
+            likeCountText.text = post.likeCount.toString()
+            commentCountText.text = post.commentCount.toString()
+            username.text = post.username
+//            breed.text = post.
 
-            if (!post.thumbnail_URL.isNullOrEmpty()) {
+            Glide.with(itemView.context)
+                .load(post.profileImageURL)
+                .apply(RequestOptions.circleCropTransform())
+                .placeholder(R.drawable.ic_profile_placeholder)
+                .into(profile)
+
+            if (!post.thumbnailURL.isNullOrEmpty()) {
                 Glide.with(itemView.context)
-                    .load(post.thumbnail_URL)
-                    .placeholder(R.drawable.ic_sample_thumbnail)
+                    .load(post.thumbnailURL)
+                    .placeholder(R.drawable.ic_profile_default)
                     .into(thumbnail)
             } else {
                 thumbnail.setImageResource(R.drawable.ic_sample_thumbnail)
