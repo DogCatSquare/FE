@@ -192,13 +192,17 @@ class MapDetailFragment : Fragment(), OnMapReadyCallback {
                                 }
                             }
                             placeDistance.text = "${String.format("%.2f", placeDetail.distance)}km"
-                            placeStatus.text = if (placeDetail.open) "영업중" else "영업종료"
+//                            placeStatus.text = if (placeDetail.open) "영업중" else "영업종료"
 
                             // 영업시간 설정
                             placeDetail.businessHours?.let { hours ->
                                 placeTime.text = formatBusinessHours(hours)
+                                // 영업 상태 업데이트
+                                placeStatus.text = if (isCurrentlyOpen(hours)) "영업중" else "영업종료"
+                            } ?: run {
+                                placeTime.text = "영업시간 정보 없음"
+                                placeStatus.text = "정보 없음"
                             }
-
                             // 홈페이지 설정
                             placeDetail.homepageUrl?.let { url ->
                                 if (url.isNotEmpty()) {
@@ -760,6 +764,109 @@ class MapDetailFragment : Fragment(), OnMapReadyCallback {
             "CAFE" -> "카페"
             "ETC" -> "기타"
             else -> category
+        }
+    }
+
+    private fun isCurrentlyOpen(businessHours: String): Boolean {
+        // 한국 시간대 설정
+        val koreaTimeZone = TimeZone.getTimeZone("Asia/Seoul")
+        val calendar = Calendar.getInstance(koreaTimeZone)
+
+        // 디버깅을 위한 로그 추가
+        val currentHour = calendar.get(Calendar.HOUR_OF_DAY)
+        val currentMinute = calendar.get(Calendar.MINUTE)
+        Log.d("TimeCheck", "현재 시간: $currentHour:$currentMinute")
+
+        val dayOfWeek = calendar.get(Calendar.DAY_OF_WEEK)
+        val currentTime = currentHour * 60 + currentMinute // 현재 시간을 분 단위로 변환
+
+        val koreanDayName = when (dayOfWeek) {
+            Calendar.MONDAY -> "월요일"
+            Calendar.TUESDAY -> "화요일"
+            Calendar.WEDNESDAY -> "수요일"
+            Calendar.THURSDAY -> "목요일"
+            Calendar.FRIDAY -> "금요일"
+            Calendar.SATURDAY -> "토요일"
+            Calendar.SUNDAY -> "일요일"
+            else -> return false
+        }
+
+        val todayHours = businessHours.split(", ")
+            .find { it.startsWith(koreanDayName) }
+            ?.substringAfter(": ")
+            ?: return false
+
+        // 디버깅을 위한 로그 추가
+        Log.d("TimeCheck", "영업시간: $todayHours")
+
+        return when {
+            todayHours.contains("24시간") -> true
+            todayHours.contains("휴무") -> false
+            else -> {
+                try {
+                    val timeRange = todayHours.split(" ~ ")
+                    if (timeRange.size != 2) return false
+
+                    // 시작 시간과 종료 시간을 분 단위로 변환
+                    val startMinutes = convertTimeToMinutes(timeRange[0])
+                    var endMinutes = convertTimeToMinutes(timeRange[1])
+
+                    // 디버깅을 위한 로그 추가
+                    Log.d("TimeCheck", "시작 시간(분): $startMinutes, 종료 시간(분): $endMinutes, 현재 시간(분): $currentTime")
+
+                    // 종료 시간이 시작 시간보다 작은 경우 (다음날로 이어지는 경우)
+                    if (endMinutes < startMinutes) {
+                        endMinutes += 24 * 60 // 24시간을 더해줌
+                    }
+
+                    // 현재 시간이 영업 시간 내에 있는지 확인
+                    val isOpen = currentTime in startMinutes..endMinutes
+                    Log.d("TimeCheck", "영업 여부: $isOpen")
+                    isOpen
+                } catch (e: Exception) {
+                    Log.e("TimeCheck", "시간 변환 중 오류 발생", e)
+                    false
+                }
+            }
+        }
+    }
+
+    private fun convertTimeToMinutes(timeStr: String): Int {
+        try {
+            // 디버깅을 위한 로그 추가
+            Log.d("TimeCheck", "시간 문자열 변환 시도: $timeStr")
+
+            val (hours, minutes) = when {
+                timeStr.contains("오전") -> {
+                    val time = timeStr.replace("오전 ", "").split(":")
+                    if (time[0] == "12") {
+                        Pair(0, time.getOrElse(1) { "0" }.toInt())
+                    } else {
+                        Pair(time[0].toInt(), time.getOrElse(1) { "0" }.toInt())
+                    }
+                }
+                timeStr.contains("오후") -> {
+                    val time = timeStr.replace("오후 ", "").split(":")
+                    if (time[0] == "12") {
+                        Pair(12, time.getOrElse(1) { "0" }.toInt())
+                    } else {
+                        Pair(time[0].toInt() + 12, time.getOrElse(1) { "0" }.toInt())
+                    }
+                }
+                else -> {
+                    val time = timeStr.split(":")
+                    Pair(time[0].toInt(), time.getOrElse(1) { "0" }.toInt())
+                }
+            }
+            val totalMinutes = hours * 60 + minutes
+
+            // 디버깅을 위한 로그 추가
+            Log.d("TimeCheck", "변환된 시간(분): $totalMinutes (${hours}시 ${minutes}분)")
+
+            return totalMinutes
+        } catch (e: Exception) {
+            Log.e("TimeCheck", "시간 문자열 변환 실패: $timeStr", e)
+            return 0
         }
     }
 

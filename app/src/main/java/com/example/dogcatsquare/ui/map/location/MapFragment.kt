@@ -130,7 +130,7 @@ class MapFragment : Fragment(), OnMapReadyCallback {
             val lastVisibleItemPosition = firstVisibleItemPosition + visibleItemCount - 1
 
             // 페이지 로드 트리거 포지션 (현재 페이지의 6-7번째 아이템)
-            val loadTriggerPosition = (currentPage * ITEMS_PER_PAGE) + 15 // 16번째 아이템부터
+            val loadTriggerPosition = (currentPage * ITEMS_PER_PAGE) + 9 // 16번째 아이템부터
 
             if (!isLoading && !isLastPage) {
                 // 현재 보이는 아이템들 중에 트리거 포지션이 포함되어 있는지 확인
