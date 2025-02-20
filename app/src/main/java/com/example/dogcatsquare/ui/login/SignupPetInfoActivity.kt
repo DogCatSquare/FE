@@ -135,7 +135,6 @@ class SignupPetInfoActivity : AppCompatActivity() {
         })
 
         // 다음 버튼 누르면 넘어가기
-        // 추후에 api 연결 시 데이터도 넘기기
         binding.signupPetNextBtn.setOnClickListener {
             checkPetInfo()
         }
@@ -163,6 +162,7 @@ class SignupPetInfoActivity : AppCompatActivity() {
             // Glide를 사용하여 원본 이미지 첨부
             Glide.with(this)
                 .load(compressedUri)
+                .apply(RequestOptions.circleCropTransform())
                 .signature(ObjectKey(System.currentTimeMillis().toString())) // 캐시 무효화
                 .placeholder(R.drawable.ic_profile_default)
                 .into(binding.petIv)

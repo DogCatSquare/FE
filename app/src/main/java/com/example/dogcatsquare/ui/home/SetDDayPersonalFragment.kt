@@ -126,6 +126,10 @@ class SetDDayPersonalFragment : Fragment() {
             deleteDDay(dayId)
         }
 
+        binding.backBtn.setOnClickListener {
+            parentFragmentManager.popBackStack()
+        }
+
         return binding.root
     }
 

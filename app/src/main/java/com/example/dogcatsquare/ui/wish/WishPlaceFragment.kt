@@ -38,8 +38,7 @@ class WishPlaceFragment : Fragment() {
         "HOSPITAL" to "동물병원",
         "CAFE" to "카페",
         "RESTAURANT" to "식당",
-        "HOTEL" to "호텔",
-        "PARK" to "산책로"
+        "HOTEL" to "호텔"
     )
 
     private fun getToken(): String? {
@@ -72,7 +71,6 @@ class WishPlaceFragment : Fragment() {
         buttonDatas.apply {
             add(MapButton("전체"))
             add(MapButton("병원", R.drawable.btn_hospital))
-            add(MapButton("산책로", R.drawable.btn_walk))
             add(MapButton("음식/카페", R.drawable.btn_restaurant))
             add(MapButton("호텔", R.drawable.btn_hotel))
         }
@@ -85,7 +83,6 @@ class WishPlaceFragment : Fragment() {
                         when (buttonName) {
                             "전체" -> places
                             "병원" -> places.filter { it.category == "동물병원" }
-                            "산책로" -> places.filter { it.category == "산책로" }
                             "음식/카페" -> places.filter { it.category == "식당" || it.category == "카페" }
                             "호텔" -> places.filter { it.category == "호텔" }
                             else -> emptyList()
@@ -139,7 +136,7 @@ class WishPlaceFragment : Fragment() {
 
         val getMyWishService = RetrofitObj.getRetrofit().create(WishRetrofitObj::class.java)
         // 위도 경도 기본값 -> 추후 수정
-        getMyWishService.getMyWish("Bearer $token", 0, MyLocation(37.5665, 126.9780)).enqueue(object : Callback<GetMyWishResponse> {
+        getMyWishService.getMyWish("Bearer $token", MyLocation(37.5665, 126.9780)).enqueue(object : Callback<GetMyWishResponse> {
             override fun onResponse(call: Call<GetMyWishResponse>, response: Response<GetMyWishResponse>) {
                 Log.d("GetMyWish/SUCCESS", response.toString())
                 val resp: GetMyWishResponse = response.body()!!
@@ -148,7 +145,7 @@ class WishPlaceFragment : Fragment() {
                     if (resp.isSuccess) {
                         Log.d("GetMyWish", "내 위시 전체 조회 성공")
 
-                        val wishes = resp.result.content.map { wish ->
+                        val wishes = resp.result.map { wish ->
                             WishPlace(
                                 id = wish.id,
                                 name = wish.name,
@@ -164,7 +161,7 @@ class WishPlaceFragment : Fragment() {
                                 keywords = wish.keywords,
                                 isWish = true
                             )
-                        }
+                        }.filter { it.category != "PARK" } // "산책로"인 경우 제외
 
                         callback(wishes)
                     }

@@ -43,6 +43,10 @@ class MyReviewFragment : Fragment() {
 
         setupMyReviewRecyclerView()
 
+        binding.backBtn.setOnClickListener {
+            parentFragmentManager.popBackStack()
+        }
+
         return binding.root
     }
 

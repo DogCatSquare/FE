@@ -49,24 +49,23 @@
         android:id="@+id/ivThumbnail"
         android:layout_width="80dp"
         android:layout_height="80dp"
+        android:src="@drawable/ic_profile_default"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="1.0"
         app:layout_constraintStart_toEndOf="@+id/tvContentPreview"
-        app:layout_constraintTop_toTopOf="@+id/tvTitle"
-        android:background="@drawable/rounded_thumbnail"
-        android:src="@drawable/ic_sample_thumbnail" />
+        app:layout_constraintTop_toTopOf="@+id/tvTitle" />
 
     <!-- 닉네임 프로필 -->
     <ImageView
         android:id="@+id/post_profile_iv"
-        android:layout_width="15dp"
-        android:layout_height="15dp"
-        android:layout_marginTop="20dp"
+        android:layout_width="20dp"
+        android:layout_height="20dp"
+        android:layout_marginTop="10dp"
         android:layout_marginBottom="10dp"
         android:src="@drawable/ic_profile_img_default"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/tvContentPreview" />
+        app:layout_constraintTop_toBottomOf="@+id/ivThumbnail" />
 
     <!-- 닉네임 -->
     <TextView
@@ -145,12 +144,4 @@
         app:layout_constraintBottom_toBottomOf="@id/ivComment" />
 
     <!-- 하단 경계선 -->
-    <View
-        android:id="@+id/bar2"
-        android:layout_width="match_parent"
-        android:layout_height="0.5dp"
-        android:background="@color/gray3"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
 </androidx.constraintlayout.widget.ConstraintLayout>

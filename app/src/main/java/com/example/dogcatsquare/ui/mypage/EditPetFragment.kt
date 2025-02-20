@@ -190,6 +190,10 @@ class EditPetFragment : Fragment() {
             editPetDone()
         }
 
+        binding.backBtn.setOnClickListener {
+            parentFragmentManager.popBackStack()
+        }
+
         return binding.root
     }
 

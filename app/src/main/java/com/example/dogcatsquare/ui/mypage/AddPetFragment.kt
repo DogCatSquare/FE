@@ -89,6 +89,10 @@ class AddPetFragment : Fragment() {
             }
         }
 
+        binding.backBtn.setOnClickListener {
+            parentFragmentManager.popBackStack()
+        }
+
         binding.editPetDoneBtn.setOnClickListener {
             addPetDataFromServer()
         }

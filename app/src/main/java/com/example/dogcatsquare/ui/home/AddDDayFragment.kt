@@ -98,6 +98,10 @@ class AddDDayFragment : Fragment() {
             addDDay(title, date, during)
         }
 
+        binding.backBtn.setOnClickListener {
+            parentFragmentManager.popBackStack()
+        }
+
         return binding.root
     }
 

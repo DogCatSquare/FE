@@ -18,6 +18,9 @@ data class GetAllPostResult(
     @SerializedName("username")
     val username: String,
 
+    @SerializedName("animal_type")
+    val animal_type: String,
+
     @SerializedName("title")
     val title: String,
 

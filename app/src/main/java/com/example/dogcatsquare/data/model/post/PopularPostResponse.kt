@@ -12,6 +12,7 @@ data class PopularPopularResult(
     @SerializedName("id") var id: Int,
     @SerializedName("board") var board: String,
     @SerializedName("username") var username: String,
+    @SerializedName("animal_type") var animal_type: String,
     @SerializedName("title") var title: String,
     @SerializedName("content") var content: String,
     @SerializedName("video_URL") var video_URL: String?,

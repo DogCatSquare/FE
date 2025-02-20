@@ -26,6 +26,7 @@ interface CommentApiService {
     fun deleteComment(
         @Header("Authorization") token: String,
         @Path("postId") postId: Long,
-        @Path("commentId") commentId: Long
+        @Path("commentId") commentId: Long,
+        @Path("userId") userId: Int
     ): Call<CommonResponse>
 }

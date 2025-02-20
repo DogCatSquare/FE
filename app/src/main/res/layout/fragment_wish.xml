@@ -40,9 +40,8 @@
         app:layout_constraintTop_toTopOf="parent"
         app:tabIndicatorColor="@color/main_color1"
         app:tabSelectedTextColor="@color/main_color1"
-        app:tabTextColor="@color/gray4">
-
-    </com.google.android.material.tabs.TabLayout>
+        app:tabTextColor="@color/gray4"
+        app:tabRippleColor="@android:color/transparent"/>
 
     <!-- 🔥 ViewPager2 추가 -->
     <androidx.viewpager2.widget.ViewPager2

@@ -4,17 +4,9 @@ data class GetMyWishResponse(
     val isSuccess: Boolean,
     val code: String,
     val message: String,
-    val result: GetMyWishResult
+    val result: List<MyWishContent>
 )
-data class GetMyWishResult(
-    val content: List<MyWishContent>,
-    val totalPages: Int,
-    val totalElements: Int,
-    val last: Boolean,
-    val first: Boolean,
-    val size: Int,
-    val number: Int
-)
+
 data class MyWishContent(
     val id: Int,
     val name: String,

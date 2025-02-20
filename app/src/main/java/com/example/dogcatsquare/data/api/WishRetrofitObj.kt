@@ -16,7 +16,7 @@ import retrofit2.http.Query
 
 interface WishRetrofitObj {
     @POST("api/places/wishlist")
-    fun getMyWish(@Header("Authorization") token: String, @Query("page") page: Int, @Body myLocation: MyLocation): Call<GetMyWishResponse>
+    fun getMyWish(@Header("Authorization") token: String, @Body myLocation: MyLocation): Call<GetMyWishResponse>
 
     @POST("api/wishlist/places/{placeId}")
     fun fetchMyWishPlaceList(@Header("Authorization") token: String, @Path("placeId") placeId: Int): Call<FetchMyWishPlaceResponse>

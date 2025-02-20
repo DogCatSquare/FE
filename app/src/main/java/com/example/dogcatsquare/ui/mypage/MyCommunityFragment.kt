@@ -41,6 +41,10 @@ class MyCommunityFragment : Fragment() {
 
         setupMyCommunityRecyclerView()
 
+        binding.backBtn.setOnClickListener {
+            parentFragmentManager.popBackStack()
+        }
+
         return binding.root
     }
 

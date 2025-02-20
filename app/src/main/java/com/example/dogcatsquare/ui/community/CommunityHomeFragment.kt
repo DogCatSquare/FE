@@ -90,6 +90,7 @@ class CommunityHomeFragment : Fragment(R.layout.fragment_community_home) {
                                 board = post.board,
                                 title = post.title,
                                 username = post.username,
+                                animal_type = post.animal_type,
                                 content = post.content,
                                 likeCount = post.like_count,
                                 commentCount = post.comment_count,
@@ -118,7 +119,7 @@ class CommunityHomeFragment : Fragment(R.layout.fragment_community_home) {
         })
     }
 
-    // hot post rv
+    // 전체 게시물
     private fun setupTipPostRecyclerView() {
         allPostDatas.clear()
 
@@ -162,6 +163,7 @@ class CommunityHomeFragment : Fragment(R.layout.fragment_community_home) {
                                 board = post.board,
                                 title = post.title,
                                 username = post.username,
+                                animal_type = post.animal_type,
                                 content = post.content,
                                 likeCount = post.likeCount,
                                 commentCount = post.commentCount,
