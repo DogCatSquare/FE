@@ -35,6 +35,7 @@ import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.RecyclerView
 import com.example.dogcatsquare.FilterPlacesRequest
+import com.example.dogcatsquare.LoadingDialog
 import com.example.dogcatsquare.LocationViewModel
 import com.example.dogcatsquare.data.api.UserRetrofitItf
 import com.example.dogcatsquare.data.map.SearchPlacesRequest
@@ -105,6 +106,8 @@ class MapFragment : Fragment(), OnMapReadyCallback {
         var hasParking: Boolean
     )
 
+    private lateinit var loadingDialog: LoadingDialog
+
     // RecyclerView 스크롤 리스너
     private val scrollListener = object : RecyclerView.OnScrollListener() {
         override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
@@ -136,6 +139,8 @@ class MapFragment : Fragment(), OnMapReadyCallback {
         super.onCreate(savedInstanceState)
         locationSource = FusedLocationSource(this, LOCATION_PERMISSION_REQUEST_CODE)
         setupLocationCallback()
+
+        loadingDialog = LoadingDialog(requireContext())
 
         lifecycleScope.launch {
             fetchUserAddress()
@@ -905,7 +910,7 @@ class MapFragment : Fragment(), OnMapReadyCallback {
         try {
             withContext(Dispatchers.Main) {
                 // 로딩 표시
-                Toast.makeText(requireContext(), "데이터를 불러오는 중...", Toast.LENGTH_SHORT).show()
+                loadingDialog.show()
             }
 
             // 순차적으로 데이터 로드 (병렬 처리 대신)
@@ -927,6 +932,11 @@ class MapFragment : Fragment(), OnMapReadyCallback {
             Log.e("MapFragment", "데이터 로드 중 오류 발생", e)
             withContext(Dispatchers.Main) {
                 handleError(e)
+            }
+        } finally {
+            withContext(Dispatchers.Main) {
+                // 로딩 다이얼로그 닫기
+                loadingDialog.dismiss()
             }
         }
     }
