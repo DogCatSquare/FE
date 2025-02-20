@@ -152,11 +152,15 @@ class MapFragment : Fragment(), OnMapReadyCallback {
             fetchUserAddress()
         }
 
-        // 프래그먼트 백스택 변경 리스너 등록
+        // 프래그먼트 백스택 변경 리스너 추가
         requireActivity().supportFragmentManager.addOnBackStackChangedListener {
-            if (isVisible && shouldRefresh) {
+            if (isVisible && shouldRefresh && this::sortTextView.isInitialized) {
                 lifecycleScope.launch {
-                    loadAllCategories()
+                    when (sortTextView.text.toString()) {
+                        "위치기준" -> moveToCurrentLocation()
+                        "주소기준" -> moveToUserAddress()
+                        else -> loadAllCategories()
+                    }
                 }
                 shouldRefresh = false
             }
@@ -1661,16 +1665,20 @@ class MapFragment : Fragment(), OnMapReadyCallback {
         _binding = null
     }
 
-    override fun onResume() {
-        super.onResume()
-        // 이전 화면에서 돌아왔을 때 데이터 새로고침
-        if (shouldRefresh) {
-            lifecycleScope.launch {
-                loadAllCategories()  // 모든 카테고리 데이터 새로고침
-            }
-            shouldRefresh = false
-        }
-    }
+//    override fun onResume() {
+//        super.onResume()
+//        // 이전 화면에서 돌아왔을 때 데이터 새로고침
+//        if (shouldRefresh && this::sortTextView.isInitialized) {
+//            lifecycleScope.launch {
+//                when (sortTextView.text.toString()) {
+//                    "위치기준" -> moveToCurrentLocation()
+//                    "주소기준" -> moveToUserAddress()
+//                    else -> loadAllCategories()
+//                }
+//            }
+//            shouldRefresh = false
+//        }
+//    }
 
     override fun onPause() {
         super.onPause()
