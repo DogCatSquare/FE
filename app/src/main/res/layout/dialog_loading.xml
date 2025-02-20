@@ -21,8 +21,8 @@
             android:id="@+id/loadingImageView"
             android:layout_width="100dp"
             android:layout_height="100dp"
-            android:src="@drawable/img_splash_logo"
-            android:layout_marginBottom="8dp"/>
+            android:layout_marginBottom="8dp"
+            android:src="@drawable/img_splash_logo" />
 
         <TextView
             android:id="@+id/loadingTextView"

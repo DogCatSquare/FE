@@ -108,6 +108,8 @@ class MapFragment : Fragment(), OnMapReadyCallback {
 
     private lateinit var loadingDialog: LoadingDialog
 
+    private var isAddressBasedMove = false
+
     // RecyclerView 스크롤 리스너
     private val scrollListener = object : RecyclerView.OnScrollListener() {
         override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
@@ -310,6 +312,12 @@ class MapFragment : Fragment(), OnMapReadyCallback {
 
     private suspend fun loadFilteredPlaces(page: Int = 0) {
         try {
+            withContext(Dispatchers.Main) {
+                if (!loadingDialog.isShowing) {
+                    loadingDialog.show()
+                }
+            }
+
             val token = getToken() ?: run {
                 withContext(Dispatchers.Main) {
                     Toast.makeText(requireContext(), "로그인이 필요합니다.", Toast.LENGTH_SHORT).show()
@@ -330,10 +338,6 @@ class MapFragment : Fragment(), OnMapReadyCallback {
                 hasParking = filterOptions.hasParking,
                 isCurrentlyOpen = filterOptions.isCurrentlyOpen
             )
-
-            withContext(Dispatchers.Main) {
-                Toast.makeText(requireContext(), "필터링된 장소를 불러오는 중...", Toast.LENGTH_SHORT).show()
-            }
 
             // API 호출
             val response = withContext(Dispatchers.IO) {
@@ -381,12 +385,6 @@ class MapFragment : Fragment(), OnMapReadyCallback {
                         newPlaces.forEach { place ->
                             createMarker(place)
                         }
-
-                        Toast.makeText(
-                            requireContext(),
-                            "데이터 로드 완료!",
-                            Toast.LENGTH_SHORT
-                        ).show()
                     }
                 }
             } else {
@@ -397,6 +395,12 @@ class MapFragment : Fragment(), OnMapReadyCallback {
         } catch (e: Exception) {
             withContext(Dispatchers.Main) {
                 handleError(e)
+            }
+        } finally {
+            withContext(Dispatchers.Main) {
+                if (loadingDialog.isShowing) {
+                    loadingDialog.dismiss()
+                }
             }
         }
     }
@@ -891,13 +895,6 @@ class MapFragment : Fragment(), OnMapReadyCallback {
             places.forEach { place ->
                 createMarker(place)
             }
-
-            // 데이터 로드 완료 메시지
-            Toast.makeText(
-                requireContext(),
-                "데이터 로드 성공!",
-                Toast.LENGTH_SHORT
-            ).show()
         }
     }
 
@@ -909,7 +906,6 @@ class MapFragment : Fragment(), OnMapReadyCallback {
 
         try {
             withContext(Dispatchers.Main) {
-                // 로딩 표시
                 loadingDialog.show()
             }
 
@@ -924,19 +920,56 @@ class MapFragment : Fragment(), OnMapReadyCallback {
             }
 
             // UI 업데이트
-            updateUI(places)
+            withContext(Dispatchers.Main) {
+                // 기존 마커 제거
+                clearMarkers()
 
-            Log.d("MapFragment", "데이터 로드 성공!")
+                allPlaceDatas.clear()
+                allPlaceDatas.addAll(places)
+
+                // RecyclerView 데이터 업데이트
+                originalPlaceDatas.clear()
+                originalPlaceDatas.addAll(places)
+
+                placeDatas.clear()
+                placeDatas.addAll(places)
+                binding.mapPlaceRV.adapter?.notifyDataSetChanged()
+
+                // 새로운 마커 생성
+                places.forEach { place ->
+                    createMarker(place)
+                }
+
+                // 현재 위치로 지도 이동
+                currentLocation?.let { location ->
+                    naverMap.moveCamera(
+                        CameraUpdate.scrollAndZoomTo(
+                            LatLng(location.latitude, location.longitude),
+                            14.0
+                        ).animate(CameraAnimation.Easing)
+                    )
+
+                    // 카메라 이동 및 애니메이션이 완료된 후에 로딩 다이얼로그 닫기
+                    naverMap.addOnCameraIdleListener {
+                        if (loadingDialog.isShowing) {
+                            loadingDialog.dismiss()
+                        }
+                    }
+                } ?: run {
+                    // 현재 위치를 가져올 수 없는 경우 바로 로딩 다이얼로그 닫기
+                    if (loadingDialog.isShowing) {
+                        loadingDialog.dismiss()
+                    }
+                }
+            }
 
         } catch (e: Exception) {
             Log.e("MapFragment", "데이터 로드 중 오류 발생", e)
             withContext(Dispatchers.Main) {
                 handleError(e)
-            }
-        } finally {
-            withContext(Dispatchers.Main) {
-                // 로딩 다이얼로그 닫기
-                loadingDialog.dismiss()
+                if (loadingDialog.isShowing) {
+                    loadingDialog.dismiss()
+                }
             }
         }
     }
@@ -1157,7 +1190,7 @@ class MapFragment : Fragment(), OnMapReadyCallback {
             return Pair(mapCenter.latitude, mapCenter.longitude)
         }
         // 지도가 초기화되지 않은 경우 기본값 반환
-        return Pair(37.5665, 126.9780) // 서울 시청 기본값
+        return Pair(37.5664056, 126.9778222) // 서울 시청 기본값
     }
 
     // 사용자 정보를 가져오는 함수
@@ -1254,14 +1287,22 @@ class MapFragment : Fragment(), OnMapReadyCallback {
     private fun moveToUserAddress() {
         lifecycleScope.launch {
             try {
-                val savedAddress = getSavedUserAddress()
-                if (savedAddress.isEmpty()) {
-                    Toast.makeText(requireContext(), "저장된 주소가 없습니다.", Toast.LENGTH_SHORT).show()
-                    return@launch
+                // 로딩 다이얼로그 표시
+                withContext(Dispatchers.Main) {
+                    if (!loadingDialog.isShowing) {
+                        loadingDialog.show()
+                    }
                 }
 
-                withContext(Dispatchers.Main) {
-                    Toast.makeText(requireContext(), "주소 기준으로 이동 중...", Toast.LENGTH_SHORT).show()
+                val savedAddress = getSavedUserAddress()
+                if (savedAddress.isEmpty()) {
+                    withContext(Dispatchers.Main) {
+                        Toast.makeText(requireContext(), "저장된 주소가 없습니다.", Toast.LENGTH_SHORT).show()
+                        if (loadingDialog.isShowing) {
+                            loadingDialog.dismiss()
+                        }
+                    }
+                    return@launch
                 }
 
                 try {
@@ -1280,23 +1321,35 @@ class MapFragment : Fragment(), OnMapReadyCallback {
 
                         withContext(Dispatchers.Main) {
                             if (::naverMap.isInitialized) {
-                                // 지도 이동
-                                naverMap.moveCamera(
-                                    CameraUpdate.scrollAndZoomTo(
-                                        LatLng(latitude, longitude),
-                                        13.0
-                                    ).animate(CameraAnimation.Easing)
-                                )
+                                // 위치 추적 모드를 None으로 설정하여 자동 위치 추적 비활성화
+                                naverMap.locationTrackingMode = LocationTrackingMode.None
 
-                                Toast.makeText(
-                                    requireContext(),
-                                    "위치로 이동 완료!",
-                                    Toast.LENGTH_SHORT
-                                ).show()
+                                // 데이터 로드
+                                resetPagingState()
+                                val places = withContext(Dispatchers.IO) {
+                                    loadPlacesData()
+                                }
 
-                                // 위치가 업데이트된 후에 데이터 다시 로드
-                                resetPagingState() // 페이징 상태 초기화
-                                loadAllCategories() // 새로운 위치 기준으로 데이터 로드
+                                // UI 업데이트
+                                updateUI(places)
+
+                                // 마지막으로 카메라 이동
+                                val cameraUpdate = CameraUpdate.scrollAndZoomTo(
+                                    LatLng(latitude, longitude),
+                                    13.0
+                                ).animate(CameraAnimation.Easing)
+
+                                naverMap.moveCamera(cameraUpdate)
+
+                                // 카메라 이동이 완료되면 로딩 다이얼로그 닫기
+                                naverMap.addOnCameraIdleListener(object : NaverMap.OnCameraIdleListener {
+                                    override fun onCameraIdle() {
+                                        naverMap.removeOnCameraIdleListener(this)
+                                        if (loadingDialog.isShowing) {
+                                            loadingDialog.dismiss()
+                                        }
+                                    }
+                                })
                             }
                         }
                     } else {
@@ -1306,6 +1359,9 @@ class MapFragment : Fragment(), OnMapReadyCallback {
                                 "주소를 찾을 수 없습니다.",
                                 Toast.LENGTH_SHORT
                             ).show()
+                            if (loadingDialog.isShowing) {
+                                loadingDialog.dismiss()
+                            }
                         }
                     }
                 } catch (e: Exception) {
@@ -1315,6 +1371,9 @@ class MapFragment : Fragment(), OnMapReadyCallback {
                             "주소 변환 중 오류가 발생했습니다: ${e.message}",
                             Toast.LENGTH_SHORT
                         ).show()
+                        if (loadingDialog.isShowing) {
+                            loadingDialog.dismiss()
+                        }
                     }
                     Log.e("MapFragment", "Geocoding 오류", e)
                 }
@@ -1325,6 +1384,9 @@ class MapFragment : Fragment(), OnMapReadyCallback {
                         "오류가 발생했습니다: ${e.message}",
                         Toast.LENGTH_SHORT
                     ).show()
+                    if (loadingDialog.isShowing) {
+                        loadingDialog.dismiss()
+                    }
                 }
                 Log.e("MapFragment", "moveToUserAddress 오류", e)
             }
@@ -1334,6 +1396,13 @@ class MapFragment : Fragment(), OnMapReadyCallback {
     private fun moveToCurrentLocation() {
         lifecycleScope.launch {
             try {
+                // 로딩 다이얼로그 표시
+                withContext(Dispatchers.Main) {
+                    if (!loadingDialog.isShowing) {
+                        loadingDialog.show()
+                    }
+                }
+
                 if (!hasLocationPermission()) {
                     withContext(Dispatchers.Main) {
                         Toast.makeText(requireContext(), "위치 권한이 필요합니다.", Toast.LENGTH_SHORT).show()
@@ -1343,20 +1412,27 @@ class MapFragment : Fragment(), OnMapReadyCallback {
                 }
 
                 withContext(Dispatchers.Main) {
-                    Toast.makeText(requireContext(), "현재 위치로 이동 중...", Toast.LENGTH_SHORT).show()
+                    try {
+                        // 위치 추적 모드 활성화
+                        naverMap.locationTrackingMode = LocationTrackingMode.Follow
 
-                    // 위치 추적 모드 활성화
-                    naverMap.locationTrackingMode = LocationTrackingMode.Follow
+                        // 지도 줌 레벨 설정
+                        naverMap.moveCamera(CameraUpdate.zoomTo(14.0))
 
-                    // 지도 줌 레벨 설정
-                    naverMap.moveCamera(CameraUpdate.zoomTo(14.0))
+                        // 위치 업데이트 시작
+                        startLocationUpdates()
 
-                    // 위치 업데이트 시작
-                    startLocationUpdates()
-
-                    // 한 번만 데이터 새로고침
-                    resetPagingState()
-                    loadAllCategories()
+                        // 한 번만 데이터 새로고침
+                        resetPagingState()
+                        loadAllCategories()
+                    } catch (e: Exception) {
+                        Toast.makeText(
+                            requireContext(),
+                            "현재 위치로 이동 중 오류가 발생했습니다: ${e.message}",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                        Log.e("MapFragment", "moveToCurrentLocation 내부 오류", e)
+                    }
                 }
             } catch (e: Exception) {
                 withContext(Dispatchers.Main) {
@@ -1367,6 +1443,13 @@ class MapFragment : Fragment(), OnMapReadyCallback {
                     ).show()
                 }
                 Log.e("MapFragment", "moveToCurrentLocation 오류", e)
+            } finally {
+                // 로딩 다이얼로그 닫기
+                withContext(Dispatchers.Main) {
+                    if (loadingDialog.isShowing) {
+                        loadingDialog.dismiss()
+                    }
+                }
             }
         }
     }
@@ -1374,9 +1457,10 @@ class MapFragment : Fragment(), OnMapReadyCallback {
     private fun refreshMap() {
         lifecycleScope.launch {
             try {
-                // 로딩 표시
                 withContext(Dispatchers.Main) {
-                    Toast.makeText(requireContext(), "지도를 새로고침하는 중...", Toast.LENGTH_SHORT).show()
+                    if (!loadingDialog.isShowing) {
+                        loadingDialog.show()
+                    }
                 }
 
                 // 페이징 상태 초기화
@@ -1395,18 +1479,15 @@ class MapFragment : Fragment(), OnMapReadyCallback {
                     }
                 }
 
-                // 성공 메시지
-                withContext(Dispatchers.Main) {
-                    Toast.makeText(requireContext(), "새로고침 완료", Toast.LENGTH_SHORT).show()
-                }
             } catch (e: Exception) {
                 withContext(Dispatchers.Main) {
                     handleError(e)
-                    Toast.makeText(
-                        requireContext(),
-                        "새로고침 중 오류가 발생했습니다: ${e.message}",
-                        Toast.LENGTH_SHORT
-                    ).show()
+                }
+            } finally {
+                withContext(Dispatchers.Main) {
+                    if (loadingDialog.isShowing) {
+                        loadingDialog.dismiss()
+                    }
                 }
             }
         }
