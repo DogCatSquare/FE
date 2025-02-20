@@ -12,6 +12,9 @@
         android:layout_width="30dp"
         android:layout_height="30dp"
         android:layout_marginStart="24dp"
+        android:scaleType="centerCrop"
+        android:background="@drawable/circle_background"
+        android:clipToOutline="true"
         app:layout_constraintBottom_toBottomOf="@+id/walkTime"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="@+id/userName"
@@ -73,28 +76,43 @@
 
     <!-- Walk Image -->
 
-    <com.naver.maps.map.MapView
-        android:id="@+id/mapView"
-        android:layout_width="207dp"
-        android:layout_height="113dp"
-        app:layout_constraintBottom_toTopOf="@+id/walkText"
-        app:layout_constraintDimensionRatio="16:9"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.117"
+    <androidx.cardview.widget.CardView
+        android:id="@+id/mapCardView"
+        android:layout_width="200dp"
+        android:layout_height="120dp"
+        android:layout_marginTop="12dp"
+        android:layout_marginStart="24dp"
+        app:cardCornerRadius="12dp"
+        app:cardElevation="0dp"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/walkTime"
-        app:layout_constraintVertical_bias="0.423" />
+        app:layout_constraintTop_toBottomOf="@+id/walkTime">
 
-    <ImageView
-        android:id="@+id/walkImg"
+        <com.naver.maps.map.MapView
+            android:id="@+id/mapView"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+
+    </androidx.cardview.widget.CardView>
+
+    <androidx.cardview.widget.CardView
+        android:id="@+id/imageCardView"
         android:layout_width="120dp"
         android:layout_height="120dp"
         android:layout_marginStart="20dp"
-        android:layout_marginTop="12dp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toEndOf="@+id/mapView"
-        app:layout_constraintTop_toBottomOf="@+id/walkKm"
-        app:srcCompat="@drawable/dog_sample" />
+        android:layout_marginEnd="24dp"
+        app:cardCornerRadius="12dp"
+        app:cardElevation="0dp"
+        app:layout_constraintStart_toEndOf="@+id/mapCardView"
+        app:layout_constraintTop_toTopOf="@+id/mapCardView">
+
+        <ImageView
+            android:id="@+id/walkImg"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:scaleType="centerCrop"
+            app:srcCompat="@drawable/dog_sample" />
+
+    </androidx.cardview.widget.CardView>
 
     <!-- Walk Text -->
     <TextView
@@ -107,7 +125,7 @@
         android:text="산책로 본문"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/walkImg" />
+        app:layout_constraintTop_toBottomOf="@+id/mapCardView" />
 
     <!-- Profile Image -->
     <ImageView
