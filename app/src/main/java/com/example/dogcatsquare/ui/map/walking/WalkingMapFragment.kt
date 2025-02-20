@@ -1,197 +1,310 @@
 package com.example.dogcatsquare.ui.map.walking
 
-import android.annotation.SuppressLint
+import android.content.Context
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.ImageButton
-import android.widget.TextView
+import android.widget.Toast
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.viewModels
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
 import com.example.dogcatsquare.R
-import com.example.dogcatsquare.ui.map.walking.data.Response.WalkReview
-import com.example.dogcatsquare.ui.map.walking.data.ViewModel.WalkDetailState
-import com.example.dogcatsquare.ui.map.walking.data.ViewModel.WalkDetailViewModel
-import com.example.dogcatsquare.ui.map.walking.data.ViewModel.WalkReviewViewModel
-import com.google.android.gms.maps.model.Polyline
-import com.google.android.material.button.MaterialButton
+import com.example.dogcatsquare.RetrofitClient
+import com.example.dogcatsquare.data.map.PlaceDetailRequest
+import com.example.dogcatsquare.databinding.FragmentMapwalkingBinding
 import com.naver.maps.geometry.LatLng
 import com.naver.maps.map.CameraUpdate
 import com.naver.maps.map.MapFragment
 import com.naver.maps.map.NaverMap
+import com.naver.maps.map.OnMapReadyCallback
 import com.naver.maps.map.overlay.Marker
 import com.naver.maps.map.overlay.OverlayImage
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
-class WalkingMapFragment : Fragment() {
+class WalkingMapFragment : Fragment(), OnMapReadyCallback {
+    private var _binding: FragmentMapwalkingBinding? = null
+    private val binding get() = _binding!!
 
-    private lateinit var reviewAdapter: ReviewAdapter
-    private val walkReviewViewModel: WalkReviewViewModel by viewModels()
-
-    val address = arguments?.getString("address", "서대문 안산지락길")
-    private var placeId : Int = 3
-
-    private val walkDetailViewModel: WalkDetailViewModel by viewModels()
-
-//    // Naver Map 객체 선언
-    var naverMap: NaverMap? = null
-    private val coords = mutableListOf<LatLng>()
-    private lateinit var userPolyline: Polyline
+    private var placeId: Int = -1
+    private var latitude: Double = 0.0
+    private var longitude: Double = 0.0
+    private lateinit var naverMap: NaverMap
+    private var currentMarker: Marker? = null
+    private var isWished = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         arguments?.let {
-            placeId = it.getInt("placeId", 3)
+            placeId = it.getInt("placeId", -1)
+            latitude = it.getDouble("latitude", 0.0)
+            longitude = it.getDouble("longitude", 0.0)
         }
     }
 
-    @SuppressLint("MissingInflatedId")
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
-        val view: View = inflater.inflate(R.layout.fragment_mapwalking, container, false)
+    ): View {
+        _binding = FragmentMapwalkingBinding.inflate(inflater, container, false)
+        return binding.root
+    }
 
-        // API 호출
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
+        setupNaverMap()
+        setupButtons()
+
         if (placeId != -1) {
-            walkReviewViewModel.getWalkReviews(placeId)
-            walkDetailViewModel.fetchWalkDetail(placeId)
-            Log.d("WalkingMapFragment", placeId.toString())
+            loadPlaceDetails(placeId)
         }
+    }
 
-        // MapFragment 설정
+    private fun setupNaverMap() {
         val mapFragment = childFragmentManager.findFragmentById(R.id.mapView3) as MapFragment?
             ?: MapFragment.newInstance().also {
                 childFragmentManager.beginTransaction().replace(R.id.mapView3, it).commit()
             }
+        mapFragment.getMapAsync(this)
+    }
 
-        mapFragment.getMapAsync { naverMapInstance ->
-            naverMap = naverMapInstance
-            walkDetailViewModel.walkDetailState.observe(viewLifecycleOwner) { state ->
-                when (state) {
-                    is WalkDetailState.Success -> {
-                        Log.d("WalkingMapFragment", "Walk Detail Success: ${state.walkDetail}")
-                        val walkDetail = state.walkDetail
-                        if (walkDetail != null) {
-                            val placeName : TextView = view.findViewById(R.id.placeName)
-                            placeName.text = walkDetail.title
 
-                            // 좌표 가져오기
-                            val startCoordinate = walkDetail.startCoordinates.first()
-                            val latitude = startCoordinate.latitude
-                            val longitude = startCoordinate.longitude
+    private fun setupButtons() {
+        binding.apply {
+            backButton.setOnClickListener {
+                requireActivity().supportFragmentManager.popBackStack()
+            }
 
-                            Log.d("WalkingMapFragment", "${latitude + longitude}")
+            reviewAllBt.setOnClickListener {
+                parentFragmentManager.beginTransaction()
+                    .replace(R.id.main_frm, WalkingReviewAllFragment())
+                    .addToBackStack(null)
+                    .commit()
+            }
 
-                            // 지도에 마커 찍기
-                            setMarker(latitude, longitude)
-                            // 카메라 이동
-                            val startLatLng = LatLng(latitude, longitude)
-                            val cameraUpdate = CameraUpdate.scrollTo(startLatLng)
-                            naverMap!!.moveCamera(cameraUpdate)
-                        } else {
-                            Log.d("WalkingMapFragment", "데이터가 없습니다.")
+            addButton.setOnClickListener {
+                parentFragmentManager.beginTransaction()
+                    .replace(R.id.main_frm, WalkingMapViewFragment())
+                    .addToBackStack(null)
+                    .commit()
+            }
+
+            wishButton.setOnClickListener {
+                toggleWish(placeId)
+            }
+        }
+    }
+
+    private fun performSearch(placeName: String) {
+        lifecycleScope.launch {
+            try {
+                val response = withContext(Dispatchers.IO) {
+                    RetrofitClient.walkApiService.searchWalks(title = placeName)
+                }
+
+                if (response.isSuccess) {
+                    // walks가 아닌 result로 변경
+                    val walkCount = response.result.size
+                    binding.rightText.text = walkCount.toString()
+
+                    if (walkCount == 0) {
+                        Toast.makeText(requireContext(), "등록된 산책로가 없습니다.", Toast.LENGTH_SHORT).show()
+                    }
+
+                    // 로그로 확인
+                    Log.d("WalkingMapFragment", "검색된 산책로 수: $walkCount")
+                    response.result.forEach { walk ->
+                        Log.d("WalkingMapFragment", "산책로: ${walk.title}")
+                    }
+                } else {
+                    Toast.makeText(requireContext(), response.message, Toast.LENGTH_SHORT).show()
+                }
+
+            } catch (e: Exception) {
+                handleError(e)
+            }
+        }
+    }
+
+    private fun loadPlaceDetails(placeId: Int) {
+        lifecycleScope.launch {
+            try {
+                val token = getToken()
+                if (token == null) {
+                    Toast.makeText(requireContext(), "로그인이 필요합니다.", Toast.LENGTH_SHORT).show()
+                    return@launch
+                }
+
+                val request = PlaceDetailRequest(
+                    latitude = latitude,
+                    longitude = longitude
+                )
+
+                val response = withContext(Dispatchers.IO) {
+                    RetrofitClient.placesApiService.getPlaceById(
+                        token = "Bearer $token",
+                        placeId = placeId,
+                        request = request
+                    )
+                }
+
+                if (response.isSuccess) {
+                    response.result?.let { placeDetail ->
+                        binding.apply {
+                            placeName.text = placeDetail.name
+                            placeLocation.text = placeDetail.address.split(" ").getOrNull(2) ?: ""
+                            placeType.text = convertCategory(placeDetail.category)
+                            placeDistance.text = "${String.format("%.2f", placeDetail.distance)}km"
+                            addressTv.text = placeDetail.address
+
+                            // 장소 이름으로 산책로 검색 수행
+                            performSearch(placeDetail.name)
+
+                            isWished = placeDetail.wished
+                            wishButton.setImageResource(
+                                if (isWished) R.drawable.ic_wish_check
+                                else R.drawable.ic_wish
+                            )
+                        }
+
+                        if (::naverMap.isInitialized) {
+                            updateMapLocation(placeDetail.latitude, placeDetail.longitude)
                         }
                     }
-                    is WalkDetailState.Error -> {
-                        Log.e("WalkingMapFragment", "API 호출 실패: ${state.message}")
-                    }
-
-                    WalkDetailState.Loading -> TODO()
+                } else {
+                    Toast.makeText(
+                        requireContext(),
+                        response.message ?: "상세 정보를 불러오는데 실패했습니다.",
+                        Toast.LENGTH_SHORT
+                    ).show()
                 }
+            } catch (e: Exception) {
+                handleError(e)
             }
         }
+    }
 
-        // 산책로 위시 지정
-        val wishBt: ImageButton = view.findViewById(R.id.wishButton)
-        var isChecked = false
+    private fun toggleWish(placeId: Int) {
+        lifecycleScope.launch {
+            try {
+                val token = getToken()
+                if (token == null) {
+                    Toast.makeText(requireContext(), "로그인이 필요합니다.", Toast.LENGTH_SHORT).show()
+                    return@launch
+                }
 
-        wishBt.setOnClickListener {
-            isChecked = !isChecked
-            wishBt.setImageResource(if (isChecked) R.drawable.ic_wish_check else R.drawable.ic_wish)
-        }
-
-        // RecyclerView 설정
-        val recyclerView: RecyclerView = view.findViewById(R.id.review_rv)
-        recyclerView.layoutManager = LinearLayoutManager(context)
-
-        reviewAdapter = ReviewAdapter(emptyList())
-        recyclerView.adapter = reviewAdapter
-
-        // 산책로 후기
-        walkReviewViewModel.reviewResponse.observe(viewLifecycleOwner) { response ->
-            if (response != null) {
-                val reviews = response.result?.walkReviews?.map { walkReview ->
-                    WalkReview(
-                        reviewId = walkReview.reviewId,
-                        walkId = walkReview.walkId,
-                        content = walkReview.content,
-                        walkReviewImageUrl = walkReview.walkReviewImageUrl,
-                        createdAt = walkReview.createdAt,
-                        updatedAt = walkReview.updatedAt,
-                        createdBy = walkReview.createdBy
+                val response = withContext(Dispatchers.IO) {
+                    RetrofitClient.placesApiService.toggleWish(
+                        token = "Bearer $token",
+                        placeId = placeId
                     )
-                } ?: emptyList()
-
-                val reviewSubtitle: TextView = view.findViewById(R.id.rightText)
-                val reviewCount = reviews.size
-                reviewSubtitle.text = "$reviewCount"
-
-                Log.d("WalkingMapFragment", "Reviews: ${reviews.size}")  // 리뷰 개수 로그 확인
-
-                reviewAdapter.updateData(reviews)  // 데이터 업데이트
-
-                reviewAdapter.setOnItemClickListener { walkReview ->
-                    val fragment = WalkingStartViewFragment()
-
-                    val bundle = Bundle().apply {
-                        putString("walkId", walkReview.walkId.toString())
-                    }
-                    fragment.arguments = bundle
-
-                    parentFragmentManager.beginTransaction()
-                        .replace(R.id.main_frm, fragment)
-                        .addToBackStack(null)
-                        .commit()
                 }
 
+                if (response.isSuccess) {
+                    isWished = response.result ?: !isWished
+                    binding.wishButton.setImageResource(
+                        if (isWished) R.drawable.ic_wish_check
+                        else R.drawable.ic_wish
+                    )
 
-            } else {
-                Log.e("WalkingMapFragment", "Failed to load reviews.")
+                    Toast.makeText(
+                        requireContext(),
+                        if (isWished) "찜 목록에 추가되었습니다."
+                        else "찜 목록에서 제거되었습니다.",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                } else {
+                    Toast.makeText(
+                        requireContext(),
+                        response.message ?: "요청 처리에 실패했습니다.",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
+            } catch (e: Exception) {
+                handleError(e)
             }
         }
-
-        val reviewAll : ImageButton = view.findViewById(R.id.reviewAll_bt)
-        reviewAll.setOnClickListener {
-            parentFragmentManager.beginTransaction()
-                .replace(R.id.main_frm, WalkingReviewAllFragment())
-                .addToBackStack(null)
-                .commit()
-        }
-
-        val button: MaterialButton = view.findViewById(R.id.addButton)
-        button.setOnClickListener {
-            parentFragmentManager.beginTransaction()
-                .replace(R.id.main_frm, WalkingMapViewFragment())
-                .addToBackStack(null)
-                .commit()
-        }
-
-        return view
     }
 
-    // 마커 추가 함수
-    private fun setMarker(latitude: Double, longitude: Double) {
-        val startLatLng = LatLng(latitude, longitude)
-        Log.d("WalkingMapFragment", "setMarker실행")
-        val marker = Marker()
-        marker.position = startLatLng
-        marker.icon = OverlayImage.fromResource(R.drawable.ic_marker_park)  // 마커 아이콘
-        marker.map = naverMap
+    override fun onMapReady(map: NaverMap) {
+        naverMap = map
+        naverMap.apply {
+            uiSettings.apply {
+                isZoomControlEnabled = false
+                isScrollGesturesEnabled = false
+                isRotateGesturesEnabled = false
+                isTiltGesturesEnabled = false
+                isZoomGesturesEnabled = false
+            }
+        }
+        updateMapLocation(latitude, longitude)
     }
 
+    private fun updateMapLocation(lat: Double, lng: Double) {
+        val location = LatLng(lat, lng)
+
+        currentMarker?.map = null
+        currentMarker = Marker().apply {
+            position = location
+            icon = OverlayImage.fromResource(R.drawable.ic_marker_park)
+            map = naverMap
+        }
+
+        naverMap.moveCamera(CameraUpdate.scrollTo(location))
+    }
+
+    private fun getToken(): String? {
+        return activity?.getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
+            ?.getString("token", null)
+    }
+
+    private fun handleError(e: Exception) {
+        val errorMessage = when (e) {
+            is retrofit2.HttpException -> {
+                when (e.code()) {
+                    401 -> "로그인이 필요합니다."
+                    403 -> "권한이 없습니다."
+                    404 -> "데이터를 찾을 수 없습니다."
+                    else -> "서버 오류가 발생했습니다. (${e.code()})"
+                }
+            }
+            is java.io.IOException -> "네트워크 연결을 확인해주세요."
+            else -> "알 수 없는 오류가 발생했습니다: ${e.message}"
+        }
+        Toast.makeText(requireContext(), errorMessage, Toast.LENGTH_SHORT).show()
+        Log.e("WalkingMapFragment", "Error: ", e)
+    }
+
+    private fun convertCategory(category: String): String {
+        return when (category) {
+            "HOSPITAL" -> "동물병원"
+            "HOTEL" -> "호텔"
+            "RESTAURANT" -> "식당"
+            "CAFE" -> "카페"
+            "ETC" -> "기타"
+            else -> category
+        }
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
+    }
+
+    companion object {
+        fun newInstance(placeId: Int, latitude: Double, longitude: Double): WalkingMapFragment {
+            return WalkingMapFragment().apply {
+                arguments = Bundle().apply {
+                    putInt("placeId", placeId)
+                    putDouble("latitude", latitude)
+                    putDouble("longitude", longitude)
+                }
+            }
+        }
+    }
 }

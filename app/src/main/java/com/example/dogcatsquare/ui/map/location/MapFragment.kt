@@ -932,22 +932,10 @@ class MapFragment : Fragment(), OnMapReadyCallback {
                 }
             }
 
-            val walks = withContext(Dispatchers.IO) {
-                try {
-                    loadWalkData()
-                } catch (e: Exception) {
-                    Log.e("MapFragment", "산책로 로드 실패", e)
-                    emptyList()
-                }
-            }
-
-            val allPlaces = walks + places
-
             // UI 업데이트
-            updateUI(allPlaces)
+            updateUI(places)
 
-            Log.d("MapFragment", "총 ${allPlaces.size}개의 장소 로드 완료 " +
-                    "(일반 장소: ${places.size}, 산책로: ${walks.size})")
+            Log.d("MapFragment", "총 ${places.size}개의 장소 로드 완료")
 
         } catch (e: Exception) {
             Log.e("MapFragment", "데이터 로드 중 오류 발생", e)

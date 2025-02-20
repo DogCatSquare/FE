@@ -86,4 +86,8 @@ object RetrofitClient {
     val naverGeocodeService: NaverGeocodeService by lazy {
         naverRetrofit.create(NaverGeocodeService::class.java)
     }
+
+    val walkApiService: WalkApiService by lazy {
+        retrofit.create(WalkApiService::class.java)
+    }
 }
