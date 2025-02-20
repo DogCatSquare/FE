@@ -9,6 +9,7 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.example.dogcatsquare.LoadingDialog
 import com.example.dogcatsquare.R
 import com.example.dogcatsquare.RetrofitClient
 import com.example.dogcatsquare.data.map.MapPlace
@@ -39,6 +40,8 @@ class SearchResultFragment : Fragment() {
 
     private var shouldRefresh = false
 
+    private lateinit var loadingDialog: LoadingDialog
+
     private val scrollListener = object : RecyclerView.OnScrollListener() {
         override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
             super.onScrolled(recyclerView, dx, dy)
@@ -64,6 +67,7 @@ class SearchResultFragment : Fragment() {
         searchQuery = arguments?.getString("searchQuery")
         latitude = arguments?.getDouble("latitude", 37.5665) ?: 37.5665
         longitude = arguments?.getDouble("longitude", 126.9780) ?: 126.9780
+        loadingDialog = LoadingDialog(requireContext())
     }
 
     override fun onCreateView(
@@ -123,6 +127,14 @@ class SearchResultFragment : Fragment() {
         isLoading = true
         lifecycleScope.launch {
             try {
+                if (isNewSearch) {
+                    withContext(Dispatchers.Main) {
+                        if (!loadingDialog.isShowing) {
+                            loadingDialog.show()
+                        }
+                    }
+                }
+
                 val searchRequest = SearchPlacesRequest(
                     latitude = latitude,
                     longitude = longitude
@@ -156,16 +168,29 @@ class SearchResultFragment : Fragment() {
                     currentPage = response.result?.number ?: 0
                     isLastPage = response.result?.last ?: true
 
-                    if (isNewSearch) {
-                        updateRecyclerView(newPlaces)
-                    } else {
-                        appendToRecyclerView(newPlaces)
+                    withContext(Dispatchers.Main) {
+                        if (isNewSearch) {
+                            updateRecyclerView(newPlaces)
+                            // 검색 결과가 없을 때 noResultLayout 표시
+                            binding.noResultLayout.visibility = if (newPlaces.isEmpty()) View.VISIBLE else View.GONE
+                            binding.mapPlaceRV.visibility = if (newPlaces.isEmpty()) View.GONE else View.VISIBLE
+                        } else {
+                            appendToRecyclerView(newPlaces)
+                        }
                     }
                 }
             } catch (e: Exception) {
                 // 에러 발생 시 처리
             } finally {
                 isLoading = false
+                // 새로운 검색일 경우에만 로딩 다이얼로그 닫기
+                if (isNewSearch) {
+                    withContext(Dispatchers.Main) {
+                        if (loadingDialog.isShowing) {
+                            loadingDialog.dismiss()
+                        }
+                    }
+                }
             }
         }
     }
@@ -233,6 +258,10 @@ class SearchResultFragment : Fragment() {
 
     override fun onDestroyView() {
         super.onDestroyView()
+        // 로딩 다이얼로그가 표시되어 있다면 닫기
+        if (::loadingDialog.isInitialized && loadingDialog.isShowing) {
+            loadingDialog.dismiss()
+        }
         _binding = null
     }
 

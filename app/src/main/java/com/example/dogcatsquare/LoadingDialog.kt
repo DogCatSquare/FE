@@ -8,19 +8,22 @@ import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import android.view.Window
+import android.widget.TextView
 import com.example.dogcatsquare.databinding.DialogLoadingBinding
 
 class LoadingDialog(context: Context) : Dialog(context) {
     private lateinit var binding: DialogLoadingBinding
     private val handler = Handler(Looper.getMainLooper())
     private var currentDots = 0
-    private val loadingTexts = arrayOf("로딩중.", "로딩중..", "로딩중...")
+    private val loadingTexts = arrayOf("로딩중", "로딩중.", "로딩중..", "로딩중...")
 
     private val updateLoadingText = object : Runnable {
         override fun run() {
-            binding.loadingTextView.text = loadingTexts[currentDots]
-            currentDots = (currentDots + 1) % loadingTexts.size
-            handler.postDelayed(this, 500) // 0.5초마다 텍스트 업데이트
+            if (isShowing) {  // 다이얼로그가 표시 중일 때만 실행
+                binding.loadingTextView.text = loadingTexts[currentDots]
+                currentDots = (currentDots + 1) % loadingTexts.size
+                handler.postDelayed(this, 500)
+            }
         }
     }
 
@@ -30,18 +33,20 @@ class LoadingDialog(context: Context) : Dialog(context) {
         binding = DialogLoadingBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        // 다이얼로그 배경을 투명하게 설정
         window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
-
-        // 다이얼로그 영역 밖 터치 시 다이얼로그가 닫히지 않도록 설정
         setCanceledOnTouchOutside(false)
+    }
 
-        // 로딩 텍스트 애니메이션 시작
+    override fun show() {
+        super.show()
+        // show 될 때마다 애니메이션 새로 시작
+        currentDots = 0
         startLoadingAnimation()
     }
 
     private fun startLoadingAnimation() {
-        handler.post(updateLoadingText)
+        handler.removeCallbacks(updateLoadingText)  // 기존 콜백 제거
+        handler.post(updateLoadingText)  // 새로운 애니메이션 시작
     }
 
     override fun dismiss() {
