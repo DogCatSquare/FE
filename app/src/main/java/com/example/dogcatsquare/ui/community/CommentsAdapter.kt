@@ -4,6 +4,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
+import android.widget.PopupMenu
 import android.widget.TextView
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -70,7 +71,7 @@ class CommentsAdapter(
 
         // 메뉴 버튼 클릭 이벤트 처리
         holder.ivReplyMenu.setOnClickListener { view ->
-            val popup = androidx.appcompat.widget.PopupMenu(view.context, view)
+            val popup = PopupMenu(view.context, view)
             popup.menuInflater.inflate(R.menu.comment_menu, popup.menu)
             popup.setOnMenuItemClickListener { menuItem ->
                 when (menuItem.itemId) {

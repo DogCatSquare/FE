@@ -19,7 +19,7 @@ class PostAdapter(private val hotPostList: ArrayList<GetAllPostResult>) :
     RecyclerView.Adapter<PostAdapter.PostViewHolder>() {
 
     interface OnItemClickListener {
-        fun onItemClick(post: com.example.dogcatsquare.data.model.post.Post)
+        fun onItemClick(post: GetAllPostResult)
     }
 
     private lateinit var mItemClickListener: OnItemClickListener
@@ -52,14 +52,10 @@ class PostAdapter(private val hotPostList: ArrayList<GetAllPostResult>) :
                 .placeholder(R.drawable.ic_profile_placeholder)
                 .into(profile)
 
-            if (!post.thumbnailURL.isNullOrEmpty()) {
-                Glide.with(itemView.context)
-                    .load(post.thumbnailURL)
-                    .placeholder(R.drawable.ic_profile_default)
-                    .into(thumbnail)
-            } else {
-                thumbnail.setImageResource(R.drawable.ic_sample_thumbnail)
-            }
+            Glide.with(itemView.context)
+                .load(post.thumbnailURL?.first())
+                .placeholder(R.drawable.ic_profile_default)
+                .into(thumbnail)
         }
     }
 
@@ -70,6 +66,9 @@ class PostAdapter(private val hotPostList: ArrayList<GetAllPostResult>) :
 
     override fun onBindViewHolder(holder: PostViewHolder, position: Int) {
         holder.bind(hotPostList[position])
+        holder.itemView.setOnClickListener {
+            mItemClickListener.onItemClick(hotPostList[position])
+        }
     }
 
     override fun getItemCount(): Int = hotPostList.size

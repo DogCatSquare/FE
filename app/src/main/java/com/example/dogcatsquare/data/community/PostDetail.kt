@@ -9,12 +9,12 @@ data class PostDetail(
     val title: String,
     val content: String,
     @SerializedName("video_URL")
-    val videoUrl: String,
+    val videoUrl: String?,
     @SerializedName("thumbnail_URL")
-    val thumbnailUrl: String,
+    val thumbnailUrl: String?,
     @SerializedName("profileImage_URL")
-    val profileImageUrl: String,
-    val images: List<String>,
+    val profileImageUrl: String?,
+    val images: List<String>?,
     @SerializedName("like_count")
     val likeCount: Int,
     @SerializedName("comment_count")

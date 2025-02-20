@@ -14,60 +14,62 @@ import com.example.dogcatsquare.data.community.GetAllPostResult
 class GetAllPostAdapter(private val allPostList: ArrayList<GetAllPostResult>) :
     RecyclerView.Adapter<GetAllPostAdapter.PostViewHolder>() {
 
-        interface OnItemClickListener {
-            fun onItemClick(post: com.example.dogcatsquare.data.model.post.Post)
-        }
+    interface OnItemClickListener {
+        fun onItemClick(post: GetAllPostResult)
+    }
 
-        private lateinit var mItemClickListener: OnItemClickListener
+    private lateinit var mItemClickListener: OnItemClickListener
 
-        fun setMyItemClickListener(itemClickListener: OnItemClickListener) {
-            mItemClickListener = itemClickListener
-        }
+    fun setMyItemClickListener(itemClickListener: OnItemClickListener) {
+        mItemClickListener = itemClickListener
+    }
 
-        inner class PostViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-            private val titleText: TextView = itemView.findViewById(R.id.tvTitle)
-            private val contentPreview: TextView = itemView.findViewById(R.id.tvContentPreview)
-            private val thumbnail: ImageView = itemView.findViewById(R.id.ivThumbnail)
-            private val likeCountText: TextView = itemView.findViewById(R.id.tvLikeCount)
-            private val commentCountText: TextView = itemView.findViewById(R.id.tvCommentCount)
-            private val username: TextView = itemView.findViewById(R.id.tvNickname)
-            private val breed: TextView = itemView.findViewById(R.id.tvDogBreed)
-            private val profile: ImageView = itemView.findViewById(R.id.post_profile_iv)
+    inner class PostViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+        private val titleText: TextView = itemView.findViewById(R.id.tvTitle)
+        private val contentPreview: TextView = itemView.findViewById(R.id.tvContentPreview)
+        private val thumbnail: ImageView = itemView.findViewById(R.id.ivThumbnail)
+        private val likeCountText: TextView = itemView.findViewById(R.id.tvLikeCount)
+        private val commentCountText: TextView = itemView.findViewById(R.id.tvCommentCount)
+        private val username: TextView = itemView.findViewById(R.id.tvNickname)
+        private val breed: TextView = itemView.findViewById(R.id.tvDogBreed)
+        private val profile: ImageView = itemView.findViewById(R.id.post_profile_iv)
 
-            fun bind(post: GetAllPostResult) {
-                titleText.text = post.title ?: "제목 없음"
-                contentPreview.text = post.content ?: "내용 없음"
-                likeCountText.text = post.likeCount.toString()
-                commentCountText.text = post.commentCount.toString()
-                commentCountText.text = post.commentCount.toString()
-                username.text = post.username
-                breed.text = post.animal_type
+        fun bind(post: GetAllPostResult) {
+            titleText.text = post.title ?: "제목 없음"
+            contentPreview.text = post.content ?: "내용 없음"
+            likeCountText.text = post.likeCount.toString()
+            commentCountText.text = post.commentCount.toString()
+            username.text = post.username
+            breed.text = post.animal_type
 
+            Glide.with(itemView.context)
+                .load(post.profileImageURL)
+                .apply(RequestOptions.circleCropTransform())
+                .placeholder(R.drawable.ic_profile_placeholder)
+                .into(profile)
+
+            if (!post.thumbnailURL.isNullOrEmpty()) {
                 Glide.with(itemView.context)
-                    .load(post.profileImageURL)
-                    .apply(RequestOptions.circleCropTransform())
-                    .placeholder(R.drawable.ic_profile_placeholder)
-                    .into(profile)
-
-                if (!post.thumbnailURL.isNullOrEmpty()) {
-                    Glide.with(itemView.context)
-                        .load(post.thumbnailURL)
-                        .placeholder(R.drawable.ic_sample_thumbnail)
-                        .into(thumbnail)
-                } else {
-                    thumbnail.setImageResource(R.drawable.ic_sample_thumbnail)
-                }
+                    .load(post.thumbnailURL?.first())
+                    .placeholder(R.drawable.ic_profile_default)
+                    .into(thumbnail)
+            } else {
+                thumbnail.setImageResource(R.drawable.ic_profile_default)
             }
         }
+    }
 
-        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): PostViewHolder {
-            val view = LayoutInflater.from(parent.context).inflate(R.layout.item_post, parent, false)
-            return PostViewHolder(view)
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): PostViewHolder {
+        val view = LayoutInflater.from(parent.context).inflate(R.layout.item_post, parent, false)
+        return PostViewHolder(view)
+    }
+
+    override fun onBindViewHolder(holder: PostViewHolder, position: Int) {
+        holder.bind(allPostList[position])
+        holder.itemView.setOnClickListener {
+            mItemClickListener.onItemClick(allPostList[position])
         }
+    }
 
-        override fun onBindViewHolder(holder: PostViewHolder, position: Int) {
-            holder.bind(allPostList[position])
-        }
-
-        override fun getItemCount(): Int = allPostList.size
+    override fun getItemCount(): Int = allPostList.size
 }

@@ -59,7 +59,7 @@ class CommunityHomeFragment : Fragment(R.layout.fragment_community_home) {
 
         // 클릭 인터페이스
         hotPostRVAdapter.setMyItemClickListener(object : PostAdapter.OnItemClickListener {
-            override fun onItemClick(post: com.example.dogcatsquare.data.model.post.Post) {
+            override fun onItemClick(post: GetAllPostResult) {
                 val intent = Intent(requireContext(), PostDetailActivity::class.java).apply {
                     putExtra("postId", post.id)
                 }
@@ -119,7 +119,7 @@ class CommunityHomeFragment : Fragment(R.layout.fragment_community_home) {
         })
     }
 
-    // 전체 게시물
+    // hot post rv
     private fun setupTipPostRecyclerView() {
         allPostDatas.clear()
 
@@ -130,7 +130,7 @@ class CommunityHomeFragment : Fragment(R.layout.fragment_community_home) {
 
         // 클릭 인터페이스
         allPostRVAdapter.setMyItemClickListener(object : GetAllPostAdapter.OnItemClickListener {
-            override fun onItemClick(post: com.example.dogcatsquare.data.model.post.Post) {
+            override fun onItemClick(post: GetAllPostResult) {
                 val intent = Intent(requireContext(), PostDetailActivity::class.java).apply {
                     putExtra("postId", post.id)
                 }
@@ -192,13 +192,21 @@ class CommunityHomeFragment : Fragment(R.layout.fragment_community_home) {
         })
     }
 
-    private fun editPost(post: LocalPost) {
-        val intent = Intent(requireContext(), EditPostActivity::class.java)
-        intent.putExtra("POST_ID", post.id)
-        startActivity(intent)
-    }
-
-    private fun deletePost(position: Int) {
-        localPostAdapter.removePost(position)
+    override fun onResume() {
+        super.onResume()
+        val token = getToken()
+        if (token != null) {
+            val hotAdapter = binding.rvPopularPosts.adapter as? PostAdapter
+            hotAdapter?.let {
+                hotPostDatas.clear()
+                getPopularPost(it)
+            }
+            // 꿀팁 게시물(Tip Post) 데이터 업데이트
+            val tipAdapter = binding.rvTips.adapter as? GetAllPostAdapter
+            tipAdapter?.let {
+                allPostDatas.clear()
+                getTipPost(it)
+            }
+        }
     }
 }

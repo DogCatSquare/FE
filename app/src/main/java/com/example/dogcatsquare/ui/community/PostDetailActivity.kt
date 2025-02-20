@@ -42,8 +42,8 @@ class PostDetailActivity : AppCompatActivity(), CommentActionListener {
     private val currentUserId: Long = 1L  // 실제 앱에서는 로그인한 사용자 ID 사용
     private val postViewModel: PostViewModel by viewModels()
     private var postId: Int = -1
-    private var isLiked: Boolean = false  // 현재 좋아요 상태 저장
-    private var likeCount: Int = 0  // 좋아요 개수 저장
+    private var isLiked: Boolean? = null // 현재 좋아요 상태 저장
+    private var like_count: Int = 0  // 좋아요 개수 저장
 
     private var commentDatas = ArrayList<Comment>()
 
@@ -117,9 +117,22 @@ class PostDetailActivity : AppCompatActivity(), CommentActionListener {
         }
 
         // 게시글 상세 정보 로드
-        loadPostDetail(postId.toInt())
+        loadPostDetail(postId)
 
+        isLiked?.let { setLikeButtonState(it) }
+        binding.ivLike.setOnClickListener {
+            toggleLike()
+        }
 
+        postViewModel.likedPosts.observe(this) { likedPosts ->
+            likedPosts[postId]?.let { isLiked ->
+                setLikeButtonState(isLiked)
+            }
+        }
+
+        binding.ivBack.setOnClickListener {
+            finish()
+        }
     }
 
     // 댓글 조회
@@ -250,16 +263,6 @@ class PostDetailActivity : AppCompatActivity(), CommentActionListener {
             dialog.cancel()
         }
         builder.show()
-
-        binding.ivLike.setOnClickListener {
-            toggleLike()
-        }
-
-        postViewModel.likedPosts.observe(this) { likedPosts ->
-            likedPosts[postId]?.let { isLiked ->
-                setLikeButtonState(isLiked)
-            }
-        }
     }
 
     // CommentActionListener 구현 - 댓글 삭제
@@ -297,6 +300,10 @@ class PostDetailActivity : AppCompatActivity(), CommentActionListener {
                         binding.tvLikeCount.text = postDetail.likeCount.toString()
                         binding.tvCommentCount.text = postDetail.commentCount.toString()
                         binding.tvDate.text = postDetail.createdAt
+                        binding.tvUsername.text = postDetail.username
+
+                        like_count = postDetail.likeCount
+
                         Glide.with(this@PostDetailActivity)
                             .load(postDetail.profileImageUrl)
                             .placeholder(R.drawable.ic_profile_placeholder)
@@ -354,12 +361,17 @@ class PostDetailActivity : AppCompatActivity(), CommentActionListener {
             retrofit.fetchLike("Bearer $token", postId, userId).enqueue(object : Callback<LikeResponse> {
                 override fun onResponse(call: Call<LikeResponse>, response: Response<LikeResponse>) {
                     if (response.isSuccessful && response.body()?.isSuccess == true) {
-                        isLiked = response.body()?.result == "좋아요가 추가되었습니다."
-                        likeCount = if (isLiked) likeCount + 1 else likeCount
-                        binding.tvLikeCount.text = likeCount.toString()
-
-                        // ✅ ViewModel에 좋아요 상태 업데이트
-                        postViewModel.updateLikeStatus(postId, isLiked)
+                        val resultMessage = response.body()?.result ?: ""
+                        Log.d("ToggleLike", "resultMessage: $resultMessage")
+                        if(resultMessage == "좋아요가 추가되었습니다.") {
+                            isLiked = true
+                            like_count++  // 좋아요 추가
+                        } else if(resultMessage == "좋아요가 취소되었습니다.") {
+                            isLiked = false
+                            like_count--  // 좋아요 취소
+                        }
+                        binding.tvLikeCount.text = like_count.toString()
+                        isLiked?.let { postViewModel.updateLikeStatus(postId, it) }
                     }
                 }
 

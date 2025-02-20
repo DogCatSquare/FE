@@ -78,7 +78,7 @@ class SignupActivity : AppCompatActivity() {
 
         binding.emailCheckBtn.setOnClickListener {
             val email = binding.emailEt.text.toString()
-            if (isEmailUsed(email)) { // 이미 사용 중인 이메일
+            if (!isEmailUsed(email)) { // 이미 사용 중인 이메일
                 binding.signupEmailCheckTv.text = "이미 사용 중인 이메일입니다"
                 binding.signupEmailCheckTv.setTextColor(ContextCompat.getColor(this, R.color.red))
             }

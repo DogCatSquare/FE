@@ -83,7 +83,7 @@ class EditPostActivity : AppCompatActivity() {
         }
 
         // Intent에서 데이터 가져오기
-        postId = intent.getLongExtra("postId", -1L)
+        postId = intent.getIntExtra("postId", -1).toLong()
         postType = intent.getStringExtra("postType") ?: "post" // "tip"일 수도 있으나, API는 동일함.
 
         etTitle.setText(intent.getStringExtra("title"))
