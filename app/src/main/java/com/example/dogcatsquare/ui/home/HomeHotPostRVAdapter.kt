@@ -46,6 +46,11 @@ class HomeHotPostRVAdapter(private val hotPostList: ArrayList<com.example.dogcat
                 .load(hotPost.profileImage_URL)
                 .placeholder(R.drawable.ic_profile_img_default)
                 .into(binding.postProfileIv)
+            Glide.with(itemView.context)
+                .load(hotPost.images?.first())
+                .placeholder(R.drawable.ic_profile_default)
+                .into(binding.imageView11)
+
         }
     }
 }
