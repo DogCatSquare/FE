@@ -87,7 +87,9 @@
             android:layout_width="20dp"
             android:layout_height="20dp"
             android:src="@drawable/ic_post_menu"
-            android:contentDescription="게시글 메뉴" />
+            android:contentDescription="게시글 메뉴"
+            android:clickable="true"
+            android:focusable="true" />
     </LinearLayout>
 
     <!-- 썸네일 이미지 -->

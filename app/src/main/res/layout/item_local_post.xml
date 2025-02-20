@@ -61,6 +61,14 @@
             android:textColor="#0E0E0E" />
 
         <!-- 하트 아이콘 -->
+        <ImageView
+            android:id="@+id/ivLikeButton"
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            android:src="@drawable/ic_like"
+            android:layout_marginStart="8dp"
+            android:layout_marginEnd="8dp"
+            android:contentDescription="좋아요" />
 
         <!-- 메뉴 아이콘 -->
         <ImageView
@@ -68,7 +76,10 @@
             android:layout_width="18dp"
             android:layout_height="18dp"
             android:src="@drawable/ic_post_menu"
-            android:contentDescription="메뉴" />
+            android:contentDescription="메뉴"
+            android:clickable="true"
+            android:focusable="true" />
+
     </LinearLayout>
 
     <!-- 본문 내용 -->

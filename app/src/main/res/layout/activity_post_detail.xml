@@ -120,7 +120,9 @@
                     android:layout_width="18dp"
                     android:layout_height="18dp"
                     android:src="@drawable/ic_post_menu"
-                    android:contentDescription="메뉴" />
+                    android:contentDescription="메뉴"
+                    android:clickable="true"
+                    android:focusable="true" />
             </LinearLayout>
 
             <!-- 이미지 -->
