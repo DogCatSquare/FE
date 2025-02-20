@@ -20,7 +20,9 @@ import com.example.dogcatsquare.databinding.FragmentWishPlaceBinding
 import com.example.dogcatsquare.databinding.FragmentWishWalkBinding
 import com.example.dogcatsquare.ui.map.location.MapButtonRVAdapter
 import com.example.dogcatsquare.ui.map.location.MapDetailFragment
+import com.example.dogcatsquare.ui.map.location.MapFragment
 import com.example.dogcatsquare.ui.map.location.SortDialogFragment
+import com.example.dogcatsquare.ui.map.walking.WalkingMapFragment
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -76,7 +78,14 @@ class WishWalkFragment : Fragment() {
 
         wishWalkAdapter.setMyItemClickListener(object : WishWalkAdapter.OnItemClickListener{
             override fun onItemClick(place: WishPlace) {
+                val (currentLat, currentLng) = MapFragment().getMapCurrentPosition()
+
                 // 상세 조회 부분
+                val fragment = WalkingMapFragment.newInstance(place.id, currentLat, currentLng)
+                requireActivity().supportFragmentManager.beginTransaction()
+                    .replace(R.id.main_frm, fragment)
+                    .addToBackStack(null)
+                    .commitAllowingStateLoss()
             }
 
         })
