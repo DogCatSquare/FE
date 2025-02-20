@@ -96,14 +96,14 @@ class WalkingReviewFragment : Fragment(), OnMapReadyCallback {
             }
         mapFragment.getMapAsync(this)
 
-//        // Completion 버튼 (다음 화면으로 이동)
-//        val completionButton: Button = view.findViewById(R.id.Completion_bt)
-//        completionButton.setOnClickListener {
-//            val transaction: FragmentTransaction = parentFragmentManager.beginTransaction()
-//            transaction.replace(R.id.main_frm, WalkingReviewTypeFragment())
-//            transaction.addToBackStack(null)
-//            transaction.commit()
-//        }
+        // Completion 버튼 (다음 화면으로 이동)
+        val completionButton: Button = view.findViewById(R.id.Completion_bt)
+        completionButton.setOnClickListener {
+            val transaction: FragmentTransaction = parentFragmentManager.beginTransaction()
+            transaction.replace(R.id.main_frm, WalkingReviewTypeFragment())
+            transaction.addToBackStack(null)
+            transaction.commit()
+        }
 
         reviewContentEditText = view.findViewById(R.id.introduction_tv)
         submitReviewButton = view.findViewById(R.id.Completion_bt)
@@ -114,19 +114,18 @@ class WalkingReviewFragment : Fragment(), OnMapReadyCallback {
                 Toast.makeText(requireContext(), "후기 내용을 입력하세요.", Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
-            // 이미지 관련 코드 주석 처리
-            /*
+
             if (selectedBitmap == null) {
                 Toast.makeText(requireContext(), "후기 이미지는 필수입니다.", Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
+
             val imageBase64 = bitmapToBase64(selectedBitmap!!)
-            */
-            // 이미지 없이 후기를 전송 (imageBase64 인자는 null)
-//            viewModel.submitWalkReview(walkId, content, null)
+            // 후기 제출 API 호출
+            viewModel.saveWalkReview(walkId, content, imageBase64)
         }
 
-
+        // 후기 제출 성공 시 처리
         viewModel.reviewResponse.observe(viewLifecycleOwner) { response ->
             response?.let {
                 Log.d("WalkReview", "후기 제출 성공: $it")
@@ -138,7 +137,6 @@ class WalkingReviewFragment : Fragment(), OnMapReadyCallback {
                 transaction.commit()
             }
         }
-
     }
 
     private fun openGallery() {
@@ -217,4 +215,3 @@ class WalkingReviewFragment : Fragment(), OnMapReadyCallback {
         return Base64.encodeToString(byteArray, Base64.NO_WRAP)
     }
 }
-

@@ -2,14 +2,16 @@ package com.example.dogcatsquare.ui.map.walking
 
 import com.example.dogcatsquare.ui.map.walking.data.Request.Coordinate
 import com.example.dogcatsquare.ui.map.walking.data.Response.WalkDetailResponse
-import com.example.dogcatsquare.ui.map.walking.data.Request.WalkReviewRequest
 import com.example.dogcatsquare.ui.map.walking.data.Response.WalkResponse
 import com.example.dogcatsquare.ui.map.walking.data.Response.WalkReviewResponse
+import okhttp3.MultipartBody
+import okhttp3.RequestBody
 import retrofit2.Call
 import retrofit2.http.Body
 import retrofit2.http.GET
-import retrofit2.http.Headers
+import retrofit2.http.Multipart
 import retrofit2.http.POST
+import retrofit2.http.Part
 import retrofit2.http.Path
 
 interface WalkApiService {
@@ -26,15 +28,13 @@ interface WalkApiService {
     @GET("/api/walks/{walkId}/reviews")
     fun getWalkReview(@Path("walkId") walkId: Int): Call<WalkReviewResponse>
 
-
-    // 산책로 후기 등록
-    @POST("/api/walks/{walkId}/reviews")
-    @Headers("Content-Type: application/json")
-    fun submitWalkReview(
+    //산책로 후기 등록
+    @Multipart
+    @POST("api/walks/{walkId}/reviews")
+    fun saveWalkReview(
         @Path("walkId") walkId: Long,
-        @Body reviewRequest: WalkReviewRequest
+        @Part("reviewCreateRequestDto") reviewCreateRequestDto: RequestBody,
+        @Part walkReviewImages: List<MultipartBody.Part>
     ): Call<WalkReviewResponse>
-
-
 }
 
