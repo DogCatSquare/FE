@@ -100,4 +100,11 @@ interface PlacesApiService {
         @Query("page") page: Int,
         @Body request: FilterPlacesRequest
     ): BaseResponse<PageResponse<PlaceItem>>
+
+    @retrofit2.http.DELETE("api/places/{placeId}/reviews/{reviewId}")
+    suspend fun deleteReview(
+        @Header("Authorization") token: String,
+        @Path("placeId") placeId: Int,
+        @Path("reviewId") reviewId: Int
+    ): BaseResponse<Int>
 }
