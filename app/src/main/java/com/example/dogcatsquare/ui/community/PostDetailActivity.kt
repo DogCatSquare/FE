@@ -2,10 +2,12 @@ package com.example.dogcatsquare.ui.community
 
 import PostApiService
 import android.content.Context
+import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.view.View
 import android.widget.EditText
+import android.widget.PopupMenu
 import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.app.AlertDialog
@@ -86,8 +88,38 @@ class PostDetailActivity : AppCompatActivity(), CommentActionListener {
             }
         }
 
+        // onCreate()에서 뷰 초기화 후
+        binding.ivPostMenu.setOnClickListener { view ->
+            val popup = PopupMenu(this, view)
+            popup.menuInflater.inflate(R.menu.post_menu, popup.menu)
+            popup.setOnMenuItemClickListener { menuItem ->
+                when (menuItem.itemId) {
+                    R.id.menu_edit -> {
+                        // 수정 화면으로 전환 (필요한 데이터 추가 전달)
+                        val editIntent = Intent(this, EditPostActivity::class.java).apply {
+                            putExtra("postId", postId)
+                            putExtra("title", binding.tvPostTitle.text.toString())
+                            putExtra("content", binding.tvPostContent.text.toString())
+                            // 예: putExtra("videoUrl", ...), putExtra("imageUrl", ...) 등
+                        }
+                        startActivity(editIntent)
+                        true
+                    }
+                    R.id.menu_delete -> {
+                        // 삭제 로직 구현 (예: API 호출 후 결과 처리)
+                        Toast.makeText(this, "게시글 삭제", Toast.LENGTH_SHORT).show()
+                        true
+                    }
+                    else -> false
+                }
+            }
+            popup.show()
+        }
+
         // 게시글 상세 정보 로드
         loadPostDetail(postId.toInt())
+
+
     }
 
     // 댓글 조회
