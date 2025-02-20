@@ -6,13 +6,36 @@
     android:layout_height="match_parent"
     android:background="@color/white">
 
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline_end"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="@color/white"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.95" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline_mid"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="@color/white"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.8" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline_start"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="@color/white"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.05" />
+
     <ImageView
         android:id="@+id/filter"
         android:layout_width="40dp"
         android:layout_height="40dp"
-        android:layout_marginEnd="7dp"
         app:layout_constraintBottom_toBottomOf="@+id/searchBox"
-        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/guideline_end"
         app:layout_constraintTop_toTopOf="@+id/searchBox"
         app:layout_constraintVertical_bias="0.571"
         app:srcCompat="@drawable/btn_filter"
@@ -22,15 +45,14 @@
         android:id="@+id/searchBox"
         android:layout_width="293dp"
         android:layout_height="47dp"
-        android:layout_marginStart="27dp"
-        android:layout_marginTop="12dp"
-        android:layout_marginEnd="21dp"
+        android:layout_marginStart="15dp"
+        android:layout_marginTop="15dp"
         android:background="@drawable/bg_rounded_et"
         android:clickable="true"
         android:focusable="false"
         android:hint="검색어를 입력해주세요"
         android:textSize="14sp"
-        app:layout_constraintEnd_toStartOf="@+id/filter"
+        app:layout_constraintEnd_toStartOf="@+id/guideline_mid"
         app:layout_constraintStart_toEndOf="@+id/backButton"
         app:layout_constraintTop_toTopOf="parent"
         tools:ignore="MissingConstraints" />
@@ -48,10 +70,9 @@
         android:id="@+id/backButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginLeft="15dp"
         android:src="@drawable/ic_back_button"
         app:layout_constraintBottom_toBottomOf="@+id/searchBox"
-        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/guideline_start"
         app:layout_constraintTop_toTopOf="@+id/searchBox" />
 
     <ScrollView
@@ -70,33 +91,46 @@
             android:layout_height="match_parent">
 
 
-            <TextView
-                android:id="@+id/placeName"
+            <androidx.constraintlayout.widget.Guideline
+                android:id="@+id/guideline_end2"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="35dp"
+                android:background="@color/white"
+                android:orientation="vertical"
+                app:layout_constraintGuide_percent="0.95" />
+
+            <androidx.constraintlayout.widget.Guideline
+                android:id="@+id/guideline_start2"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@color/white"
+                android:orientation="vertical"
+                app:layout_constraintGuide_percent="0.05" />
+
+            <TextView
+                android:id="@+id/placeName"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
                 android:layout_marginTop="15dp"
-                android:layout_marginEnd="235dp"
                 android:layout_marginBottom="4dp"
                 android:text="서대문 안산지락길"
                 android:textColor="#0E0E0E"
                 android:textSize="20sp"
                 android:textStyle="bold"
                 app:layout_constraintBottom_toTopOf="@+id/placeType"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toStartOf="@+id/guideline_end2"
+                app:layout_constraintStart_toStartOf="@+id/guideline_start2"
                 app:layout_constraintTop_toTopOf="parent" />
 
             <ImageView
                 android:id="@+id/imageView1"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="15dp"
                 android:layout_marginTop="55dp"
                 android:layout_marginBottom="10dp"
                 android:src="@drawable/ic_myreview"
                 app:layout_constraintBottom_toTopOf="@+id/mapView3"
-                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintStart_toStartOf="@+id/guideline_start2"
                 app:layout_constraintTop_toTopOf="parent"
                 app:tint="#696969" />
 
@@ -104,14 +138,13 @@
                 android:id="@+id/placeType"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="30dp"
                 android:layout_marginTop="4dp"
                 android:layout_marginBottom="7dp"
                 android:text=" 리뷰(3)"
                 android:textColor="#696969"
                 android:textSize="14sp"
                 app:layout_constraintBottom_toTopOf="@+id/mapView3"
-                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintStart_toEndOf="@+id/imageView1"
                 app:layout_constraintTop_toBottomOf="@+id/placeName" />
 
             <ImageView
@@ -176,38 +209,34 @@
 
             <androidx.fragment.app.FragmentContainerView
                 android:id="@+id/mapView3"
-                android:layout_width="390dp"
+                android:layout_width="0dp"
                 android:layout_height="201dp"
-                android:layout_marginStart="10dp"
                 android:layout_marginTop="8dp"
-                android:layout_marginEnd="5dp"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintHorizontal_bias="0.0"
-                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toStartOf="@+id/guideline_end2"
+                app:layout_constraintStart_toStartOf="@+id/guideline_start2"
                 app:layout_constraintTop_toBottomOf="@+id/placeType" />
 
             <ImageButton
                 android:id="@+id/wishButton"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="70dp"
+                android:layout_marginEnd="-12dp"
                 android:backgroundTint="@color/white"
                 android:src="@drawable/ic_wish"
                 app:layout_constraintBottom_toBottomOf="@+id/placeDistance"
-                app:layout_constraintStart_toEndOf="@+id/placeDistance"
+                app:layout_constraintEnd_toStartOf="@+id/guideline_end2"
                 app:layout_constraintTop_toTopOf="@+id/placeDistance" />
 
             <TextView
                 android:id="@+id/address_title"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="24dp"
                 android:layout_marginTop="10dp"
                 android:text="주소"
                 android:textColor="#0E0E0E"
                 android:textSize="16sp"
                 app:layout_constraintEnd_toStartOf="@+id/address_tv"
-                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintStart_toStartOf="@+id/guideline_start2"
                 app:layout_constraintTop_toBottomOf="@+id/mapView3" />
 
             <TextView
@@ -283,7 +312,7 @@
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/reviewAll_bt"
                 app:layout_constraintVertical_bias="0.107"
-                tools:listitem="@layout/item_mapwaling_review" />
+                tools:listitem="@layout/item_mapwalking" />
 
             <Button
                 android:id="@+id/addButton"
