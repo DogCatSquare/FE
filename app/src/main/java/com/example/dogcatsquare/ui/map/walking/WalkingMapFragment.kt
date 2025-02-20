@@ -7,6 +7,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
+import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -24,6 +25,7 @@ import com.naver.maps.map.overlay.OverlayImage
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import androidx.constraintlayout.widget.ConstraintSet
 
 class WalkingMapFragment : Fragment(), OnMapReadyCallback {
     private var _binding: FragmentMapwalkingBinding? = null
@@ -148,8 +150,33 @@ class WalkingMapFragment : Fragment(), OnMapReadyCallback {
                             addressTv.text = placeDetail.address
                             rightText.text = walkResponse.walks.size.toString()
 
-                            // RecyclerView에 데이터 설정
-                            walkRVAdapter.updateData(walkResponse.walks)
+                            // 산책로 데이터 유무에 따른 뷰 처리
+                            if (walkResponse.walks.isEmpty()) {
+                                // 산책로가 없는 경우
+                                reviewRv.visibility = View.GONE
+                                defaultWalkImage.visibility = View.VISIBLE
+                                defaultWalkText.visibility = View.VISIBLE
+                                reviewAllBt.visibility = View.GONE
+
+                                // 제약 조건 변경
+                                val constraintSet = ConstraintSet()
+                                constraintSet.clone(scrollView3.getChildAt(0) as ConstraintLayout)
+                                constraintSet.connect(
+                                    R.id.addButton,
+                                    ConstraintSet.TOP,
+                                    R.id.defaultWalkImage,
+                                    ConstraintSet.BOTTOM,
+                                    (24 * resources.displayMetrics.density).toInt()
+                                )
+                                constraintSet.applyTo(scrollView3.getChildAt(0) as ConstraintLayout)
+                            } else {
+                                // 산책로가 있는 경우
+                                reviewRv.visibility = View.VISIBLE
+                                defaultWalkImage.visibility = View.GONE
+                                defaultWalkText.visibility = View.GONE
+                                reviewAllBt.visibility = View.VISIBLE
+                                walkRVAdapter.updateData(walkResponse.walks)
+                            }
 
                             isWished = placeDetail.wished
                             wishButton.setImageResource(

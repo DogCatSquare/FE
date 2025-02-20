@@ -235,21 +235,19 @@
                 android:text="주소"
                 android:textColor="#0E0E0E"
                 android:textSize="16sp"
-                app:layout_constraintEnd_toStartOf="@+id/address_tv"
                 app:layout_constraintStart_toStartOf="@+id/guideline_start2"
                 app:layout_constraintTop_toBottomOf="@+id/mapView3" />
 
             <TextView
                 android:id="@+id/address_tv"
-                android:layout_width="wrap_content"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="16dp"
                 android:layout_marginTop="10dp"
-                android:layout_marginEnd="178dp"
                 android:text="서울시 성북구 월곡동 77"
                 android:textColor="#616161"
                 android:textSize="16sp"
-                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintEnd_toStartOf="@+id/guideline_end2"
                 app:layout_constraintStart_toEndOf="@+id/address_title"
                 app:layout_constraintTop_toBottomOf="@+id/mapView3" />
 
@@ -308,6 +306,32 @@
                 app:layout_constraintTop_toBottomOf="@+id/reviewAll_bt"
                 app:layout_constraintVertical_bias="0.107"
                 tools:listitem="@layout/item_mapwalking" />
+
+            <ImageView
+                android:id="@+id/defaultWalkImage"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:scaleType="centerCrop"
+                android:src="@drawable/img_detail_default"
+                android:visibility="gone"
+                app:layout_constraintEnd_toEndOf="@id/guideline_end2"
+                app:layout_constraintStart_toStartOf="@id/guideline_start2"
+                app:layout_constraintTop_toBottomOf="@+id/reviewAll_bt" />
+
+            <TextView
+                android:id="@+id/defaultWalkText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="아직 추천된 코스가 없어요\n이웃들을 위해 산책코스를 추천해보세요"
+                android:textAlignment="center"
+                android:textColor="#9E9E9E"
+                android:textSize="14sp"
+                android:visibility="gone"
+                app:layout_constraintBottom_toBottomOf="@+id/defaultWalkImage"
+                app:layout_constraintEnd_toEndOf="@+id/defaultWalkImage"
+                app:layout_constraintStart_toStartOf="@+id/defaultWalkImage"
+                app:layout_constraintTop_toTopOf="@+id/defaultWalkImage" />
 
             <Button
                 android:id="@+id/addButton"

@@ -35,6 +35,7 @@ import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.RecyclerView
 import com.example.dogcatsquare.FilterPlacesRequest
+import com.example.dogcatsquare.LoadingDialog
 import com.example.dogcatsquare.LocationViewModel
 import com.example.dogcatsquare.data.api.UserRetrofitItf
 import com.example.dogcatsquare.data.map.SearchPlacesRequest
@@ -105,6 +106,8 @@ class MapFragment : Fragment(), OnMapReadyCallback {
         var hasParking: Boolean
     )
 
+    private lateinit var loadingDialog: LoadingDialog
+
     // RecyclerView 스크롤 리스너
     private val scrollListener = object : RecyclerView.OnScrollListener() {
         override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
@@ -136,6 +139,8 @@ class MapFragment : Fragment(), OnMapReadyCallback {
         super.onCreate(savedInstanceState)
         locationSource = FusedLocationSource(this, LOCATION_PERMISSION_REQUEST_CODE)
         setupLocationCallback()
+
+        loadingDialog = LoadingDialog(requireContext())
 
         lifecycleScope.launch {
             fetchUserAddress()
@@ -379,7 +384,7 @@ class MapFragment : Fragment(), OnMapReadyCallback {
 
                         Toast.makeText(
                             requireContext(),
-                            "필터링된 ${newPlaces.size}개의 장소를 찾았습니다.",
+                            "데이터 로드 완료!",
                             Toast.LENGTH_SHORT
                         ).show()
                     }
@@ -767,10 +772,6 @@ class MapFragment : Fragment(), OnMapReadyCallback {
     @SuppressLint("MissingPermission")
     private suspend fun loadWalkData(radius: Double = 0.0): List<MapPlace> {
         // 시작 시 토스트 메시지
-        withContext(Dispatchers.Main) {
-            Toast.makeText(requireContext(), "산책로 데이터를 불러오는 중...", Toast.LENGTH_SHORT).show()
-        }
-
         val token = getToken() ?: run {
             withContext(Dispatchers.Main) {
                 Toast.makeText(requireContext(), "로그인이 필요합니다.", Toast.LENGTH_SHORT).show()
@@ -854,16 +855,6 @@ class MapFragment : Fragment(), OnMapReadyCallback {
                 )
             } ?: emptyList()
 
-            // 성공적으로 데이터를 불러왔을 때 토스트 메시지
-            withContext(Dispatchers.Main) {
-                val message = if (walks.isEmpty()) {
-                    "주변에 산책로가 없습니다."
-                } else {
-                    "총 ${walks.size}개의 산책로를 불러왔습니다."
-                }
-                Toast.makeText(requireContext(), message, Toast.LENGTH_SHORT).show()
-            }
-
             walks
 
         } catch (e: Exception) {
@@ -904,7 +895,7 @@ class MapFragment : Fragment(), OnMapReadyCallback {
             // 데이터 로드 완료 메시지
             Toast.makeText(
                 requireContext(),
-                "총 ${places.size}개의 장소를 불러왔습니다.",
+                "데이터 로드 성공!",
                 Toast.LENGTH_SHORT
             ).show()
         }
@@ -919,7 +910,7 @@ class MapFragment : Fragment(), OnMapReadyCallback {
         try {
             withContext(Dispatchers.Main) {
                 // 로딩 표시
-                Toast.makeText(requireContext(), "데이터를 불러오는 중...", Toast.LENGTH_SHORT).show()
+                loadingDialog.show()
             }
 
             // 순차적으로 데이터 로드 (병렬 처리 대신)
@@ -935,12 +926,17 @@ class MapFragment : Fragment(), OnMapReadyCallback {
             // UI 업데이트
             updateUI(places)
 
-            Log.d("MapFragment", "총 ${places.size}개의 장소 로드 완료")
+            Log.d("MapFragment", "데이터 로드 성공!")
 
         } catch (e: Exception) {
             Log.e("MapFragment", "데이터 로드 중 오류 발생", e)
             withContext(Dispatchers.Main) {
                 handleError(e)
+            }
+        } finally {
+            withContext(Dispatchers.Main) {
+                // 로딩 다이얼로그 닫기
+                loadingDialog.dismiss()
             }
         }
     }
@@ -1197,15 +1193,6 @@ class MapFragment : Fragment(), OnMapReadyCallback {
                                 }
                             }
 
-                            withContext(Dispatchers.Main) {
-                                saveUserAddress(userAddress)
-                                Log.d("MapFragment", "사용자 주소 설정 완료: $userAddress")
-                                Toast.makeText(
-                                    requireContext(),
-                                    "사용자 주소: $userAddress",
-                                    Toast.LENGTH_SHORT
-                                ).show()
-                            }
                         } ?: run {
                             Log.w("MapFragment", "사용자 정보가 없습니다.")
                             withContext(Dispatchers.Main) {
@@ -1256,11 +1243,6 @@ class MapFragment : Fragment(), OnMapReadyCallback {
             putString("user_address", address)
             apply()
         }
-        Toast.makeText(
-            requireContext(),
-            "주소 저장됨: $address",
-            Toast.LENGTH_SHORT
-        ).show()
     }
 
     // SharedPreferences에서 주소 가져오는 함수
@@ -1308,7 +1290,7 @@ class MapFragment : Fragment(), OnMapReadyCallback {
 
                                 Toast.makeText(
                                     requireContext(),
-                                    "위치로 이동 완료: $savedAddress",
+                                    "위치로 이동 완료!",
                                     Toast.LENGTH_SHORT
                                 ).show()
 
