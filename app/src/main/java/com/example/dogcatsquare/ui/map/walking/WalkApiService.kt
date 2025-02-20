@@ -4,6 +4,8 @@ import com.example.dogcatsquare.ui.map.walking.data.Request.Coordinate
 import com.example.dogcatsquare.ui.map.walking.data.Response.WalkDetailResponse
 import com.example.dogcatsquare.ui.map.walking.data.Response.WalkResponse
 import com.example.dogcatsquare.ui.map.walking.data.Response.WalkReviewResponse
+import com.example.dogcatsquare.ui.map.walking.data.WalkCreateRequestDto
+import com.example.dogcatsquare.ui.map.walking.data.WalkCreateResponse
 import okhttp3.MultipartBody
 import okhttp3.RequestBody
 import retrofit2.Call
@@ -36,5 +38,13 @@ interface WalkApiService {
         @Part("reviewCreateRequestDto") reviewCreateRequestDto: RequestBody,
         @Part walkReviewImages: List<MultipartBody.Part>
     ): Call<WalkReviewResponse>
+
+    //산책로 등록
+    @Multipart
+    @POST("/api/walks/create")
+    suspend fun createWalk(
+        @Part("walkCreateRequestDto") walkCreateRequestDto: WalkCreateRequestDto,
+        @Part walkReviewImages: List<MultipartBody.Part>
+    ): WalkCreateResponse
 }
 

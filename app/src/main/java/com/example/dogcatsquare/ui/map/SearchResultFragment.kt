@@ -170,6 +170,8 @@ class SearchResultFragment : Fragment() {
         }
     }
 
+
+
     private fun updateRecyclerView(newPlaces: List<MapPlace>) {
         placeDatas.clear()
         placeDatas.addAll(newPlaces)

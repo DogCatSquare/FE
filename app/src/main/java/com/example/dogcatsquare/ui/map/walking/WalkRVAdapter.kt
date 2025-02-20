@@ -65,6 +65,7 @@ class WalkRVAdapter : RecyclerView.Adapter<WalkRVAdapter.ViewHolder>() {
         }
     }
 
+
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         val binding = ItemMapwalkingBinding.inflate(
             LayoutInflater.from(parent.context),
