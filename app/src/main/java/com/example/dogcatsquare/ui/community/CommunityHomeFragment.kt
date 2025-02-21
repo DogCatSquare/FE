@@ -100,7 +100,7 @@ class CommunityHomeFragment : Fragment(R.layout.fragment_community_home) {
                                 createdAt = post.createdAt,
                                 profileImageURL = post.profileImage_URL
                             )
-                        }.take(2)
+                        }.take(3)
 
                         hotPostDatas.addAll(posts)
                         Log.d("HotPostList", hotPostDatas.toString())

@@ -6,6 +6,6 @@ data class PostRequest(
     val boardId: Int,
     val title: String,
     val content: String,
-    @SerializedName("videoUrl") val video_URL: String,
+    @SerializedName("videoUrl") val video_URL: String?,
     @SerializedName("createdAt") val created_at: String
 )

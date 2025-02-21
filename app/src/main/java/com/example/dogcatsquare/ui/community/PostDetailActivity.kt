@@ -3,6 +3,7 @@ package com.example.dogcatsquare.ui.community
 import PostApiService
 import android.content.Context
 import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import android.util.Log
 import android.view.View
@@ -46,6 +47,8 @@ class PostDetailActivity : AppCompatActivity(), CommentActionListener {
     private var like_count: Int = 0  // 좋아요 개수 저장
 
     private var commentDatas = ArrayList<Comment>()
+
+    private var videoUrl: String? = null
 
     private fun getToken(): String? {
         val sharedPref = getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
@@ -100,6 +103,7 @@ class PostDetailActivity : AppCompatActivity(), CommentActionListener {
                             putExtra("postId", postId)
                             putExtra("title", binding.tvPostTitle.text.toString())
                             putExtra("content", binding.tvPostContent.text.toString())
+                            putExtra("videoUrl", videoUrl)
                             // 예: putExtra("videoUrl", ...), putExtra("imageUrl", ...) 등
                         }
                         startActivity(editIntent)
@@ -302,6 +306,32 @@ class PostDetailActivity : AppCompatActivity(), CommentActionListener {
                         binding.tvDate.text = postDetail.createdAt
                         binding.tvUsername.text = postDetail.username
 
+                        // ✅ 유튜브 썸네일 처리 (빈 문자열 또는 null 체크)
+                        videoUrl = postDetail.thumbnailUrl
+
+                        if (!postDetail.thumbnailUrl.isNullOrEmpty()) {
+                            val youtubeThumbnailUrl = getYoutubeThumbnailUrl(postDetail.thumbnailUrl)
+                            if (!youtubeThumbnailUrl.isNullOrEmpty()) {
+                                Glide.with(this@PostDetailActivity)
+                                    .load(youtubeThumbnailUrl)
+                                    .placeholder(R.drawable.ic_placeholder)
+                                    .into(binding.ivYoutubeThumbnail)
+
+                                binding.ivYoutubeThumbnail.visibility = View.VISIBLE
+                                binding.ivYoutubeThumbnail.setOnClickListener {
+                                    val uri = Uri.parse(postDetail.thumbnailUrl)
+                                    val intent = Intent(Intent.ACTION_VIEW, uri)
+                                    startActivity(intent)
+                                }
+                            } else {
+                                binding.ivYoutubeThumbnail.visibility = View.GONE
+                                binding.ivYoutubeThumbnail.setOnClickListener(null) // ✅ 클릭 리스너 제거
+                            }
+                        } else {
+                            binding.ivYoutubeThumbnail.visibility = View.GONE
+                            binding.ivYoutubeThumbnail.setOnClickListener(null) // ✅ 클릭 리스너 제거
+                        }
+
                         like_count = postDetail.likeCount
 
                         Glide.with(this@PostDetailActivity)
@@ -350,6 +380,12 @@ class PostDetailActivity : AppCompatActivity(), CommentActionListener {
                 Toast.makeText(this@PostDetailActivity, "네트워크 오류: ${t.message}", Toast.LENGTH_SHORT).show()
             }
         })
+    }
+
+    fun getYoutubeThumbnailUrl(videoUrl: String): String? {
+        val regex = "(?:youtube\\.com/watch\\?v=|youtu\\.be/|youtube\\.com/embed/)([a-zA-Z0-9_-]+)".toRegex()
+        val matchResult = regex.find(videoUrl)
+        return matchResult?.groupValues?.get(1)?.let { "https://img.youtube.com/vi/$it/0.jpg" }
     }
 
     private fun toggleLike() {
