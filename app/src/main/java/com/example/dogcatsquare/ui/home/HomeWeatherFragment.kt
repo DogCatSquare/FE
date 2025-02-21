@@ -49,10 +49,9 @@ class HomeWeatherFragment : Fragment() {
         with(binding) {
             homeWeatherInfoTv.text = "${weather.mainMessage}\n${weather.subMessage}"
             homeWeatherLocTv.text = weather.location
-            homeWeatherTemperatureIv.text = weather.currentTemp
-            maxTempTv.text = weather.maxTemp
-            minTempTv.text = weather.minTemp
-            rainTv.text = weather.rainProbability
+            ddayTv.text = weather.ddayMessage
+            ddayDateTv.text = weather.ddayDate
+
             Glide.with(this@HomeWeatherFragment)
                 .load(weather.imageUrl)
                 .into(homeWeatherIv)
