@@ -7,7 +7,9 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
 import androidx.fragment.app.Fragment
+import com.example.dogcatsquare.R
 import com.example.dogcatsquare.databinding.FragmentMapwalkingReviewtypeBinding
+import com.example.dogcatsquare.ui.map.location.MapFragment
 
 class WalkingReviewTypeFragment : Fragment() {
 
@@ -19,6 +21,14 @@ class WalkingReviewTypeFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View {
         _binding = FragmentMapwalkingReviewtypeBinding.inflate(inflater, container, false)
+
+        binding.CompletionBt.setOnClickListener {
+            val nextFragment = MapFragment()
+            parentFragmentManager.beginTransaction()
+                .replace(R.id.main_frm, nextFragment)
+                .commit()
+        }
+
         return binding.root
     }
 

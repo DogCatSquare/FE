@@ -139,9 +139,13 @@ class WalkingReviewFragment : Fragment(), OnMapReadyCallback {
 
             // 수정된 createWalk 호출 (token 추가)
             viewModel.createWalk(token, routeCoords, elapsedMinutes, distance, content, imagePart)
+
+            val transaction: FragmentTransaction = parentFragmentManager.beginTransaction()
+
+            transaction.replace(R.id.main_frm, WalkingReviewTypeFragment())
+            transaction.addToBackStack(null)
+            transaction.commit()
         }
-
-
 
 
         // 후기 제출 성공 시 처리
