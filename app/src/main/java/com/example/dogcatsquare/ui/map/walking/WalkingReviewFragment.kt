@@ -1,5 +1,6 @@
 package com.example.dogcatsquare.ui.map.walking
 
+import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.Color
@@ -29,6 +30,9 @@ import com.naver.maps.map.*
 import com.naver.maps.map.overlay.Marker
 import com.naver.maps.map.overlay.OverlayImage
 import com.naver.maps.map.overlay.PolylineOverlay
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
+import okhttp3.MultipartBody
+import okhttp3.RequestBody.Companion.toRequestBody
 import java.io.ByteArrayOutputStream
 
 class WalkingReviewFragment : Fragment(), OnMapReadyCallback {
@@ -120,10 +124,25 @@ class WalkingReviewFragment : Fragment(), OnMapReadyCallback {
                 return@setOnClickListener
             }
 
-            val imageBase64 = bitmapToBase64(selectedBitmap!!)
-            // 후기 제출 API 호출
-            viewModel.saveWalkReview(walkId, content, imageBase64)
+            val token = getToken()
+            if (token.isNullOrEmpty()) {
+                Toast.makeText(requireContext(), "로그인이 필요합니다.", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+
+            val imagePart = bitmapToMultipart(selectedBitmap!!) // 이미지 변환
+
+            // 필요한 추가 데이터 설정
+            val routeCoords = listOf(LatLng(37.5665, 126.9780)) // 예제 좌표
+            val elapsedMinutes = 30L
+            val distance = 5.2f
+
+            // 수정된 createWalk 호출 (token 추가)
+            viewModel.createWalk(token, routeCoords, elapsedMinutes, distance, content, imagePart)
         }
+
+
+
 
         // 후기 제출 성공 시 처리
         viewModel.reviewResponse.observe(viewLifecycleOwner) { response ->
@@ -191,6 +210,11 @@ class WalkingReviewFragment : Fragment(), OnMapReadyCallback {
         }
     }
 
+    private fun getToken(): String? {
+        return activity?.getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
+            ?.getString("token", null)
+    }
+
     private fun calculateTotalDistance(coords: List<LatLng>): Float {
         var totalDistance = 0f
         for (i in 0 until coords.size - 1) {
@@ -214,4 +238,14 @@ class WalkingReviewFragment : Fragment(), OnMapReadyCallback {
         val byteArray = outputStream.toByteArray()
         return Base64.encodeToString(byteArray, Base64.NO_WRAP)
     }
+
+    private fun bitmapToMultipart(bitmap: Bitmap): MultipartBody.Part {
+        val outputStream = ByteArrayOutputStream()
+        bitmap.compress(Bitmap.CompressFormat.JPEG, 80, outputStream)
+        val byteArray = outputStream.toByteArray()
+
+        val requestBody = byteArray.toRequestBody("image/*".toMediaTypeOrNull())
+        return MultipartBody.Part.createFormData("walkReviewImages", "image.jpg", requestBody)
+    }
+
 }
