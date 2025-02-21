@@ -140,7 +140,6 @@ class BoardSettingsActivity : AppCompatActivity() {
                                 "이미 마이 게시판에 추가한 게시판입니다",
                                 Toast.LENGTH_SHORT
                             ).show()
-
                         }
                     }
 

@@ -48,7 +48,7 @@ class MypageFragment : Fragment() {
         binding = FragmentMypageBinding.inflate(inflater, container, false)
 
         // 내 커뮤니티 모아보기
-        binding.goMyCommunityIv.setOnClickListener {
+        binding.constraintLayout2.setOnClickListener {
             // Fragment 전환
             requireActivity().supportFragmentManager.beginTransaction()
                 .replace(R.id.main_frm, MyCommunityFragment())
@@ -57,17 +57,12 @@ class MypageFragment : Fragment() {
         }
 
         // 내 후기 모아보기
-        binding.goMyReviewIv.setOnClickListener {
+        binding.constraintLayout3.setOnClickListener {
             // Fragment 전환
             requireActivity().supportFragmentManager.beginTransaction()
                 .replace(R.id.main_frm, MyReviewFragment())
                 .addToBackStack(null)
                 .commitAllowingStateLoss()
-        }
-
-        // 공지사항
-        binding.goAnnouncementIv.setOnClickListener {
-
         }
 
         // 회원탈퇴 클릭

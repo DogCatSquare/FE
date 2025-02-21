@@ -48,7 +48,7 @@
             <!-- 디데이 -->
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/home_dday_rv"
-                android:layout_width="wrap_content"
+                android:layout_width="0dp"
                 android:layout_height="100dp"
                 android:clipToPadding="false"
                 android:paddingLeft="15dp"
@@ -186,7 +186,7 @@
 
                 <androidx.recyclerview.widget.RecyclerView
                     android:id="@+id/home_hot_post_rv"
-                    android:layout_width="match_parent"
+                    android:layout_width="0dp"
                     android:layout_height="match_parent"
                     android:layout_marginTop="5dp"
                     app:layout_constraintEnd_toEndOf="parent"
@@ -231,7 +231,7 @@
 
                 <androidx.recyclerview.widget.RecyclerView
                     android:id="@+id/home_pet_event_rv"
-                    android:layout_width="match_parent"
+                    android:layout_width="0dp"
                     android:layout_height="match_parent"
                     android:layout_marginTop="5dp"
                     android:layout_marginBottom="20dp"
