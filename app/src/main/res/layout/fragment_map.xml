@@ -53,15 +53,27 @@
             app:layout_constraintEnd_toStartOf="@+id/guideline_end"
             app:srcCompat="@drawable/btn_research" />
 
+        <!-- 흰색 배경 뷰 추가 (초기에 완전 투명) -->
+        <View
+            android:id="@+id/whiteBackgroundOverlay"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:background="@color/white"
+            android:alpha="0"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/mapButtonRV"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
+            android:clipToPadding="false"
             android:orientation="horizontal"
             android:paddingStart="15dp"
             android:paddingEnd="15dp"
-            android:clipToPadding="false"
             app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
@@ -86,11 +98,11 @@
             android:layout_height="40dp"
             android:layout_marginTop="15dp"
             android:background="@drawable/bg_rounded_et"
-            android:hint="검색어를 입력해주세요"
-            android:textSize="14sp"
-            android:focusable="false"
             android:clickable="true"
             android:cursorVisible="false"
+            android:focusable="false"
+            android:hint="검색어를 입력해주세요"
+            android:textSize="14sp"
             app:layout_constraintEnd_toEndOf="@+id/guideline_mid"
             app:layout_constraintStart_toStartOf="@+id/guideline_start"
             app:layout_constraintTop_toTopOf="parent" />
@@ -111,7 +123,7 @@
         android:id="@+id/bottomSheet"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="@drawable/bg_round_square"
+        android:background="@color/white"
         android:minHeight="250dp"
         app:behavior_peekHeight="220dp"
         app:layout_behavior="com.google.android.material.bottomsheet.BottomSheetBehavior">
@@ -130,14 +142,13 @@
             android:layout_height="32dp"
             android:layout_marginTop="8dp"
             app:cardCornerRadius="16dp"
-
             app:layout_constraintEnd_toStartOf="@+id/guideline_end2"
-            app:layout_constraintTop_toBottomOf="@+id/bottomBar">
+            app:layout_constraintTop_toBottomOf="@+id/bottomBarContainer"
+            app:cardElevation="0dp">
 
             <androidx.constraintlayout.widget.ConstraintLayout
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-
                 android:background="#F6F6F6">
 
                 <ImageView
@@ -147,7 +158,6 @@
                     android:layout_marginStart="8dp"
                     android:layout_marginTop="2dp"
                     android:layout_marginEnd="11dp"
-
                     android:rotation="-90"
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintEnd_toEndOf="parent"
@@ -164,7 +174,6 @@
                     android:layout_marginStart="11dp"
                     android:text="위치기준"
                     android:textSize="14dp"
-
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintEnd_toStartOf="@+id/imageView4"
                     app:layout_constraintHorizontal_bias="0.5"
@@ -186,15 +195,31 @@
             app:layout_constraintTop_toBottomOf="@+id/sortButton"
             tools:listitem="@layout/item_map_place" />
 
-        <ImageView
-            android:id="@+id/bottomBar"
+        <FrameLayout
+            android:id="@+id/bottomBarContainer"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
+            android:layout_gravity="center_horizontal"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            app:srcCompat="@drawable/ic_bar" />
+            app:layout_constraintTop_toTopOf="parent">
+
+            <ImageView
+                android:id="@+id/bottomBarCollapsed"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                app:srcCompat="@drawable/ic_bar" />
+
+            <ImageView
+                android:id="@+id/bottomBarExpanded"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:alpha="0"
+                app:srcCompat="@drawable/ic_map_contour_place" />
+        </FrameLayout>
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 

@@ -12,6 +12,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.CheckBox
+import android.widget.ImageView
 import android.widget.TextView
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
@@ -321,7 +322,7 @@ class MapFragment : Fragment(), OnMapReadyCallback {
     private suspend fun loadFilteredPlaces(page: Int = 0) {
         try {
             withContext(Dispatchers.Main) {
-                if (!loadingDialog.isShowing) {
+                if (!loadingDialog.isDialogShowing) {
                     loadingDialog.show()
                 }
             }
@@ -406,7 +407,7 @@ class MapFragment : Fragment(), OnMapReadyCallback {
             }
         } finally {
             withContext(Dispatchers.Main) {
-                if (loadingDialog.isShowing) {
+                if (loadingDialog.isDialogShowing) {
                     loadingDialog.dismiss()
                 }
             }
@@ -906,7 +907,7 @@ class MapFragment : Fragment(), OnMapReadyCallback {
             }
 
             // 모든 마커가 생성된 후에 콜백을 호출
-            if (loadingDialog.isShowing) {
+            if (loadingDialog.isDialogShowing) {
                 loadingDialog.dismiss()
             }
         }
@@ -965,13 +966,13 @@ class MapFragment : Fragment(), OnMapReadyCallback {
 
                     // 카메라 이동 및 애니메이션이 완료된 후에 로딩 다이얼로그 닫기
                     naverMap.addOnCameraIdleListener {
-                        if (loadingDialog.isShowing) {
+                        if (loadingDialog.isDialogShowing) {
                             loadingDialog.dismiss()
                         }
                     }
                 } ?: run {
                     // 현재 위치를 가져올 수 없는 경우 바로 로딩 다이얼로그 닫기
-                    if (loadingDialog.isShowing) {
+                    if (loadingDialog.isDialogShowing) {
                         loadingDialog.dismiss()
                     }
                 }
@@ -981,7 +982,7 @@ class MapFragment : Fragment(), OnMapReadyCallback {
             Log.e("MapFragment", "데이터 로드 중 오류 발생", e)
             withContext(Dispatchers.Main) {
                 handleError(e)
-                if (loadingDialog.isShowing) {
+                if (loadingDialog.isDialogShowing) {
                     loadingDialog.dismiss()
                 }
             }
@@ -1108,7 +1109,11 @@ class MapFragment : Fragment(), OnMapReadyCallback {
 
 
     private fun setupBottomSheet() {
+        val whiteBackgroundOverlay = binding.whiteBackgroundOverlay
         bottomSheetBehavior = BottomSheetBehavior.from(binding.bottomSheet)
+
+        val bottomBarCollapsed = binding.bottomSheet.findViewById<ImageView>(R.id.bottomBarCollapsed)
+        val bottomBarExpanded = binding.bottomSheet.findViewById<ImageView>(R.id.bottomBarExpanded)
 
         binding.root.post {
             val mapButtonBottom = binding.mapButtonRV.bottom +
@@ -1124,35 +1129,26 @@ class MapFragment : Fragment(), OnMapReadyCallback {
 
         bottomSheetBehavior.addBottomSheetCallback(object : BottomSheetBehavior.BottomSheetCallback() {
             override fun onStateChanged(bottomSheet: View, newState: Int) {
-                when (newState) {
-                    BottomSheetBehavior.STATE_EXPANDED -> {
-                        // BottomBar 이미지만 변경
-                        binding.bottomBar.setImageResource(R.drawable.ic_map_contour_place)
-                    }
-                    BottomSheetBehavior.STATE_COLLAPSED -> {
-                        // BottomSheet가 접힐 때 원래 이미지로 복원
-                        binding.bottomBar.setImageResource(R.drawable.ic_bar)
-                        // MapView 표시
-                        binding.mapView.animate()
-                            .alpha(1f)
-                            .setDuration(1000)
-                            .start()
-                    }
-                }
             }
 
             override fun onSlide(bottomSheet: View, slideOffset: Float) {
                 // MapView 페이드아웃 애니메이션
                 binding.mapView.alpha = 1 - slideOffset
 
-                // BottomBar 이미지 전환을 부드럽게 처리
-                if (slideOffset > 0.5 && binding.bottomBar.tag != "changed") {
-                    binding.bottomBar.setImageResource(R.drawable.ic_map_contour_place)
-                    binding.bottomBar.tag = "changed"
-                } else if (slideOffset <= 0.5 && binding.bottomBar.tag == "changed") {
-                    binding.bottomBar.setImageResource(R.drawable.ic_bar)
-                    binding.bottomBar.tag = null
+                // 흰색 배경의 알파값을 슬라이드 오프셋에 비례해 설정
+                whiteBackgroundOverlay.alpha = slideOffset
+
+                // BottomBar 이미지 전환을 서서히 페이드 효과로 처리
+                // 0.3에서 0.7 사이에서 알파값이 서서히 변하도록 설정
+                val fadeOffset = when {
+                    slideOffset < 0.3f -> 0f
+                    slideOffset > 0.7f -> 1f
+                    else -> (slideOffset - 0.3f) / 0.4f  // 0.3~0.7 범위를 0~1 범위로 정규화
                 }
+
+                // 두 이미지의 알파값을 반대로 설정하여 크로스페이드 효과 적용
+                bottomBarCollapsed.alpha = 1 - fadeOffset
+                bottomBarExpanded.alpha = fadeOffset
             }
         })
     }
@@ -1161,7 +1157,7 @@ class MapFragment : Fragment(), OnMapReadyCallback {
         lifecycleScope.launch {
             try {
                 withContext(Dispatchers.Main) {
-                    if (!loadingDialog.isShowing) {
+                    if (!loadingDialog.isDialogShowing) {
                         loadingDialog.show()
                     }
                 }
@@ -1232,7 +1228,7 @@ class MapFragment : Fragment(), OnMapReadyCallback {
                                         }
 
                                         // 마커 생성이 완료된 후 로딩 다이얼로그 닫기
-                                        if (loadingDialog.isShowing) {
+                                        if (loadingDialog.isDialogShowing) {
                                             loadingDialog.dismiss()
                                         }
                                     }
@@ -1241,7 +1237,7 @@ class MapFragment : Fragment(), OnMapReadyCallback {
                         } catch (e: Exception) {
                             withContext(Dispatchers.Main) {
                                 handleError(e)
-                                if (loadingDialog.isShowing) {
+                                if (loadingDialog.isDialogShowing) {
                                     loadingDialog.dismiss()
                                 }
                             }
@@ -1251,7 +1247,7 @@ class MapFragment : Fragment(), OnMapReadyCallback {
             } catch (e: Exception) {
                 withContext(Dispatchers.Main) {
                     handleError(e)
-                    if (loadingDialog.isShowing) {
+                    if (loadingDialog.isDialogShowing) {
                         loadingDialog.dismiss()
                     }
                 }
@@ -1453,7 +1449,7 @@ class MapFragment : Fragment(), OnMapReadyCallback {
             try {
                 // 로딩 다이얼로그 표시
                 withContext(Dispatchers.Main) {
-                    if (!loadingDialog.isShowing) {
+                    if (!loadingDialog.isDialogShowing) {
                         loadingDialog.show()
                     }
                 }
@@ -1462,7 +1458,7 @@ class MapFragment : Fragment(), OnMapReadyCallback {
                 if (savedAddress.isEmpty()) {
                     withContext(Dispatchers.Main) {
                         Toast.makeText(requireContext(), "저장된 주소가 없습니다.", Toast.LENGTH_SHORT).show()
-                        if (loadingDialog.isShowing) {
+                        if (loadingDialog.isDialogShowing) {
                             loadingDialog.dismiss()
                         }
                     }
@@ -1509,7 +1505,7 @@ class MapFragment : Fragment(), OnMapReadyCallback {
                                 naverMap.addOnCameraIdleListener(object : NaverMap.OnCameraIdleListener {
                                     override fun onCameraIdle() {
                                         naverMap.removeOnCameraIdleListener(this)
-                                        if (loadingDialog.isShowing) {
+                                        if (loadingDialog.isDialogShowing) {
                                             loadingDialog.dismiss()
                                         }
                                     }
@@ -1523,7 +1519,7 @@ class MapFragment : Fragment(), OnMapReadyCallback {
                                 "주소를 찾을 수 없습니다.",
                                 Toast.LENGTH_SHORT
                             ).show()
-                            if (loadingDialog.isShowing) {
+                            if (loadingDialog.isDialogShowing) {
                                 loadingDialog.dismiss()
                             }
                         }
@@ -1535,7 +1531,7 @@ class MapFragment : Fragment(), OnMapReadyCallback {
                             "주소 변환 중 오류가 발생했습니다: ${e.message}",
                             Toast.LENGTH_SHORT
                         ).show()
-                        if (loadingDialog.isShowing) {
+                        if (loadingDialog.isDialogShowing) {
                             loadingDialog.dismiss()
                         }
                     }
@@ -1548,7 +1544,7 @@ class MapFragment : Fragment(), OnMapReadyCallback {
                         "오류가 발생했습니다: ${e.message}",
                         Toast.LENGTH_SHORT
                     ).show()
-                    if (loadingDialog.isShowing) {
+                    if (loadingDialog.isDialogShowing) {
                         loadingDialog.dismiss()
                     }
                 }
@@ -1562,7 +1558,7 @@ class MapFragment : Fragment(), OnMapReadyCallback {
             try {
                 // 로딩 다이얼로그 표시
                 withContext(Dispatchers.Main) {
-                    if (!loadingDialog.isShowing) {
+                    if (!loadingDialog.isDialogShowing) {
                         loadingDialog.show()
                     }
                 }
@@ -1610,7 +1606,7 @@ class MapFragment : Fragment(), OnMapReadyCallback {
             } finally {
                 // 로딩 다이얼로그 닫기
                 withContext(Dispatchers.Main) {
-                    if (loadingDialog.isShowing) {
+                    if (loadingDialog.isDialogShowing) {
                         loadingDialog.dismiss()
                     }
                 }
@@ -1622,7 +1618,7 @@ class MapFragment : Fragment(), OnMapReadyCallback {
         lifecycleScope.launch {
             try {
                 withContext(Dispatchers.Main) {
-                    if (!loadingDialog.isShowing) {
+                    if (!loadingDialog.isDialogShowing) {
                         loadingDialog.show()
                     }
                 }
@@ -1649,7 +1645,7 @@ class MapFragment : Fragment(), OnMapReadyCallback {
                 }
             } finally {
                 withContext(Dispatchers.Main) {
-                    if (loadingDialog.isShowing) {
+                    if (loadingDialog.isDialogShowing) {
                         loadingDialog.dismiss()
                     }
                 }
