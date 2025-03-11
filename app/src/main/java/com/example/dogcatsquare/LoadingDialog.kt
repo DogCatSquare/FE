@@ -1,25 +1,27 @@
 package com.example.dogcatsquare
 
-import android.app.Dialog
 import android.content.Context
 import android.graphics.Color
-import android.graphics.drawable.ColorDrawable
-import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
-import android.view.Window
-import android.widget.TextView
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
+import android.widget.FrameLayout
+import androidx.fragment.app.FragmentActivity
 import com.example.dogcatsquare.databinding.DialogLoadingBinding
 
-class LoadingDialog(context: Context) : Dialog(context) {
+class LoadingDialog(private val context: Context) {
     private lateinit var binding: DialogLoadingBinding
     private val handler = Handler(Looper.getMainLooper())
     private var currentDots = 0
     private val loadingTexts = arrayOf("로딩중", "로딩중.", "로딩중..", "로딩중...")
+    private var loadingView: View? = null
+    private var isShowing = false
 
     private val updateLoadingText = object : Runnable {
         override fun run() {
-            if (isShowing) {  // 다이얼로그가 표시 중일 때만 실행
+            if (isShowing) {  // 로딩 뷰가 표시 중일 때만 실행
                 binding.loadingTextView.text = loadingTexts[currentDots]
                 currentDots = (currentDots + 1) % loadingTexts.size
                 handler.postDelayed(this, 500)
@@ -27,19 +29,28 @@ class LoadingDialog(context: Context) : Dialog(context) {
         }
     }
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        requestWindowFeature(Window.FEATURE_NO_TITLE)
-        binding = DialogLoadingBinding.inflate(layoutInflater)
-        setContentView(binding.root)
+    fun show() {
+        if (isShowing) return
 
-        window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
-        setCanceledOnTouchOutside(false)
-    }
+        val activity = context as FragmentActivity
+        val rootView = activity.findViewById<FrameLayout>(R.id.main_frm)
 
-    override fun show() {
-        super.show()
-        // show 될 때마다 애니메이션 새로 시작
+        if (loadingView == null) {
+            binding = DialogLoadingBinding.inflate(LayoutInflater.from(context))
+            loadingView = binding.root
+
+            // 배경을 반투명하게 설정
+            binding.root.setBackgroundColor(Color.parseColor("#99000000")) // 반투명 배경
+        }
+
+        // 이미 부모 뷰가 있다면 제거
+        (loadingView?.parent as? ViewGroup)?.removeView(loadingView)
+
+        // main_frm에 로딩 뷰 추가 (bottomNavigationView는 가리지 않음)
+        rootView.addView(loadingView)
+        isShowing = true
+
+        // 애니메이션 시작
         currentDots = 0
         startLoadingAnimation()
     }
@@ -49,8 +60,27 @@ class LoadingDialog(context: Context) : Dialog(context) {
         handler.post(updateLoadingText)  // 새로운 애니메이션 시작
     }
 
-    override fun dismiss() {
+    fun dismiss() {
+        if (!isShowing) return
+
         handler.removeCallbacks(updateLoadingText)
-        super.dismiss()
+
+        val activity = context as FragmentActivity
+        val rootView = activity.findViewById<FrameLayout>(R.id.main_frm)
+        rootView.removeView(loadingView)
+
+        isShowing = false
     }
+
+    // 기존 메소드는 호환성을 위해 빈 구현으로 유지
+    fun showBottomSheetBackground() {
+        // 빈 구현
+    }
+
+    fun hideBottomSheetBackground() {
+        // 빈 구현
+    }
+
+    val isDialogShowing: Boolean
+        get() = isShowing
 }

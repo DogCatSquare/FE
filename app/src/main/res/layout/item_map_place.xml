@@ -163,7 +163,8 @@
             android:background="#EAF2FE"
             app:cardCornerRadius="8dp"
             app:layout_constraintStart_toEndOf="@+id/placeReview"
-            app:layout_constraintTop_toBottomOf="@+id/placeCall">
+            app:layout_constraintTop_toBottomOf="@+id/placeCall"
+            app:cardElevation="0dp">
 
             <TextView
                 android:id="@+id/char1Text"
@@ -189,7 +190,8 @@
             android:background="#EAF2FE"
             app:cardCornerRadius="8dp"
             app:layout_constraintStart_toEndOf="@+id/char1"
-            app:layout_constraintTop_toBottomOf="@+id/placeCall">
+            app:layout_constraintTop_toBottomOf="@+id/placeCall"
+            app:cardElevation="0dp">
 
             <TextView
                 android:id="@+id/char2Text"
@@ -214,7 +216,8 @@
             android:background="#EAF2FE"
             app:cardCornerRadius="8dp"
             app:layout_constraintStart_toEndOf="@+id/char2"
-            app:layout_constraintTop_toBottomOf="@+id/placeCall">
+            app:layout_constraintTop_toBottomOf="@+id/placeCall"
+            app:cardElevation="0dp">
 
             <TextView
                 android:id="@+id/char3Text"

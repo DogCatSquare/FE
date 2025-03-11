@@ -129,7 +129,7 @@ class SearchResultFragment : Fragment() {
             try {
                 if (isNewSearch) {
                     withContext(Dispatchers.Main) {
-                        if (!loadingDialog.isShowing) {
+                        if (!loadingDialog.isDialogShowing) {
                             loadingDialog.show()
                         }
                     }
@@ -186,7 +186,7 @@ class SearchResultFragment : Fragment() {
                 // 새로운 검색일 경우에만 로딩 다이얼로그 닫기
                 if (isNewSearch) {
                     withContext(Dispatchers.Main) {
-                        if (loadingDialog.isShowing) {
+                        if (loadingDialog.isDialogShowing) {
                             loadingDialog.dismiss()
                         }
                     }
@@ -259,7 +259,7 @@ class SearchResultFragment : Fragment() {
     override fun onDestroyView() {
         super.onDestroyView()
         // 로딩 다이얼로그가 표시되어 있다면 닫기
-        if (::loadingDialog.isInitialized && loadingDialog.isShowing) {
+        if (::loadingDialog.isInitialized && loadingDialog.isDialogShowing) {
             loadingDialog.dismiss()
         }
         _binding = null
