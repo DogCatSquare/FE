@@ -1,95 +1,117 @@
 package com.example.dogcatsquare.ui.map.walking
 
+import android.annotation.SuppressLint
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.ImageButton
 import androidx.appcompat.app.AppCompatActivity
-import androidx.appcompat.widget.Toolbar
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.example.dogcatsquare.R
-import com.naver.maps.map.MapFragment
+import com.example.dogcatsquare.databinding.FragmentMapwalkingReviewallBinding
+import com.example.dogcatsquare.ui.map.walking.data.Response.WalkReview
+import com.example.dogcatsquare.ui.map.walking.data.ViewModel.WalkReviewViewModel
 
 class WalkingMapReviewAllFragment : Fragment() {
 
-    private lateinit var reviewAdapter: WalkingReviewAdapter
+    private var _binding: FragmentMapwalkingReviewallBinding? = null
+    private val binding get() = _binding!!
+
+    private val walkReviewViewModel: WalkReviewViewModel by viewModels()
+
+    private var placeId: Int = -1
+    private var currentPage = 0
+    private var isLastPage = false
+    private var isLoading = false
+
+    private val reviewDatas = ArrayList<WalkReview>()
+    private lateinit var reviewAdapter: ReviewAdapter
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        arguments?.let {
+            placeId = it.getInt("placeId", -1)
+        }
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
-        val view = inflater.inflate(R.layout.fragment_mapwalking_reviewall, container, false)
+    ): View {
+        _binding = FragmentMapwalkingReviewallBinding.inflate(inflater, container, false)
+        return binding.root
+    }
 
+    @SuppressLint("NotifyDataSetChanged")
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
+        setupToolbar()
+        setupRecyclerView()
+
+        if (placeId != -1) {
+            loadReviews()
+        }
+
+        walkReviewViewModel.reviewResponse.observe(viewLifecycleOwner) { response ->
+            response?.result?.walkReviews?.let { newReviews ->
+                if (newReviews.isEmpty()) {
+                    isLastPage = true
+                } else {
+                    reviewDatas.addAll(newReviews)
+                    reviewAdapter.notifyDataSetChanged()
+                    currentPage++
+                }
+                isLoading = false
+            } ?: Log.e("WalkingReviewAll", "Failed to load reviews.")
+        }
+    }
+
+    private fun setupToolbar() {
         (activity as? AppCompatActivity)?.apply {
-            val toolbar: Toolbar = view.findViewById(R.id.walking_review_toolbar)
-            setSupportActionBar(toolbar)
-            supportActionBar?.title = "이웃들의 추천 코스"
+            setSupportActionBar(binding.walkingReviewToolbar)
+            supportActionBar?.title = "이웃들의 후기"
             supportActionBar?.setDisplayHomeAsUpEnabled(true)
 
-            toolbar.setNavigationOnClickListener {
+            binding.walkingReviewToolbar.setNavigationOnClickListener {
                 parentFragmentManager.popBackStack()
             }
         }
-
-        // RecyclerView 설정
-        val recyclerView: RecyclerView = view.findViewById(R.id.review_rv)
-        recyclerView.layoutManager = LinearLayoutManager(context)
-
-        val reviews: MutableList<WalkMapReview> = mutableListOf()
-
-        reviews.add(
-            WalkMapReview(
-                userName = "홍길동",
-                petType = "강아지",
-                walkTime = "30분",
-                walkKm = "2.5km",
-                walkText = "산책로가 너무 좋아요!",
-                walkDate = "2024-02-19",
-                userImgUrl = "https://example.com/user1.jpg",
-                walkImgUrl = "https://example.com/walk1.jpg",
-                profileImgUrl = "https://example.com/profile1.jpg"
-            )
-        )
-
-        reviews.add(
-            WalkMapReview(
-                userName = "김철수",
-                petType = "고양이",
-                walkTime = "40분",
-                walkKm = "3.0km",
-                walkText = "길이 넓고 한적해서 좋아요!",
-                walkDate = "2024-02-18",
-                userImgUrl = "https://example.com/user2.jpg",
-                walkImgUrl = "https://example.com/walk2.jpg",
-                profileImgUrl = "https://example.com/profile2.jpg"
-            )
-        )
-
-        // RecyclerView 설정
-        reviewAdapter = WalkingReviewAdapter(reviews, maxItemCount = 2) { item ->
-            // 아이템 클릭 시 다른 프래그먼트로 이동
-            val bundle = Bundle().apply {
-                putString("itemName", item.userName) // 아이템의 데이터를 전달
-            }
-
-            val detailFragment = WalkingStartViewFragment().apply {
-                arguments = bundle
-            }
-
-            // 프래그먼트 트랜잭션을 사용하여 이동
-            parentFragmentManager.beginTransaction()
-                .replace(R.id.main_frm, WalkingStartViewFragment())
-                .addToBackStack(null)
-                .commit()
-        }
-
-        recyclerView.adapter = reviewAdapter
-
-        return view
     }
 
+    private fun setupRecyclerView() {
+        reviewAdapter = ReviewAdapter(reviewDatas)
+        binding.reviewRv.apply {
+            layoutManager = LinearLayoutManager(context)
+            adapter = reviewAdapter
+
+            addOnScrollListener(object : RecyclerView.OnScrollListener() {
+                override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
+                    super.onScrolled(recyclerView, dx, dy)
+
+                    val layoutManager = recyclerView.layoutManager as LinearLayoutManager
+                    val lastVisibleItemPosition = layoutManager.findLastCompletelyVisibleItemPosition()
+                    val totalItemCount = layoutManager.itemCount
+
+                    if (!isLoading && !isLastPage && lastVisibleItemPosition == totalItemCount - 1) {
+                        loadReviews()
+                    }
+                }
+            })
+        }
+    }
+
+    private fun loadReviews() {
+        isLoading = true
+        walkReviewViewModel.getWalkReviews(placeId)
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
+    }
 }

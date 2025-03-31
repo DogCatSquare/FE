@@ -101,10 +101,11 @@ class WalkingStartViewFragment : Fragment(), OnMapReadyCallback {
         recyclerView.adapter = reviewAdapter
 
         // MapFragment 설정
-        val mapFragment = childFragmentManager.findFragmentById(R.id.map_fragment) as com.naver.maps.map.MapFragment?
-            ?: com.naver.maps.map.MapFragment.newInstance().also {
-                childFragmentManager.beginTransaction().replace(R.id.map_fragment, it).commit()
-            }
+        val mapFragment =
+            childFragmentManager.findFragmentById(R.id.map_fragment) as com.naver.maps.map.MapFragment?
+                ?: com.naver.maps.map.MapFragment.newInstance().also {
+                    childFragmentManager.beginTransaction().replace(R.id.map_fragment, it).commit()
+                }
 
         mapFragment?.getMapAsync { map ->
             naverMap = map
@@ -117,7 +118,8 @@ class WalkingStartViewFragment : Fragment(), OnMapReadyCallback {
                         Log.d("WalkingStartView", "Walk Detail Success: ${state.walkDetail}")
                         val walkDetail = state.walkDetail
                         if (walkDetail != null) {
-                            (activity as? AppCompatActivity)?.supportActionBar?.title = walkDetail.title
+                            (activity as? AppCompatActivity)?.supportActionBar?.title =
+                                walkDetail.title
                             updateUI(view, walkDetail)
 
                             // first() 대신 firstOrNull() 사용
@@ -139,9 +141,11 @@ class WalkingStartViewFragment : Fragment(), OnMapReadyCallback {
                             }
                         }
                     }
+
                     is WalkDetailState.Error -> {
                         Log.e("WalkingStartView", "API 호출 실패: ${state.message}")
                     }
+
                     WalkDetailState.Loading -> TODO()
                 }
             }
@@ -195,16 +199,20 @@ class WalkingStartViewFragment : Fragment(), OnMapReadyCallback {
         // 리뷰 버튼 설정
         val reviewButton: ImageButton = view.findViewById(R.id.review_button)
         reviewButton.setOnClickListener {
+            val fragment = WalkingReviewAllFragment().apply {
+                arguments = Bundle().apply {
+                    putInt("walkId", walkId?.toInt() ?: -1)
+                }
+            }
             parentFragmentManager.beginTransaction()
-                .replace(R.id.main_frm, WalkingReviewAllFragment())
+                .replace(R.id.main_frm, fragment)
                 .addToBackStack(null)
                 .commit()
         }
-
         return view
     }
 
-    private fun updateUI(view: View, walkDetail: WalkDetail) {
+        private fun updateUI(view: View, walkDetail: WalkDetail) {
         val descriptionTextView: TextView = view.findViewById(R.id.review_tv)
         val lengthTextView: TextView = view.findViewById(R.id.length_tv)
         val timeTextView: TextView = view.findViewById(R.id.time_tv)
@@ -304,10 +312,6 @@ class WalkingStartViewFragment : Fragment(), OnMapReadyCallback {
             }
         })
     }
-
-
-
-
 
     override fun onMapReady(naverMap: NaverMap) {
         this.naverMap = naverMap
