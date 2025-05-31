@@ -1455,6 +1455,12 @@ class MapFragment : Fragment(), OnMapReadyCallback {
                 }
 
                 val savedAddress = getSavedUserAddress()
+                withContext(Dispatchers.Main) {
+                    Log.d("MapFragment", "Saved Address: $savedAddress")
+                    Toast.makeText(requireContext(), "getSavedUserAddress 호출됨", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(requireContext(), "Saved Address: $savedAddress", Toast.LENGTH_SHORT).show()
+                }
+
                 if (savedAddress.isEmpty()) {
                     withContext(Dispatchers.Main) {
                         Toast.makeText(requireContext(), "저장된 주소가 없습니다.", Toast.LENGTH_SHORT).show()
@@ -1469,6 +1475,13 @@ class MapFragment : Fragment(), OnMapReadyCallback {
                     // Naver Geocoding API로 주소를 좌표로 변환
                     val geocodeResponse = withContext(Dispatchers.IO) {
                         RetrofitClient.naverGeocodeService.geocode(savedAddress)
+                    }
+
+                    withContext(Dispatchers.Main) {
+                        val firstAddress = geocodeResponse.addresses.firstOrNull()
+                        Log.d("MapFragment", "Geocode Response: $firstAddress")
+                        Toast.makeText(requireContext(), "Geocoding API 호출됨", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(requireContext(), "Geocode Response: $firstAddress", Toast.LENGTH_SHORT).show()
                     }
 
                     val address = geocodeResponse.addresses.firstOrNull()
@@ -1526,6 +1539,7 @@ class MapFragment : Fragment(), OnMapReadyCallback {
                     }
                 } catch (e: Exception) {
                     withContext(Dispatchers.Main) {
+                        Log.e("MapFragment", "Geocoding 오류", e)
                         Toast.makeText(
                             requireContext(),
                             "주소 변환 중 오류가 발생했습니다: ${e.message}",
@@ -1535,10 +1549,10 @@ class MapFragment : Fragment(), OnMapReadyCallback {
                             loadingDialog.dismiss()
                         }
                     }
-                    Log.e("MapFragment", "Geocoding 오류", e)
                 }
             } catch (e: Exception) {
                 withContext(Dispatchers.Main) {
+                    Log.e("MapFragment", "moveToUserAddress 오류", e)
                     Toast.makeText(
                         requireContext(),
                         "오류가 발생했습니다: ${e.message}",
@@ -1548,7 +1562,6 @@ class MapFragment : Fragment(), OnMapReadyCallback {
                         loadingDialog.dismiss()
                     }
                 }
-                Log.e("MapFragment", "moveToUserAddress 오류", e)
             }
         }
     }
@@ -1680,6 +1693,13 @@ class MapFragment : Fragment(), OnMapReadyCallback {
         super.onPause()
         // 다른 프래그먼트로 이동할 때 새로고침 플래그 설정
         shouldRefresh = true
+    }
+
+    override fun onStop() {
+        super.onStop()
+        if (::loadingDialog.isInitialized && loadingDialog.isDialogShowing) {
+            loadingDialog.dismiss()
+        }
     }
 
     private fun saveCurrentLocation(latitude: Double, longitude: Double) {
