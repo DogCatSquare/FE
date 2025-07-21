@@ -15,6 +15,7 @@ import com.example.dogcatsquare.MainActivity
 import com.example.dogcatsquare.R
 import com.example.dogcatsquare.data.network.RetrofitObj
 import com.example.dogcatsquare.data.api.UserRetrofitItf
+import com.example.dogcatsquare.data.local.TokenManager
 import com.example.dogcatsquare.data.model.login.LoginRequest
 import com.example.dogcatsquare.data.model.login.LoginResponse
 import com.example.dogcatsquare.data.model.login.RefreshTokenResponse
@@ -25,9 +26,7 @@ import retrofit2.Response
 
 class LoginDetailActivity: AppCompatActivity() {
     lateinit var binding: ActivityLoginDetailBinding
-
-    lateinit var pref : SharedPreferences
-    lateinit var editor : SharedPreferences.Editor
+    private lateinit var tokenManager: TokenManager
     private var loginChecked : Boolean = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -35,11 +34,10 @@ class LoginDetailActivity: AppCompatActivity() {
         binding = ActivityLoginDetailBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        pref = getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
-        editor = pref.edit()
-
         // 상단바 색깔
         window.statusBarColor = ContextCompat.getColor(this, R.color.white)
+
+        tokenManager = TokenManager(this)
 
         // signup btn click
         binding.signupBtn.setOnClickListener {
@@ -50,15 +48,12 @@ class LoginDetailActivity: AppCompatActivity() {
         setupTextWatchers()
 
         // if autoLogin checked
-        if (pref.getBoolean("autoLogin", false)) {
-            binding.loginEmailEt.setText(pref.getString("email", ""))
-            binding.loginPwEt.setText(pref.getString("pw", ""))
+        if (tokenManager.isAutoLogin()) {
+            binding.loginEmailEt.setText(tokenManager.getEmail())
+            binding.loginPwEt.setText(tokenManager.getPassword())
             binding.checkBoxAll.isChecked = true
 
-            val savedEmail = binding.loginEmailEt.text.toString().trim()
-            val savedPw = binding.loginPwEt.text.toString().trim()
-
-            handleLogin(savedEmail, savedPw)
+            handleLogin(tokenManager.getEmail() ?: "", tokenManager.getPassword() ?: "")
         } else {
             // 로그인 버튼 클릭 이벤트
             binding.loginBtn.setOnClickListener {
@@ -72,10 +67,12 @@ class LoginDetailActivity: AppCompatActivity() {
                     // 로그인 처리
                     // 만약 자동로그인 체크되어있으면 정보 저장
                     if (loginChecked) {
-                        editor.putString("email", email)
-                        editor.putString("pw", pw)
-                        editor.putBoolean("autoLogin", true)
-                        editor.commit()
+//                        editor.putString("email", email)
+//                        editor.putString("pw", pw)
+//                        editor.putBoolean("autoLogin", true)
+//                        editor.commit()
+                        tokenManager.setAutoLogin(true)
+                        tokenManager.saveUserInfo(-1, email, pw, -1) // 나중에 서버 응답값으로 덮어씀
                     }
                     handleLogin(email, pw)
                 }
@@ -83,14 +80,16 @@ class LoginDetailActivity: AppCompatActivity() {
         }
 
         // autoLogin checkBox click
-        binding.checkBoxAll.setOnCheckedChangeListener{ buttonView, isChecked ->
-            if (isChecked) {
-                loginChecked = true
-            } else {
-                loginChecked = false
-                editor.clear()
-                editor.commit()
-            }
+        binding.checkBoxAll.setOnCheckedChangeListener{ _, isChecked ->
+//            if (isChecked) {
+//                loginChecked = true
+//            } else {
+//                loginChecked = false
+//                editor.clear()
+//                editor.commit()
+//            }
+            loginChecked = isChecked
+            if (!isChecked) tokenManager.clear()
         }
     }
 
@@ -129,22 +128,17 @@ class LoginDetailActivity: AppCompatActivity() {
 
     // 로그인
     private fun handleLogin(email: String, password: String) {
-        val loginService = RetrofitObj.getRetrofit().create(UserRetrofitItf::class.java)
+        val loginService = RetrofitObj.getRetrofit(this).create(UserRetrofitItf::class.java)
         loginService.login(LoginRequest(email, password)).enqueue(object : Callback<LoginResponse> {
             override fun onResponse(call: Call<LoginResponse>, response: Response<LoginResponse>) {
-                when (response.code()) {
-                    200 -> {
-                        val resp: LoginResponse? = response.body()
-                        if (resp != null && resp.isSuccess) {
-                            navigateToMain(resp)
-                        } else {
-                            Log.e("Login/FAILURE", "응답 코드: ${resp?.code}, 응답 메시지: ${resp?.message}")
-                        }
-                    }
-                    500 -> {
-                        binding.errorTv.visibility = View.VISIBLE
-                        binding.errorTv.text = "로그인 정보가 일치하지 않습니다"
-                    }
+                if (response.code() == 200 && response.body()?.isSuccess == true) {
+                    val result = response.body()!!.result
+                    tokenManager.saveTokens(result.token, result.refreshToken)
+                    tokenManager.saveUserInfo(result.userId, result.email, password, result.cityId)
+                    navigateToMain()
+                } else {
+                    binding.errorTv.visibility = View.VISIBLE
+                    binding.errorTv.text = "로그인 정보가 일치하지 않습니다"
                 }
             }
 
@@ -174,18 +168,22 @@ class LoginDetailActivity: AppCompatActivity() {
     }
 
     // 메인으로
-    private fun navigateToMain(loginResponse: LoginResponse) {
-        saveUserInfo(
-            loginResponse.result.token,
-            loginResponse.result.refreshToken,
-            loginResponse.result.userId,
-            loginResponse.result.email,
-            binding.loginPwEt.text.toString(),
-            loginResponse.result.cityId
-        )
-
-        val intent = Intent(this, MainActivity::class.java)
-        startActivity(intent)
-        finish() // 로그인 화면 종료
+//    private fun navigateToMain(loginResponse: LoginResponse) {
+//        saveUserInfo(
+//            loginResponse.result.token,
+//            loginResponse.result.refreshToken,
+//            loginResponse.result.userId,
+//            loginResponse.result.email,
+//            binding.loginPwEt.text.toString(),
+//            loginResponse.result.cityId
+//        )
+//
+//        val intent = Intent(this, MainActivity::class.java)
+//        startActivity(intent)
+//        finish() // 로그인 화면 종료
+//    }
+    private fun navigateToMain() {
+        startActivity(Intent(this, MainActivity::class.java))
+        finish()
     }
 }

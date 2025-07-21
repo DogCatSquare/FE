@@ -33,7 +33,7 @@ class WeatherViewModel(application: Application) : AndroidViewModel(application)
             return
         }
 
-        val weatherService = RetrofitObj.getRetrofit().create(WeatherRetrofitItf::class.java)
+        val weatherService = RetrofitObj.getRetrofit(getApplication()).create(WeatherRetrofitItf::class.java)
         weatherService.getWeather("Bearer $token").enqueue(object : Callback<WeatherResponse> {
             override fun onResponse(call: Call<WeatherResponse>, response: Response<WeatherResponse>) {
                 if (response.isSuccessful) {

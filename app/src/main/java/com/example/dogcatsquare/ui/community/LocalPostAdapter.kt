@@ -9,15 +9,15 @@ import android.widget.PopupMenu
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.example.dogcatsquare.R
-import com.example.dogcatsquare.data.community.LocalPost
+import com.example.dogcatsquare.data.model.community.LocalPost
 
 class LocalPostAdapter(
     private val context: Context,
-    private val localPosts: MutableList<LocalPost>,
-    private val onEditPost: (LocalPost) -> Unit, // 수정 기능 연결
+    private val localPosts: MutableList<com.example.dogcatsquare.data.model.community.LocalPost>,
+    private val onEditPost: (com.example.dogcatsquare.data.model.community.LocalPost) -> Unit, // 수정 기능 연결
     private val onDeletePost: (Int) -> Unit,
     private val isCompactView: Boolean,
-    private val onItemClick: ((LocalPost) -> Unit)? = null  // 전체 아이템 클릭 이벤트 추가
+    private val onItemClick: ((com.example.dogcatsquare.data.model.community.LocalPost) -> Unit)? = null  // 전체 아이템 클릭 이벤트 추가
 ) : RecyclerView.Adapter<LocalPostAdapter.ViewHolder>() {
 
     inner class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
@@ -82,7 +82,7 @@ class LocalPostAdapter(
 
     override fun getItemCount(): Int = localPosts.size
 
-    private fun showPopupMenu(view: View, post: LocalPost, position: Int) {
+    private fun showPopupMenu(view: View, post: com.example.dogcatsquare.data.model.community.LocalPost, position: Int) {
         val popup = PopupMenu(context, view)
         popup.menuInflater.inflate(R.menu.post_menu, popup.menu)
         popup.setOnMenuItemClickListener { item ->

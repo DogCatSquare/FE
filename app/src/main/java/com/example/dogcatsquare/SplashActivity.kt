@@ -6,7 +6,7 @@ import android.os.Handler
 import android.os.Looper
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
-import com.example.dogcatsquare.ui.login.LoginActivity
+import com.example.dogcatsquare.ui.login.LoginSplashActivity
 
 class SplashActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -20,7 +20,7 @@ class SplashActivity : AppCompatActivity() {
         Handler(Looper.getMainLooper()).postDelayed({
 
             // 일정 시간이 지나면 LoginActivity로 이동
-            val intent = Intent(this, LoginActivity::class.java)
+            val intent = Intent(this, LoginSplashActivity::class.java)
             startActivity(intent)
 
             // 이전 키를 눌렀을 때 스플래스 스크린 화면으로 이동을 방지하기 위해

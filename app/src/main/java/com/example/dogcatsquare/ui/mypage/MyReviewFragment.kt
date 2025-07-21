@@ -11,7 +11,7 @@ import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.dogcatsquare.data.api.MyPageRetrofitItf
 import com.example.dogcatsquare.data.api.ReviewRetrofitItf
-import com.example.dogcatsquare.data.map.DeleteReviewResponse
+import com.example.dogcatsquare.data.model.map.DeleteReviewResponse
 import com.example.dogcatsquare.data.model.mypage.GetMyReviewResponse
 import com.example.dogcatsquare.data.model.mypage.ReviewContent
 import com.example.dogcatsquare.data.network.RetrofitObj
@@ -65,7 +65,7 @@ class MyReviewFragment : Fragment() {
     private fun getMyReview(adapter: MyReviewRVAdapter) {
         val token = getToken()
 
-        val getMyReviewService = RetrofitObj.getRetrofit().create(MyPageRetrofitItf::class.java)
+        val getMyReviewService = RetrofitObj.getRetrofit(requireContext()).create(MyPageRetrofitItf::class.java)
         getMyReviewService.getMyReview("Bearer $token", 0).enqueue(object : Callback<GetMyReviewResponse> {
             override fun onResponse(call: Call<GetMyReviewResponse>, response: Response<GetMyReviewResponse>) {
                 Log.d("RETROFIT/SUCCESS", response.toString())
@@ -105,7 +105,7 @@ class MyReviewFragment : Fragment() {
 
     private fun onDeleteReview(reviewId: Int, placeId: Int?, walkId: Int?) {
         val token = getToken()
-        val deleteReviewService = RetrofitObj.getRetrofit().create(ReviewRetrofitItf::class.java)
+        val deleteReviewService = RetrofitObj.getRetrofit(requireContext()).create(ReviewRetrofitItf::class.java)
 
         if (walkId == null) {
             if (placeId != null) {

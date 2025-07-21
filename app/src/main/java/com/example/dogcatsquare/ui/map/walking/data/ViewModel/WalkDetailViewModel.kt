@@ -4,7 +4,7 @@ import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import com.example.dogcatsquare.RetrofitClient
+import com.example.dogcatsquare.data.network.RetrofitClient
 import com.example.dogcatsquare.ui.map.walking.data.Response.WalkDetail
 import com.example.dogcatsquare.ui.map.walking.data.Response.WalkDetailResponse
 import com.example.dogcatsquare.ui.map.walking.WalkApiService

@@ -287,7 +287,7 @@ class AddPetFragment : Fragment() {
             MultipartBody.Part.createFormData("petImage", file.name, requestFile)
         }
 
-        val addPetService = RetrofitObj.getRetrofit().create(PetRetrofitItf::class.java)
+        val addPetService = RetrofitObj.getRetrofit(requireContext()).create(PetRetrofitItf::class.java)
         addPetService.addPet("Bearer $BEARER_TOKEN", requestBody, petImage).enqueue(object : Callback<AddPetResponse> {
             override fun onResponse(call: Call<AddPetResponse>, response: Response<AddPetResponse>) {
                 Log.d("AddPet/Response", response.toString())

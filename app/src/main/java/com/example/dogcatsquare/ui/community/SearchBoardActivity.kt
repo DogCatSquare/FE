@@ -13,7 +13,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.dogcatsquare.R
 import com.example.dogcatsquare.api.RetrofitClient
-import com.example.dogcatsquare.data.community.BoardSearchResponseDto
+import com.example.dogcatsquare.data.model.community.BoardSearchResponseDto
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -75,10 +75,10 @@ class SearchBoardActivity : AppCompatActivity() {
     private fun getAllBoards() {
         val token = getToken()
         RetrofitClient.instance.getAllBoards("Bearer $token")
-            .enqueue(object : Callback<BoardSearchResponseDto> {
+            .enqueue(object : Callback<com.example.dogcatsquare.data.model.community.BoardSearchResponseDto> {
                 override fun onResponse(
-                    call: Call<BoardSearchResponseDto>,
-                    response: Response<BoardSearchResponseDto>
+                    call: Call<com.example.dogcatsquare.data.model.community.BoardSearchResponseDto>,
+                    response: Response<com.example.dogcatsquare.data.model.community.BoardSearchResponseDto>
                 ) {
                     if (response.isSuccessful) {
                         val boardList = response.body()?.result ?: emptyList()
@@ -93,7 +93,7 @@ class SearchBoardActivity : AppCompatActivity() {
                     }
                 }
 
-                override fun onFailure(call: Call<BoardSearchResponseDto>, t: Throwable) {
+                override fun onFailure(call: Call<com.example.dogcatsquare.data.model.community.BoardSearchResponseDto>, t: Throwable) {
                     Log.e("SearchBoardActivity", "서버 연결 실패", t)
                     Toast.makeText(
                         this@SearchBoardActivity,
@@ -108,10 +108,10 @@ class SearchBoardActivity : AppCompatActivity() {
     private fun searchBoard(boardName: String) {
         val token = getToken()
         RetrofitClient.instance.searchBoard("Bearer $token", boardName)
-            .enqueue(object : Callback<BoardSearchResponseDto> {
+            .enqueue(object : Callback<com.example.dogcatsquare.data.model.community.BoardSearchResponseDto> {
                 override fun onResponse(
-                    call: Call<BoardSearchResponseDto>,
-                    response: Response<BoardSearchResponseDto>
+                    call: Call<com.example.dogcatsquare.data.model.community.BoardSearchResponseDto>,
+                    response: Response<com.example.dogcatsquare.data.model.community.BoardSearchResponseDto>
                 ) {
                     if (response.isSuccessful) {
                         val boardList = response.body()?.result ?: emptyList()
@@ -144,7 +144,7 @@ class SearchBoardActivity : AppCompatActivity() {
                     }
                 }
 
-                override fun onFailure(call: Call<BoardSearchResponseDto>, t: Throwable) {
+                override fun onFailure(call: Call<com.example.dogcatsquare.data.model.community.BoardSearchResponseDto>, t: Throwable) {
                     Log.e("SearchBoardActivity", "서버 연결 실패", t)
                     Toast.makeText(
                         this@SearchBoardActivity,

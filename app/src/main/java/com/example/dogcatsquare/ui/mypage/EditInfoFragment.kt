@@ -281,7 +281,7 @@ class EditInfoFragment : Fragment() {
     private fun getAllPets(adapter: AddPetRVAdapter) {
         val BEARER_TOKEN = getToken()
 
-        val petService = RetrofitObj.getRetrofit().create(PetRetrofitItf::class.java)
+        val petService = RetrofitObj.getRetrofit(requireContext()).create(PetRetrofitItf::class.java)
         petService.getAllPet("Bearer $BEARER_TOKEN").enqueue(object : Callback<GetAllPetResponse> {
             override fun onResponse(call: Call<GetAllPetResponse>, response: Response<GetAllPetResponse>) {
                 Log.d("GetPet/SUCCESS", response.toString())
@@ -341,7 +341,7 @@ class EditInfoFragment : Fragment() {
     // 닉네임 중복 체크
     private fun isNicknameUsed(nickname: String): Boolean {
         var checkNickname: Boolean = false
-        val checkNicknameService = RetrofitObj.getRetrofit().create(UserRetrofitItf::class.java)
+        val checkNicknameService = RetrofitObj.getRetrofit(requireContext()).create(UserRetrofitItf::class.java)
         checkNicknameService.checkNickname(nickname).enqueue(object : Callback<CheckNicknameResponse>{
             override fun onResponse(
                 call: Call<CheckNicknameResponse>,
@@ -416,7 +416,7 @@ class EditInfoFragment : Fragment() {
     private fun updateProfile(imagePart: MultipartBody.Part?, requestBody: RequestBody) {
         val BEARER_TOKEN = getToken()
 
-        val editProfileService = RetrofitObj.getRetrofit().create(UserRetrofitItf::class.java)
+        val editProfileService = RetrofitObj.getRetrofit(requireContext()).create(UserRetrofitItf::class.java)
         editProfileService.fetchUser("Bearer $BEARER_TOKEN", requestBody, imagePart).enqueue(object: Callback<FetchUserResponse> {
                 override fun onResponse(call: Call<FetchUserResponse>, response: Response<FetchUserResponse>) {
                     Log.d("RETROFIT/SUCCESS", response.toString())

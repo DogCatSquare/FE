@@ -27,7 +27,7 @@ class LocalPostDetailActivity : AppCompatActivity() {
 
         // 뷰 초기화
         tvUsername = findViewById(R.id.tvUsername)
-        tvDogBreed = findViewById(R.id.tvDogBreed)
+//        tvDogBreed = findViewById(R.id.tvDogBreed)
         tvTitle = findViewById(R.id.tvTitle)
         tvContent = findViewById(R.id.tvContent)
         ivProfile = findViewById(R.id.ivProfile)

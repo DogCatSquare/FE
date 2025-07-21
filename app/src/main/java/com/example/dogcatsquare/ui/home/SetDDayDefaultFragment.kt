@@ -324,7 +324,7 @@ class SetDDayDefaultFragment : Fragment() {
     private fun setDDay(id: Int, day: String, term: Int,  isAlarm: Boolean) {
         val token = getToken()
 
-        val fetchDDayService = RetrofitObj.getRetrofit().create(DDayRetrofitItf::class.java)
+        val fetchDDayService = RetrofitObj.getRetrofit(requireContext()).create(DDayRetrofitItf::class.java)
         fetchDDayService.fetchDDay("Bearer $token", id, FetchDDayRequest(day, term, isAlarm)).enqueue(object:
             Callback<FetchDDayResponse> {
             override fun onResponse(call: Call<FetchDDayResponse>, response: Response<FetchDDayResponse>) {

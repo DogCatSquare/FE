@@ -17,14 +17,14 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.bumptech.glide.Glide
 import com.example.dogcatsquare.R
 import com.example.dogcatsquare.data.api.CommentApiService
-import com.example.dogcatsquare.data.community.Comment
-import com.example.dogcatsquare.data.community.CommentListResponse
-import com.example.dogcatsquare.data.community.CommentRequest
-import com.example.dogcatsquare.data.community.CommentResponse
-import com.example.dogcatsquare.data.community.CommonResponse
-import com.example.dogcatsquare.data.community.LikeResponse
-import com.example.dogcatsquare.data.community.PostDetailResponse
-import com.example.dogcatsquare.data.community.Reply
+import com.example.dogcatsquare.data.model.community.Comment
+import com.example.dogcatsquare.data.model.community.CommentListResponse
+import com.example.dogcatsquare.data.model.community.CommentRequest
+import com.example.dogcatsquare.data.model.community.CommentResponse
+import com.example.dogcatsquare.data.model.community.CommonResponse
+import com.example.dogcatsquare.data.model.community.LikeResponse
+import com.example.dogcatsquare.data.model.community.PostDetailResponse
+import com.example.dogcatsquare.data.model.community.Reply
 import com.example.dogcatsquare.data.model.home.Event
 import com.example.dogcatsquare.data.model.home.GetAllEventsResponse
 import com.example.dogcatsquare.data.network.RetrofitObj
@@ -46,7 +46,7 @@ class PostDetailActivity : AppCompatActivity(), CommentActionListener {
     private var isLiked: Boolean? = null // 현재 좋아요 상태 저장
     private var like_count: Int = 0  // 좋아요 개수 저장
 
-    private var commentDatas = ArrayList<Comment>()
+    private var commentDatas = ArrayList<com.example.dogcatsquare.data.model.community.Comment>()
 
     private var videoUrl: String? = null
 
@@ -143,9 +143,9 @@ class PostDetailActivity : AppCompatActivity(), CommentActionListener {
     private fun getComment(postId: Long, adapter: CommentsAdapter) {
         val token = getToken()
 
-        val getCommentService = RetrofitObj.getRetrofit().create(CommentApiService::class.java)
-        getCommentService.getComments("Bearer $token", postId).enqueue(object : Callback<CommentListResponse> {
-            override fun onResponse(call: Call<CommentListResponse>, response: Response<CommentListResponse>) {
+        val getCommentService = RetrofitObj.getRetrofit(this).create(CommentApiService::class.java)
+        getCommentService.getComments("Bearer $token", postId).enqueue(object : Callback<com.example.dogcatsquare.data.model.community.CommentListResponse> {
+            override fun onResponse(call: Call<com.example.dogcatsquare.data.model.community.CommentListResponse>, response: Response<com.example.dogcatsquare.data.model.community.CommentListResponse>) {
                 response.body()?.let { resp ->
                     if (resp.isSuccess) {
                         Log.d("GetComment", "댓글 전체 조회 성공")
@@ -167,7 +167,7 @@ class PostDetailActivity : AppCompatActivity(), CommentActionListener {
                     Log.e("GetComment/ERROR", "서버 응답이 null임")
                 }
             }
-            override fun onFailure(call: Call<CommentListResponse>, t: Throwable) {
+            override fun onFailure(call: Call<com.example.dogcatsquare.data.model.community.CommentListResponse>, t: Throwable) {
                 Toast.makeText(this@PostDetailActivity, "네트워크 오류: ${t.message}", Toast.LENGTH_SHORT).show()
                 Log.d("RETROFIT/FAILURE", t.message.toString())
             }
@@ -178,10 +178,13 @@ class PostDetailActivity : AppCompatActivity(), CommentActionListener {
     private fun postComment(postId: Long, userId: Long, content: String, parentId: String) {
         val token = getToken()
 
-        val commentApi = RetrofitObj.getRetrofit().create(CommentApiService::class.java)
-        val request = CommentRequest(content = content, parentId = parentId)
-        commentApi.createComment("Bearer $token", postId, userId, request).enqueue(object : Callback<CommentResponse> {
-            override fun onResponse(call: Call<CommentResponse>, response: Response<CommentResponse>) {
+        val commentApi = RetrofitObj.getRetrofit(this).create(CommentApiService::class.java)
+        val request = com.example.dogcatsquare.data.model.community.CommentRequest(
+            content = content,
+            parentId = parentId
+        )
+        commentApi.createComment("Bearer $token", postId, userId, request).enqueue(object : Callback<com.example.dogcatsquare.data.model.community.CommentResponse> {
+            override fun onResponse(call: Call<com.example.dogcatsquare.data.model.community.CommentResponse>, response: Response<com.example.dogcatsquare.data.model.community.CommentResponse>) {
                 if (response.isSuccessful) {
                     val newComment = response.body()?.result
                     if (newComment != null) {
@@ -195,7 +198,7 @@ class PostDetailActivity : AppCompatActivity(), CommentActionListener {
                     Toast.makeText(this@PostDetailActivity, "댓글 등록 실패: ${response.code()}", Toast.LENGTH_SHORT).show()
                 }
             }
-            override fun onFailure(call: Call<CommentResponse>, t: Throwable) {
+            override fun onFailure(call: Call<com.example.dogcatsquare.data.model.community.CommentResponse>, t: Throwable) {
                 Toast.makeText(this@PostDetailActivity, "네트워크 오류: ${t.message}", Toast.LENGTH_SHORT).show()
                 Log.d("RETROFIT/FAILURE", t.message.toString())
             }
@@ -207,10 +210,10 @@ class PostDetailActivity : AppCompatActivity(), CommentActionListener {
         val token = getToken()
         val userId = getUserId()
 
-        val commentApi = RetrofitObj.getRetrofit().create(CommentApiService::class.java)
+        val commentApi = RetrofitObj.getRetrofit(this).create(CommentApiService::class.java)
         if (userId != null) {
-            commentApi.deleteComment("Bearer $token", postId, commentId, userId.toInt()).enqueue(object : Callback<CommonResponse> {
-                override fun onResponse(call: Call<CommonResponse>, response: Response<CommonResponse>) {
+            commentApi.deleteComment("Bearer $token", postId, commentId, userId.toInt()).enqueue(object : Callback<com.example.dogcatsquare.data.model.community.CommonResponse> {
+                override fun onResponse(call: Call<com.example.dogcatsquare.data.model.community.CommonResponse>, response: Response<com.example.dogcatsquare.data.model.community.CommonResponse>) {
                     if (response.isSuccessful && response.body()?.isSuccess == true) {
                         val index = commentDatas.indexOfFirst { it.id == commentId.toInt() }
                         if (index != -1) {
@@ -222,7 +225,7 @@ class PostDetailActivity : AppCompatActivity(), CommentActionListener {
                         Toast.makeText(this@PostDetailActivity, "내가 작성한 댓글이 아닙니다", Toast.LENGTH_SHORT).show()
                     }
                 }
-                override fun onFailure(call: Call<CommonResponse>, t: Throwable) {
+                override fun onFailure(call: Call<com.example.dogcatsquare.data.model.community.CommonResponse>, t: Throwable) {
                     Toast.makeText(this@PostDetailActivity, "네트워크 오류: ${t.message}", Toast.LENGTH_SHORT).show()
                 }
             })
@@ -230,7 +233,7 @@ class PostDetailActivity : AppCompatActivity(), CommentActionListener {
     }
 
     // CommentActionListener 구현 - 대댓글 등록
-    override fun onReplyClicked(comment: Comment) {
+    override fun onReplyClicked(comment: com.example.dogcatsquare.data.model.community.Comment) {
         val builder = AlertDialog.Builder(this)
         builder.setTitle("대댓글 작성")
         val input = EditText(this)
@@ -245,7 +248,7 @@ class PostDetailActivity : AppCompatActivity(), CommentActionListener {
                 // 로컬 업데이트: 기존 댓글의 replies 필드만 업데이트
                 val index = commentDatas.indexOfFirst { it.id == comment.id }
                 if (index != -1) {
-                    val newReply = Reply(
+                    val newReply = com.example.dogcatsquare.data.model.community.Reply(
                         id = 0, // 실제 id는 서버에서 받아오거나 적절한 값을 할당하세요.
                         content = replyText,
                         name = "내 닉네임", // 현재 사용자 닉네임을 넣으세요.
@@ -270,7 +273,7 @@ class PostDetailActivity : AppCompatActivity(), CommentActionListener {
     }
 
     // CommentActionListener 구현 - 댓글 삭제
-    override fun onDeleteClicked(comment: Comment) {
+    override fun onDeleteClicked(comment: com.example.dogcatsquare.data.model.community.Comment) {
         AlertDialog.Builder(this)
             .setTitle("댓글 삭제")
             .setMessage("정말 이 댓글을 삭제하시겠습니까?")
@@ -286,13 +289,13 @@ class PostDetailActivity : AppCompatActivity(), CommentActionListener {
     // 게시글 상세 정보 로드 함수 (기존 코드)
     private fun loadPostDetail(postId: Int) {
         val token = getToken()
-        val boardApiService = RetrofitObj.getRetrofit().create(
+        val boardApiService = RetrofitObj.getRetrofit(this).create(
             com.example.dogcatsquare.data.api.BoardApiService::class.java
         )
-        boardApiService.getPost("Bearer $token", postId).enqueue(object : Callback<PostDetailResponse> {
+        boardApiService.getPost("Bearer $token", postId).enqueue(object : Callback<com.example.dogcatsquare.data.model.community.PostDetailResponse> {
             override fun onResponse(
-                call: Call<PostDetailResponse>,
-                response: Response<PostDetailResponse>
+                call: Call<com.example.dogcatsquare.data.model.community.PostDetailResponse>,
+                response: Response<com.example.dogcatsquare.data.model.community.PostDetailResponse>
             ) {
                 Log.d("PostDetailActivity", "API Response Code: ${response.code()}")
                 if (response.isSuccessful) {
@@ -375,7 +378,7 @@ class PostDetailActivity : AppCompatActivity(), CommentActionListener {
                     Toast.makeText(this@PostDetailActivity, "게시글 조회 실패: ${response.code()}", Toast.LENGTH_SHORT).show()
                 }
             }
-            override fun onFailure(call: Call<PostDetailResponse>, t: Throwable) {
+            override fun onFailure(call: Call<com.example.dogcatsquare.data.model.community.PostDetailResponse>, t: Throwable) {
                 Log.e("PostDetailActivity", "API 호출 실패", t)
                 Toast.makeText(this@PostDetailActivity, "네트워크 오류: ${t.message}", Toast.LENGTH_SHORT).show()
             }
@@ -389,13 +392,13 @@ class PostDetailActivity : AppCompatActivity(), CommentActionListener {
     }
 
     private fun toggleLike() {
-        val retrofit = RetrofitObj.getRetrofit().create(PostApiService::class.java)
+        val retrofit = RetrofitObj.getRetrofit(this).create(PostApiService::class.java)
         val token = getToken()
         val userId = getUserId()  // 실제 유저 ID로 변경
 
         if (userId != null) {
-            retrofit.fetchLike("Bearer $token", postId, userId).enqueue(object : Callback<LikeResponse> {
-                override fun onResponse(call: Call<LikeResponse>, response: Response<LikeResponse>) {
+            retrofit.fetchLike("Bearer $token", postId, userId).enqueue(object : Callback<com.example.dogcatsquare.data.model.community.LikeResponse> {
+                override fun onResponse(call: Call<com.example.dogcatsquare.data.model.community.LikeResponse>, response: Response<com.example.dogcatsquare.data.model.community.LikeResponse>) {
                     if (response.isSuccessful && response.body()?.isSuccess == true) {
                         val resultMessage = response.body()?.result ?: ""
                         Log.d("ToggleLike", "resultMessage: $resultMessage")
@@ -411,7 +414,7 @@ class PostDetailActivity : AppCompatActivity(), CommentActionListener {
                     }
                 }
 
-                override fun onFailure(call: Call<LikeResponse>, t: Throwable) {
+                override fun onFailure(call: Call<com.example.dogcatsquare.data.model.community.LikeResponse>, t: Throwable) {
                     Toast.makeText(this@PostDetailActivity, "좋아요 실패", Toast.LENGTH_SHORT).show()
                 }
             })

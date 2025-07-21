@@ -1,6 +1,6 @@
 package com.example.dogcatsquare.data.api
 
-import com.example.dogcatsquare.data.map.DeleteReviewResponse
+import com.example.dogcatsquare.data.model.map.DeleteReviewResponse
 import retrofit2.Call
 import retrofit2.http.DELETE
 import retrofit2.http.Header

@@ -104,7 +104,7 @@ class SignupMyInfoActivity : AppCompatActivity() {
     // 내 정보 확인 후 메인 화면으로 넘어가기
     private fun chechMyInfo() {
         if (locCheck) {
-            val signupService = RetrofitObj.getRetrofit().create(UserRetrofitItf::class.java)
+            val signupService = RetrofitObj.getRetrofit(this).create(UserRetrofitItf::class.java)
 
             val signUpRequest = SignUpRequest(
                 email = intent.getStringExtra("email") ?: "",
@@ -618,7 +618,7 @@ class SignupMyInfoActivity : AppCompatActivity() {
         Toast.makeText(this, "회원가입이 완료되었습니다!", Toast.LENGTH_SHORT).show()
 
         // 로그인 화면으로 이동
-        val intent = Intent(this, LoginActivity::class.java)
+        val intent = Intent(this, LoginSplashActivity::class.java)
 
         // 슬라이드 효과 적용
 //        val options = ActivityOptionsCompat.makeCustomAnimation(this, R.anim.fade_in, R.anim.fade_out)

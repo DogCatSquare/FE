@@ -25,9 +25,9 @@ import com.example.dogcatsquare.data.api.BoardApiService
 import com.example.dogcatsquare.data.api.DDayRetrofitItf
 import com.example.dogcatsquare.data.api.EventRetrofitItf
 import com.example.dogcatsquare.data.api.PlacesApiService
-import com.example.dogcatsquare.data.map.GetHotPlaceRequest
-import com.example.dogcatsquare.data.map.GetHotPlaceResponse
-import com.example.dogcatsquare.data.map.Place
+import com.example.dogcatsquare.data.model.map.GetHotPlaceRequest
+import com.example.dogcatsquare.data.model.map.GetHotPlaceResponse
+import com.example.dogcatsquare.data.model.map.Place
 import com.example.dogcatsquare.data.model.home.DDay
 import com.example.dogcatsquare.data.model.home.Event
 import com.example.dogcatsquare.data.model.home.GetAllDDayResponse
@@ -35,7 +35,7 @@ import com.example.dogcatsquare.data.model.home.GetAllEventsResponse
 import com.example.dogcatsquare.data.model.home.WeatherResult
 import com.example.dogcatsquare.data.network.RetrofitObj
 import com.example.dogcatsquare.data.model.post.PopularPostResponse
-import com.example.dogcatsquare.data.community.Post
+import com.example.dogcatsquare.data.model.community.Post
 import com.example.dogcatsquare.databinding.FragmentHomeBinding
 import com.example.dogcatsquare.ui.community.PostDetailActivity
 import com.example.dogcatsquare.ui.map.location.MapDetailFragment
@@ -270,7 +270,7 @@ class HomeFragment : Fragment() {
     private fun getAllDDay(adapter: HomeDDayRVAdapter) {
         val BEARER_TOKEN = getToken()
 
-        val getAllDDayService = RetrofitObj.getRetrofit().create(DDayRetrofitItf::class.java)
+        val getAllDDayService = RetrofitObj.getRetrofit(requireContext()).create(DDayRetrofitItf::class.java)
         getAllDDayService.getAllDDays("Bearer $BEARER_TOKEN").enqueue(object: Callback<GetAllDDayResponse> {
             override fun onResponse(call: Call<GetAllDDayResponse>, response: Response<GetAllDDayResponse>) {
                 Log.d("GetDDay/SUCCESS", response.toString())
@@ -361,7 +361,7 @@ class HomeFragment : Fragment() {
         val cityId = getCityId()
         val (currentLat, currentLng) = MapFragment().getMapCurrentPosition()
 
-        val getPopularPlaceService = RetrofitObj.getRetrofit().create(PlacesApiService::class.java)
+        val getPopularPlaceService = RetrofitObj.getRetrofit(requireContext()).create(PlacesApiService::class.java)
         getPopularPlaceService.getHotPlace("Bearer $token", cityId, GetHotPlaceRequest(currentLat, currentLng)).enqueue(object : Callback<GetHotPlaceResponse> {
             override fun onResponse(call: Call<GetHotPlaceResponse>, response: Response<GetHotPlaceResponse>) {
                 Log.d("GetHotPlace/SUCCESS", response.toString())
@@ -443,7 +443,7 @@ class HomeFragment : Fragment() {
     private fun getPopularPost(adapter: HomeHotPostRVAdapter) {
         val token = getToken()
 
-        val getPopularPostService = RetrofitObj.getRetrofit().create(BoardApiService::class.java)
+        val getPopularPostService = RetrofitObj.getRetrofit(requireContext()).create(BoardApiService::class.java)
         getPopularPostService.getPopularPost("Bearer $token").enqueue(object : Callback<PopularPostResponse> {
             override fun onResponse(call: Call<PopularPostResponse>, response: Response<PopularPostResponse>) {
                 Log.d("PopularPost/SUCCESS", response.toString())
@@ -509,7 +509,7 @@ class HomeFragment : Fragment() {
     }
 
     private fun getAllEvents(adapter: HomePetEventRVAdapter) {
-        val getAllEventsService = RetrofitObj.getRetrofit().create(EventRetrofitItf::class.java)
+        val getAllEventsService = RetrofitObj.getRetrofit(requireContext()).create(EventRetrofitItf::class.java)
         getAllEventsService.getAllEvents().enqueue(object: Callback<GetAllEventsResponse> {
             override fun onResponse(call: Call<GetAllEventsResponse>, response: Response<GetAllEventsResponse>) {
                 Log.d("GetEvent/SUCCESS", response.toString())

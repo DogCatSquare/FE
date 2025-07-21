@@ -9,11 +9,11 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.example.dogcatsquare.data.map.MapButton
+import com.example.dogcatsquare.data.model.map.MapButton
 import com.example.dogcatsquare.ui.map.location.MapButtonRVAdapter
 import com.example.dogcatsquare.R
 import com.example.dogcatsquare.data.api.WishRetrofitObj
-import com.example.dogcatsquare.data.map.MyLocation
+import com.example.dogcatsquare.data.model.map.MyLocation
 import com.example.dogcatsquare.data.model.wish.GetMyWishResponse
 import com.example.dogcatsquare.data.model.wish.WishPlace
 import com.example.dogcatsquare.data.network.RetrofitObj
@@ -102,7 +102,7 @@ class WishPlaceFragment : Fragment() {
             layoutManager = LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false)
         }
 
-        val wishPlaceRVAdapter = WishPlaceRVAdapter(placeDatas, getToken())
+        val wishPlaceRVAdapter = WishPlaceRVAdapter(requireContext(), placeDatas, getToken())
         binding.wishPlaceRV.apply {
             adapter = wishPlaceRVAdapter
             layoutManager = LinearLayoutManager(context, LinearLayoutManager.VERTICAL, false)
@@ -140,7 +140,7 @@ class WishPlaceFragment : Fragment() {
     private fun getAllPlaces(callback: (List<WishPlace>) -> Unit) {
         val token = getToken()
 
-        val getMyWishService = RetrofitObj.getRetrofit().create(WishRetrofitObj::class.java)
+        val getMyWishService = RetrofitObj.getRetrofit(requireContext()).create(WishRetrofitObj::class.java)
         // 위도 경도 기본값 -> 추후 수정
         getMyWishService.getMyWish("Bearer $token", MyLocation(37.5665, 126.9780)).enqueue(object : Callback<GetMyWishResponse> {
             override fun onResponse(call: Call<GetMyWishResponse>, response: Response<GetMyWishResponse>) {

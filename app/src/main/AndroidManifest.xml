@@ -54,7 +54,7 @@
             android:name="com.naver.maps.map.CLIENT_ID"
             android:value="hqrbaf0b6w" />
 
-        <activity android:name=".ui.login.LoginActivity"
+        <activity android:name=".ui.login.LoginSplashActivity"
             android:exported="false" />
         <activity android:name=".ui.login.LoginDetailActivity"
             android:exported="false" />

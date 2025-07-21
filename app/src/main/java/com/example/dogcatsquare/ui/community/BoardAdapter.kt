@@ -14,9 +14,9 @@ import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.example.dogcatsquare.R
 import com.example.dogcatsquare.data.api.BoardApiService
-import com.example.dogcatsquare.data.community.BoardData
-import com.example.dogcatsquare.data.community.MyBoardResponse
-import com.example.dogcatsquare.data.community.MyBoardResult
+import com.example.dogcatsquare.data.model.community.BoardData
+import com.example.dogcatsquare.data.model.community.MyBoardResponse
+import com.example.dogcatsquare.data.model.community.MyBoardResult
 import com.example.dogcatsquare.data.model.home.DDay
 import com.example.dogcatsquare.data.model.home.GetAllDDayResponse
 import com.example.dogcatsquare.data.network.RetrofitObj
@@ -27,19 +27,19 @@ import retrofit2.Response
 
 class BoardAdapter(
     private val context: Context,
-    private val onAddClick: (MyBoardResult) -> Unit // 🔹 삭제 클릭 리스너 추가
+    private val onAddClick: (com.example.dogcatsquare.data.model.community.MyBoardResult) -> Unit // 🔹 삭제 클릭 리스너 추가
 ) :
-    ListAdapter<BoardData, BoardAdapter.BoardViewHolder>(BoardDiffCallback()) {
+    ListAdapter<com.example.dogcatsquare.data.model.community.BoardData, BoardAdapter.BoardViewHolder>(BoardDiffCallback()) {
 
     inner class BoardViewHolder(private val binding: ItemBoardBinding) : RecyclerView.ViewHolder(binding.root) {
-        fun bind(board: BoardData) {
+        fun bind(board: com.example.dogcatsquare.data.model.community.BoardData) {
             binding.tvBoardName.text = board.boardName
             binding.tvBoardDescription.text = board.content
             binding.tvBoardHashtags.text = board.keywords?.joinToString(" ") { "#$it" } ?: ""
 
             // 🔹 추가 버튼 클릭 이벤트
             binding.ivAddIcon.setOnClickListener {
-                val myBoard = MyBoardResult(
+                val myBoard = com.example.dogcatsquare.data.model.community.MyBoardResult(
                     id = board.id,
                     boardId = board.id,
                     username = "",  // 필요하면 추가
@@ -59,12 +59,12 @@ class BoardAdapter(
         holder.bind(getItem(position))
     }
 
-    class BoardDiffCallback : DiffUtil.ItemCallback<BoardData>() {
-        override fun areItemsTheSame(oldItem: BoardData, newItem: BoardData): Boolean {
+    class BoardDiffCallback : DiffUtil.ItemCallback<com.example.dogcatsquare.data.model.community.BoardData>() {
+        override fun areItemsTheSame(oldItem: com.example.dogcatsquare.data.model.community.BoardData, newItem: com.example.dogcatsquare.data.model.community.BoardData): Boolean {
             return oldItem.id == newItem.id
         }
 
-        override fun areContentsTheSame(oldItem: BoardData, newItem: BoardData): Boolean {
+        override fun areContentsTheSame(oldItem: com.example.dogcatsquare.data.model.community.BoardData, newItem: com.example.dogcatsquare.data.model.community.BoardData): Boolean {
             return oldItem == newItem
         }
     }

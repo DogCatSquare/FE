@@ -11,15 +11,15 @@ import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.RequestOptions
 import com.example.dogcatsquare.R
-import com.example.dogcatsquare.data.community.GetAllPostResult
-import com.example.dogcatsquare.data.community.Post
+import com.example.dogcatsquare.data.model.community.GetAllPostResult
+import com.example.dogcatsquare.data.model.community.Post
 import com.example.dogcatsquare.ui.home.HomeHotPostRVAdapter.OnItemClickListener
 
-class PostAdapter(private val hotPostList: ArrayList<GetAllPostResult>) :
+class PostAdapter(private val hotPostList: ArrayList<com.example.dogcatsquare.data.model.community.GetAllPostResult>) :
     RecyclerView.Adapter<PostAdapter.PostViewHolder>() {
 
     interface OnItemClickListener {
-        fun onItemClick(post: GetAllPostResult)
+        fun onItemClick(post: com.example.dogcatsquare.data.model.community.GetAllPostResult)
     }
 
     private lateinit var mItemClickListener: OnItemClickListener
@@ -38,7 +38,7 @@ class PostAdapter(private val hotPostList: ArrayList<GetAllPostResult>) :
         private val breed: TextView = itemView.findViewById(R.id.tvDogBreed)
         private val profile: ImageView = itemView.findViewById(R.id.post_profile_iv)
 
-        fun bind(post: GetAllPostResult) {
+        fun bind(post: com.example.dogcatsquare.data.model.community.GetAllPostResult) {
             titleText.text = post.title ?: "제목 없음"
             contentPreview.text = post.content ?: "내용 없음"
             likeCountText.text = post.likeCount.toString()

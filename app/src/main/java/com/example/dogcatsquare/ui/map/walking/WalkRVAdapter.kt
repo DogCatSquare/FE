@@ -6,7 +6,7 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.example.dogcatsquare.R
-import com.example.dogcatsquare.data.walk.Walk
+import com.example.dogcatsquare.data.model.walk.Walk
 import com.example.dogcatsquare.databinding.ItemMapwalkingBinding
 import com.naver.maps.geometry.LatLng
 import com.naver.maps.map.CameraUpdate

@@ -12,7 +12,7 @@ import com.bumptech.glide.load.engine.GlideException
 import com.bumptech.glide.request.RequestListener
 import com.bumptech.glide.request.target.Target // 수정된 부분
 import com.example.dogcatsquare.R
-import com.example.dogcatsquare.data.map.DetailImg
+import com.example.dogcatsquare.data.model.map.DetailImg
 import com.example.dogcatsquare.databinding.ItemDetailImgBinding
 
 class DetailImgRVAdapter(private val imgList: List<DetailImg>) :

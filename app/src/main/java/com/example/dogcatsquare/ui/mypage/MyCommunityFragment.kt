@@ -10,7 +10,7 @@ import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.dogcatsquare.data.api.MyPageRetrofitItf
 import com.example.dogcatsquare.data.model.mypage.GetMyPostResponse
-import com.example.dogcatsquare.data.community.Post
+import com.example.dogcatsquare.data.model.community.Post
 import com.example.dogcatsquare.data.network.RetrofitObj
 import com.example.dogcatsquare.databinding.FragmentMyCommunityBinding
 import retrofit2.Call
@@ -64,7 +64,7 @@ class MyCommunityFragment : Fragment() {
         val token = getToken()
         val userId = getUserId()
 
-        val getMyPostService = RetrofitObj.getRetrofit().create(MyPageRetrofitItf::class.java)
+        val getMyPostService = RetrofitObj.getRetrofit(requireContext()).create(MyPageRetrofitItf::class.java)
         getMyPostService.getMyPost("Bearer $token", userId).enqueue(object : Callback<GetMyPostResponse> {
             override fun onResponse(call: Call<GetMyPostResponse>, response: Response<GetMyPostResponse>) {
                 Log.d("GetMyPost/SUCCESS", response.toString())

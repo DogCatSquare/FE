@@ -264,7 +264,7 @@ class AddDDayFragment : Fragment() {
     private fun addDDay(title: String, day: String, term: Int) {
         val token = getToken()
 
-        val addDDayService = RetrofitObj.getRetrofit().create(DDayRetrofitItf::class.java)
+        val addDDayService = RetrofitObj.getRetrofit(requireContext()).create(DDayRetrofitItf::class.java)
         addDDayService.addDDay("Bearer $token", AddDDayRequest(title, day, term)).enqueue(object : Callback<AddDDayResponse> {
             override fun onResponse(call: Call<AddDDayResponse>, response: Response<AddDDayResponse>) {
                 Log.d("AddDDay/Response", response.toString())
