@@ -33,6 +33,7 @@ import com.example.dogcatsquare.ui.viewmodel.PostViewModel
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
+import android.content.SharedPreferences
 
 class PostDetailActivity : AppCompatActivity(), CommentActionListener {
 
@@ -50,6 +51,8 @@ class PostDetailActivity : AppCompatActivity(), CommentActionListener {
 
     private var videoUrl: String? = null
 
+    private lateinit var likePref: SharedPreferences
+
     private fun getToken(): String? {
         val sharedPref = getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
         return sharedPref?.getString("token", null)
@@ -65,6 +68,20 @@ class PostDetailActivity : AppCompatActivity(), CommentActionListener {
         binding = ActivityPostDetailBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        likePref = getSharedPreferences("like_prefs", Context.MODE_PRIVATE)
+        // Load saved like state for this post
+        postId = intent.getIntExtra("postId", -1)
+        isLiked = likePref.getBoolean("liked_$postId", false)
+        setLikeButtonState(isLiked!!)
+
+        // Observe like status in ViewModel to update heart icon
+        postViewModel.likedPosts.observe(this) { likedPosts ->
+            likedPosts[postId]?.let { liked ->
+                isLiked = liked
+                setLikeButtonState(liked)
+            }
+        }
+
         // postId를 클래스 멤버에 할당 (예: getIntExtra를 사용한 후 toLong() 변환)
         postId = intent.getIntExtra("postId", -1)
         if (postId == -1) {
@@ -72,7 +89,6 @@ class PostDetailActivity : AppCompatActivity(), CommentActionListener {
             finish()
             return
         }
-        postId = intent.getIntExtra("postId", -1)
 
         // 뒤로가기 버튼
         binding.ivBack.setOnClickListener { finish() }
@@ -123,16 +139,19 @@ class PostDetailActivity : AppCompatActivity(), CommentActionListener {
         // 게시글 상세 정보 로드
         loadPostDetail(postId)
 
-        isLiked?.let { setLikeButtonState(it) }
+//        isLiked?.let { setLikeButtonState(it) }
         binding.ivLike.setOnClickListener {
             toggleLike()
         }
 
-        postViewModel.likedPosts.observe(this) { likedPosts ->
-            likedPosts[postId]?.let { isLiked ->
-                setLikeButtonState(isLiked)
-            }
-        }
+        // (하트 초기 상태 반영 삭제됨 - ViewModel 관찰로 대체)
+
+//        onCreate에서 한 번만 실행되기 때문에 UI 반영이 어긋납니다.
+//        postViewModel.likedPosts.observe(this) { likedPosts ->
+//            likedPosts[postId]?.let { isLiked ->
+//                setLikeButtonState(isLiked)
+//            }
+//        }
 
         binding.ivBack.setOnClickListener {
             finish()
@@ -369,8 +388,11 @@ class PostDetailActivity : AppCompatActivity(), CommentActionListener {
                             binding.ivPostImage4.visibility = View.GONE
                             binding.ivPostImage5.visibility = View.GONE
                         }
-
-                        postViewModel.updateLikeStatus(postId, postDetail.likeCount > 0)
+                        // Restore local like state and update ViewModel
+                        isLiked?.let {
+                            setLikeButtonState(it)
+                            postViewModel.updateLikeStatus(postId, it)
+                        }
                     } else {
                         Toast.makeText(this@PostDetailActivity, "게시글 정보가 없습니다.", Toast.LENGTH_SHORT).show()
                     }
@@ -394,7 +416,7 @@ class PostDetailActivity : AppCompatActivity(), CommentActionListener {
     private fun toggleLike() {
         val retrofit = RetrofitObj.getRetrofit(this).create(PostApiService::class.java)
         val token = getToken()
-        val userId = getUserId()  // 실제 유저 ID로 변경
+        val userId = getUserId()
 
         if (userId != null) {
             retrofit.fetchLike("Bearer $token", postId, userId).enqueue(object : Callback<com.example.dogcatsquare.data.model.community.LikeResponse> {
@@ -402,15 +424,23 @@ class PostDetailActivity : AppCompatActivity(), CommentActionListener {
                     if (response.isSuccessful && response.body()?.isSuccess == true) {
                         val resultMessage = response.body()?.result ?: ""
                         Log.d("ToggleLike", "resultMessage: $resultMessage")
+
                         if(resultMessage == "좋아요가 추가되었습니다.") {
                             isLiked = true
-                            like_count++  // 좋아요 추가
+                            like_count++
                         } else if(resultMessage == "좋아요가 취소되었습니다.") {
                             isLiked = false
-                            like_count--  // 좋아요 취소
+                            like_count--
                         }
+
+                        // UI 업데이트
                         binding.tvLikeCount.text = like_count.toString()
-                        isLiked?.let { postViewModel.updateLikeStatus(postId, it) }
+                        isLiked?.let {
+                            setLikeButtonState(it)
+                            postViewModel.updateLikeStatus(postId, it)
+                            // Persist like state locally
+                            likePref.edit().putBoolean("liked_$postId", it).apply()
+                        }
                     }
                 }
 
@@ -431,6 +461,8 @@ class PostDetailActivity : AppCompatActivity(), CommentActionListener {
         if (token != null) {
             loadPostDetail(postId)
             getComment(postId.toLong(), commentAdapter)
+            // Restore heart icon based on local state to prevent resetting
+            isLiked?.let { setLikeButtonState(it) }
         }
     }
 }

@@ -1,165 +1,172 @@
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:orientation="vertical"
-    android:background="#FFFFFF">
+    android:layout_height="match_parent" />
 
-    <!-- Toolbar -->
-    <RelativeLayout
-        android:id="@+id/toolbar"
-        android:layout_width="match_parent"
-        android:layout_height="56dp"
-        android:layout_alignParentTop="true"
-        android:background="#FFFFFF">
 
-        <ImageView
-            android:id="@+id/ivBack"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_centerVertical="true"
-            android:layout_marginStart="20dp"
-            android:src="@drawable/ic_back" />
 
-        <TextView
-            android:id="@+id/title"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_centerInParent="true"
-            android:text="게시판 만들기"
-            android:textSize="18sp"
-            android:textStyle="bold" />
-    </RelativeLayout>
+    <!--<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"-->
+<!--    android:layout_width="match_parent"-->
+<!--    android:layout_height="match_parent"-->
+<!--    xmlns:tools="http://schemas.android.com/tools"-->
+<!--    android:orientation="vertical"-->
+<!--    android:background="#FFFFFF">-->
 
-    <!-- 게시판 이름 입력 -->
-    <LinearLayout
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:orientation="vertical">
-    <RelativeLayout
-        android:id="@+id/board_name_input"
-        android:layout_width="match_parent"
-        android:layout_height="81dp"
-        android:layout_below="@id/toolbar"
-        android:layout_margin="16dp"
-        android:background="@drawable/bg_input_boardname">
+<!--    &lt;!&ndash; Toolbar &ndash;&gt;-->
+<!--    <RelativeLayout-->
+<!--        android:id="@+id/toolbar"-->
+<!--        android:layout_width="match_parent"-->
+<!--        android:layout_height="56dp"-->
+<!--        android:layout_alignParentTop="true"-->
+<!--        android:background="#FFFFFF">-->
 
-        <EditText
-            android:id="@+id/edit_board_name"
-            android:layout_width="match_parent"
-            android:layout_height="50dp"
-            android:background="@android:color/transparent"
-            android:gravity="top|start"
-            android:hint="게시판 이름"
-            android:inputType="text"
-            android:maxLength="8"
-            android:padding="16dp"
-            android:textSize="14sp" />
+<!--        <ImageView-->
+<!--            android:id="@+id/ivBack"-->
+<!--            android:layout_width="wrap_content"-->
+<!--            android:layout_height="wrap_content"-->
+<!--            android:layout_centerVertical="true"-->
+<!--            android:layout_marginStart="20dp"-->
+<!--            android:src="@drawable/ic_back" />-->
 
-        <TextView
-            android:id="@+id/board_name_count"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentEnd="true"
-            android:layout_alignParentBottom="true"
-            android:padding="8dp"
-            android:text="0/8"
-            android:textColor="#9E9E9E"
-            android:textSize="12sp" />
-    </RelativeLayout>
+<!--        <TextView-->
+<!--            android:id="@+id/title"-->
+<!--            android:layout_width="wrap_content"-->
+<!--            android:layout_height="wrap_content"-->
+<!--            android:layout_centerInParent="true"-->
+<!--            android:text="게시판 만들기"-->
+<!--            android:textSize="18sp"-->
+<!--            android:textStyle="bold" />-->
+<!--    </RelativeLayout>-->
 
-    <!-- 게시판 설명 입력 -->
-    <RelativeLayout
-        android:id="@+id/board_description_input"
-        android:layout_width="match_parent"
-        android:layout_height="210dp"
-        android:layout_below="@id/board_name_input"
-        android:layout_marginHorizontal="16dp"
-        android:layout_marginTop="8dp"
-        android:background="@drawable/bg_board_description">
+<!--    &lt;!&ndash; 게시판 이름 입력 &ndash;&gt;-->
+<!--    <LinearLayout-->
+<!--        android:layout_width="wrap_content"-->
+<!--        android:layout_height="wrap_content"-->
+<!--        android:orientation="vertical">-->
+<!--    <RelativeLayout-->
+<!--        android:id="@+id/board_name_input"-->
+<!--        android:layout_width="match_parent"-->
+<!--        android:layout_height="81dp"-->
+<!--        android:layout_below="@id/toolbar"-->
+<!--        android:layout_margin="16dp"-->
+<!--        android:background="@drawable/bg_input_boardname">-->
 
-        <EditText
-            android:id="@+id/edit_board_description"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:background="@android:color/transparent"
-            android:gravity="top|start"
-            android:hint="게시판 설명"
-            android:inputType="text"
-            android:maxLength="20"
-            android:padding="16dp"
-            android:textSize="14sp" />
+<!--        <EditText-->
+<!--            android:id="@+id/edit_board_name"-->
+<!--            android:layout_width="match_parent"-->
+<!--            android:layout_height="50dp"-->
+<!--            android:background="@android:color/transparent"-->
+<!--            android:gravity="top|start"-->
+<!--            android:hint="게시판 이름"-->
+<!--            android:inputType="text"-->
+<!--            android:maxLength="8"-->
+<!--            android:padding="16dp"-->
+<!--            android:textSize="14sp" />-->
 
-        <TextView
-            android:id="@+id/board_description_count"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentEnd="true"
-            android:layout_alignParentBottom="true"
-            android:padding="8dp"
-            android:text="0/20"
-            android:textColor="#9E9E9E"
-            android:textSize="12sp" />
-    </RelativeLayout>
+<!--        <TextView-->
+<!--            android:id="@+id/board_name_count"-->
+<!--            android:layout_width="wrap_content"-->
+<!--            android:layout_height="wrap_content"-->
+<!--            android:layout_alignParentEnd="true"-->
+<!--            android:layout_alignParentBottom="true"-->
+<!--            android:padding="8dp"-->
+<!--            android:text="0/8"-->
+<!--            android:textColor="#9E9E9E"-->
+<!--            android:textSize="12sp" />-->
+<!--    </RelativeLayout>-->
 
-    <RelativeLayout
-        android:id="@+id/board_keyword_result"
-        android:layout_width="match_parent"
-        android:layout_height="56dp"
-        android:layout_below="@id/board_description_input"
-        android:layout_marginHorizontal="16dp"
-        android:layout_marginTop="8dp" >
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/keyword_rv"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            tools:itemCount="3"
-            android:layout_marginTop="0dp"
-            android:scrollbars="vertical" />
-    </RelativeLayout>
+<!--    &lt;!&ndash; 게시판 설명 입력 &ndash;&gt;-->
+<!--    <RelativeLayout-->
+<!--        android:id="@+id/board_description_input"-->
+<!--        android:layout_width="match_parent"-->
+<!--        android:layout_height="210dp"-->
+<!--        android:layout_below="@id/board_name_input"-->
+<!--        android:layout_marginHorizontal="16dp"-->
+<!--        android:layout_marginTop="8dp"-->
+<!--        android:background="@drawable/bg_board_description">-->
 
-    <!-- 게시판 키워드 -->
-    <RelativeLayout
-        android:id="@+id/board_keyword_input"
-        android:layout_width="match_parent"
-        android:layout_height="56dp"
-        android:layout_below="@id/board_keyword_result"
-        android:layout_marginHorizontal="16dp"
-        android:layout_marginTop="8dp">
+<!--        <EditText-->
+<!--            android:id="@+id/edit_board_description"-->
+<!--            android:layout_width="match_parent"-->
+<!--            android:layout_height="match_parent"-->
+<!--            android:background="@android:color/transparent"-->
+<!--            android:gravity="top|start"-->
+<!--            android:hint="게시판 설명"-->
+<!--            android:inputType="text"-->
+<!--            android:maxLength="20"-->
+<!--            android:padding="16dp"-->
+<!--            android:textSize="14sp" />-->
 
-        <EditText
-            android:id="@+id/edit_board_keyword"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:background="@android:color/transparent"
-            android:hint="게시판 키워드"
-            android:inputType="text"
-            android:padding="16dp"
-            android:textSize="14sp" />
+<!--        <TextView-->
+<!--            android:id="@+id/board_description_count"-->
+<!--            android:layout_width="wrap_content"-->
+<!--            android:layout_height="wrap_content"-->
+<!--            android:layout_alignParentEnd="true"-->
+<!--            android:layout_alignParentBottom="true"-->
+<!--            android:padding="8dp"-->
+<!--            android:text="0/20"-->
+<!--            android:textColor="#9E9E9E"-->
+<!--            android:textSize="12sp" />-->
+<!--    </RelativeLayout>-->
 
-        <ImageView
-            android:id="@+id/add_keyword_button"
-            android:layout_width="14dp"
-            android:layout_height="14dp"
-            android:layout_alignParentEnd="true"
-            android:layout_centerVertical="true"
-            android:layout_marginEnd="8dp"
-            android:src="@drawable/ic_add" />
-    </RelativeLayout>
+<!--    <RelativeLayout-->
+<!--        android:id="@+id/board_keyword_result"-->
+<!--        android:layout_width="match_parent"-->
+<!--        android:layout_height="56dp"-->
+<!--        android:layout_below="@id/board_description_input"-->
+<!--        android:layout_marginHorizontal="16dp"-->
+<!--        android:layout_marginTop="8dp" >-->
+<!--        <androidx.recyclerview.widget.RecyclerView-->
+<!--            android:id="@+id/keyword_rv"-->
+<!--            android:layout_width="match_parent"-->
+<!--            android:layout_height="wrap_content"-->
+<!--            tools:itemCount="3"-->
+<!--            android:layout_marginTop="0dp"-->
+<!--            android:scrollbars="vertical" />-->
+<!--    </RelativeLayout>-->
 
-    <!-- 완료 버튼 -->
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/btn_complete"
-        style="@style/CustomMaterialButton4"
-        android:layout_width="match_parent"
-        android:layout_height="50dp"
-        android:insetTop="0dp"
-        android:insetBottom="0dp"
-        android:layout_marginTop="50dp"
-        android:layout_marginStart="16dp"
-        android:layout_marginEnd="16dp"
-        android:layout_marginBottom="40dp"
-        android:text="완료" />
-</LinearLayout>
+<!--    &lt;!&ndash; 게시판 키워드 &ndash;&gt;-->
+<!--    <RelativeLayout-->
+<!--        android:id="@+id/board_keyword_input"-->
+<!--        android:layout_width="match_parent"-->
+<!--        android:layout_height="56dp"-->
+<!--        android:layout_below="@id/board_keyword_result"-->
+<!--        android:layout_marginHorizontal="16dp"-->
+<!--        android:layout_marginTop="8dp">-->
 
-</LinearLayout>
+<!--        <EditText-->
+<!--            android:id="@+id/edit_board_keyword"-->
+<!--            android:layout_width="match_parent"-->
+<!--            android:layout_height="match_parent"-->
+<!--            android:background="@android:color/transparent"-->
+<!--            android:hint="게시판 키워드"-->
+<!--            android:inputType="text"-->
+<!--            android:padding="16dp"-->
+<!--            android:textSize="14sp" />-->
+
+<!--        <ImageView-->
+<!--            android:id="@+id/add_keyword_button"-->
+<!--            android:layout_width="14dp"-->
+<!--            android:layout_height="14dp"-->
+<!--            android:layout_alignParentEnd="true"-->
+<!--            android:layout_centerVertical="true"-->
+<!--            android:layout_marginEnd="8dp"-->
+<!--            android:src="@drawable/ic_add" />-->
+<!--    </RelativeLayout>-->
+
+<!--    &lt;!&ndash; 완료 버튼 &ndash;&gt;-->
+<!--    <com.google.android.material.button.MaterialButton-->
+<!--        android:id="@+id/btn_complete"-->
+<!--        style="@style/CustomMaterialButton4"-->
+<!--        android:layout_width="match_parent"-->
+<!--        android:layout_height="50dp"-->
+<!--        android:insetTop="0dp"-->
+<!--        android:insetBottom="0dp"-->
+<!--        android:layout_marginTop="50dp"-->
+<!--        android:layout_marginStart="16dp"-->
+<!--        android:layout_marginEnd="16dp"-->
+<!--        android:layout_marginBottom="40dp"-->
+<!--        android:text="완료" />-->
+<!--</LinearLayout>-->
+
+<!--</LinearLayout>-->

@@ -20,5 +20,6 @@ data class PostDetail(
     @SerializedName("comment_count")
     val commentCount: Int,
     @SerializedName("createdAt")
-    val createdAt: String
+    val createdAt: String,
+    val liked: Boolean?
 )

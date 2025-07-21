@@ -60,10 +60,10 @@ class CommunityFragment : Fragment() {
         binding.tabLayout.tabRippleColor = null
 
         // 톱니바퀴 클릭 이벤트 설정
-        binding.ivSettings.setOnClickListener {
-            val intent = Intent(requireContext(), BoardSettingsActivity::class.java)
-            startActivity(intent)
-        }
+//        binding.ivSettings.setOnClickListener {
+//            val intent = Intent(requireContext(), BoardSettingsActivity::class.java)
+//            startActivity(intent)
+//        }
     }
 
     override fun onResume() {
