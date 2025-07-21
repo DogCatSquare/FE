@@ -9,7 +9,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.dogcatsquare.R
-import com.example.dogcatsquare.data.community.LocalPost
+import com.example.dogcatsquare.data.model.community.LocalPost
 import com.example.dogcatsquare.databinding.FragmentCommunityLocalBinding
 
 class CommunityLocalFragment : Fragment(R.layout.fragment_community_local) {
@@ -19,7 +19,7 @@ class CommunityLocalFragment : Fragment(R.layout.fragment_community_local) {
 
     // Dummy 데이터: id는 Long 타입으로 지정
     private val localPosts = mutableListOf(
-        LocalPost(
+        com.example.dogcatsquare.data.model.community.LocalPost(
             id = 1L,
             username = "닉네임1",
             dogbreed = "포메라니안",
@@ -29,7 +29,7 @@ class CommunityLocalFragment : Fragment(R.layout.fragment_community_local) {
             thumbnail_URL = "https://example.com/sample_thumbnail.jpg",
             images = listOf(R.drawable.sample_image1, R.drawable.sample_image2)
         ),
-        LocalPost(
+        com.example.dogcatsquare.data.model.community.LocalPost(
             id = 2L,
             username = "닉네임2",
             dogbreed = "말티즈",
@@ -105,7 +105,7 @@ class CommunityLocalFragment : Fragment(R.layout.fragment_community_local) {
     }
 
     // 게시글 수정 기능: EditPostActivity로 이동
-    private fun editPost(post: LocalPost) {
+    private fun editPost(post: com.example.dogcatsquare.data.model.community.LocalPost) {
         Log.d("CommunityLocalFragment", "editPost() 실행됨!")
         // 이제 post.id는 Long 타입이므로 바로 사용
         if (post.id == -1L) {

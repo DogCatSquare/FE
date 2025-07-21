@@ -21,8 +21,8 @@ import com.bumptech.glide.Glide
 import com.example.dogcatsquare.R
 import com.example.dogcatsquare.data.network.RetrofitObj
 import com.example.dogcatsquare.data.api.BoardApiService
-import com.example.dogcatsquare.data.community.PostRequest
-import com.example.dogcatsquare.data.community.ApiResponse
+import com.example.dogcatsquare.data.model.community.PostRequest
+import com.example.dogcatsquare.data.model.community.ApiResponse
 import com.google.gson.Gson
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody
@@ -201,7 +201,7 @@ class CreatePostActivity() : AppCompatActivity() {
             return
         }
 
-        val postRequest = PostRequest(
+        val postRequest = com.example.dogcatsquare.data.model.community.PostRequest(
             boardId = boardId,
             title = title,
             content = content,
@@ -221,11 +221,11 @@ class CreatePostActivity() : AppCompatActivity() {
             null
         }
 
-        val call = RetrofitObj.getRetrofit().create(BoardApiService::class.java)
+        val call = RetrofitObj.getRetrofit(this).create(BoardApiService::class.java)
             .createPost(token, userId, requestBody, imageParts)
 
-        call.enqueue(object : Callback<ApiResponse> {
-            override fun onResponse(call: Call<ApiResponse>, response: Response<ApiResponse>) {
+        call.enqueue(object : Callback<com.example.dogcatsquare.data.model.community.ApiResponse> {
+            override fun onResponse(call: Call<com.example.dogcatsquare.data.model.community.ApiResponse>, response: Response<com.example.dogcatsquare.data.model.community.ApiResponse>) {
                 if (response.isSuccessful) {
                     Toast.makeText(this@CreatePostActivity, "게시글이 등록되었습니다.", Toast.LENGTH_SHORT).show()
                     setResult(Activity.RESULT_OK)
@@ -234,7 +234,7 @@ class CreatePostActivity() : AppCompatActivity() {
                     Toast.makeText(this@CreatePostActivity, "게시글 등록 실패: ${response.code()}", Toast.LENGTH_SHORT).show()
                 }
             }
-            override fun onFailure(call: Call<ApiResponse>, t: Throwable) {
+            override fun onFailure(call: Call<com.example.dogcatsquare.data.model.community.ApiResponse>, t: Throwable) {
                 Toast.makeText(this@CreatePostActivity, "네트워크 오류: ${t.message}", Toast.LENGTH_SHORT).show()
             }
         })

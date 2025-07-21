@@ -312,7 +312,7 @@ class EditPetFragment : Fragment() {
     private fun deletePetDone() {
         val token = getToken()
 
-        val deletePetService = RetrofitObj.getRetrofit().create(PetRetrofitItf::class.java)
+        val deletePetService = RetrofitObj.getRetrofit(requireContext()).create(PetRetrofitItf::class.java)
         deletePetService.deletePet("Bearer $token", petId).enqueue(object: Callback<DeletePetResponse> {
             override fun onResponse(call: Call<DeletePetResponse>, response: Response<DeletePetResponse>) {
                 Log.d("RETROFIT/SUCCESS", response.toString())
@@ -366,7 +366,7 @@ class EditPetFragment : Fragment() {
 
         Log.d("JSON_REQUEST", requestJson)
 
-        val editPetService = RetrofitObj.getRetrofit().create(PetRetrofitItf::class.java)
+        val editPetService = RetrofitObj.getRetrofit(requireContext()).create(PetRetrofitItf::class.java)
         editPetService.fetchPet("Bearer $token", petId, requestBody, imagePart).enqueue(object: Callback<FetchPetResponse> {
             override fun onResponse(call: Call<FetchPetResponse>, response: Response<FetchPetResponse>) {
                 Log.d("RETROFIT/SUCCESS", response.toString())

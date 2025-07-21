@@ -13,14 +13,11 @@ import androidx.appcompat.widget.Toolbar
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
-import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.example.dogcatsquare.R
-import com.example.dogcatsquare.RetrofitClient.retrofit
-import com.example.dogcatsquare.data.api.PlacesApiService
-import com.example.dogcatsquare.ui.map.walking.data.Address
+import com.example.dogcatsquare.data.network.RetrofitClient.retrofit
 import com.example.dogcatsquare.ui.map.walking.data.Response.Coordinate
 import com.example.dogcatsquare.ui.map.walking.data.Response.Walk
 import com.example.dogcatsquare.ui.map.walking.data.Response.WalkDetail
@@ -36,13 +33,10 @@ import com.naver.maps.map.OnMapReadyCallback
 import com.naver.maps.map.overlay.Marker
 import com.naver.maps.map.overlay.OverlayImage
 import com.naver.maps.map.overlay.PolylineOverlay
-import kotlinx.coroutines.launch
 import okhttp3.ResponseBody
-import org.w3c.dom.Text
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
-import retrofit2.await
 
 class WalkingStartViewFragment : Fragment(), OnMapReadyCallback {
 

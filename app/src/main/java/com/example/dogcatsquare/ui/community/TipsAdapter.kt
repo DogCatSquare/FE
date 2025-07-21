@@ -7,13 +7,13 @@ import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.example.dogcatsquare.R
-import com.example.dogcatsquare.data.community.Tip
+import com.example.dogcatsquare.data.model.community.Tip
 
 class TipsAdapter(
-    private val tipsList: List<Tip>,
+    private val tipsList: List<com.example.dogcatsquare.data.model.community.Tip>,
     private val isCompactView: Boolean = false,  // 홈탭과 꿀팁탭 모두 compact UI 유지
     private val isExpanded: Boolean = false,  // 크기 조절을 위한 변수 추가
-    private val onItemClick: ((Tip) -> Unit)? = null
+    private val onItemClick: ((com.example.dogcatsquare.data.model.community.Tip) -> Unit)? = null
 ) : RecyclerView.Adapter<TipsAdapter.TipsViewHolder>() {
 
     inner class TipsViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {

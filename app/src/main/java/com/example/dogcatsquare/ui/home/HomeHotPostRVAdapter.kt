@@ -5,7 +5,7 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.example.dogcatsquare.R
-import com.example.dogcatsquare.data.community.Post
+import com.example.dogcatsquare.data.model.community.Post
 import com.example.dogcatsquare.databinding.ItemHomeHotPostBinding
 
 class HomeHotPostRVAdapter(private val hotPostList: ArrayList<com.example.dogcatsquare.data.model.post.Post>) : RecyclerView.Adapter<HomeHotPostRVAdapter.HomeHotPostAdapterViewHolder>() {

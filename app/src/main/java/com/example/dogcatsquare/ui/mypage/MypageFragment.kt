@@ -103,7 +103,7 @@ class MypageFragment : Fragment() {
             override fun onClick() {
                 val token = getToken()
 
-                val deleteUserService = RetrofitObj.getRetrofit().create(UserRetrofitItf::class.java)
+                val deleteUserService = RetrofitObj.getRetrofit(requireContext()).create(UserRetrofitItf::class.java)
                 deleteUserService.deleteUser("Bearer $token").enqueue(object : Callback<DeleteUserResponse> {
                     override fun onResponse(
                         call: Call<DeleteUserResponse>,
@@ -149,7 +149,7 @@ class MypageFragment : Fragment() {
         val BEARER_TOKEN = token
 
         // 회원정보 조회 API 연동
-        val authService = RetrofitObj.getRetrofit().create(UserRetrofitItf::class.java)
+        val authService = RetrofitObj.getRetrofit(requireContext()).create(UserRetrofitItf::class.java)
         authService.getUser("Bearer $BEARER_TOKEN").enqueue(object: Callback<GetUserResponse> {
             override fun onResponse(
                 call: Call<GetUserResponse>,
@@ -191,7 +191,7 @@ class MypageFragment : Fragment() {
     }
 
     private fun fetchProfileAndNavigate(token: String) {
-        val authService = RetrofitObj.getRetrofit().create(UserRetrofitItf::class.java)
+        val authService = RetrofitObj.getRetrofit(requireContext()).create(UserRetrofitItf::class.java)
         authService.getUser("Bearer $token").enqueue(object : Callback<GetUserResponse> {
             override fun onResponse(call: Call<GetUserResponse>, response: Response<GetUserResponse>) {
                 val resp = response.body()

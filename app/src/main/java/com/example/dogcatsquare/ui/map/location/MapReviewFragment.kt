@@ -12,8 +12,8 @@ import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.dogcatsquare.R
-import com.example.dogcatsquare.RetrofitClient
-import com.example.dogcatsquare.data.map.MapReview
+import com.example.dogcatsquare.data.network.RetrofitClient
+import com.example.dogcatsquare.data.model.map.MapReview
 import com.example.dogcatsquare.databinding.FragmentMapReviewBinding
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.Dispatchers

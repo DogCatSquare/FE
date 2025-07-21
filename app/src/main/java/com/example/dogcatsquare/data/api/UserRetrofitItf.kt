@@ -31,21 +31,27 @@ import retrofit2.http.Query
 interface UserRetrofitItf {
     @Multipart
     @POST("api/users/register")
+    @Headers("No-Auth: true")
     fun signup(@Part("request") requestBody: RequestBody, @Part profileImage: MultipartBody.Part?, @Part petImage: MultipartBody.Part?): Call<SignUpResponse>
 
     @GET("api/users/check-nickname")
+    @Headers("No-Auth: true")
     fun checkNickname(@Query("nickname") nickname: String): Call<CheckNicknameResponse>
 
     @GET("api/users/check-email")
+    @Headers("No-Auth: true")
     fun checkEmail(@Query("email") email: String): Call<CheckEmailResponse>
 
     @POST("api/email/send-verification")
+    @Headers("No-Auth: true")
     fun sendVerification(@Body sendVerficationRequest: SendVerficationRequest): Call<SendVerficationResponse>
 
     @POST("api/email/verify")
+    @Headers("No-Auth: true")
     fun verifyEmail(@Body verifyRequest: VerifyRequest): Call<VerifyResponse>
 
     @POST("api/users/login")
+    @Headers("No-Auth: true")
     fun login(@Body loginRequest: LoginRequest): Call<LoginResponse>
 
     @POST("api/token/refresh")

@@ -5,7 +5,6 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.content.pm.PackageManager
 import android.os.Bundle
-import android.os.Handler
 import android.os.Looper
 import android.util.Log
 import android.view.LayoutInflater
@@ -18,13 +17,12 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.example.dogcatsquare.data.map.MapButton
-import com.example.dogcatsquare.data.map.MapPlace
+import com.example.dogcatsquare.data.model.map.MapButton
+import com.example.dogcatsquare.data.model.map.MapPlace
 import com.example.dogcatsquare.R
-import com.example.dogcatsquare.RetrofitClient
+import com.example.dogcatsquare.data.network.RetrofitClient
 import com.example.dogcatsquare.databinding.FragmentMapBinding
 import com.example.dogcatsquare.ui.map.SearchFragment
-import com.example.dogcatsquare.ui.map.walking.WalkingStartViewFragment
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.naver.maps.map.LocationTrackingMode
@@ -39,9 +37,8 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.dogcatsquare.FilterPlacesRequest
 import com.example.dogcatsquare.LoadingDialog
 import com.example.dogcatsquare.LocationViewModel
-import com.example.dogcatsquare.data.api.UserRetrofitItf
-import com.example.dogcatsquare.data.map.SearchPlacesRequest
-import com.example.dogcatsquare.data.map.WalkListRequest
+import com.example.dogcatsquare.data.model.map.SearchPlacesRequest
+import com.example.dogcatsquare.data.model.map.WalkListRequest
 import com.example.dogcatsquare.ui.map.walking.WalkingMapFragment
 import com.google.android.gms.location.LocationCallback
 import com.google.android.gms.location.LocationRequest
@@ -54,7 +51,6 @@ import com.naver.maps.map.CameraUpdate
 import com.naver.maps.map.overlay.Marker
 import com.naver.maps.map.overlay.OverlayImage
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.async
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -62,8 +58,6 @@ import retrofit2.HttpException
 import java.io.IOException
 import java.util.concurrent.TimeUnit
 import kotlinx.coroutines.suspendCancellableCoroutine
-import java.util.Timer
-import java.util.TimerTask
 import kotlin.coroutines.resume
 
 

@@ -1,5 +1,6 @@
 package com.example.dogcatsquare.ui.wish
 
+import android.content.Context
 import android.graphics.Color
 import android.icu.text.DecimalFormat
 import android.util.Log
@@ -39,7 +40,7 @@ enum class PlaceType(val value: String, @DrawableRes val defaultImage: Int) {
     }
 }
 
-class WishPlaceRVAdapter(private val placeList: ArrayList<WishPlace>, private val bearer_token: String?): RecyclerView.Adapter<WishPlaceRVAdapter.ViewHolder>() {
+class WishPlaceRVAdapter(private val context: Context, private val placeList: ArrayList<WishPlace>, private val bearer_token: String?): RecyclerView.Adapter<WishPlaceRVAdapter.ViewHolder>() {
     interface OnItemClickListener {
         fun onItemClick(place: WishPlace)
     }
@@ -153,7 +154,7 @@ class WishPlaceRVAdapter(private val placeList: ArrayList<WishPlace>, private va
     private fun toggleWishStatus(place: WishPlace, position: Int) {
         val token = "Bearer $bearer_token"
 
-        val wishService = RetrofitObj.getRetrofit().create(WishRetrofitObj::class.java)
+        val wishService = RetrofitObj.getRetrofit(context).create(WishRetrofitObj::class.java)
         wishService.fetchMyWishPlaceList(token, place.id).enqueue(object :
             Callback<FetchMyWishPlaceResponse> {
             override fun onResponse(

@@ -11,8 +11,8 @@ import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.dogcatsquare.R
 import com.example.dogcatsquare.data.api.WishRetrofitObj
-import com.example.dogcatsquare.data.map.MapButton
-import com.example.dogcatsquare.data.map.MyLocation
+import com.example.dogcatsquare.data.model.map.MapButton
+import com.example.dogcatsquare.data.model.map.MyLocation
 import com.example.dogcatsquare.data.model.wish.GetMyWishResponse
 import com.example.dogcatsquare.data.model.wish.WishPlace
 import com.example.dogcatsquare.data.network.RetrofitObj
@@ -64,7 +64,7 @@ class WishWalkFragment : Fragment() {
     private fun setupRecyclerView() {
         placeDatas.clear()
 
-        wishWalkAdapter = WishWalkAdapter(placeDatas, getToken())
+        wishWalkAdapter = WishWalkAdapter(placeDatas, getToken(), requireContext())
         binding.walkRV.apply {
             adapter = wishWalkAdapter
             layoutManager = LinearLayoutManager(context, LinearLayoutManager.VERTICAL, false)
@@ -94,7 +94,7 @@ class WishWalkFragment : Fragment() {
     private fun getAllPlaces(callback: (List<WishPlace>) -> Unit) {
         val token = getToken()
 
-        val getMyWishService = RetrofitObj.getRetrofit().create(WishRetrofitObj::class.java)
+        val getMyWishService = RetrofitObj.getRetrofit(requireContext()).create(WishRetrofitObj::class.java)
         // 위도 경도 기본값 -> 추후 수정
         getMyWishService.getMyWish("Bearer $token", MyLocation(37.5665, 126.9780)).enqueue(object :
             Callback<GetMyWishResponse> {

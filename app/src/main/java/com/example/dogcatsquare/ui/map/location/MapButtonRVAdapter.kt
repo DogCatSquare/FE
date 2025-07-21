@@ -7,7 +7,7 @@ import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.RecyclerView
 import com.example.dogcatsquare.R
-import com.example.dogcatsquare.data.map.MapButton
+import com.example.dogcatsquare.data.model.map.MapButton
 import com.example.dogcatsquare.databinding.ItemMapButtonBinding
 import com.google.android.material.card.MaterialCardView
 

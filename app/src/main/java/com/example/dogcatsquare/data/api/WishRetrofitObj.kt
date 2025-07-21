@@ -1,6 +1,6 @@
 package com.example.dogcatsquare.data.api
 
-import com.example.dogcatsquare.data.map.MyLocation
+import com.example.dogcatsquare.data.model.map.MyLocation
 import com.example.dogcatsquare.data.model.wish.DeleteWalkWishResponse
 import com.example.dogcatsquare.data.model.wish.FetchMyWishPlaceResponse
 import com.example.dogcatsquare.data.model.wish.GetMyWalkWishResponse

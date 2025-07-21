@@ -199,7 +199,7 @@ class SignupActivity : AppCompatActivity() {
     // 닉네임 중복 체크
     private fun isNicknameUsed(nickname: String): Boolean {
         var checkNickname: Boolean = false
-        val checkNicknameService = RetrofitObj.getRetrofit().create(UserRetrofitItf::class.java)
+        val checkNicknameService = RetrofitObj.getRetrofit(this).create(UserRetrofitItf::class.java)
         checkNicknameService.checkNickname(nickname).enqueue(object : Callback<CheckNicknameResponse>{
             override fun onResponse(
                 call: Call<CheckNicknameResponse>,
@@ -262,7 +262,7 @@ class SignupActivity : AppCompatActivity() {
     // 이메일 중복 체크
     private fun isEmailUsed(email: String): Boolean {
         var checkEmail: Boolean = false
-        val checkEmailService = RetrofitObj.getRetrofit().create(UserRetrofitItf::class.java)
+        val checkEmailService = RetrofitObj.getRetrofit(this).create(UserRetrofitItf::class.java)
         checkEmailService.checkEmail(email).enqueue(object : Callback<CheckEmailResponse>{
             override fun onResponse(
                 call: Call<CheckEmailResponse>,
@@ -304,7 +304,7 @@ class SignupActivity : AppCompatActivity() {
 
     // 이메일 인증
     private fun sendEmail(email: String) {
-        val sendEmailService = RetrofitObj.getRetrofit().create(UserRetrofitItf::class.java)
+        val sendEmailService = RetrofitObj.getRetrofit(this).create(UserRetrofitItf::class.java)
         sendEmailService.sendVerification(SendVerficationRequest(email)).enqueue(object : Callback<SendVerficationResponse> {
             override fun onResponse(call: Call<SendVerficationResponse>, response: Response<SendVerficationResponse>) {
                 Log.d("SendEmailResult", response.toString())
@@ -320,7 +320,7 @@ class SignupActivity : AppCompatActivity() {
     }
 
     private fun verifyEmail(email: String, code: String) {
-        val verifyEmailService = RetrofitObj.getRetrofit().create(UserRetrofitItf::class.java)
+        val verifyEmailService = RetrofitObj.getRetrofit(this).create(UserRetrofitItf::class.java)
         verifyEmailService.verifyEmail(VerifyRequest(email, code)).enqueue(object : Callback<VerifyResponse> {
             override fun onResponse(call: Call<VerifyResponse>, response: Response<VerifyResponse>) {
                 val resp: VerifyResponse = response.body()!!

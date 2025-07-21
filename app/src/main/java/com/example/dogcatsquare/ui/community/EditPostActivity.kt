@@ -21,8 +21,8 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.example.dogcatsquare.R
-import com.example.dogcatsquare.data.community.ApiResponse
-import com.example.dogcatsquare.data.community.PostRequest
+import com.example.dogcatsquare.data.model.community.ApiResponse
+import com.example.dogcatsquare.data.model.community.PostRequest
 import com.example.dogcatsquare.data.network.RetrofitObj
 import com.example.dogcatsquare.data.api.BoardApiService
 import com.google.gson.Gson
@@ -182,7 +182,7 @@ class EditPostActivity : AppCompatActivity() {
         }
 
         // PostRequest 객체 생성
-        val postRequest = PostRequest(
+        val postRequest = com.example.dogcatsquare.data.model.community.PostRequest(
             boardId = 1,
             title = title,
             content = content,
@@ -205,11 +205,11 @@ class EditPostActivity : AppCompatActivity() {
                 null
             }
 
-        val call = RetrofitObj.getRetrofit().create(BoardApiService::class.java)
+        val call = RetrofitObj.getRetrofit(this).create(BoardApiService::class.java)
             .updatePost(postId, requestBody, imageParts)
 
-        call.enqueue(object : Callback<ApiResponse> {
-            override fun onResponse(call: Call<ApiResponse>, response: Response<ApiResponse>) {
+        call.enqueue(object : Callback<com.example.dogcatsquare.data.model.community.ApiResponse> {
+            override fun onResponse(call: Call<com.example.dogcatsquare.data.model.community.ApiResponse>, response: Response<com.example.dogcatsquare.data.model.community.ApiResponse>) {
                 if (response.isSuccessful) {
                     val resultIntent = Intent().apply {
                         putExtra("UPDATED_POST_ID", postId)
@@ -226,7 +226,7 @@ class EditPostActivity : AppCompatActivity() {
                     Toast.makeText(this@EditPostActivity, "수정 실패", Toast.LENGTH_SHORT).show()
                 }
             }
-            override fun onFailure(call: Call<ApiResponse>, t: Throwable) {
+            override fun onFailure(call: Call<com.example.dogcatsquare.data.model.community.ApiResponse>, t: Throwable) {
                 Log.e("EditPostActivity", "네트워크 오류: ${t.message}")
                 Toast.makeText(this@EditPostActivity, "네트워크 오류", Toast.LENGTH_SHORT).show()
             }

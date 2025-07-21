@@ -23,6 +23,7 @@ import android.Manifest.permission
 import android.os.Build
 import androidx.annotation.RequiresApi
 import com.example.dogcatsquare.data.api.LocationUpdateInterface
+import com.example.dogcatsquare.utils.Constants
 
 class LocationService : Service() {
 
@@ -107,7 +108,7 @@ class LocationService : Service() {
         LocationServices.getFusedLocationProviderClient(this)
             .requestLocationUpdates(locationRequest, mLocationCallback, Looper.getMainLooper())
 
-        startForeground(com.example.dogcatsquare.Constants.LOCATION_SERVICE_ID, builder.build())
+        startForeground(Constants.LOCATION_SERVICE_ID, builder.build())
     }
 
     private fun stopLocationService() {
@@ -121,9 +122,9 @@ class LocationService : Service() {
     override fun onStartCommand(intent: Intent, flags: Int, startId: Int): Int {
         val action = intent.action
         if (action != null) {
-            if (action == com.example.dogcatsquare.Constants.ACTION_START_LOCATION_SERVICE) {
+            if (action == Constants.ACTION_START_LOCATION_SERVICE) {
                 startLocationService()
-            } else if (action == com.example.dogcatsquare.Constants.ACTION_STOP_LOCATION_SERVICE) {
+            } else if (action == Constants.ACTION_STOP_LOCATION_SERVICE) {
                 stopLocationService()
             }
         }

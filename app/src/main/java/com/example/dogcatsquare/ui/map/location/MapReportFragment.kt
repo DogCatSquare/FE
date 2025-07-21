@@ -14,8 +14,8 @@ import android.view.ViewGroup
 import android.widget.Toast
 import androidx.lifecycle.lifecycleScope
 import com.example.dogcatsquare.R
-import com.example.dogcatsquare.RetrofitClient
-import com.example.dogcatsquare.data.map.PlaceReviewReportRequest
+import com.example.dogcatsquare.data.network.RetrofitClient
+import com.example.dogcatsquare.data.model.map.PlaceReviewReportRequest
 import com.example.dogcatsquare.databinding.FragmentMapReportBinding
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch

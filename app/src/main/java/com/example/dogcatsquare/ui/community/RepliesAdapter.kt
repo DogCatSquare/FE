@@ -8,9 +8,9 @@ import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.example.dogcatsquare.R
-import com.example.dogcatsquare.data.community.Reply
+import com.example.dogcatsquare.data.model.community.Reply
 
-class RepliesAdapter(private var replies: MutableList<Reply>) :
+class RepliesAdapter(private var replies: MutableList<com.example.dogcatsquare.data.model.community.Reply>) :
     RecyclerView.Adapter<RepliesAdapter.ReplyViewHolder>() {
 
     inner class ReplyViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
@@ -42,7 +42,7 @@ class RepliesAdapter(private var replies: MutableList<Reply>) :
     override fun getItemCount(): Int = replies.size
 
     // ✅ 기존 리스트를 변경하는 방식으로 수정
-    fun updateReplies(newReplies: List<Reply>) {
+    fun updateReplies(newReplies: List<com.example.dogcatsquare.data.model.community.Reply>) {
         replies.clear()
         replies.addAll(newReplies)
         notifyDataSetChanged()

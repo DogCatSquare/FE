@@ -287,7 +287,7 @@ class SetDDayPersonalFragment : Fragment() {
     private fun setDDay(id: Int, day: String, term: Int,  isAlarm: Boolean) {
         val token = getToken()
 
-        val fetchDDayService = RetrofitObj.getRetrofit().create(DDayRetrofitItf::class.java)
+        val fetchDDayService = RetrofitObj.getRetrofit(requireContext()).create(DDayRetrofitItf::class.java)
         fetchDDayService.fetchDDay("Bearer $token", id, FetchDDayRequest(day, term, isAlarm)).enqueue(object:
             Callback<FetchDDayResponse> {
             override fun onResponse(call: Call<FetchDDayResponse>, response: Response<FetchDDayResponse>) {
@@ -331,7 +331,7 @@ class SetDDayPersonalFragment : Fragment() {
     private fun deleteDDay(id: Int) {
         val token = getToken()
 
-        val deleteDDayService = RetrofitObj.getRetrofit().create(DDayRetrofitItf::class.java)
+        val deleteDDayService = RetrofitObj.getRetrofit(requireContext()).create(DDayRetrofitItf::class.java)
         deleteDDayService.deleteDDay("Bearer $token", id).enqueue(object : Callback<DeleteDDayResponse> {
             override fun onResponse(call: Call<DeleteDDayResponse>, response: Response<DeleteDDayResponse>) {
                 Log.d("RETROFIT/SUCCESS", response.toString())

@@ -95,7 +95,7 @@ class EditEmailFragment : Fragment() {
     // 이메일 중복 체크
     private fun isEmailUsed(email: String): Boolean {
         var checkEmail: Boolean = false
-        val checkEmailService = RetrofitObj.getRetrofit().create(UserRetrofitItf::class.java)
+        val checkEmailService = RetrofitObj.getRetrofit(requireContext()).create(UserRetrofitItf::class.java)
         checkEmailService.checkEmail(email).enqueue(object : Callback<CheckEmailResponse> {
             override fun onResponse(
                 call: Call<CheckEmailResponse>,
@@ -137,7 +137,7 @@ class EditEmailFragment : Fragment() {
 
     // 이메일 인증
     private fun sendEmail(email: String) {
-        val sendEmailService = RetrofitObj.getRetrofit().create(UserRetrofitItf::class.java)
+        val sendEmailService = RetrofitObj.getRetrofit(requireContext()).create(UserRetrofitItf::class.java)
         sendEmailService.sendVerification(SendVerficationRequest(email)).enqueue(object : Callback<SendVerficationResponse> {
             override fun onResponse(call: Call<SendVerficationResponse>, response: Response<SendVerficationResponse>) {
                 Log.d("SendEmailResult", response.toString())
@@ -153,7 +153,7 @@ class EditEmailFragment : Fragment() {
     }
 
     private fun verifyEmail(email: String, code: String) {
-        val verifyEmailService = RetrofitObj.getRetrofit().create(UserRetrofitItf::class.java)
+        val verifyEmailService = RetrofitObj.getRetrofit(requireContext()).create(UserRetrofitItf::class.java)
         verifyEmailService.verifyEmail(VerifyRequest(email, code)).enqueue(object : Callback<VerifyResponse> {
             override fun onResponse(call: Call<VerifyResponse>, response: Response<VerifyResponse>) {
                 val resp: VerifyResponse = response.body()!!

@@ -11,8 +11,8 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.example.dogcatsquare.data.community.BoardPost
-import com.example.dogcatsquare.data.community.Post
+import com.example.dogcatsquare.data.model.community.BoardPost
+import com.example.dogcatsquare.data.model.community.Post
 import com.example.dogcatsquare.data.network.RetrofitObj
 import com.example.dogcatsquare.databinding.FragmentMyBoardBinding
 import com.example.dogcatsquare.ui.viewmodel.PostViewModel
@@ -98,9 +98,9 @@ class MyBoardFragment : Fragment() {
     private fun getBoardPostRV(id: Int, adapter: MyBoardPostRVAdapter) {
         val token = getToken()
 
-        val getBoardPostService = RetrofitObj.getRetrofit().create(PostApiService::class.java)
-        getBoardPostService.getBoardPost("Bearer $token", id).enqueue(object : Callback<BoardPost> {
-            override fun onResponse(call: Call<BoardPost>, response: Response<BoardPost>) {
+        val getBoardPostService = RetrofitObj.getRetrofit(requireContext()).create(PostApiService::class.java)
+        getBoardPostService.getBoardPost("Bearer $token", id).enqueue(object : Callback<com.example.dogcatsquare.data.model.community.BoardPost> {
+            override fun onResponse(call: Call<com.example.dogcatsquare.data.model.community.BoardPost>, response: Response<com.example.dogcatsquare.data.model.community.BoardPost>) {
                 if (response.isSuccessful) {
                     // 응답 본문이 null일 수도 있으므로 `?.let`을 사용해 예외 처리
                     response.body()?.let { resp ->
@@ -142,7 +142,7 @@ class MyBoardFragment : Fragment() {
                 }
             }
 
-            override fun onFailure(call: Call<BoardPost>, t: Throwable) {
+            override fun onFailure(call: Call<com.example.dogcatsquare.data.model.community.BoardPost>, t: Throwable) {
                 Log.d("RETROFIT/FAILURE", "네트워크 오류: ${t.message}")
             }
         })
