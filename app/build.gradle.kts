@@ -126,4 +126,9 @@ dependencies {
     implementation ("com.squareup.okhttp3:logging-interceptor:4.9.3")
 
     implementation("com.google.android.flexbox:flexbox:3.0.0")
+
+    // 구글 맵
+    implementation("com.google.android.gms:play-services-maps:18.2.0")
+    implementation("com.google.android.gms:play-services-location:21.2.0")
+
 }
