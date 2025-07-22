@@ -274,7 +274,7 @@ class HomeFragment : Fragment() {
         getAllDDayService.getAllDDays("Bearer $BEARER_TOKEN").enqueue(object: Callback<GetAllDDayResponse> {
             override fun onResponse(call: Call<GetAllDDayResponse>, response: Response<GetAllDDayResponse>) {
                 Log.d("GetDDay/SUCCESS", response.toString())
-                val resp: GetAllDDayResponse = response.body()!!
+                val resp = response.body()
 
                 if (resp != null) {
                     if (resp.isSuccess) {
@@ -365,7 +365,7 @@ class HomeFragment : Fragment() {
         getPopularPlaceService.getHotPlace("Bearer $token", cityId, GetHotPlaceRequest(currentLat, currentLng)).enqueue(object : Callback<GetHotPlaceResponse> {
             override fun onResponse(call: Call<GetHotPlaceResponse>, response: Response<GetHotPlaceResponse>) {
                 Log.d("GetHotPlace/SUCCESS", response.toString())
-                val resp: GetHotPlaceResponse = response.body()!!
+                val resp = response.body()
 
                 if (resp != null) {
                     if (resp.isSuccess) {
@@ -447,7 +447,7 @@ class HomeFragment : Fragment() {
         getPopularPostService.getPopularPost("Bearer $token").enqueue(object : Callback<PopularPostResponse> {
             override fun onResponse(call: Call<PopularPostResponse>, response: Response<PopularPostResponse>) {
                 Log.d("PopularPost/SUCCESS", response.toString())
-                val resp: PopularPostResponse = response.body()!!
+                val resp = response.body()
 
                 if (resp != null) {
                     if (resp.isSuccess) {
@@ -513,7 +513,7 @@ class HomeFragment : Fragment() {
         getAllEventsService.getAllEvents().enqueue(object: Callback<GetAllEventsResponse> {
             override fun onResponse(call: Call<GetAllEventsResponse>, response: Response<GetAllEventsResponse>) {
                 Log.d("GetEvent/SUCCESS", response.toString())
-                val resp: GetAllEventsResponse = response.body()!!
+                val resp = response.body()
 
                 if (resp != null) {
                     if (resp.isSuccess) {
