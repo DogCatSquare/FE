@@ -78,7 +78,7 @@ class SignupActivity : AppCompatActivity() {
 
         binding.emailCheckBtn.setOnClickListener {
             val email = binding.emailEt.text.toString()
-            if (!isEmailUsed(email)) { // 이미 사용 중인 이메일
+            if (isEmailUsed(email) == true) { // 이미 사용 중인 이메일
                 binding.signupEmailCheckTv.text = "이미 사용 중인 이메일입니다"
                 binding.signupEmailCheckTv.setTextColor(ContextCompat.getColor(this, R.color.red))
             }
@@ -276,10 +276,10 @@ class SignupActivity : AppCompatActivity() {
                         if (resp != null) {
                             if (resp.isSuccess) {
                                 if (resp.result == false) { // 일치하는 닉네임 없음 -> 중복 x
-                                    checkEmail = true
+                                    checkEmail = false
                                     Log.d("CheckEmail/SUCCESS", checkEmail.toString())
                                 } else { // 일치하는 닉네임 있음 -> 중복 o
-                                    checkEmail = false
+                                    checkEmail = true
                                     Log.d("CheckEmail/SUCCESS", checkEmail.toString())
                                 }
                             } else {
