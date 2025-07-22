@@ -33,6 +33,9 @@ import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.LatLng
+import com.google.android.gms.maps.model.Marker
+import com.google.android.gms.maps.model.MarkerOptions
+import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import java.util.Locale
 
@@ -72,6 +75,48 @@ class MapFragment : Fragment(), OnMapReadyCallback {
     private var currentSortType: String = "위치기준" // 기본값
 
     private var userAddress: String = "" // 서버에서 받아온 유저 기본 주소
+
+    // 구글맵 마커 관리용 리스트
+    private val mapMarkers = mutableListOf<Marker>()
+
+    // 카테고리별 마커 아이콘 리소스 매핑 함수
+    private fun getMarkerIconForCategory(placeType: String?): Int {
+        return when (placeType) {
+            "동물병원" -> R.drawable.ic_marker_hospital
+            "산책로"   -> R.drawable.ic_marker_park
+            "카페"     -> R.drawable.ic_marker_cafe
+            "식당"     -> R.drawable.ic_marker_cafe
+            "호텔"     -> R.drawable.ic_marker_hotel
+            "기타"     -> R.drawable.ic_marker_etc
+            else      -> R.drawable.ic_marker
+        }
+    }
+
+    // 마커를 모두 지우는 함수
+    private fun clearMapMarkers() {
+        mapMarkers.forEach { it.remove() }
+        mapMarkers.clear()
+    }
+
+    // 현재 placeDatas 기준으로 지도에 마커를 모두 표시하는 함수
+    private fun updateMapMarkers() {
+        googleMap?.let { map ->
+            clearMapMarkers()
+            for (place in placeDatas) {
+                val lat = place.latitude
+                val lng = place.longitude
+                if (lat != null && lng != null) {
+                    val marker = map.addMarker(
+                        MarkerOptions()
+                            .position(LatLng(lat, lng))
+                            .title(place.placeName)
+                            .icon(BitmapDescriptorFactory.fromResource(getMarkerIconForCategory(place.placeType)))
+                    )
+                    marker?.let { mapMarkers.add(it) }
+                }
+            }
+        }
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -159,7 +204,6 @@ class MapFragment : Fragment(), OnMapReadyCallback {
                                 append(userInfo.gu)
                             }
                         }
-                        // ★★★ 반드시 SharedPreferences에 저장
                         saveUserAddress(userAddress)
                     }
                 }
@@ -196,7 +240,6 @@ class MapFragment : Fragment(), OnMapReadyCallback {
                 disableLocationTracking()
                 moveToSavedAddressLocation()
             }
-            // ... 기타 정렬 추가 시
         }
     }
 
@@ -228,10 +271,8 @@ class MapFragment : Fragment(), OnMapReadyCallback {
         }
     }
 
-    // 실시간 위치 추적 활성화
     private fun enableLocationTracking() {
         googleMap?.isMyLocationEnabled = true
-        // 위치 업데이트 콜백 다시 등록
         locationCallback?.let { callback ->
             val locationRequest = LocationRequest.create().apply {
                 priority = LocationRequest.PRIORITY_HIGH_ACCURACY
@@ -242,13 +283,24 @@ class MapFragment : Fragment(), OnMapReadyCallback {
         }
     }
 
-    // 실시간 위치 추적 비활성화
     private fun disableLocationTracking() {
         googleMap?.isMyLocationEnabled = false
-        // 위치 업데이트 콜백 해제
         locationCallback?.let { fusedLocationClient.removeLocationUpdates(it) }
     }
 
+    // [수정] 장소 데이터가 바뀔 때마다 지도 마커도 갱신
+    private fun refreshPlaceDataAndMarkers(newPlaces: List<MapPlace>) {
+        allPlaceDatas.clear()
+        placeDatas.clear()
+        originalPlaceDatas.clear()
+        allPlaceDatas.addAll(newPlaces)
+        placeDatas.addAll(newPlaces)
+        originalPlaceDatas.addAll(newPlaces)
+        mapPlaceRVAdapter.updateList(placeDatas)
+        updateMapMarkers()
+    }
+
+    // [수정] 장소 데이터 불러오는 곳에서 마커도 갱신
     private fun fetchPlacesFromApiByLatLng(latLng: LatLng, page: Int = 0) {
         if (isLoading) return
         isLoading = true
@@ -289,14 +341,14 @@ class MapFragment : Fragment(), OnMapReadyCallback {
                     }
 
                     if (page == 0) {
-                        allPlaceDatas.clear()
-                        placeDatas.clear()
-                        originalPlaceDatas.clear()
+                        refreshPlaceDataAndMarkers(newPlaces)
+                    } else {
+                        allPlaceDatas.addAll(newPlaces)
+                        placeDatas.addAll(newPlaces)
+                        originalPlaceDatas.addAll(newPlaces)
+                        mapPlaceRVAdapter.updateList(placeDatas)
+                        updateMapMarkers()
                     }
-                    allPlaceDatas.addAll(newPlaces)
-                    placeDatas.addAll(newPlaces)
-                    originalPlaceDatas.addAll(newPlaces)
-                    mapPlaceRVAdapter.updateList(placeDatas)
                 }
             } finally {
                 isLoading = false
@@ -412,6 +464,7 @@ class MapFragment : Fragment(), OnMapReadyCallback {
         })
     }
 
+    // [수정] 카테고리 선택 후 마커도 같이 갱신
     private fun setupMapButtonRV() {
         val mapButtonRVAdapter = MapButtonRVAdapter(buttonDatas, object : MapButtonRVAdapter.OnItemClickListener {
             override fun onItemClick(position: Int, buttonName: String) {
@@ -432,6 +485,9 @@ class MapFragment : Fragment(), OnMapReadyCallback {
                 placeDatas.clear()
                 placeDatas.addAll(filtered)
                 mapPlaceRVAdapter.updateList(placeDatas)
+
+                // [추가] 마커도 같이 갱신
+                updateMapMarkers()
             }
         })
         binding.mapButtonRV.apply {
@@ -478,10 +534,9 @@ class MapFragment : Fragment(), OnMapReadyCallback {
     fun getMapCurrentPosition(): Pair<Double, Double> {
         return if (googleMap != null) {
             val center = googleMap!!.cameraPosition.target
-            saveCurrentLocation(center.latitude, center.longitude) // (선택) 최신 위치 저장
+            saveCurrentLocation(center.latitude, center.longitude)
             Pair(center.latitude, center.longitude)
         } else {
-            // 구글맵이 아직 준비되지 않은 경우 기본값 반환 (서울시청)
             Pair(37.5664056, 126.9778222)
         }
     }
@@ -502,6 +557,7 @@ class MapFragment : Fragment(), OnMapReadyCallback {
 
     override fun onMapReady(map: GoogleMap) {
         googleMap = map
+        googleMap?.uiSettings?.isMyLocationButtonEnabled = false
 
         if (checkLocationPermission()) {
             moveToCurrentLocation()
@@ -517,5 +573,6 @@ class MapFragment : Fragment(), OnMapReadyCallback {
         locationCallback?.let { fusedLocationClient.removeLocationUpdates(it) }
         _binding = null
         googleMap = null
+        clearMapMarkers()
     }
 }
