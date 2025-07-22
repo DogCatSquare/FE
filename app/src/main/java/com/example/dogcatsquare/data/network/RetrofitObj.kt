@@ -20,36 +20,27 @@ object RetrofitObj {
     fun getRetrofit(context: Context): Retrofit {
         val tokenManager = TokenManager(context)
 
+        val loggingInterceptor = HttpLoggingInterceptor().apply {
+            level = HttpLoggingInterceptor.Level.BODY
+        }
+
         val client = OkHttpClient.Builder()
             .connectTimeout(60, TimeUnit.SECONDS)
             .readTimeout(60, TimeUnit.SECONDS)
             .writeTimeout(60, TimeUnit.SECONDS)
             .retryOnConnectionFailure(true)
 
-            // 로그용 인터셉터
-            .addInterceptor(HttpLoggingInterceptor().apply {
-                level = HttpLoggingInterceptor.Level.BODY
-            })
+            // ✅ 1. LoggingInterceptor 먼저 추가
+            .addInterceptor(loggingInterceptor)
 
-            // 자동 토큰 갱신 인터셉터 추가 ✅
-            .addInterceptor(AuthInterceptor(context, tokenManager))
+            // ✅ 2. AccessToken 헤더 추가
+            .addInterceptor(AuthInterceptor(tokenManager))
 
-            // 재시도 인터셉터 (3번까지)
-            .addInterceptor { chain ->
-                var response: Response? = null
-                var attempt = 0
-                val maxAttempts = 3
-                while (attempt < maxAttempts) {
-                    try {
-                        response = chain.proceed(chain.request())
-                        if (response.isSuccessful) break
-                    } catch (e: Exception) {
-                        Log.e("OkHttp", "Request failed: ${e.message}")
-                    }
-                    attempt++
-                }
-                response ?: throw IOException("Failed after $maxAttempts attempts")
-            }
+            // ✅ 3. 401 Unauthorized 처리
+            .authenticator(AuthAuthenticator(tokenManager))
+
+            // ✅ 4. refresh token 만료 시 로그인 화면으로
+            .addInterceptor(ResponseInterceptor(context))
             .build()
 
         return Retrofit.Builder()
