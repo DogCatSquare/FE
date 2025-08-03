@@ -2,7 +2,7 @@ package com.example.dogcatsquare.data.model.post
 
 data class Post(
     val id: Int,
-    val board: String,
+    val board: String?,
     var username: String,
     val title: String,
     val content: String,
