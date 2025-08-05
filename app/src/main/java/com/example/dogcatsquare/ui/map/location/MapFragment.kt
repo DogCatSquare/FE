@@ -25,12 +25,12 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.dogcatsquare.FilterPlacesRequest
 import com.example.dogcatsquare.LoadingDialog
 import com.example.dogcatsquare.R
-import com.example.dogcatsquare.data.map.MapButton
-import com.example.dogcatsquare.data.map.MapPlace
-import com.example.dogcatsquare.data.map.SearchPlacesRequest
+import com.example.dogcatsquare.data.model.map.MapButton
+import com.example.dogcatsquare.data.model.map.MapPlace
+import com.example.dogcatsquare.data.model.map.SearchPlacesRequest
 import com.example.dogcatsquare.databinding.FragmentMapBinding
 import com.example.dogcatsquare.ui.map.SearchFragment
-import com.example.dogcatsquare.RetrofitClient
+import com.example.dogcatsquare.data.network.RetrofitClient
 import com.example.dogcatsquare.ui.map.walking.WalkingMapFragment
 import com.google.android.gms.location.*
 import com.google.android.gms.maps.CameraUpdateFactory
