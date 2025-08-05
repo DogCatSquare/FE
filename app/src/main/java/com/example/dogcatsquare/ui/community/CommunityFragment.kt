@@ -16,9 +16,9 @@ import com.example.dogcatsquare.R
 import com.example.dogcatsquare.api.RetrofitClient
 import com.example.dogcatsquare.data.api.BoardApiService
 import com.example.dogcatsquare.data.api.UserRetrofitItf
-import com.example.dogcatsquare.data.community.GetMyBoardHomeResponse
-import com.example.dogcatsquare.data.community.MyBoardResponse
-import com.example.dogcatsquare.data.community.MyBoardResult
+import com.example.dogcatsquare.data.model.community.GetMyBoardHomeResponse
+import com.example.dogcatsquare.data.model.community.MyBoardResponse
+import com.example.dogcatsquare.data.model.community.MyBoardResult
 import com.example.dogcatsquare.data.model.mypage.GetUserResponse
 import com.example.dogcatsquare.data.network.RetrofitObj
 import com.example.dogcatsquare.databinding.FragmentCommunityBinding
@@ -32,7 +32,7 @@ class CommunityFragment : Fragment() {
 
     private lateinit var binding: FragmentCommunityBinding
     private lateinit var pagerAdapter: CommunityPagerAdapter
-    private val myBoardNames = mutableListOf<MyBoardResult>() // 마이게시판 이름 리스트
+    private val myBoardNames = mutableListOf<com.example.dogcatsquare.data.model.community.MyBoardResult>() // 마이게시판 이름 리스트
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -77,7 +77,7 @@ class CommunityFragment : Fragment() {
     // 상단바 소개 설정 -> 추후 뷰모델로 수정
     private fun setInfo() {
         val token = getToken()
-        val getMyInfoService = RetrofitObj.getRetrofit().create(UserRetrofitItf::class.java)
+        val getMyInfoService = RetrofitObj.getRetrofit(requireContext()).create(UserRetrofitItf::class.java)
         getMyInfoService.getUser("Bearer $token").enqueue(object : Callback<GetUserResponse> {
             override fun onResponse(call: Call<GetUserResponse>, response: Response<GetUserResponse>) {
                 Log.d("RETROFIT/SUCCESS", response.toString())
@@ -115,11 +115,11 @@ class CommunityFragment : Fragment() {
 
     private fun getMyBoardHome() {
         val token = getToken()
-        RetrofitObj.getRetrofit().create(BoardApiService::class.java).getMyBoards("Bearer $token")
-            .enqueue(object : Callback<MyBoardResponse> {
+        RetrofitObj.getRetrofit(requireContext()).create(BoardApiService::class.java).getMyBoards("Bearer $token")
+            .enqueue(object : Callback<com.example.dogcatsquare.data.model.community.MyBoardResponse> {
                 override fun onResponse(
-                    call: Call<MyBoardResponse>,
-                    response: Response<MyBoardResponse>
+                    call: Call<com.example.dogcatsquare.data.model.community.MyBoardResponse>,
+                    response: Response<com.example.dogcatsquare.data.model.community.MyBoardResponse>
                 ) {
                     if (response.isSuccessful) {
                         myBoardNames.clear()
@@ -130,7 +130,7 @@ class CommunityFragment : Fragment() {
                     }
                 }
 
-                override fun onFailure(call: Call<MyBoardResponse>, t: Throwable) {
+                override fun onFailure(call: Call<com.example.dogcatsquare.data.model.community.MyBoardResponse>, t: Throwable) {
                     Log.d("RETROFIT/FAILURE", t.message.toString())
                 }
             })

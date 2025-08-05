@@ -8,9 +8,9 @@ import com.bumptech.glide.Glide
 import com.bumptech.glide.load.MultiTransformation
 import com.bumptech.glide.load.resource.bitmap.CenterCrop
 import com.bumptech.glide.load.resource.bitmap.RoundedCorners
-import com.example.dogcatsquare.data.map.MapPlace
+import com.example.dogcatsquare.data.model.map.MapPlace
 import com.example.dogcatsquare.R
-import com.example.dogcatsquare.data.map.Place
+import com.example.dogcatsquare.data.model.map.Place
 import com.example.dogcatsquare.databinding.ItemHomeHotPlaceBinding
 import com.example.dogcatsquare.ui.map.location.PlaceType
 

@@ -11,8 +11,8 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.dogcatsquare.R
-import com.example.dogcatsquare.RetrofitClient
-import com.example.dogcatsquare.data.map.PlaceDetailRequest
+import com.example.dogcatsquare.data.network.RetrofitClient
+import com.example.dogcatsquare.data.model.map.PlaceDetailRequest
 import com.example.dogcatsquare.databinding.FragmentMapwalkingBinding
 import com.naver.maps.geometry.LatLng
 import com.naver.maps.map.CameraUpdate

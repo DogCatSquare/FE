@@ -8,7 +8,7 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.dogcatsquare.R
-import com.example.dogcatsquare.data.community.Tip
+import com.example.dogcatsquare.data.model.community.Tip
 import com.example.dogcatsquare.databinding.FragmentCommunityTipsBinding
 
 class CommunityTipsFragment : Fragment(R.layout.fragment_community_tips) {
@@ -29,7 +29,7 @@ class CommunityTipsFragment : Fragment(R.layout.fragment_community_tips) {
 
         // 더미 데이터 생성
         val tips = listOf(
-            Tip(
+            com.example.dogcatsquare.data.model.community.Tip(
                 title = "강아지 산책할 때 주의할 점",
                 content = "내용을 입력해주세요 내용을 입력해주세요...",
                 thumbnailResId = R.drawable.ic_sample_image,
@@ -40,7 +40,7 @@ class CommunityTipsFragment : Fragment(R.layout.fragment_community_tips) {
                 dogBreed = "포메라니안",
                 date = "2024-01-01"
             ),
-            Tip(
+            com.example.dogcatsquare.data.model.community.Tip(
                 title = "강아지 간식 추천",
                 content = "내용을 입력해주세요 내용을 입력해주세요...",
                 thumbnailResId = R.drawable.ic_sample_image,

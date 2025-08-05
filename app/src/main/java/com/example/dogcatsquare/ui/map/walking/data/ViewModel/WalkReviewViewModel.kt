@@ -5,7 +5,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.dogcatsquare.RetrofitClient
+import com.example.dogcatsquare.data.network.RetrofitClient
 import com.example.dogcatsquare.ui.map.walking.WalkApiService
 import com.example.dogcatsquare.ui.map.walking.data.LatLngDto
 import com.example.dogcatsquare.ui.map.walking.data.Response.WalkReviewResponse
@@ -16,12 +16,10 @@ import com.naver.maps.geometry.LatLng
 import kotlinx.coroutines.launch
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody
-import okhttp3.RequestBody
 import okhttp3.RequestBody.Companion.toRequestBody
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
-import java.io.File
 
 class WalkReviewViewModel : ViewModel() {
 

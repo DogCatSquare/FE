@@ -78,7 +78,7 @@ class SignupActivity : AppCompatActivity() {
 
         binding.emailCheckBtn.setOnClickListener {
             val email = binding.emailEt.text.toString()
-            if (!isEmailUsed(email)) { // 이미 사용 중인 이메일
+            if (isEmailUsed(email) == true) { // 이미 사용 중인 이메일
                 binding.signupEmailCheckTv.text = "이미 사용 중인 이메일입니다"
                 binding.signupEmailCheckTv.setTextColor(ContextCompat.getColor(this, R.color.red))
             }
@@ -199,7 +199,7 @@ class SignupActivity : AppCompatActivity() {
     // 닉네임 중복 체크
     private fun isNicknameUsed(nickname: String): Boolean {
         var checkNickname: Boolean = false
-        val checkNicknameService = RetrofitObj.getRetrofit().create(UserRetrofitItf::class.java)
+        val checkNicknameService = RetrofitObj.getRetrofit(this).create(UserRetrofitItf::class.java)
         checkNicknameService.checkNickname(nickname).enqueue(object : Callback<CheckNicknameResponse>{
             override fun onResponse(
                 call: Call<CheckNicknameResponse>,
@@ -262,7 +262,7 @@ class SignupActivity : AppCompatActivity() {
     // 이메일 중복 체크
     private fun isEmailUsed(email: String): Boolean {
         var checkEmail: Boolean = false
-        val checkEmailService = RetrofitObj.getRetrofit().create(UserRetrofitItf::class.java)
+        val checkEmailService = RetrofitObj.getRetrofit(this).create(UserRetrofitItf::class.java)
         checkEmailService.checkEmail(email).enqueue(object : Callback<CheckEmailResponse>{
             override fun onResponse(
                 call: Call<CheckEmailResponse>,
@@ -276,10 +276,10 @@ class SignupActivity : AppCompatActivity() {
                         if (resp != null) {
                             if (resp.isSuccess) {
                                 if (resp.result == false) { // 일치하는 닉네임 없음 -> 중복 x
-                                    checkEmail = true
+                                    checkEmail = false
                                     Log.d("CheckEmail/SUCCESS", checkEmail.toString())
                                 } else { // 일치하는 닉네임 있음 -> 중복 o
-                                    checkEmail = false
+                                    checkEmail = true
                                     Log.d("CheckEmail/SUCCESS", checkEmail.toString())
                                 }
                             } else {
@@ -304,7 +304,7 @@ class SignupActivity : AppCompatActivity() {
 
     // 이메일 인증
     private fun sendEmail(email: String) {
-        val sendEmailService = RetrofitObj.getRetrofit().create(UserRetrofitItf::class.java)
+        val sendEmailService = RetrofitObj.getRetrofit(this).create(UserRetrofitItf::class.java)
         sendEmailService.sendVerification(SendVerficationRequest(email)).enqueue(object : Callback<SendVerficationResponse> {
             override fun onResponse(call: Call<SendVerficationResponse>, response: Response<SendVerficationResponse>) {
                 Log.d("SendEmailResult", response.toString())
@@ -320,7 +320,7 @@ class SignupActivity : AppCompatActivity() {
     }
 
     private fun verifyEmail(email: String, code: String) {
-        val verifyEmailService = RetrofitObj.getRetrofit().create(UserRetrofitItf::class.java)
+        val verifyEmailService = RetrofitObj.getRetrofit(this).create(UserRetrofitItf::class.java)
         verifyEmailService.verifyEmail(VerifyRequest(email, code)).enqueue(object : Callback<VerifyResponse> {
             override fun onResponse(call: Call<VerifyResponse>, response: Response<VerifyResponse>) {
                 val resp: VerifyResponse = response.body()!!

@@ -3,7 +3,7 @@ package com.example.dogcatsquare.ui.map.location
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
-import com.example.dogcatsquare.data.map.MapPrice
+import com.example.dogcatsquare.data.model.map.MapPrice
 import com.example.dogcatsquare.databinding.ItemMapPriceBinding
 
 class MapPriceRVAdapter(private val priceList: ArrayList<MapPrice>): RecyclerView.Adapter<MapPriceRVAdapter.ViewHolder>() {

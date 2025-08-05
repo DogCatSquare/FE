@@ -11,9 +11,9 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.dogcatsquare.LoadingDialog
 import com.example.dogcatsquare.R
-import com.example.dogcatsquare.RetrofitClient
-import com.example.dogcatsquare.data.map.MapPlace
-import com.example.dogcatsquare.data.map.SearchPlacesRequest
+import com.example.dogcatsquare.data.network.RetrofitClient
+import com.example.dogcatsquare.data.model.map.MapPlace
+import com.example.dogcatsquare.data.model.map.SearchPlacesRequest
 import com.example.dogcatsquare.databinding.FragmentSearchResultBinding
 import com.example.dogcatsquare.ui.map.location.MapDetailFragment
 import com.example.dogcatsquare.ui.map.location.MapPlaceRVAdapter

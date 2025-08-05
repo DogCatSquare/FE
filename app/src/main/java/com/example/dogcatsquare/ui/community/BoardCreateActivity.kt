@@ -12,8 +12,8 @@ import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.dogcatsquare.R
 import com.example.dogcatsquare.data.api.BoardApiService
-import com.example.dogcatsquare.data.community.BoardRequestDto
-import com.example.dogcatsquare.data.community.BoardResponseDto
+import com.example.dogcatsquare.data.model.community.BoardRequestDto
+import com.example.dogcatsquare.data.model.community.BoardResponseDto
 import com.example.dogcatsquare.data.network.RetrofitObj
 import com.example.dogcatsquare.databinding.ActivityBoardCreateBinding
 import com.google.gson.Gson
@@ -142,12 +142,18 @@ class BoardCreateActivity : AppCompatActivity() {
         val content = binding.editBoardDescription.text.toString()
 
         val token = getToken()
-        val createBoardService = RetrofitObj.getRetrofit().create(BoardApiService::class.java)
-        createBoardService.createBoard("Bearer $token", BoardRequestDto(boardName, content, keywordList)).enqueue(object :
-            Callback<BoardResponseDto> {
-            override fun onResponse(call: Call<BoardResponseDto>, response: Response<BoardResponseDto>) {
+        val createBoardService = RetrofitObj.getRetrofit(this).create(BoardApiService::class.java)
+        createBoardService.createBoard("Bearer $token",
+            com.example.dogcatsquare.data.model.community.BoardRequestDto(
+                boardName,
+                content,
+                keywordList
+            )
+        ).enqueue(object :
+            Callback<com.example.dogcatsquare.data.model.community.BoardResponseDto> {
+            override fun onResponse(call: Call<com.example.dogcatsquare.data.model.community.BoardResponseDto>, response: Response<com.example.dogcatsquare.data.model.community.BoardResponseDto>) {
                 Log.d("CreateBoard/SUCCESS", response.toString())
-                val resp: BoardResponseDto = response.body()!!
+                val resp: com.example.dogcatsquare.data.model.community.BoardResponseDto = response.body()!!
 
                 if (resp != null) {
                     if (resp.isSuccess) {
@@ -159,7 +165,7 @@ class BoardCreateActivity : AppCompatActivity() {
                 }
             }
 
-            override fun onFailure(call: Call<BoardResponseDto>, t: Throwable) {
+            override fun onFailure(call: Call<com.example.dogcatsquare.data.model.community.BoardResponseDto>, t: Throwable) {
                 Log.d("RETROFIT/FAILURE", t.message.toString())
             }
         })

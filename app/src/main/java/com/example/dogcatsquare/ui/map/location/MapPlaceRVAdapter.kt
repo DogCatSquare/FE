@@ -14,7 +14,7 @@ import com.bumptech.glide.load.resource.bitmap.CenterCrop
 import com.bumptech.glide.load.MultiTransformation
 import com.bumptech.glide.load.resource.bitmap.RoundedCorners
 import com.example.dogcatsquare.R
-import com.example.dogcatsquare.data.map.MapPlace
+import com.example.dogcatsquare.data.model.map.MapPlace
 import com.example.dogcatsquare.databinding.ItemMapPlaceBinding
 
 // PlaceType enum class 추가

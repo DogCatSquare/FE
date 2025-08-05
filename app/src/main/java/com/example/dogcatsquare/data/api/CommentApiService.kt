@@ -1,9 +1,9 @@
 package com.example.dogcatsquare.data.api
 
-import com.example.dogcatsquare.data.community.CommentListResponse
-import com.example.dogcatsquare.data.community.CommentResponse
-import com.example.dogcatsquare.data.community.CommonResponse
-import com.example.dogcatsquare.data.community.CommentRequest
+import com.example.dogcatsquare.data.model.community.CommentListResponse
+import com.example.dogcatsquare.data.model.community.CommentResponse
+import com.example.dogcatsquare.data.model.community.CommonResponse
+import com.example.dogcatsquare.data.model.community.CommentRequest
 import retrofit2.Call
 import retrofit2.http.*
 
@@ -12,15 +12,15 @@ interface CommentApiService {
     fun getComments(
         @Header("Authorization") token: String,
         @Path("postId") postId: Long
-    ): Call<CommentListResponse>
+    ): Call<com.example.dogcatsquare.data.model.community.CommentListResponse>
 
     @POST("api/comments/posts/{postId}/users/{userId}")
     fun createComment(
         @Header("Authorization") token: String,
         @Path("postId") postId: Long,
         @Path("userId") userId: Long,
-        @Body request: CommentRequest
-    ): Call<CommentResponse>
+        @Body request: com.example.dogcatsquare.data.model.community.CommentRequest
+    ): Call<com.example.dogcatsquare.data.model.community.CommentResponse>
 
     @DELETE("api/comments/posts/{postId}/{commentId}")
     fun deleteComment(
@@ -28,5 +28,5 @@ interface CommentApiService {
         @Path("postId") postId: Long,
         @Path("commentId") commentId: Long,
         @Path("userId") userId: Int
-    ): Call<CommonResponse>
+    ): Call<com.example.dogcatsquare.data.model.community.CommonResponse>
 }

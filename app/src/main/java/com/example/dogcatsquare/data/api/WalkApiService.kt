@@ -1,6 +1,6 @@
 package com.example.dogcatsquare.data.api
 
-import com.example.dogcatsquare.data.walk.WalkSearchResponse
+import com.example.dogcatsquare.data.model.walk.WalkSearchResponse
 import retrofit2.http.GET
 import retrofit2.http.Query
 

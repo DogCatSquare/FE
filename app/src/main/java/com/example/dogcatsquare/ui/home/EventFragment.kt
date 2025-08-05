@@ -63,7 +63,7 @@ class EventFragment: Fragment() {
     }
 
     private fun getAllEvents(adapter: EventRVAdapter) {
-        val getAllEventsService = RetrofitObj.getRetrofit().create(EventRetrofitItf::class.java)
+        val getAllEventsService = RetrofitObj.getRetrofit(requireContext()).create(EventRetrofitItf::class.java)
         getAllEventsService.getAllEvents().enqueue(object: Callback<GetAllEventsResponse> {
             override fun onResponse(call: Call<GetAllEventsResponse>, response: Response<GetAllEventsResponse>) {
                 Log.d("GetEvent/SUCCESS", response.toString())

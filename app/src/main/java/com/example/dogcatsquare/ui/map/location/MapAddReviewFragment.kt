@@ -18,8 +18,8 @@ import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import com.example.dogcatsquare.R
-import com.example.dogcatsquare.RetrofitClient
-import com.example.dogcatsquare.data.map.PlaceReviewRequest
+import com.example.dogcatsquare.data.network.RetrofitClient
+import com.example.dogcatsquare.data.model.map.PlaceReviewRequest
 import com.example.dogcatsquare.databinding.FragmentMapAddReviewBinding
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch

@@ -17,14 +17,14 @@ import android.widget.FrameLayout
 import android.widget.Toast
 import androidx.cardview.widget.CardView
 import androidx.lifecycle.lifecycleScope
-import com.example.dogcatsquare.data.map.PlaceUserInfoRequest
+import com.example.dogcatsquare.data.model.map.PlaceUserInfoRequest
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import android.text.Editable
 import android.text.TextWatcher
 import com.example.dogcatsquare.R
-import com.example.dogcatsquare.RetrofitClient
+import com.example.dogcatsquare.data.network.RetrofitClient
 
 class MapAddKeywordFragment : Fragment() {
     private var _binding: FragmentMapAddKeywordBinding? = null

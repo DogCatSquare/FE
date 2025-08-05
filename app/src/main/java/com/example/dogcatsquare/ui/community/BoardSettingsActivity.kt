@@ -11,10 +11,10 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.dogcatsquare.api.RetrofitClient
 import com.example.dogcatsquare.data.api.BoardApiService
-import com.example.dogcatsquare.data.community.BoardSearchResponseDto
-import com.example.dogcatsquare.data.community.DeleteMyBoardResponse
-import com.example.dogcatsquare.data.community.MyBoardResponse
-import com.example.dogcatsquare.data.community.MyBoardResult
+import com.example.dogcatsquare.data.model.community.BoardSearchResponseDto
+import com.example.dogcatsquare.data.model.community.DeleteMyBoardResponse
+import com.example.dogcatsquare.data.model.community.MyBoardResponse
+import com.example.dogcatsquare.data.model.community.MyBoardResult
 import com.example.dogcatsquare.data.network.RetrofitObj
 import com.example.dogcatsquare.databinding.ActivityBoardSettingsBinding
 import com.example.dogcatsquare.ui.community.BoardAdapter
@@ -103,7 +103,7 @@ class BoardSettingsActivity : AppCompatActivity() {
         }
     }
 
-    private fun addMyBoard(myBoard: MyBoardResult) {
+    private fun addMyBoard(myBoard: com.example.dogcatsquare.data.model.community.MyBoardResult) {
         val token = getToken()
 
         val currentList = myBoardRVAdapter.currentList.toMutableList()
@@ -112,15 +112,15 @@ class BoardSettingsActivity : AppCompatActivity() {
         if (currentList.size >= 5) {
             Toast.makeText(this@BoardSettingsActivity, "마이게시판은 최대 5개까지만 추가할 수 있습니다", Toast.LENGTH_SHORT).show()
         } else {
-            val addMyBoardService = RetrofitObj.getRetrofit().create(BoardApiService::class.java)
+            val addMyBoardService = RetrofitObj.getRetrofit(this).create(BoardApiService::class.java)
             addMyBoardService.addMyBoard("Bearer $token", myBoard.id)
-                .enqueue(object : Callback<MyBoardResponse> {
+                .enqueue(object : Callback<com.example.dogcatsquare.data.model.community.MyBoardResponse> {
                     override fun onResponse(
-                        call: Call<MyBoardResponse>,
-                        response: Response<MyBoardResponse>
+                        call: Call<com.example.dogcatsquare.data.model.community.MyBoardResponse>,
+                        response: Response<com.example.dogcatsquare.data.model.community.MyBoardResponse>
                     ) {
                         Log.d("AddMyBoard/SUCCESS", response.toString())
-                        val resp: MyBoardResponse = response.body()!!
+                        val resp: com.example.dogcatsquare.data.model.community.MyBoardResponse = response.body()!!
 
                         if (resp != null) {
                             if (resp.isSuccess) {
@@ -143,20 +143,20 @@ class BoardSettingsActivity : AppCompatActivity() {
                         }
                     }
 
-                    override fun onFailure(call: Call<MyBoardResponse>, t: Throwable) {
+                    override fun onFailure(call: Call<com.example.dogcatsquare.data.model.community.MyBoardResponse>, t: Throwable) {
                         Log.d("RETROFIT/FAILURE", t.message.toString())
                     }
                 })
         }
     }
 
-    private fun deleteMyBoard(myBoard: MyBoardResult) {
+    private fun deleteMyBoard(myBoard: com.example.dogcatsquare.data.model.community.MyBoardResult) {
         val token = getToken()
-        val deleteMyBoardService = RetrofitObj.getRetrofit().create(BoardApiService::class.java)
+        val deleteMyBoardService = RetrofitObj.getRetrofit(this).create(BoardApiService::class.java)
 
         deleteMyBoardService.deleteMyBoard("Bearer $token", myBoard.id)
-            .enqueue(object : Callback<DeleteMyBoardResponse> {
-                override fun onResponse(call: Call<DeleteMyBoardResponse>, response: Response<DeleteMyBoardResponse>) {
+            .enqueue(object : Callback<com.example.dogcatsquare.data.model.community.DeleteMyBoardResponse> {
+                override fun onResponse(call: Call<com.example.dogcatsquare.data.model.community.DeleteMyBoardResponse>, response: Response<com.example.dogcatsquare.data.model.community.DeleteMyBoardResponse>) {
                     if (response.isSuccessful) {
                         // 🔹 삭제된 항목을 제외한 새로운 리스트 생성
                         val updatedList = myBoardRVAdapter.currentList.filter { it.id != myBoard.id }
@@ -167,7 +167,7 @@ class BoardSettingsActivity : AppCompatActivity() {
                     }
                 }
 
-                override fun onFailure(call: Call<DeleteMyBoardResponse>, t: Throwable) {
+                override fun onFailure(call: Call<com.example.dogcatsquare.data.model.community.DeleteMyBoardResponse>, t: Throwable) {
                     Log.e("BoardSettingsActivity", "서버 연결 실패", t)
                 }
             })
@@ -176,11 +176,11 @@ class BoardSettingsActivity : AppCompatActivity() {
     // 마이게시판 조회 API
     private fun getAllMyBoards() {
         val token = getToken()
-        val getAllMyBoardsService = RetrofitObj.getRetrofit().create(BoardApiService::class.java)
-        getAllMyBoardsService.getMyBoards("Bearer $token").enqueue(object : Callback<MyBoardResponse> {
+        val getAllMyBoardsService = RetrofitObj.getRetrofit(this).create(BoardApiService::class.java)
+        getAllMyBoardsService.getMyBoards("Bearer $token").enqueue(object : Callback<com.example.dogcatsquare.data.model.community.MyBoardResponse> {
             override fun onResponse(
-                call: Call<MyBoardResponse>,
-                response: Response<MyBoardResponse>
+                call: Call<com.example.dogcatsquare.data.model.community.MyBoardResponse>,
+                response: Response<com.example.dogcatsquare.data.model.community.MyBoardResponse>
             ) {
                 val myBoardResponse = response.body()!!
 
@@ -192,7 +192,7 @@ class BoardSettingsActivity : AppCompatActivity() {
                 }
             }
 
-            override fun onFailure(call: Call<MyBoardResponse>, t: Throwable) {
+            override fun onFailure(call: Call<com.example.dogcatsquare.data.model.community.MyBoardResponse>, t: Throwable) {
                 Log.d("RETROFIT/FAILURE", t.message.toString())
             }
         })
@@ -202,10 +202,10 @@ class BoardSettingsActivity : AppCompatActivity() {
     private fun getAllBoards() {
         val token = getToken()
         RetrofitClient.instance.getAllBoards("Bearer $token")
-            .enqueue(object : Callback<BoardSearchResponseDto> {
+            .enqueue(object : Callback<com.example.dogcatsquare.data.model.community.BoardSearchResponseDto> {
                 override fun onResponse(
-                    call: Call<BoardSearchResponseDto>,
-                    response: Response<BoardSearchResponseDto>
+                    call: Call<com.example.dogcatsquare.data.model.community.BoardSearchResponseDto>,
+                    response: Response<com.example.dogcatsquare.data.model.community.BoardSearchResponseDto>
                 ) {
                     if (response.isSuccessful) {
                         val boardList = response.body()?.result ?: emptyList()
@@ -216,7 +216,7 @@ class BoardSettingsActivity : AppCompatActivity() {
                     }
                 }
 
-                override fun onFailure(call: Call<BoardSearchResponseDto>, t: Throwable) {
+                override fun onFailure(call: Call<com.example.dogcatsquare.data.model.community.BoardSearchResponseDto>, t: Throwable) {
                     Log.e("BoardSettingsActivity", "서버 연결 실패", t)
                     Toast.makeText(this@BoardSettingsActivity, "서버 연결 실패", Toast.LENGTH_SHORT).show()
                 }
@@ -227,10 +227,10 @@ class BoardSettingsActivity : AppCompatActivity() {
     private fun searchBoard(boardName: String) {
         val token = getToken()
         RetrofitClient.instance.searchBoard("Bearer $token", boardName)
-            .enqueue(object : Callback<BoardSearchResponseDto> {
+            .enqueue(object : Callback<com.example.dogcatsquare.data.model.community.BoardSearchResponseDto> {
                 override fun onResponse(
-                    call: Call<BoardSearchResponseDto>,
-                    response: Response<BoardSearchResponseDto>
+                    call: Call<com.example.dogcatsquare.data.model.community.BoardSearchResponseDto>,
+                    response: Response<com.example.dogcatsquare.data.model.community.BoardSearchResponseDto>
                 ) {
                     if (response.isSuccessful) {
                         val boardList = response.body()?.result ?: emptyList()
@@ -254,7 +254,7 @@ class BoardSettingsActivity : AppCompatActivity() {
                     }
                 }
 
-                override fun onFailure(call: Call<BoardSearchResponseDto>, t: Throwable) {
+                override fun onFailure(call: Call<com.example.dogcatsquare.data.model.community.BoardSearchResponseDto>, t: Throwable) {
                     Log.e("BoardSettingsActivity", "서버 연결 실패", t)
                     Toast.makeText(this@BoardSettingsActivity, "서버 연결 실패", Toast.LENGTH_SHORT).show()
                 }

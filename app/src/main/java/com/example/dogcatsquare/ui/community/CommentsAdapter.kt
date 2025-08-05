@@ -10,11 +10,11 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.example.dogcatsquare.R
-import com.example.dogcatsquare.data.community.Comment
-import com.example.dogcatsquare.data.community.Reply
+import com.example.dogcatsquare.data.model.community.Comment
+import com.example.dogcatsquare.data.model.community.Reply
 
 class CommentsAdapter(
-    private val comments: ArrayList<Comment>,
+    private val comments: ArrayList<com.example.dogcatsquare.data.model.community.Comment>,
     private val actionListener: CommentActionListener // 액션 처리를 위한 콜백 인터페이스
 ) : RecyclerView.Adapter<CommentsAdapter.CommentViewHolder>() {
 
@@ -45,7 +45,7 @@ class CommentsAdapter(
 
     // ✅ 대댓글을 `List<Comment>`에서 `List<Reply>`로 변환하여 사용
         val repliesList = comments.filter { it.parentId == comment.id.toString() }.map { comment ->
-            Reply(
+            com.example.dogcatsquare.data.model.community.Reply(
                 id = comment.id,
                 content = comment.content,
                 name = comment.name,

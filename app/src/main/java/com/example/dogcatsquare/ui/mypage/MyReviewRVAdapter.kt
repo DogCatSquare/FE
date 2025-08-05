@@ -11,7 +11,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.example.dogcatsquare.R
 import com.example.dogcatsquare.data.api.ReviewRetrofitItf
-import com.example.dogcatsquare.data.map.DeleteReviewResponse
+import com.example.dogcatsquare.data.model.map.DeleteReviewResponse
 import com.example.dogcatsquare.data.model.mypage.ReviewContent
 import com.example.dogcatsquare.data.network.RetrofitObj
 import com.example.dogcatsquare.databinding.ItemMyReviewBinding
