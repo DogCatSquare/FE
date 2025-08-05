@@ -3,20 +3,27 @@ package com.example.dogcatsquare.ui.map.location
 import android.Manifest
 import android.content.Context
 import android.content.pm.PackageManager
+import android.graphics.Bitmap
+import android.graphics.Canvas
 import android.location.Geocoder
 import android.location.Location
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.CheckBox
 import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
+import androidx.annotation.DrawableRes
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.example.dogcatsquare.FilterPlacesRequest
+import com.example.dogcatsquare.LoadingDialog
 import com.example.dogcatsquare.R
 import com.example.dogcatsquare.data.map.MapButton
 import com.example.dogcatsquare.data.map.MapPlace
@@ -24,20 +31,20 @@ import com.example.dogcatsquare.data.map.SearchPlacesRequest
 import com.example.dogcatsquare.databinding.FragmentMapBinding
 import com.example.dogcatsquare.ui.map.SearchFragment
 import com.example.dogcatsquare.RetrofitClient
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
+import com.example.dogcatsquare.ui.map.walking.WalkingMapFragment
 import com.google.android.gms.location.*
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
-import com.google.android.gms.maps.model.LatLng
-import com.google.android.gms.maps.model.Marker
-import com.google.android.gms.maps.model.MarkerOptions
-import com.google.android.gms.maps.model.BitmapDescriptorFactory
+import com.google.android.gms.maps.model.*
 import com.google.android.material.bottomsheet.BottomSheetBehavior
-import java.util.Locale
+import com.google.android.material.bottomsheet.BottomSheetDialog
+import com.google.android.material.button.MaterialButton
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import java.util.*
 
 class MapFragment : Fragment(), OnMapReadyCallback {
     private var _binding: FragmentMapBinding? = null
@@ -57,9 +64,7 @@ class MapFragment : Fragment(), OnMapReadyCallback {
         )
     }
 
-    private val allPlaceDatas = ArrayList<MapPlace>()      // 전체 장소 데이터(페이징/필터링용)
-    private val originalPlaceDatas = ArrayList<MapPlace>() // 현재 리스트(필터링/카테고리용)
-    private val placeDatas = ArrayList<MapPlace>()         // RecyclerView에 표시될 데이터
+    private val allPlaceDatas = ArrayList<MapPlace>()
     private lateinit var mapPlaceRVAdapter: MapPlaceRVAdapter
 
     private lateinit var fusedLocationClient: FusedLocationProviderClient
@@ -72,14 +77,35 @@ class MapFragment : Fragment(), OnMapReadyCallback {
     private var isLoading = false
 
     private lateinit var sortTextView: TextView
-    private var currentSortType: String = "위치기준" // 기본값
+    private var currentSortType: String = "위치기준"
 
-    private var userAddress: String = "" // 서버에서 받아온 유저 기본 주소
+    private var userAddress: String = ""
 
-    // 구글맵 마커 관리용 리스트
     private val mapMarkers = mutableListOf<Marker>()
 
-    // 카테고리별 마커 아이콘 리소스 매핑 함수
+    // 필터 옵션 상태 저장을 위한 데이터 클래스
+    private data class FilterOptions(
+        var isCurrentlyOpen: Boolean,
+        var is24Hours: Boolean,
+        var hasParking: Boolean
+    )
+    private var filterOptions = FilterOptions(false, false, false)
+
+    // 로딩 다이얼로그 추가
+    private lateinit var loadingDialog: LoadingDialog
+
+
+    // [수정] Vector Drawable을 BitmapDescriptor로 변환하는 헬퍼 함수
+    private fun bitmapDescriptorFromVector(context: Context, @DrawableRes vectorResId: Int): BitmapDescriptor? {
+        return ContextCompat.getDrawable(context, vectorResId)?.run {
+            setBounds(0, 0, intrinsicWidth, intrinsicHeight)
+            val bitmap = Bitmap.createBitmap(intrinsicWidth, intrinsicHeight, Bitmap.Config.ARGB_8888)
+            val canvas = Canvas(bitmap)
+            draw(canvas)
+            BitmapDescriptorFactory.fromBitmap(bitmap)
+        }
+    }
+
     private fun getMarkerIconForCategory(placeType: String?): Int {
         return when (placeType) {
             "동물병원" -> R.drawable.ic_marker_hospital
@@ -92,30 +118,40 @@ class MapFragment : Fragment(), OnMapReadyCallback {
         }
     }
 
-    // 마커를 모두 지우는 함수
     private fun clearMapMarkers() {
         mapMarkers.forEach { it.remove() }
         mapMarkers.clear()
     }
 
-    // 현재 placeDatas 기준으로 지도에 마커를 모두 표시하는 함수
-    private fun updateMapMarkers() {
+    // [수정] 마커 추가 시 bitmapDescriptorFromVector 함수 사용하도록 변경
+    private fun updateMapMarkers(placesToMark: List<MapPlace>) {
         googleMap?.let { map ->
             clearMapMarkers()
-            for (place in placeDatas) {
+            val defaultIcon = bitmapDescriptorFromVector(requireContext(), R.drawable.ic_marker)
+
+            for (place in placesToMark) {
                 val lat = place.latitude
                 val lng = place.longitude
                 if (lat != null && lng != null) {
+                    val iconResId = getMarkerIconForCategory(place.placeType)
+                    val customIcon = bitmapDescriptorFromVector(requireContext(), iconResId)
+
                     val marker = map.addMarker(
                         MarkerOptions()
                             .position(LatLng(lat, lng))
                             .title(place.placeName)
-                            .icon(BitmapDescriptorFactory.fromResource(getMarkerIconForCategory(place.placeType)))
+                            .icon(customIcon ?: defaultIcon) // 변환 실패 시 기본 아이콘 사용
                     )
                     marker?.let { mapMarkers.add(it) }
                 }
             }
         }
+    }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        // 로딩 다이얼로그 초기화
+        loadingDialog = LoadingDialog(requireContext())
     }
 
     override fun onCreateView(
@@ -132,7 +168,6 @@ class MapFragment : Fragment(), OnMapReadyCallback {
 
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(requireActivity())
 
-        // 유저 주소 정보 서버에서 받아와서 SharedPreferences에 저장
         lifecycleScope.launch {
             fetchUserAddress()
         }
@@ -173,11 +208,47 @@ class MapFragment : Fragment(), OnMapReadyCallback {
                     .commit()
             }
         }
+
+        // 필터 버튼 클릭 리스너 추가
+        binding.filter.setOnClickListener {
+            showSearchOptions()
+        }
     }
 
-    /**
-     * 서버에서 유저 주소 받아와서 SharedPreferences에 반드시 저장!
-     */
+    // 필터 옵션 BottomSheetDialog 표시
+    private fun showSearchOptions() {
+        val bottomSheetDialog = BottomSheetDialog(requireContext())
+        val bottomSheetView = layoutInflater.inflate(R.layout.bottom_sheet_search_option, null)
+        bottomSheetDialog.setContentView(bottomSheetView)
+
+        val openCheckBox = bottomSheetView.findViewById<CheckBox>(R.id.open_btn)
+        val hours24CheckBox = bottomSheetView.findViewById<CheckBox>(R.id.hours24_btn)
+        val parkCheckBox = bottomSheetView.findViewById<CheckBox>(R.id.park_btn)
+
+        // 현재 필터 상태를 체크박스에 반영
+        openCheckBox.isChecked = filterOptions.isCurrentlyOpen
+        hours24CheckBox.isChecked = filterOptions.is24Hours
+        parkCheckBox.isChecked = filterOptions.hasParking
+
+        // 완료 버튼 클릭 리스너
+        bottomSheetView.findViewById<MaterialButton>(R.id.confirm_button).setOnClickListener {
+            // 선택된 값으로 필터 옵션 업데이트
+            filterOptions = FilterOptions(
+                isCurrentlyOpen = openCheckBox.isChecked,
+                is24Hours = hours24CheckBox.isChecked,
+                hasParking = parkCheckBox.isChecked
+            )
+
+            // 필터가 적용된 데이터 로드
+            val currentLatLng = googleMap?.cameraPosition?.target ?: return@setOnClickListener
+            resetAndLoadPlaces(currentLatLng)
+
+            bottomSheetDialog.dismiss()
+        }
+
+        bottomSheetDialog.show()
+    }
+
     private suspend fun fetchUserAddress() {
         try {
             val token = getToken() ?: run {
@@ -246,7 +317,7 @@ class MapFragment : Fragment(), OnMapReadyCallback {
     private fun moveToSavedAddressLocation() {
         val map = googleMap ?: return
         val savedAddress = getSavedUserAddress()
-        if (savedAddress.isNullOrBlank()) {
+        if (savedAddress.isBlank()) {
             Toast.makeText(requireContext(), "저장된 주소가 없습니다.", Toast.LENGTH_SHORT).show()
             return
         }
@@ -254,8 +325,9 @@ class MapFragment : Fragment(), OnMapReadyCallback {
             val latLng = withContext(Dispatchers.IO) {
                 try {
                     val geocoder = Geocoder(requireContext(), Locale.getDefault())
+                    @Suppress("DEPRECATION")
                     val addresses = geocoder.getFromLocationName(savedAddress, 1)
-                    if (addresses != null && addresses.isNotEmpty()) {
+                    if (addresses?.isNotEmpty() == true) {
                         LatLng(addresses[0].latitude, addresses[0].longitude)
                     } else null
                 } catch (e: Exception) {
@@ -264,7 +336,7 @@ class MapFragment : Fragment(), OnMapReadyCallback {
             }
             if (latLng != null) {
                 map.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, 14f))
-                fetchPlacesFromApiByLatLng(latLng)
+                resetAndLoadPlaces(latLng)
             } else {
                 Toast.makeText(requireContext(), "주소를 좌표로 변환할 수 없습니다.", Toast.LENGTH_SHORT).show()
             }
@@ -272,12 +344,19 @@ class MapFragment : Fragment(), OnMapReadyCallback {
     }
 
     private fun enableLocationTracking() {
+        if (!checkLocationPermission()) {
+            requestLocationPermission()
+            return
+        }
         googleMap?.isMyLocationEnabled = true
         locationCallback?.let { callback ->
             val locationRequest = LocationRequest.create().apply {
                 priority = LocationRequest.PRIORITY_HIGH_ACCURACY
                 interval = 10000
                 fastestInterval = 5000
+            }
+            if (ActivityCompat.checkSelfPermission(requireContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(requireContext(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                return
             }
             fusedLocationClient.requestLocationUpdates(locationRequest, callback, null)
         }
@@ -288,23 +367,96 @@ class MapFragment : Fragment(), OnMapReadyCallback {
         locationCallback?.let { fusedLocationClient.removeLocationUpdates(it) }
     }
 
-    // [수정] 장소 데이터가 바뀔 때마다 지도 마커도 갱신
-    private fun refreshPlaceDataAndMarkers(newPlaces: List<MapPlace>) {
-        allPlaceDatas.clear()
-        placeDatas.clear()
-        originalPlaceDatas.clear()
-        allPlaceDatas.addAll(newPlaces)
-        placeDatas.addAll(newPlaces)
-        originalPlaceDatas.addAll(newPlaces)
-        mapPlaceRVAdapter.updateList(placeDatas)
-        updateMapMarkers()
+    private fun refreshUiWithPlaces(places: List<MapPlace>) {
+        mapPlaceRVAdapter.submitList(places)
+        updateMapMarkers(places)
     }
 
-    // [수정] 장소 데이터 불러오는 곳에서 마커도 갱신
+    // 데이터를 로드하기 전에 페이징 및 리스트 상태를 초기화하는 함수
+    private fun resetAndLoadPlaces(latLng: LatLng, page: Int = 0) {
+        currentPage = page
+        isLastPage = false
+        if (page == 0) {
+            allPlaceDatas.clear()
+        }
+        loadPlaces(latLng, page)
+    }
+
+    // 필터 적용 여부에 따라 다른 API를 호출하는 로직
+    private fun loadPlaces(latLng: LatLng, page: Int = 0) {
+        val isFilterOn = filterOptions.isCurrentlyOpen || filterOptions.is24Hours || filterOptions.hasParking
+        if (isFilterOn) {
+            loadFilteredPlaces(latLng, page)
+        } else {
+            fetchPlacesFromApiByLatLng(latLng, page)
+        }
+    }
+
+    // 필터링된 장소 데이터를 불러오는 함수
+    private fun loadFilteredPlaces(latLng: LatLng, page: Int = 0) {
+        if (isLoading) return
+        isLoading = true
+        lifecycleScope.launch {
+            if (page == 0) loadingDialog.show()
+            try {
+                val token = getToken() ?: ""
+                val request = FilterPlacesRequest(
+                    location = FilterPlacesRequest.Location(
+                        latitude = latLng.latitude,
+                        longitude = latLng.longitude
+                    ),
+                    is24Hours = filterOptions.is24Hours,
+                    hasParking = filterOptions.hasParking,
+                    isCurrentlyOpen = filterOptions.isCurrentlyOpen
+                )
+                val response = withContext(Dispatchers.IO) {
+                    RetrofitClient.placesApiService.getFilteredPlaces(
+                        token = "Bearer $token",
+                        page = page,
+                        request = request
+                    )
+                }
+                if (response.isSuccess && response.result != null) {
+                    val pageResponse = response.result!!
+                    isLastPage = pageResponse.last
+                    currentPage = page
+
+                    val newPlaces = pageResponse.content.map { place ->
+                        MapPlace(
+                            id = place.id,
+                            placeName = place.name,
+                            placeType = convertCategory(place.category),
+                            placeDistance = "${String.format("%.2f", place.distance)}km",
+                            placeLocation = place.address,
+                            placeCall = place.phoneNumber,
+                            isOpen = if (place.open) "영업중" else "영업종료",
+                            placeImgUrl = place.imgUrl,
+                            reviewCount = place.reviewCount,
+                            latitude = place.latitude,
+                            longitude = place.longitude,
+                            keywords = place.keywords
+                        )
+                    }
+
+                    if (page == 0) {
+                        allPlaceDatas.clear()
+                    }
+                    allPlaceDatas.addAll(newPlaces)
+                    filterAndDisplayPlaces()
+                }
+            } finally {
+                isLoading = false
+                if (loadingDialog.isDialogShowing) loadingDialog.dismiss()
+            }
+        }
+    }
+
+
     private fun fetchPlacesFromApiByLatLng(latLng: LatLng, page: Int = 0) {
         if (isLoading) return
         isLoading = true
         lifecycleScope.launch {
+            if (page == 0) loadingDialog.show()
             try {
                 val token = getToken() ?: ""
                 val request = SearchPlacesRequest(
@@ -341,17 +493,14 @@ class MapFragment : Fragment(), OnMapReadyCallback {
                     }
 
                     if (page == 0) {
-                        refreshPlaceDataAndMarkers(newPlaces)
-                    } else {
-                        allPlaceDatas.addAll(newPlaces)
-                        placeDatas.addAll(newPlaces)
-                        originalPlaceDatas.addAll(newPlaces)
-                        mapPlaceRVAdapter.updateList(placeDatas)
-                        updateMapMarkers()
+                        allPlaceDatas.clear()
                     }
+                    allPlaceDatas.addAll(newPlaces)
+                    filterAndDisplayPlaces()
                 }
             } finally {
                 isLoading = false
+                if (loadingDialog.isDialogShowing) loadingDialog.dismiss()
             }
         }
     }
@@ -397,36 +546,32 @@ class MapFragment : Fragment(), OnMapReadyCallback {
             requestLocationPermission()
             return
         }
+        if (ActivityCompat.checkSelfPermission(requireContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(requireContext(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            return
+        }
         map.isMyLocationEnabled = true
 
         fusedLocationClient.lastLocation.addOnSuccessListener { location: Location? ->
             location?.let {
                 val latLng = LatLng(it.latitude, it.longitude)
                 map.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, 16f))
-                fetchPlacesFromApiByLatLng(latLng)
+                resetAndLoadPlaces(latLng)
             }
         }
 
-        locationCallback = object : LocationCallback() {
-            override fun onLocationResult(locationResult: LocationResult) {
-                val location = locationResult.lastLocation
-                if (location != null) {
-                    val latLng = LatLng(location.latitude, location.longitude)
-                    map.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, 16f))
-                    fetchPlacesFromApiByLatLng(latLng)
+        if (locationCallback == null) {
+            locationCallback = object : LocationCallback() {
+                override fun onLocationResult(locationResult: LocationResult) {
+                    locationResult.lastLocation?.let {
+                        val latLng = LatLng(it.latitude, it.longitude)
+                        map.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, 16f))
+                        resetAndLoadPlaces(latLng)
+                        fusedLocationClient.removeLocationUpdates(this)
+                    }
                 }
             }
         }
-        val locationRequest = LocationRequest.create().apply {
-            priority = LocationRequest.PRIORITY_HIGH_ACCURACY
-            interval = 10000
-            fastestInterval = 5000
-        }
-        fusedLocationClient.requestLocationUpdates(
-            locationRequest,
-            locationCallback!!,
-            null
-        )
+        enableLocationTracking()
     }
 
     private fun setupBottomSheet() {
@@ -464,30 +609,11 @@ class MapFragment : Fragment(), OnMapReadyCallback {
         })
     }
 
-    // [수정] 카테고리 선택 후 마커도 같이 갱신
     private fun setupMapButtonRV() {
         val mapButtonRVAdapter = MapButtonRVAdapter(buttonDatas, object : MapButtonRVAdapter.OnItemClickListener {
             override fun onItemClick(position: Int, buttonName: String) {
                 currentCategory = buttonName
-
-                val filtered = when (buttonName) {
-                    "전체" -> allPlaceDatas
-                    "병원" -> allPlaceDatas.filter { it.placeType == "동물병원" }
-                    "산책로" -> allPlaceDatas.filter { it.placeType == "산책로" }
-                    "음식/카페" -> allPlaceDatas.filter { it.placeType == "카페" || it.placeType == "식당" }
-                    "호텔" -> allPlaceDatas.filter { it.placeType == "호텔" }
-                    "기타" -> allPlaceDatas.filter { it.placeType == "기타" }
-                    else -> allPlaceDatas
-                }
-                originalPlaceDatas.clear()
-                originalPlaceDatas.addAll(filtered)
-
-                placeDatas.clear()
-                placeDatas.addAll(filtered)
-                mapPlaceRVAdapter.updateList(placeDatas)
-
-                // [추가] 마커도 같이 갱신
-                updateMapMarkers()
+                filterAndDisplayPlaces()
             }
         })
         binding.mapButtonRV.apply {
@@ -496,26 +622,75 @@ class MapFragment : Fragment(), OnMapReadyCallback {
         }
     }
 
+    private fun filterAndDisplayPlaces() {
+        val filtered = when (currentCategory) {
+            "전체" -> allPlaceDatas
+            "병원" -> allPlaceDatas.filter { it.placeType == "동물병원" }
+            "산책로" -> allPlaceDatas.filter { it.placeType == "산책로" }
+            "음식/카페" -> allPlaceDatas.filter { it.placeType == "카페" || it.placeType == "식당" }
+            "호텔" -> allPlaceDatas.filter { it.placeType == "호텔" }
+            "기타" -> allPlaceDatas.filter { it.placeType == "기타" }
+            else -> allPlaceDatas
+        }
+        refreshUiWithPlaces(filtered)
+    }
+
     private fun setupMapPlaceRV() {
-        mapPlaceRVAdapter = MapPlaceRVAdapter(placeDatas)
+        // 어댑터를 초기화하고, 아이템 클릭 리스너를 설정합니다.
+        // 람다 대신 object 키워드를 사용하여 OnItemClickListener의 익명 객체를 생성합니다.
+        mapPlaceRVAdapter = MapPlaceRVAdapter(object : MapPlaceRVAdapter.OnItemClickListener {
+            override fun onItemClick(place: MapPlace) {
+                // 클릭된 아이템의 유형에 따라 분기
+                when (place.placeType) {
+                    "산책로" -> {
+                        val (currentLat, currentLng) = getMapCurrentPosition()
+                        val fragment = WalkingMapFragment().apply {
+                            arguments = Bundle().apply {
+                                putInt("placeId", place.id)
+                                putDouble("latitude", currentLat)
+                                putDouble("longitude", currentLng)
+                            }
+                        }
+                        parentFragmentManager.beginTransaction()
+                            .setCustomAnimations(
+                                R.anim.slide_in_right,
+                                R.anim.slide_out_left,
+                                R.anim.slide_in_left,
+                                R.anim.slide_out_right
+                            )
+                            .hide(this@MapFragment)
+                            .add(R.id.main_frm, fragment)
+                            .addToBackStack(null)
+                            .commit()
+                    }
+                    else -> {
+                        // 산책로 이외의 모든 장소는 MapDetailFragment로 이동
+                        val (currentLat, currentLng) = getMapCurrentPosition()
+                        val fragment = MapDetailFragment().apply {
+                            arguments = Bundle().apply {
+                                putInt("placeId", place.id)
+                                putDouble("latitude", currentLat)
+                                putDouble("longitude", currentLng)
+                            }
+                        }
+                        parentFragmentManager.beginTransaction()
+                            .setCustomAnimations(
+                                R.anim.slide_in_right,
+                                R.anim.slide_out_left,
+                                R.anim.slide_in_left,
+                                R.anim.slide_out_right
+                            )
+                            .hide(this@MapFragment)
+                            .add(R.id.main_frm, fragment)
+                            .addToBackStack(null)
+                            .commit()
+                    }
+                }
+            }
+        })
         binding.mapPlaceRV.apply {
             adapter = mapPlaceRVAdapter
             layoutManager = LinearLayoutManager(context)
-        }
-    }
-
-    private fun fetchPlacesFromApi(page: Int) {
-        val map = googleMap ?: return
-        if (isLoading) return
-        isLoading = true
-
-        lifecycleScope.launch {
-            try {
-                val location = map.cameraPosition.target
-                fetchPlacesFromApiByLatLng(location, page)
-            } finally {
-                isLoading = false
-            }
         }
     }
 
@@ -564,7 +739,7 @@ class MapFragment : Fragment(), OnMapReadyCallback {
         } else {
             val seoul = LatLng(37.5664056, 126.9778222)
             map.moveCamera(CameraUpdateFactory.newLatLngZoom(seoul, 14f))
-            fetchPlacesFromApiByLatLng(seoul)
+            resetAndLoadPlaces(seoul)
         }
     }
 
@@ -574,5 +749,13 @@ class MapFragment : Fragment(), OnMapReadyCallback {
         _binding = null
         googleMap = null
         clearMapMarkers()
+    }
+
+    override fun onStop() {
+        super.onStop()
+        // 프래그먼트가 중지될 때 로딩 다이얼로그가 보여지고 있다면 닫아줍니다.
+        if (::loadingDialog.isInitialized && loadingDialog.isDialogShowing) {
+            loadingDialog.dismiss()
+        }
     }
 }
