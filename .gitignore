@@ -1,35 +1,26 @@
-# Gradle
-.gradle/
-build/
-.cxx/
-.externalNativeBuild/
-
-# Android Studio
-.idea/
-.idea/caches/
-.idea/libraries/
-.idea/modules.xml
-.idea/workspace.xml
-.idea/navEditor.xml
-.idea/assetWizardSettings.xml
+*.iml
+.gradle
+/local.properties
+/.idea/caches
+/.idea/libraries
+/.idea/modules.xml
+/.idea/workspace.xml
+/.idea/navEditor.xml
+/.idea/assetWizardSettings.xml
+.DS_Store
+/build
+/captures
+.externalNativeBuild
+.cxx
+local.properties
+app/.idea/runConfigurations.xml
+app/.idea/misc.xml
+app/.idea/gradle.xml
+app/.idea/caches/deviceStreaming.xml
+app/.idea/AndroidProjectSystem.xml
 .idea/vcs.xml
 .idea/misc.xml
 .idea/migrations.xml
 .idea/kotlinc.xml
 .idea/gradle.xml
 .idea/deploymentTargetSelector.xml
-app/.idea/runConfigurations.xml
-app/.idea/misc.xml
-app/.idea/gradle.xml
-app/.idea/caches/deviceStreaming.xml
-app/.idea/AndroidProjectSystem.xml
-
-# Kotlin/Java
-*.iml
-local.properties
-
-# macOS
-.DS_Store
-
-# 기타
-captures/
