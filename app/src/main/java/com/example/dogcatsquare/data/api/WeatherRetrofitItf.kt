@@ -6,6 +6,6 @@ import retrofit2.http.GET
 import retrofit2.http.Header
 
 interface WeatherRetrofitItf {
-    @GET("api/home/dday")
+    @GET("api/weather/current")
     fun getWeather(@Header("Authorization") token: String): Call<WeatherResponse>
 }
