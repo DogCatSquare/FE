@@ -26,7 +26,6 @@ class SearchResultFragment : Fragment() {
     private var _binding: FragmentSearchResultBinding? = null
     private val binding get() = _binding!!
 
-    // 어댑터가 데이터를 직접 관리하므로, 이 리스트는 더 이상 어댑터에 전달할 필요가 없습니다.
     private val placeDatas = ArrayList<MapPlace>()
     private lateinit var mapPlaceRVAdapter: MapPlaceRVAdapter
     private var searchQuery: String? = null
@@ -92,13 +91,11 @@ class SearchResultFragment : Fragment() {
     }
 
     private fun setupRecyclerView() {
-        // 1. MapPlaceRVAdapter 생성자 수정: 리스트를 전달하지 않고, 클릭 리스너만 전달합니다.
-        mapPlaceRVAdapter = MapPlaceRVAdapter(object : MapPlaceRVAdapter.OnItemClickListener {
+        mapPlaceRVAdapter = MapPlaceRVAdapter(placeDatas, object : MapPlaceRVAdapter.OnItemClickListener {
             override fun onItemClick(place: MapPlace) {
-                // 2. placeType 비교 값 수정: "HOSPITAL", "PARK" 대신 변환된 값인 "동물병원", "산책로"와 비교합니다.
                 when (place.placeType) {
-                    "동물병원" -> navigateToDetailFragment(place.id)
-                    "산책로" -> navigateToFragment(WalkingStartViewFragment())
+                    "HOSPITAL" -> navigateToDetailFragment(place.id)
+                    "PARK" -> navigateToFragment(WalkingStartViewFragment())
                     else -> navigateToDetailFragment(place.id)
                 }
             }
@@ -201,14 +198,13 @@ class SearchResultFragment : Fragment() {
     private fun updateRecyclerView(newPlaces: List<MapPlace>) {
         placeDatas.clear()
         placeDatas.addAll(newPlaces)
-        // 3. 어댑터의 submitList 메서드를 사용하여 데이터 갱신
-        mapPlaceRVAdapter.submitList(placeDatas)
+        mapPlaceRVAdapter.notifyDataSetChanged()
     }
 
     private fun appendToRecyclerView(newPlaces: List<MapPlace>) {
+        val startPos = placeDatas.size
         placeDatas.addAll(newPlaces)
-        // 3. 어댑터의 submitList 메서드를 사용하여 데이터 갱신
-        mapPlaceRVAdapter.submitList(placeDatas)
+        mapPlaceRVAdapter.notifyItemRangeInserted(startPos, newPlaces.size)
     }
 
     private fun navigateToDetailFragment(placeId: Int) {
@@ -257,8 +253,7 @@ class SearchResultFragment : Fragment() {
         isLastPage = false
         isLoading = false
         placeDatas.clear()
-        // 3. 어댑터의 submitList 메서드를 사용하여 데이터 갱신
-        mapPlaceRVAdapter.submitList(placeDatas)
+        mapPlaceRVAdapter.notifyDataSetChanged()
     }
 
     override fun onDestroyView() {
