@@ -35,12 +35,9 @@ enum class PlaceType(val value: String, @DrawableRes val defaultImage: Int) {
 }
 
 class MapPlaceRVAdapter(
-    // 생성자에서 리스트를 받지 않고, 클릭 리스너만 받도록 수정
+    private val placeList: ArrayList<MapPlace>,
     private val listener: OnItemClickListener? = null
 ): RecyclerView.Adapter<MapPlaceRVAdapter.ViewHolder>() {
-
-    // 어댑터가 직접 데이터 리스트를 관리하도록 변경
-    private val placeList = mutableListOf<MapPlace>()
 
     interface OnItemClickListener {
         fun onItemClick(place: MapPlace)
@@ -61,8 +58,7 @@ class MapPlaceRVAdapter(
 
     override fun getItemCount(): Int = placeList.size
 
-    // Fragment에서 호출할 데이터 업데이트 메서드
-    fun submitList(newList: List<MapPlace>) {
+    fun updateList(newList: List<MapPlace>) {
         placeList.clear()
         placeList.addAll(newList)
         Log.d("MapPlaceRVAdapter", "리스트 업데이트: ${placeList.size}개 항목")
