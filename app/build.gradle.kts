@@ -1,10 +1,9 @@
-import com.android.build.api.dsl.Packaging
-
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     id("kotlin-parcelize")
-    id("kotlin-kapt")
+    alias(libs.plugins.ksp)           // ← alias 사용
+    alias(libs.plugins.hilt)
 }
 
 android {
@@ -34,18 +33,21 @@ android {
             )
         }
     }
+
+    // ✅ Java/Kotlin 17로 통일 (AGP 8.6 + Kotlin 2.0.x 권장)
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_1_8
-        targetCompatibility = JavaVersion.VERSION_1_8
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
     }
     kotlinOptions {
-        jvmTarget = "1.8"
+        jvmTarget = "17"
     }
-    viewBinding {
-        enable = true
-    }
-    dataBinding {
-        enable = true
+
+    // ✅ buildFeatures에서 한 번에 켜기
+    buildFeatures {
+        viewBinding = true
+        dataBinding = true
+        buildConfig = true
     }
 
     packaging {
@@ -61,81 +63,63 @@ android {
             excludes += ("/META-INF/*.kotlin_module")
         }
     }
-
-    buildFeatures {
-        buildConfig = true
-    }
-
 }
 
 dependencies {
-
+    // --- 기본 ---
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
     implementation(libs.material)
     implementation(libs.androidx.activity)
     implementation(libs.androidx.constraintlayout)
     implementation(libs.play.services.maps)
-    implementation(libs.firebase.appdistribution.gradle)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
 
-    // 네이버 지도 SDK
+    // Kotlin BOM으로 stdlib/reflect 버전 강제 정렬 → 2.0.20
+    implementation(platform("org.jetbrains.kotlin:kotlin-bom:2.0.20"))
+
+    // --- 네이버 지도 SDK ---
     implementation("com.naver.maps:map-sdk:3.20.0")
 
-    //viewModel
+    // --- Lifecycle (버전 중복 제거: 2.8.7로 통일) ---
+    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.8.7")
     implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.8.7")
     implementation("androidx.lifecycle:lifecycle-livedata-ktx:2.8.7")
-
-    // room
-    implementation(libs.androidx.room.runtime)
-    implementation(libs.androidx.room.ktx)
-    kapt(libs.androidx.room.compiler)
-
-    // json <-> 객체 변환하기 위해 사용
-    implementation(libs.gson)
-
-    //retrofit 네트워크 라이브러리 관련
-    implementation(libs.converter.gson)
-    implementation(libs.retrofit)
-
-    // material design
-    implementation (libs.material.v190)
-
-    // Glide
-    implementation (libs.glide)
-    annotationProcessor (libs.compiler)
-    
-    implementation("com.google.android.gms:play-services-location:21.0.1")
-
-    implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.6.2")
-    implementation("androidx.lifecycle:lifecycle-livedata-ktx:2.6.2")
     implementation("androidx.fragment:fragment-ktx:1.6.2")
 
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.6.4")
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4")
-    implementation("com.jakewharton.retrofit:retrofit2-kotlin-coroutines-adapter:0.9.2")
-    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.6.1")
-    implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.6.1")
+    // --- Coroutines (Kotlin 2.0.x 호환) ---
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.8.1")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.8.1")
 
-    // retrofit
+    // --- Retrofit / OkHttp (중복/구버전 제거, BOM 사용) ---
     implementation("com.squareup.retrofit2:retrofit:2.9.0")
     implementation("com.squareup.retrofit2:converter-gson:2.9.0")
-    implementation ("com.squareup.okhttp3:okhttp:4.9.3")
-    implementation ("com.squareup.okhttp3:logging-interceptor:4.9.3")
 
-    implementation("com.google.android.flexbox:flexbox:3.0.0")
-
-    // OkHttp
-    implementation(platform("com.squareup.okhttp3:okhttp-bom:4.10.0"))
+    implementation(platform("com.squareup.okhttp3:okhttp-bom:4.12.0"))
     implementation("com.squareup.okhttp3:okhttp")
     implementation("com.squareup.okhttp3:logging-interceptor")
+    implementation("com.jakewharton.retrofit:retrofit2-kotlin-coroutines-adapter:0.9.2")
 
-    // DataStore
+    // --- Gson ---
+    implementation(libs.gson)
+
+    // --- Glide ---
+    implementation(libs.glide)
+    annotationProcessor(libs.compiler) // Glide 컴파일러는 annotationProcessor 유지
+
+    // --- 위치/플렉스박스/Datastore ---
+    implementation("com.google.android.gms:play-services-location:21.0.1")
+    implementation("com.google.android.flexbox:flexbox:3.0.0")
     implementation("androidx.datastore:datastore-preferences:1.0.0")
 
-    // Hilt
-    implementation("com.google.dagger:hilt-android:2.44")
-    kapt("com.google.dagger:hilt-compiler:2.44")
+    // --- Room (KSP로 전환) ---
+    implementation("androidx.room:room-runtime:2.7.0-rc01")
+    implementation("androidx.room:room-ktx:2.7.0-rc01")
+    ksp("androidx.room:room-compiler:2.7.0-rc01")
+
+    // --- Hilt (KSP로 전환) ---
+    implementation("com.google.dagger:hilt-android:2.52")
+    ksp("com.google.dagger:hilt-compiler:2.52")
 }
