@@ -46,10 +46,19 @@ class HomeHotPostRVAdapter(private val hotPostList: ArrayList<com.example.dogcat
                 .load(hotPost.profileImage_URL)
                 .placeholder(R.drawable.ic_profile_img_default)
                 .into(binding.postProfileIv)
-            Glide.with(itemView.context)
-                .load(hotPost.images?.first())
-                .placeholder(R.drawable.ic_profile_default)
-                .into(binding.imageView11)
+
+            // 썸넬 이미지 null 수정
+            val imageUrl = hotPost.images?.firstOrNull()
+
+            if (imageUrl != null) {
+                Glide.with(itemView.context)
+                    .load(imageUrl)
+                    .into(binding.imageView11)
+            } else {
+                Glide.with(itemView.context)
+                    .load(R.drawable.ic_profile_default)
+                    .into(binding.imageView11)
+            }
 
         }
     }
