@@ -34,15 +34,15 @@
             android:orientation="vertical"
             app:layout_constraintGuide_percent="0.8" />
 
-        <com.naver.maps.map.MapView
-            android:id="@+id/mapView"
+        <fragment
+            android:id="@+id/mapFragment"
+            android:name="com.google.android.gms.maps.SupportMapFragment"
             android:layout_width="0dp"
             android:layout_height="0dp"
-            android:alpha="1.0"
+            app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+            app:layout_constraintEnd_toEndOf="parent"/>
 
         <ImageView
             android:id="@+id/researchButton"
@@ -53,7 +53,6 @@
             app:layout_constraintEnd_toStartOf="@+id/guideline_end"
             app:srcCompat="@drawable/btn_research" />
 
-        <!-- 흰색 배경 뷰 추가 (초기에 완전 투명) -->
         <View
             android:id="@+id/whiteBackgroundOverlay"
             android:layout_width="0dp"
@@ -118,7 +117,6 @@
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 
-    <!-- BottomSheet을 CoordinatorLayout의 직접적인 자식으로 이동 -->
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/bottomSheet"
         android:layout_width="match_parent"

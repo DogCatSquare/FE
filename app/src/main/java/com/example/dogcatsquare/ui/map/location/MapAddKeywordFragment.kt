@@ -221,7 +221,7 @@ class MapAddKeywordFragment : Fragment() {
 
                         val mapFragment = requireActivity().supportFragmentManager.fragments
                             .find { it is MapFragment } as? MapFragment
-                        mapFragment?.shouldRefresh = true
+//                        mapFragment?.shouldRefresh = true
 
                         requireActivity().supportFragmentManager.popBackStack()
                     } else {
