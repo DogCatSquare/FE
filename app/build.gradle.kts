@@ -110,7 +110,7 @@ dependencies {
     annotationProcessor(libs.compiler) // Glide 컴파일러는 annotationProcessor 유지
 
     // --- 위치/플렉스박스/Datastore ---
-    implementation("com.google.android.gms:play-services-location:21.0.1")
+//    implementation("com.google.android.gms:play-services-location:21.0.1")
     implementation("com.google.android.flexbox:flexbox:3.0.0")
     implementation("androidx.datastore:datastore-preferences:1.0.0")
 
@@ -122,4 +122,8 @@ dependencies {
     // --- Hilt (KSP로 전환) ---
     implementation("com.google.dagger:hilt-android:2.52")
     ksp("com.google.dagger:hilt-compiler:2.52")
+
+    // 구글 지도
+    implementation("com.google.android.gms:play-services-maps:18.2.0")
+    implementation("com.google.android.gms:play-services-location:21.2.0")
 }
