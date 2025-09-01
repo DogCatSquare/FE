@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "36233774803",
+    "project_id": "dogcatsquare-31c8a",
+    "storage_bucket": "dogcatsquare-31c8a.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:36233774803:android:b87ca6319eb51553da3626",
+        "android_client_info": {
+          "package_name": "com.example.dogcatsquare"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDSoiITfQiLLNsXzAxg6aqMg91oqiZPiF4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
