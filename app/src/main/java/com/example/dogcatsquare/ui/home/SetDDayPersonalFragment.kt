@@ -16,6 +16,7 @@ import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.lifecycleScope
 import com.example.dogcatsquare.R
 import com.example.dogcatsquare.data.api.DDayRetrofitItf
 import com.example.dogcatsquare.data.model.home.DDay
@@ -28,6 +29,8 @@ import com.example.dogcatsquare.ui.viewmodel.DDayViewModel
 import com.example.dogcatsquare.utils.AlarmHelper
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.button.MaterialButton
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -107,11 +110,13 @@ class SetDDayPersonalFragment : Fragment() {
             if (isChecked) {
                 // 패드 구매 알람 활성화
                 Toast.makeText(requireContext(), "알람이 설정되었습니다", Toast.LENGTH_SHORT).show()
-                AlarmHelper.setDdayAlarm(requireContext(), DDay(dayId, dayTitle, dayDay, dayTerm, 0, true, "", ""))
+//                AlarmHelper.setDdayAlarm(requireContext(), DDay(dayId, dayTitle, dayDay, dayTerm, 0, true, "", ""))
+//                scheduleDdayPush(dayId, dayTitle, dayDay)
             } else {
                 // 패드 구매 알람 비활성화
                 Toast.makeText(requireContext(), "알람이 해제되었습니다", Toast.LENGTH_SHORT).show()
-                AlarmHelper.cancelDdayAlarm(requireContext(), dayId)
+//                AlarmHelper.cancelDdayAlarm(requireContext(), dayId)
+//                cancelDdayPush(dayId)
             }
         }
 
@@ -306,9 +311,10 @@ class SetDDayPersonalFragment : Fragment() {
 
                             // ✅ 사용자가 설정한 isAlarm 값에 따라 알람 설정 또는 취소
                             if (isAlarm) {
-                                AlarmHelper.setDdayAlarm(requireContext(), DDay(id, dayTitle, day, term, 0, true, "", ""))
+//                                AlarmHelper.setDdayAlarm(requireContext(), DDay(id, dayTitle, day, term, 0, true, "", ""))
+//                                scheduleDdayPush(id, dayTitle, day)
                             } else {
-                                AlarmHelper.cancelDdayAlarm(requireContext(), id)
+//                                cancelDdayPush(dayId)
                             }
                         } else {
                             Log.e(
@@ -345,7 +351,8 @@ class SetDDayPersonalFragment : Fragment() {
                             parentFragmentManager.popBackStack()
 
                             // ✅ 디데이가 삭제되었으므로 알람 취소
-                            AlarmHelper.cancelDdayAlarm(requireContext(), id)
+//                            AlarmHelper.cancelDdayAlarm(requireContext(), id)
+//                            cancelDdayPush(id)
                         } else {
                             Log.e("DeleteDay/FAILURE", "응답 코드: ${resp.code}, 응답 메시지: ${resp.message}")
                             Toast.makeText(context, "오류가 발생했습니다", Toast.LENGTH_SHORT).show()
@@ -360,4 +367,58 @@ class SetDDayPersonalFragment : Fragment() {
 
         })
     }
+
+//    // Retrofit API (앱)
+//    interface PushApi {
+//        @POST("/push/schedule")
+//        suspend fun schedule(
+//            @Header("Authorization") bearer: String,
+//            @Body body: SchedulePushReq
+//        ): Response<SchedulePushRes>
+//
+//        @HTTP(method = "DELETE", path = "/push/schedule", hasBody = true)
+//        suspend fun cancel(
+//            @Header("Authorization") bearer: String,
+//            @Body body: CancelPushReq
+//        ): Response<Unit>
+//    }
+//
+//    data class SchedulePushReq(
+//        val ddayId: Int,
+//        val title: String,
+//        val date: String,          // "yyyy-MM-dd"
+//        val time: String = "09:00",
+//        val timezone: String = "Asia/Seoul",
+//        val token: String? = null  // ← 최신 FCM 토큰을 함께 줄 수도 있음
+//    )
+//
+//    data class SchedulePushRes(val taskId: String)
+//    data class CancelPushReq(val ddayId: Int)
+
+//    private fun scheduleDdayPush(ddayId: Int, title: String, day: String) {
+//        val token = getToken() ?: return
+//        val api = RetrofitObj.getRetrofit(requireContext()).create(PushApi::class.java)
+//        lifecycleScope.launch(Dispatchers.IO) {
+//            try {
+//                val res = api.schedule("Bearer $token", SchedulePushReq(ddayId, title, day))
+//                Log.d("PUSH/SCHEDULE", "ok: ${res.body()?.taskId}")
+//            } catch (e: Exception) {
+//                Log.e("PUSH/SCHEDULE", "failed: ${e.message}")
+//            }
+//        }
+//    }
+//
+//    private fun cancelDdayPush(ddayId: Int) {
+//        val token = getToken() ?: return
+//        val api = RetrofitObj.getRetrofit(requireContext()).create(PushApi::class.java)
+//        lifecycleScope.launch(Dispatchers.IO) {
+//            try {
+//                api.cancel("Bearer $token", CancelPushReq(ddayId))
+//                Log.d("PUSH/CANCEL", "ok")
+//            } catch (e: Exception) {
+//                Log.e("PUSH/CANCEL", "failed: ${e.message}")
+//            }
+//        }
+//    }
+
 }

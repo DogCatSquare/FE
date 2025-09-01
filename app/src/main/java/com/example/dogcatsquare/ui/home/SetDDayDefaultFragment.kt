@@ -109,11 +109,13 @@ class SetDDayDefaultFragment : Fragment() {
             if (isChecked) {
                 // 패드 구매 알람 활성화
                 Toast.makeText(requireContext(), "알람이 설정되었습니다", Toast.LENGTH_SHORT).show()
-                AlarmHelper.setDdayAlarm(requireContext(), DDay(dayId, dayTitle, dayDay, dayTerm, 0, true, "", ""))
+//                AlarmHelper.setDdayAlarm(requireContext(), DDay(dayId, dayTitle, dayDay, dayTerm, 0, true, "", ""))
+//                scheduleDdayPush(dayId, dayTitle, dayDay)
             } else {
                 // 패드 구매 알람 비활성화
                 Toast.makeText(requireContext(), "알람이 해제되었습니다", Toast.LENGTH_SHORT).show()
-                AlarmHelper.cancelDdayAlarm(requireContext(), dayId)
+//                AlarmHelper.cancelDdayAlarm(requireContext(), dayId)
+//                cancelDdayPush(dayId)
             }
         }
 
@@ -312,11 +314,13 @@ class SetDDayDefaultFragment : Fragment() {
             if (isChecked) {
                 // 패드 구매 알람 활성화
                 Toast.makeText(requireContext(), "알람이 설정되었습니다", Toast.LENGTH_SHORT).show()
-                AlarmHelper.setDdayAlarm(requireContext(), DDay(dayId, dayTitle, dayDay, dayTerm, 0, true, "", ""))
+//                AlarmHelper.setDdayAlarm(requireContext(), DDay(dayId, dayTitle, dayDay, dayTerm, 0, true, "", ""))
+//                scheduleDdayPush(dayId, dayTitle, dayDay)
             } else {
                 // 패드 구매 알람 비활성화
                 Toast.makeText(requireContext(), "알람이 해제되었습니다", Toast.LENGTH_SHORT).show()
-                AlarmHelper.cancelDdayAlarm(requireContext(), dayId)
+//                AlarmHelper.cancelDdayAlarm(requireContext(), dayId)
+//                cancelDdayPush(dayId)
             }
         }
     }
@@ -343,9 +347,11 @@ class SetDDayDefaultFragment : Fragment() {
 
                             // ✅ 사용자가 설정한 isAlarm 값에 따라 알람 설정 또는 취소
                             if (isAlarm) {
-                                AlarmHelper.setDdayAlarm(requireContext(), DDay(id, dayTitle, day, term, 0, true, "", ""))
+//                                AlarmHelper.setDdayAlarm(requireContext(), DDay(id, dayTitle, day, term, 0, true, "", ""))
+//                                scheduleDdayPush(dayId, dayTitle, dayDay)
                             } else {
-                                AlarmHelper.cancelDdayAlarm(requireContext(), id)
+//                                AlarmHelper.cancelDdayAlarm(requireContext(), id)
+//                                cancelDdayPush(dayId)
                             }
                         } else {
                             Log.e(
@@ -364,4 +370,30 @@ class SetDDayDefaultFragment : Fragment() {
 
         })
     }
+
+    //    private fun scheduleDdayPush(ddayId: Int, title: String, day: String) {
+//        val token = getToken() ?: return
+//        val api = RetrofitObj.getRetrofit(requireContext()).create(PushApi::class.java)
+//        lifecycleScope.launch(Dispatchers.IO) {
+//            try {
+//                val res = api.schedule("Bearer $token", SchedulePushReq(ddayId, title, day))
+//                Log.d("PUSH/SCHEDULE", "ok: ${res.body()?.taskId}")
+//            } catch (e: Exception) {
+//                Log.e("PUSH/SCHEDULE", "failed: ${e.message}")
+//            }
+//        }
+//    }
+//
+//    private fun cancelDdayPush(ddayId: Int) {
+//        val token = getToken() ?: return
+//        val api = RetrofitObj.getRetrofit(requireContext()).create(PushApi::class.java)
+//        lifecycleScope.launch(Dispatchers.IO) {
+//            try {
+//                api.cancel("Bearer $token", CancelPushReq(ddayId))
+//                Log.d("PUSH/CANCEL", "ok")
+//            } catch (e: Exception) {
+//                Log.e("PUSH/CANCEL", "failed: ${e.message}")
+//            }
+//        }
+//    }
 }
