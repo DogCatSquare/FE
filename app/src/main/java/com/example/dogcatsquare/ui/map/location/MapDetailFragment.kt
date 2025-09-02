@@ -158,35 +158,28 @@ class MapDetailFragment : Fragment(), OnMapReadyCallback {
                             direction.setOnClickListener {
                                 val latitude = placeDetail.latitude
                                 val longitude = placeDetail.longitude
-                                val address = placeLocationFull.text.toString()
 
-                                try {
-                                    // 네이버 지도 앱으로 길찾기 실행
-                                    val intent = Intent(Intent.ACTION_VIEW).apply {
-                                        // 위도/경도 정보가 있는 경우 좌표로 이동, 없는 경우 주소로 검색
-                                        data = if (latitude != null && longitude != null) {
-                                            Uri.parse("nmap://place?lat=$latitude&lng=$longitude&name=${Uri.encode(address)}&appname=${requireContext().packageName}")
-                                        } else {
-                                            Uri.parse("nmap://search?query=${Uri.encode(address)}&appname=${requireContext().packageName}")
-                                        }
-                                        setPackage("com.nhn.android.nmap")
-                                    }
+                                if (latitude != null && longitude != null) {
+                                    // 구글 지도 앱을 열기 위한 Uri 생성
+                                    val gmmIntentUri = Uri.parse("google.navigation:q=$latitude,$longitude")
+                                    val mapIntent = Intent(Intent.ACTION_VIEW, gmmIntentUri)
+                                    mapIntent.setPackage("com.google.android.apps.maps")
 
-                                    startActivity(intent)
-                                } catch (e: Exception) {
                                     try {
-                                        // 웹 브라우저에서 네이버 지도 열기
-                                        val webIntent = Intent(Intent.ACTION_VIEW).apply {
-                                            data = if (latitude != null && longitude != null) {
-                                                Uri.parse("https://map.naver.com/v5/?c=$longitude,$latitude,15,0,0,0,dh")
-                                            } else {
-                                                Uri.parse("https://map.naver.com/v5/search/${Uri.encode(address)}")
-                                            }
-                                        }
-                                        startActivity(webIntent)
+                                        // 구글 지도 앱이 설치되어 있으면 실행
+                                        startActivity(mapIntent)
                                     } catch (e: Exception) {
-                                        Toast.makeText(requireContext(), "지도를 열 수 없습니다.", Toast.LENGTH_SHORT).show()
+                                        // 구글 지도 앱이 없으면 웹 브라우저로 지도 열기
+                                        try {
+                                            val webIntent = Intent(Intent.ACTION_VIEW,
+                                                Uri.parse("https://www.google.com/maps/dir/?api=1&destination=$latitude,$longitude"))
+                                            startActivity(webIntent)
+                                        } catch (e: Exception) {
+                                            Toast.makeText(requireContext(), "지도를 열 수 없습니다.", Toast.LENGTH_SHORT).show()
+                                        }
                                     }
+                                } else {
+                                    Toast.makeText(requireContext(), "위치 정보가 없어 길찾기를 실행할 수 없습니다.", Toast.LENGTH_SHORT).show()
                                 }
                             }
                             placeDistance.text = "${String.format("%.2f", placeDetail.distance)}km"
