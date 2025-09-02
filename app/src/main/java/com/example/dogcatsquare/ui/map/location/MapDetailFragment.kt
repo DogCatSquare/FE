@@ -1,11 +1,13 @@
 package com.example.dogcatsquare.ui.map.location
 
+import android.content.ClipData
+import android.content.ClipboardManager
+import android.content.Context
 import android.content.Intent
 import android.graphics.Color
 import android.net.Uri
 import android.os.Bundle
 import android.util.Log
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -14,34 +16,30 @@ import android.widget.Toast
 import androidx.cardview.widget.CardView
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.constraintlayout.widget.ConstraintSet
+import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.example.dogcatsquare.R
 import com.example.dogcatsquare.data.model.map.DetailImg
 import com.example.dogcatsquare.data.model.map.MapPrice
 import com.example.dogcatsquare.data.model.map.MapReview
-import com.example.dogcatsquare.R
-import com.example.dogcatsquare.data.network.RetrofitClient
-import com.example.dogcatsquare.ui.map.SearchFragment
-import com.google.android.material.bottomsheet.BottomSheetDialog
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 import com.example.dogcatsquare.data.model.map.PlaceDetailRequest
+import com.example.dogcatsquare.data.network.RetrofitClient
 import com.example.dogcatsquare.databinding.FragmentMapDetailBinding
+import com.example.dogcatsquare.ui.map.SearchFragment
 import com.google.android.flexbox.FlexboxLayout
-import com.naver.maps.geometry.LatLng
-import com.naver.maps.map.*
-import com.naver.maps.map.overlay.Marker
-import com.naver.maps.map.overlay.OverlayImage
-import java.util.Calendar
-import java.util.TimeZone
-import com.naver.maps.map.MapFragment
-import com.naver.maps.map.OnMapReadyCallback
-import com.naver.maps.map.NaverMap
-import android.content.ClipData
-import android.content.ClipboardManager
-import android.content.Context
-
+import com.google.android.gms.maps.CameraUpdateFactory
+import com.google.android.gms.maps.GoogleMap
+import com.google.android.gms.maps.OnMapReadyCallback
+import com.google.android.gms.maps.SupportMapFragment
+import com.google.android.gms.maps.model.LatLng
+import com.google.android.gms.maps.model.Marker
+import com.google.android.gms.maps.model.MarkerOptions
+import com.google.android.material.bottomsheet.BottomSheetDialog
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import java.util.*
 
 class MapDetailFragment : Fragment(), OnMapReadyCallback {
     private var _binding: FragmentMapDetailBinding? = null
@@ -51,7 +49,7 @@ class MapDetailFragment : Fragment(), OnMapReadyCallback {
     private val priceDatas by lazy { ArrayList<MapPrice>() }
     private val reviewDatas by lazy { ArrayList<MapReview>() }
 
-    private lateinit var naverMap: NaverMap
+    private lateinit var googleMap: GoogleMap
     private var placeLatitude: Double = 0.0
     private var placeLongitude: Double = 0.0
     private var currentMarker: Marker? = null
@@ -79,7 +77,7 @@ class MapDetailFragment : Fragment(), OnMapReadyCallback {
         setupBackButton()
         setupRecyclerView()
         setupAddReviewButton()
-        setupNaverMap()
+        setupGoogleMap()
 
         binding.filter.setOnClickListener {
             showSearchOptions()
@@ -160,35 +158,28 @@ class MapDetailFragment : Fragment(), OnMapReadyCallback {
                             direction.setOnClickListener {
                                 val latitude = placeDetail.latitude
                                 val longitude = placeDetail.longitude
-                                val address = placeLocationFull.text.toString()
 
-                                try {
-                                    // 네이버 지도 앱으로 길찾기 실행
-                                    val intent = Intent(Intent.ACTION_VIEW).apply {
-                                        // 위도/경도 정보가 있는 경우 좌표로 이동, 없는 경우 주소로 검색
-                                        data = if (latitude != null && longitude != null) {
-                                            Uri.parse("nmap://place?lat=$latitude&lng=$longitude&name=${Uri.encode(address)}&appname=${requireContext().packageName}")
-                                        } else {
-                                            Uri.parse("nmap://search?query=${Uri.encode(address)}&appname=${requireContext().packageName}")
-                                        }
-                                        setPackage("com.nhn.android.nmap")
-                                    }
+                                if (latitude != null && longitude != null) {
+                                    // 구글 지도 앱을 열기 위한 Uri 생성
+                                    val gmmIntentUri = Uri.parse("google.navigation:q=$latitude,$longitude")
+                                    val mapIntent = Intent(Intent.ACTION_VIEW, gmmIntentUri)
+                                    mapIntent.setPackage("com.google.android.apps.maps")
 
-                                    startActivity(intent)
-                                } catch (e: Exception) {
                                     try {
-                                        // 웹 브라우저에서 네이버 지도 열기
-                                        val webIntent = Intent(Intent.ACTION_VIEW).apply {
-                                            data = if (latitude != null && longitude != null) {
-                                                Uri.parse("https://map.naver.com/v5/?c=$longitude,$latitude,15,0,0,0,dh")
-                                            } else {
-                                                Uri.parse("https://map.naver.com/v5/search/${Uri.encode(address)}")
-                                            }
-                                        }
-                                        startActivity(webIntent)
+                                        // 구글 지도 앱이 설치되어 있으면 실행
+                                        startActivity(mapIntent)
                                     } catch (e: Exception) {
-                                        Toast.makeText(requireContext(), "지도를 열 수 없습니다.", Toast.LENGTH_SHORT).show()
+                                        // 구글 지도 앱이 없으면 웹 브라우저로 지도 열기
+                                        try {
+                                            val webIntent = Intent(Intent.ACTION_VIEW,
+                                                Uri.parse("https://www.google.com/maps/dir/?api=1&destination=$latitude,$longitude"))
+                                            startActivity(webIntent)
+                                        } catch (e: Exception) {
+                                            Toast.makeText(requireContext(), "지도를 열 수 없습니다.", Toast.LENGTH_SHORT).show()
+                                        }
                                     }
+                                } else {
+                                    Toast.makeText(requireContext(), "위치 정보가 없어 길찾기를 실행할 수 없습니다.", Toast.LENGTH_SHORT).show()
                                 }
                             }
                             placeDistance.text = "${String.format("%.2f", placeDetail.distance)}km"
@@ -310,7 +301,7 @@ class MapDetailFragment : Fragment(), OnMapReadyCallback {
                             updateReviews(placeDetail.recentReviews)
 
                             // 지도 위치 업데이트
-                            if (::naverMap.isInitialized) {
+                            if (::googleMap.isInitialized) {
                                 updateMapLocation(placeDetail.latitude, placeDetail.longitude)
                             }
                         }
@@ -479,21 +470,17 @@ class MapDetailFragment : Fragment(), OnMapReadyCallback {
         }
     }
 
-    private fun setupNaverMap() {
-        val fm = childFragmentManager
-        val mapFragment = fm.findFragmentById(R.id.mapView2) as MapFragment?
-            ?: MapFragment.newInstance().also {
-                fm.beginTransaction().add(R.id.mapView2, it).commit()
-            }
-
+    private fun setupGoogleMap() {
+        val mapFragment =
+            childFragmentManager.findFragmentById(R.id.mapView2) as SupportMapFragment
         mapFragment.getMapAsync(this)
     }
 
-    override fun onMapReady(map: NaverMap) {
-        naverMap = map
+    override fun onMapReady(map: GoogleMap) {
+        googleMap = map
 
-        naverMap.uiSettings.apply {
-            isZoomControlEnabled = false
+        googleMap.uiSettings.apply {
+            isZoomControlsEnabled = false
             isScrollGesturesEnabled = false
             isRotateGesturesEnabled = false
             isTiltGesturesEnabled = false
@@ -508,21 +495,23 @@ class MapDetailFragment : Fragment(), OnMapReadyCallback {
 
     private fun updateMapLocation(lat: Double, lng: Double) {
         val location = LatLng(lat, lng)
-        Log.d("MapEtcFragment", "Updating map location to: lat=$lat, lng=$lng")
+        Log.d("MapDetailFragment", "Updating map location to: lat=$lat, lng=$lng")
 
-        currentMarker?.setMap(null)
+        currentMarker?.remove()
 
-        naverMap.moveCamera(CameraUpdate.scrollAndZoomTo(
-            location,
-            15.0
-        ))
+        googleMap.moveCamera(
+            CameraUpdateFactory.newLatLngZoom(
+                location,
+                15.0f
+            )
+        )
 
-        currentMarker = Marker().apply {
-            position = location
-            icon = OverlayImage.fromResource(R.drawable.ic_marker)
-            setMap(naverMap)
-        }
+        currentMarker = googleMap.addMarker(
+            MarkerOptions()
+                .position(location)
+        )
     }
+
 
     private fun updateImages(imageUrls: List<String>?) {
         if (imageUrls.isNullOrEmpty()) {

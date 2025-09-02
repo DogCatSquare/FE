@@ -91,7 +91,7 @@
 
         <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
-            android:layout_height="match_parent">
+            android:layout_height="wrap_content">
 
             <TextView
                 android:id="@+id/additionalInfo"
@@ -416,14 +416,16 @@
                 android:layout_height="150dp"
                 android:layout_marginTop="8dp"
                 app:cardCornerRadius="16dp"
+                app:cardElevation="0dp"
                 app:layout_constraintEnd_toEndOf="@id/guideline2"
                 app:layout_constraintStart_toStartOf="@id/guideline1"
                 app:layout_constraintTop_toBottomOf="@+id/placeLocationFull">
 
-                <com.naver.maps.map.MapView
+                <fragment
                     android:id="@+id/mapView2"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content" />
+                    android:name="com.google.android.gms.maps.SupportMapFragment"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent" />
             </androidx.cardview.widget.CardView>
 
             <ImageView
