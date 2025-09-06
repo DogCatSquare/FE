@@ -4,6 +4,8 @@ import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
 import android.content.Intent
+import android.graphics.Bitmap
+import android.graphics.Canvas
 import android.graphics.Color
 import android.net.Uri
 import android.os.Bundle
@@ -16,6 +18,7 @@ import android.widget.Toast
 import androidx.cardview.widget.CardView
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.constraintlayout.widget.ConstraintSet
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -32,6 +35,7 @@ import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
+import com.google.android.gms.maps.model.BitmapDescriptor
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.Marker
 import com.google.android.gms.maps.model.MarkerOptions
@@ -212,19 +216,48 @@ class MapDetailFragment : Fragment(), OnMapReadyCallback {
                                 placeUrl.setOnClickListener(null)
                             }
 
-                            placeIntro.text = placeDetail.description
-
-                            // additionalInfo 처리
-                            placeDetail.additionalInfo?.let { info ->
-                                binding.additionalInfo.visibility = View.VISIBLE
-                                binding.additionalInfo.text = info
-                            } ?: run {
-                                binding.additionalInfo.visibility = View.GONE
-                                val params = binding.imageView9.layoutParams as ConstraintLayout.LayoutParams
-                                params.topMargin = (32 * resources.displayMetrics.density).toInt()
-                                params.topToBottom = binding.cardView2.id
-                                binding.imageView9.layoutParams = params
+                            fun Int.dpToPx(context: Context): Int {
+                                return (this * context.resources.displayMetrics.density).toInt()
                             }
+
+                            if (placeDetail.description.isNullOrBlank()) {
+                                placeIntro.text = "장소 소개정보가 없어요"
+                                placeIntro.gravity = android.view.Gravity.CENTER
+                                placeIntro.setTextColor(ContextCompat.getColor(requireContext(), R.color.gray4))
+
+                                val verticalPadding = 50.dpToPx(requireContext())
+
+                                placeIntro.setPadding(
+                                    placeIntro.paddingLeft,
+                                    verticalPadding,
+                                    placeIntro.paddingRight,
+                                    verticalPadding
+                                )
+                            } else {
+                                placeIntro.text = placeDetail.description
+                                placeIntro.gravity = android.view.Gravity.START
+                                placeIntro.setTextColor(ContextCompat.getColor(requireContext(), R.color.black))
+
+                                val defaultVerticalPadding = 0.dpToPx(requireContext())
+
+                                placeIntro.setPadding(
+                                    placeIntro.paddingLeft,
+                                    defaultVerticalPadding,
+                                    placeIntro.paddingRight,
+                                    defaultVerticalPadding
+                                )
+                            }
+
+//                            placeDetail.additionalInfo?.let { info ->
+//                                binding.additionalInfo.visibility = View.VISIBLE
+//                                binding.additionalInfo.text = info
+//                            } ?: run {
+//                                binding.additionalInfo.visibility = View.GONE
+//                                val params = binding.imageView9.layoutParams as ConstraintLayout.LayoutParams
+//                                params.topMargin = (32 * resources.displayMetrics.density).toInt()
+//                                params.topToBottom = binding.cardView2.id
+//                                binding.imageView9.layoutParams = params
+//                            }
 
                             // 리뷰 관련 뷰들 항상 표시
                             textView7.visibility = View.VISIBLE
@@ -506,12 +539,23 @@ class MapDetailFragment : Fragment(), OnMapReadyCallback {
             )
         )
 
+        val markerIcon = bitmapDescriptorFromVector(requireContext(), R.drawable.ic_marker)
+
         currentMarker = googleMap.addMarker(
             MarkerOptions()
                 .position(location)
+                .icon(markerIcon)
         )
     }
 
+    private fun bitmapDescriptorFromVector(context: Context, vectorResId: Int): BitmapDescriptor? {
+        val vectorDrawable = ContextCompat.getDrawable(context, vectorResId)
+        vectorDrawable!!.setBounds(0, 0, vectorDrawable.intrinsicWidth, vectorDrawable.intrinsicHeight)
+        val bitmap = Bitmap.createBitmap(vectorDrawable.intrinsicWidth, vectorDrawable.intrinsicHeight, Bitmap.Config.ARGB_8888)
+        val canvas = Canvas(bitmap)
+        vectorDrawable.draw(canvas)
+        return com.google.android.gms.maps.model.BitmapDescriptorFactory.fromBitmap(bitmap)
+    }
 
     private fun updateImages(imageUrls: List<String>?) {
         if (imageUrls.isNullOrEmpty()) {
