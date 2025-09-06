@@ -216,19 +216,48 @@ class MapDetailFragment : Fragment(), OnMapReadyCallback {
                                 placeUrl.setOnClickListener(null)
                             }
 
-                            placeIntro.text = placeDetail.description
-
-                            // additionalInfo 처리
-                            placeDetail.additionalInfo?.let { info ->
-                                binding.additionalInfo.visibility = View.VISIBLE
-                                binding.additionalInfo.text = info
-                            } ?: run {
-                                binding.additionalInfo.visibility = View.GONE
-                                val params = binding.imageView9.layoutParams as ConstraintLayout.LayoutParams
-                                params.topMargin = (32 * resources.displayMetrics.density).toInt()
-                                params.topToBottom = binding.cardView2.id
-                                binding.imageView9.layoutParams = params
+                            fun Int.dpToPx(context: Context): Int {
+                                return (this * context.resources.displayMetrics.density).toInt()
                             }
+
+                            if (placeDetail.description.isNullOrBlank()) {
+                                placeIntro.text = "장소 소개정보가 없어요"
+                                placeIntro.gravity = android.view.Gravity.CENTER
+                                placeIntro.setTextColor(ContextCompat.getColor(requireContext(), R.color.gray4))
+
+                                val verticalPadding = 50.dpToPx(requireContext())
+
+                                placeIntro.setPadding(
+                                    placeIntro.paddingLeft,
+                                    verticalPadding,
+                                    placeIntro.paddingRight,
+                                    verticalPadding
+                                )
+                            } else {
+                                placeIntro.text = placeDetail.description
+                                placeIntro.gravity = android.view.Gravity.START
+                                placeIntro.setTextColor(ContextCompat.getColor(requireContext(), R.color.black))
+
+                                val defaultVerticalPadding = 0.dpToPx(requireContext())
+
+                                placeIntro.setPadding(
+                                    placeIntro.paddingLeft,
+                                    defaultVerticalPadding,
+                                    placeIntro.paddingRight,
+                                    defaultVerticalPadding
+                                )
+                            }
+
+//                            placeDetail.additionalInfo?.let { info ->
+//                                binding.additionalInfo.visibility = View.VISIBLE
+//                                binding.additionalInfo.text = info
+//                            } ?: run {
+//                                binding.additionalInfo.visibility = View.GONE
+//                                val params = binding.imageView9.layoutParams as ConstraintLayout.LayoutParams
+//                                params.topMargin = (32 * resources.displayMetrics.density).toInt()
+//                                params.topToBottom = binding.cardView2.id
+//                                binding.imageView9.layoutParams = params
+//                            }
 
                             // 리뷰 관련 뷰들 항상 표시
                             textView7.visibility = View.VISIBLE
