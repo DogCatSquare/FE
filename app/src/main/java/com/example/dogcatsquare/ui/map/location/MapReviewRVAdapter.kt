@@ -74,10 +74,14 @@ class MapReviewRVAdapter(
         RecyclerView.ViewHolder(binding.root) {
 
         fun bind(review: MapReview) {
+            val context = binding.reviewProfileImg.context
+            val imageSize = (32 * context.resources.displayMetrics.density).toInt()
+
             // 프로필 이미지 설정
             if (!review.userImageUrl.isNullOrEmpty()) {
                 Glide.with(itemView.context)
                     .load(review.userImageUrl)
+                    .override(imageSize, imageSize)
                     .fallback(R.drawable.ic_profile_img_default)
                     .error(R.drawable.ic_profile_img_default)
                     .circleCrop()
@@ -94,8 +98,12 @@ class MapReviewRVAdapter(
 
             // 단일 이미지 설정
             if (!review.placeReviewImageUrl.isNullOrEmpty()) {
+                val context = binding.reviewProfileImg.context
+                val imageSize = (70 * context.resources.displayMetrics.density).toInt()
+
                 Glide.with(itemView.context)
                     .load(review.placeReviewImageUrl.first())
+                    .override(imageSize, imageSize)
                     .fallback(R.drawable.ic_place_img_default)
                     .error(R.drawable.ic_place_img_default)
                     .centerCrop()

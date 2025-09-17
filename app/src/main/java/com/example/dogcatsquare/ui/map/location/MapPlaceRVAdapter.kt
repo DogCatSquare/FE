@@ -77,6 +77,9 @@ class MapPlaceRVAdapter(
             binding.placeLocation.text = place.placeLocation
             binding.placeCall.text = place.placeCall
 
+            val context = binding.root.context
+            val imageSize = (90 * context.resources.displayMetrics.density).toInt()
+
             // 카테고리별 기본 이미지 설정
             val defaultImageRes = PlaceType.fromString(place.placeType).defaultImage
 
@@ -84,7 +87,7 @@ class MapPlaceRVAdapter(
             if (place.placeImgUrl != null) {
                 Glide.with(binding.placeImg.context)
                     .load(place.placeImgUrl)
-                    .override(300, 300)
+                    .override(imageSize, imageSize)
                     .transform(
                         MultiTransformation(
                             CenterCrop(),

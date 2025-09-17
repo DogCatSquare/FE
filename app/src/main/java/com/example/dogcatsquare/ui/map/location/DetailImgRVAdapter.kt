@@ -36,8 +36,12 @@ class DetailImgRVAdapter(private val imgList: List<DetailImg>) :
         private fun loadImageUrl(url: String) {
             Log.d(TAG, "이미지 URL 로딩 시작: $url")
 
+            val context = binding.root.context
+            val imageSize = (110 * context.resources.displayMetrics.density).toInt()
+
             Glide.with(binding.root.context)
                 .load(url)
+                .override(imageSize, imageSize)
                 .diskCacheStrategy(DiskCacheStrategy.ALL)
                 .placeholder(R.drawable.ic_place_img_default)
                 .error(R.drawable.ic_place_img_default)
