@@ -81,6 +81,7 @@ class MapReviewRVAdapter(
             if (!review.userImageUrl.isNullOrEmpty()) {
                 Glide.with(itemView.context)
                     .load(review.userImageUrl)
+                    .placeholder(R.drawable.ic_profile_img_default)
                     .override(imageSize, imageSize)
                     .fallback(R.drawable.ic_profile_img_default)
                     .error(R.drawable.ic_profile_img_default)
@@ -103,6 +104,7 @@ class MapReviewRVAdapter(
 
                 Glide.with(itemView.context)
                     .load(review.placeReviewImageUrl.first())
+                    .placeholder(R.drawable.ic_place_img_default)
                     .override(imageSize, imageSize)
                     .fallback(R.drawable.ic_place_img_default)
                     .error(R.drawable.ic_place_img_default)
