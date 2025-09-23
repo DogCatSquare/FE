@@ -41,6 +41,8 @@ class LoadingDialog(private val context: Context) {
 
             // 배경을 반투명하게 설정
             binding.root.setBackgroundColor(Color.parseColor("#99000000")) // 반투명 배경
+
+            binding.root.isClickable = true
         }
 
         // 이미 부모 뷰가 있다면 제거
