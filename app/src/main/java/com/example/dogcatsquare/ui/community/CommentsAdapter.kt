@@ -1,5 +1,6 @@
 package com.example.dogcatsquare.ui.community
 
+import android.content.Context
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -43,22 +44,26 @@ class CommentsAdapter(
             .load(comment.profileImageUrl)
             .into(holder.ivProfile)
 
-    // ✅ 대댓글을 `List<Comment>`에서 `List<Reply>`로 변환하여 사용
-        val repliesList = comments.filter { it.parentId == comment.id.toString() }.map { comment ->
-            com.example.dogcatsquare.data.model.community.Reply(
-                id = comment.id,
-                content = comment.content,
-                name = comment.name,
-                dogBreed = "",  // 필요하면 여기에 데이터를 추가
-                profileImageUrl = comment.profileImageUrl,
-                timestamp = comment.timestamp
+        val sp = holder.itemView.context.getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
+        val myUserId = sp.getInt("userId", -1)
+        val isMine = (comment.userId == myUserId)
+
+        holder.ivReplyMenu.visibility = if (isMine) View.VISIBLE else View.GONE
+
+        val repliesList = comments.filter { it.parentId == comment.id.toString() }.map { reply ->
+            Reply(
+                id = reply.id,
+                content = reply.content,
+                name = reply.name,
+                dogBreed = "",
+                profileImageUrl = reply.profileImageUrl,
+                timestamp = reply.timestamp
             )
-        }.toMutableList()  // ✅ `MutableList<Reply>` 변환
+        }.toMutableList()
 
         if (repliesList.isNotEmpty()) {
             holder.rvReplies.visibility = View.VISIBLE
             holder.rvReplies.layoutManager = LinearLayoutManager(holder.itemView.context)
-
             val repliesAdapter = holder.rvReplies.adapter as? RepliesAdapter
             if (repliesAdapter == null) {
                 holder.rvReplies.adapter = RepliesAdapter(repliesList)
@@ -69,10 +74,20 @@ class CommentsAdapter(
             holder.rvReplies.visibility = View.GONE
         }
 
-        // 메뉴 버튼 클릭 이벤트 처리
+        holder.ivReplyMenu.visibility = View.VISIBLE
+
         holder.ivReplyMenu.setOnClickListener { view ->
             val popup = PopupMenu(view.context, view)
             popup.menuInflater.inflate(R.menu.comment_menu, popup.menu)
+
+            val sp = view.context.getSharedPreferences("app_prefs", android.content.Context.MODE_PRIVATE)
+            val myUserId = sp.getInt("userId", -1)
+            val isMine = (comment.userId == myUserId)   // ← Comment.userId 필드가 있어야 합니다
+
+            // reply는 항상, delete는 내 댓글일 때만
+            popup.menu.findItem(R.id.action_reply)?.isVisible = true
+            popup.menu.findItem(R.id.action_delete)?.isVisible = isMine
+
             popup.setOnMenuItemClickListener { menuItem ->
                 when (menuItem.itemId) {
                     R.id.action_reply -> {

@@ -1,6 +1,7 @@
 package com.example.dogcatsquare.ui.community
 
 import android.app.Activity
+import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
 import android.net.Uri
@@ -21,14 +22,18 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.example.dogcatsquare.R
-import com.example.dogcatsquare.data.model.community.ApiResponse
-import com.example.dogcatsquare.data.model.community.PostRequest
-import com.example.dogcatsquare.data.network.RetrofitObj
 import com.example.dogcatsquare.data.api.BoardApiService
+import com.example.dogcatsquare.data.model.community.ApiResponse
+import com.example.dogcatsquare.data.model.community.PostResponse
+import com.example.dogcatsquare.data.network.RetrofitObj
 import com.google.gson.Gson
+import com.google.gson.annotations.SerializedName
+import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody
 import okhttp3.RequestBody
+import okhttp3.RequestBody.Companion.asRequestBody
+import okhttp3.RequestBody.Companion.toRequestBody
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -43,25 +48,24 @@ class EditPostActivity : AppCompatActivity() {
     private lateinit var etLink: EditText
     private lateinit var ivBack: ImageView
     private lateinit var addPhoto: RelativeLayout
-    // 기존의 imagePreview 대신 RecyclerView 사용
     private lateinit var rvImagePreview: RecyclerView
     private lateinit var imageAdapter: ImagePreviewAdapter
 
-    // ImageItem: file가 있으면 새로운 선택, url이 있으면 기존 이미지
+    /** 파일이 있으면 새로 선택한 이미지, url이 있으면 기존 서버 이미지 */
     data class ImageItem(val file: File? = null, val url: String? = null)
-
-    // 새로 선택한 이미지와 기존 이미지를 함께 저장하는 리스트
     private val imageItems = mutableListOf<ImageItem>()
+
     private val PICK_IMAGE_REQUEST = 1
     private var postId: Long = -1L
     private var originalImageUrl: String? = null
+    private var postType: String = "post" // UI 용
 
-    // 게시글 종류 ("post" 또는 "tip") – UI 구분용으로만 사용
-    private var postType: String = "post"
+    private fun getToken(): String? =
+        getSharedPreferences("app_prefs", Context.MODE_PRIVATE).getString("token", null)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_edit_post) // activity_edit_post.xml 레이아웃 사용
+        setContentView(R.layout.activity_edit_post)
 
         btnComplete = findViewById(R.id.btnComplete)
         etTitle = findViewById(R.id.etTitle)
@@ -69,92 +73,82 @@ class EditPostActivity : AppCompatActivity() {
         etLink = findViewById(R.id.edit_link)
         ivBack = findViewById(R.id.iv_back)
         addPhoto = findViewById(R.id.add_photo)
-        // RecyclerView 초기화 (미리보기용)
+
         rvImagePreview = findViewById(R.id.rv_image_preview)
-        rvImagePreview.layoutManager = LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
+        rvImagePreview.layoutManager =
+            LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
         imageAdapter = ImagePreviewAdapter(imageItems)
         rvImagePreview.adapter = imageAdapter
 
         ivBack.setOnClickListener { finish() }
+        btnComplete.setOnClickListener { updatePost() }
+        addPhoto.setOnClickListener { openGallery() }
 
-        btnComplete.setOnClickListener {
-            Log.d("EditPostActivity", "수정 버튼 클릭됨!")
-            updatePost() // postType에 관계없이 updatePost API 호출
-        }
-
-        // Intent에서 데이터 가져오기
+        // 전달값 세팅
         postId = intent.getIntExtra("postId", -1).toLong()
-        postType = intent.getStringExtra("postType") ?: "post" // "tip"일 수도 있으나, API는 동일함.
-
+        postType = intent.getStringExtra("postType") ?: "post"
         etTitle.setText(intent.getStringExtra("title"))
         etContent.setText(intent.getStringExtra("content"))
-        etLink.setText(intent.getStringExtra("videoUrl")) // 꿀팁인 경우 빈 문자열을 보낼 수 있음
-
+        etLink.setText(intent.getStringExtra("videoUrl"))
         originalImageUrl = intent.getStringExtra("imageUrl")
-        // 기존 이미지가 있다면 리스트에 추가하여 미리보기로 보여줌
-        if (!originalImageUrl.isNullOrEmpty()) {
+        if (!originalImageUrl.isNullOrBlank()) {
             imageItems.add(ImageItem(url = originalImageUrl))
             imageAdapter.notifyDataSetChanged()
         }
 
-        addPhoto.setOnClickListener { openGallery() }
-
-        val textWatcher = object : TextWatcher {
-            override fun afterTextChanged(s: Editable?) { updateButtonState() }
+        val watcher = object : TextWatcher {
+            override fun afterTextChanged(s: Editable?) = updateButtonState()
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
         }
-        etTitle.addTextChangedListener(textWatcher)
-        etContent.addTextChangedListener(textWatcher)
+        etTitle.addTextChangedListener(watcher)
+        etContent.addTextChangedListener(watcher)
         updateButtonState()
     }
 
     private fun updateButtonState() {
-        val title = etTitle.text.toString().trim()
-        val content = etContent.text.toString().trim()
-        val isEnabled = title.isNotEmpty() && content.isNotEmpty()
-        btnComplete.isEnabled = isEnabled
-        if (isEnabled) {
-            btnComplete.setImageResource(R.drawable.bt_activated_complete)
-        } else {
-            btnComplete.setImageResource(R.drawable.bt_deactivated_complete)
-        }
+        val enabled =
+            etTitle.text.toString().trim().isNotEmpty() &&
+                    etContent.text.toString().trim().isNotEmpty()
+        btnComplete.isEnabled = enabled
+        btnComplete.setImageResource(
+            if (enabled) R.drawable.bt_activated_complete else R.drawable.bt_deactivated_complete
+        )
     }
 
     private fun openGallery() {
-        val intent = Intent(Intent.ACTION_PICK)
-        intent.type = "image/*"
-        // 다중 선택 허용
-        intent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true)
+        val intent = Intent(Intent.ACTION_PICK).apply {
+            type = "image/*"
+            putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true)
+        }
         startActivityForResult(intent, PICK_IMAGE_REQUEST)
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
         if (requestCode == PICK_IMAGE_REQUEST && resultCode == Activity.RESULT_OK) {
-            // 기존에 선택한 이미지 개수 확인 (수정 시 기존 이미지와 새 이미지 모두 포함)
-            val currentCount = imageItems.size
             val maxCount = 5
+            val currentCount = imageItems.size
 
-            if (data?.clipData != null) {
-                val count = data.clipData!!.itemCount
-                val allowedCount = maxCount - currentCount
-                if (allowedCount <= 0) {
-                    Toast.makeText(this, "최대 5개까지 선택할 수 있습니다.", Toast.LENGTH_SHORT).show()
-                    return
+            when {
+                data?.clipData != null -> {
+                    val count = data.clipData!!.itemCount
+                    val allowed = maxCount - currentCount
+                    if (allowed <= 0) {
+                        Toast.makeText(this, "최대 5개까지 선택할 수 있습니다.", Toast.LENGTH_SHORT).show()
+                        return
+                    }
+                    for (i in 0 until minOf(count, allowed)) {
+                        val uri = data.clipData!!.getItemAt(i).uri
+                        imageItems.add(ImageItem(file = getCompressedImageFile(uri)))
+                    }
                 }
-                for (i in 0 until minOf(count, allowedCount)) {
-                    val imageUri: Uri = data.clipData!!.getItemAt(i).uri
-                    val file = getCompressedImageFile(imageUri)
-                    imageItems.add(ImageItem(file = file))
-                }
-            } else if (data?.data != null) {
-                if (currentCount < maxCount) {
-                    val imageUri: Uri = data.data!!
-                    val file = getCompressedImageFile(imageUri)
-                    imageItems.add(ImageItem(file = file))
-                } else {
-                    Toast.makeText(this, "최대 5개까지 선택할 수 있습니다.", Toast.LENGTH_SHORT).show()
+                data?.data != null -> {
+                    if (currentCount < maxCount) {
+                        imageItems.add(ImageItem(file = getCompressedImageFile(data.data!!)))
+                    } else {
+                        Toast.makeText(this, "최대 5개까지 선택할 수 있습니다.", Toast.LENGTH_SHORT).show()
+                    }
                 }
             }
             imageAdapter.notifyDataSetChanged()
@@ -162,16 +156,33 @@ class EditPostActivity : AppCompatActivity() {
     }
 
     private fun getCompressedImageFile(uri: Uri): File {
-        val bitmap: Bitmap = MediaStore.Images.Media.getBitmap(this.contentResolver, uri)
-        val compressedFile = File(this.cacheDir, "compressed_${System.currentTimeMillis()}.jpg")
-        FileOutputStream(compressedFile).use { outputStream ->
-            bitmap.compress(Bitmap.CompressFormat.JPEG, 85, outputStream)
-            outputStream.flush()
+        // 간단히 사용 (Deprecated 경고는 무시)
+        val bitmap: Bitmap = MediaStore.Images.Media.getBitmap(contentResolver, uri)
+        val out = File(cacheDir, "compressed_${System.currentTimeMillis()}.jpg")
+        FileOutputStream(out).use { fos ->
+            bitmap.compress(Bitmap.CompressFormat.JPEG, 85, fos)
+            fos.flush()
         }
-        return compressedFile
+        return out
     }
 
+    private data class UpdatePostPayload(
+        val title: String,
+        val content: String,
+        @SerializedName("videoUrl") val videoUrl: String? = null
+    )
+
     private fun updatePost() {
+        val token = getToken()
+        if (token.isNullOrBlank()) {
+            Toast.makeText(this, "로그인이 필요합니다.", Toast.LENGTH_SHORT).show()
+            return
+        }
+        if (postId <= 0) {
+            Toast.makeText(this, "잘못된 게시글입니다.", Toast.LENGTH_SHORT).show()
+            return
+        }
+
         val title = etTitle.text.toString().trim()
         val content = etContent.text.toString().trim()
         val videoUrl = etLink.text.toString().trim()
@@ -181,67 +192,75 @@ class EditPostActivity : AppCompatActivity() {
             return
         }
 
-        // PostRequest 객체 생성
-        val postRequest = com.example.dogcatsquare.data.model.community.PostRequest(
-            boardId = 1,
+        // 1) JSON 파트
+        val payload = UpdatePostPayload(
             title = title,
             content = content,
-            video_URL = videoUrl.ifBlank { "" },
-            created_at = "2025-01-30T15:46:13.718Z"
+            videoUrl = videoUrl.ifBlank { null }
         )
+        val requestJson: RequestBody =
+            Gson().toJson(payload).toRequestBody("application/json; charset=utf-8".toMediaType())
 
-        val jsonPostRequest = Gson().toJson(postRequest)
-        val requestBody = RequestBody.create("application/json".toMediaTypeOrNull(), jsonPostRequest)
-
-        // 새로 선택한 이미지(File)가 있다면 MultipartBody.Part로 변환합니다.
-        // 만약 사용자가 이미지를 선택하지 않았다면 imageParts는 null로 두어 서버에서 기존 이미지를 유지하도록 합니다.
-        val imageParts: List<MultipartBody.Part>? =
-            if (imageItems.any { it.file != null }) {
-                imageItems.filter { it.file != null }.map { item ->
-                    val requestFile = RequestBody.create("image/*".toMediaTypeOrNull(), item.file!!)
-                    MultipartBody.Part.createFormData("communityImages", item.file!!.name, requestFile)
-                }
-            } else {
-                null
+        // 2) 이미지 파트 (없으면 빈 리스트)
+        val imageParts: List<MultipartBody.Part> =
+            imageItems.filter { it.file != null }.map { item ->
+                val file = item.file!!
+                val body = file.asRequestBody("image/*".toMediaTypeOrNull())
+                MultipartBody.Part.createFormData("communityImages", file.name, body)
             }
 
-        val call = RetrofitObj.getRetrofit(this).create(BoardApiService::class.java)
-            .updatePost(postId, requestBody, imageParts)
-
-        call.enqueue(object : Callback<com.example.dogcatsquare.data.model.community.ApiResponse> {
-            override fun onResponse(call: Call<com.example.dogcatsquare.data.model.community.ApiResponse>, response: Response<com.example.dogcatsquare.data.model.community.ApiResponse>) {
-                if (response.isSuccessful) {
-                    val resultIntent = Intent().apply {
-                        putExtra("UPDATED_POST_ID", postId)
-                        putExtra("UPDATED_TITLE", title)
-                        putExtra("UPDATED_CONTENT", content)
-                        putExtra("UPDATED_VIDEO_URL", videoUrl)
-                        // 새 이미지가 있다면 첫 번째 파일 경로, 없으면 기존 URL 사용
-                        putExtra("UPDATED_IMAGE_URL", imageItems.firstOrNull { it.file != null }?.file?.absolutePath ?: originalImageUrl)
+        // 3) 호출
+        val api = RetrofitObj.getRetrofit(this).create(BoardApiService::class.java)
+        api.updatePost("Bearer $token", postId, requestJson, imageParts)
+            .enqueue(object : Callback<ApiResponse<PostResponse>> {
+                override fun onResponse(
+                    call: Call<ApiResponse<PostResponse>>,
+                    response: Response<ApiResponse<PostResponse>>
+                ) {
+                    val body = response.body()
+                    if (response.isSuccessful && body?.isSuccess == true) {
+                        val resultIntent = Intent().apply {
+                            putExtra("UPDATED_POST_ID", postId)
+                            putExtra("UPDATED_TITLE", title)
+                            putExtra("UPDATED_CONTENT", content)
+                            putExtra("UPDATED_VIDEO_URL", videoUrl)
+                            putExtra(
+                                "UPDATED_IMAGE_URL",
+                                imageItems.firstOrNull { it.file != null }?.file?.absolutePath
+                                    ?: originalImageUrl
+                            )
+                        }
+                        setResult(Activity.RESULT_OK, resultIntent)
+                        finish()
+                    } else {
+                        Log.e(
+                            "EditPostActivity",
+                            "수정 실패: http=${response.code()} msg=${response.errorBody()?.string()}"
+                        )
+                        Toast.makeText(this@EditPostActivity, "수정 실패", Toast.LENGTH_SHORT).show()
                     }
-                    setResult(Activity.RESULT_OK, resultIntent)
-                    finish()
-                } else {
-                    Log.e("EditPostActivity", "수정 실패: ${response.code()} - ${response.errorBody()?.string()}")
-                    Toast.makeText(this@EditPostActivity, "수정 실패", Toast.LENGTH_SHORT).show()
                 }
-            }
-            override fun onFailure(call: Call<com.example.dogcatsquare.data.model.community.ApiResponse>, t: Throwable) {
-                Log.e("EditPostActivity", "네트워크 오류: ${t.message}")
-                Toast.makeText(this@EditPostActivity, "네트워크 오류", Toast.LENGTH_SHORT).show()
-            }
-        })
+
+                override fun onFailure(call: Call<ApiResponse<PostResponse>>, t: Throwable) {
+                    Log.e("EditPostActivity", "네트워크 오류: ${t.message}", t)
+                    Toast.makeText(this@EditPostActivity, "네트워크 오류", Toast.LENGTH_SHORT).show()
+                }
+            })
     }
 
-    // 리사이클러뷰 어댑터: ImageItem을 받아서 파일 또는 URL을 로드하여 미리보기로 표시
-    class ImagePreviewAdapter(private val items: List<ImageItem>) : RecyclerView.Adapter<ImagePreviewAdapter.ViewHolder>() {
+    class ImagePreviewAdapter(private val items: List<ImageItem>) :
+        RecyclerView.Adapter<ImagePreviewAdapter.ViewHolder>() {
+
         class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
             val imageView: ImageView = itemView.findViewById(R.id.item_image_preview)
         }
+
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
-            val view = LayoutInflater.from(parent.context).inflate(R.layout.item_image_preview, parent, false)
-            return ViewHolder(view)
+            val v = LayoutInflater.from(parent.context)
+                .inflate(R.layout.item_image_preview, parent, false)
+            return ViewHolder(v)
         }
+
         override fun onBindViewHolder(holder: ViewHolder, position: Int) {
             val item = items[position]
             if (item.file != null) {
@@ -254,8 +273,11 @@ class EditPostActivity : AppCompatActivity() {
                     .load(item.url)
                     .centerCrop()
                     .into(holder.imageView)
+            } else {
+                holder.imageView.setImageDrawable(null)
             }
         }
+
         override fun getItemCount(): Int = items.size
     }
 }
