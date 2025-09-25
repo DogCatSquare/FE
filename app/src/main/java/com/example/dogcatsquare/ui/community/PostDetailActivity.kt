@@ -16,15 +16,13 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.bumptech.glide.Glide
 import com.example.dogcatsquare.R
+import com.example.dogcatsquare.data.api.BoardApiService
 import com.example.dogcatsquare.data.api.CommentApiService
+import com.example.dogcatsquare.data.model.community.ApiResponse
 import com.example.dogcatsquare.data.model.community.Comment
-import com.example.dogcatsquare.data.model.community.CommentListResponse
 import com.example.dogcatsquare.data.model.community.CommentRequest
-import com.example.dogcatsquare.data.model.community.CommentResponse
-import com.example.dogcatsquare.data.model.community.CommonResponse
 import com.example.dogcatsquare.data.model.community.LikeResponse
-import com.example.dogcatsquare.data.model.community.PostDetailResponse
-import com.example.dogcatsquare.data.model.community.Reply
+import com.example.dogcatsquare.data.model.community.PostDetail
 import com.example.dogcatsquare.data.network.RetrofitObj
 import com.example.dogcatsquare.databinding.ActivityPostDetailBinding
 import com.example.dogcatsquare.ui.viewmodel.PostViewModel
@@ -38,27 +36,33 @@ class PostDetailActivity : AppCompatActivity(), CommentActionListener {
     private lateinit var binding: ActivityPostDetailBinding
     private lateinit var commentAdapter: CommentsAdapter
 
-    private val currentUserId: Long = 1L // TODO: 실제 로그인 사용자 ID로 교체
+    // TODO: 실제 로그인 사용자 ID 사용으로 교체. (임시 값 제거 권장)
+    private val currentUserId: Long = 1L
+
     private val postViewModel: PostViewModel by viewModels()
 
     private var postId: Int = -1
-    private var isLiked: Boolean = false // !! 사용 제거
+    private var isLiked: Boolean = false
     private var like_count: Int = 0
 
-    private val commentDatas = ArrayList<com.example.dogcatsquare.data.model.community.Comment>()
+    private val commentDatas = ArrayList<Comment>()
     private var videoUrl: String? = null
 
     private lateinit var likePref: SharedPreferences
 
     private fun getToken(): String? {
-        val sharedPref = getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
-        return sharedPref.getString("token", null)
+        val sp = getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
+        return sp.getString("token", null)
     }
 
-    private fun getUserId(): Int? {
-        val sharedPref = getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
-        return sharedPref.getInt("userId", -1).takeIf { it != -1 }
+    // ✔ Int로 저장돼 있어도 Long으로 변환해 반환 (댓글 API들이 Long 기대)
+    private fun getUserId(): Long? {
+        val sp = getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
+        return sp.getInt("userId", -1).takeIf { it != -1 }?.toLong()
     }
+
+    // (좋아요 API가 Int를 기대한다면 사용) Long → Int 안전 변환 헬퍼
+    private fun getUserIdAsInt(): Int? = getUserId()?.toInt()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -87,7 +91,7 @@ class PostDetailActivity : AppCompatActivity(), CommentActionListener {
             }
         }
 
-        // 뒤로가기 (중복 방지)
+        // 뒤로가기
         binding.ivBack.setOnClickListener { finish() }
 
         // 댓글 리스트
@@ -95,13 +99,14 @@ class PostDetailActivity : AppCompatActivity(), CommentActionListener {
         binding.rvComments.layoutManager = LinearLayoutManager(this)
         binding.rvComments.adapter = commentAdapter
 
-        getComment(postId.toLong(), commentAdapter)
+        getComments(postId.toLong())
 
         // 댓글 전송
         binding.ivSend.setOnClickListener {
             val commentText = binding.etComment.text.toString()
             if (commentText.isNotBlank()) {
-                postComment(postId.toLong(), currentUserId, commentText, "")
+                // userId는 Long으로 전달
+                postComment(postId.toLong(), getUserId() ?: currentUserId, commentText, "")
             }
         }
 
@@ -139,8 +144,8 @@ class PostDetailActivity : AppCompatActivity(), CommentActionListener {
         binding.ivLike.setOnClickListener { toggleLike() }
     }
 
-    // 댓글 조회
-    private fun getComment(postId: Long, adapter: CommentsAdapter) {
+    // ===== 댓글 조회 =====
+    private fun getComments(postId: Long) {
         val token = getToken()
         if (token.isNullOrBlank()) {
             Toast.makeText(this, "로그인이 필요합니다.", Toast.LENGTH_SHORT).show()
@@ -149,30 +154,34 @@ class PostDetailActivity : AppCompatActivity(), CommentActionListener {
 
         val svc = RetrofitObj.getRetrofit(this).create(CommentApiService::class.java)
         svc.getComments("Bearer $token", postId)
-            .enqueue(object : Callback<CommentListResponse> {
-                override fun onResponse(call: Call<CommentListResponse>, response: Response<CommentListResponse>) {
-                    val resp = response.body()
-                    if (!response.isSuccessful || resp == null) {
+            .enqueue(object : Callback<ApiResponse<List<Comment>>> {
+                override fun onResponse(
+                    call: Call<ApiResponse<List<Comment>>>,
+                    response: Response<ApiResponse<List<Comment>>>
+                ) {
+                    if (!response.isSuccessful) {
                         Log.e("GetComment", "응답 실패 code=${response.code()}")
                         return
                     }
-                    if (resp.isSuccess) {
-                        val comments = resp.result.orEmpty()
+                    val body = response.body()
+                    if (body?.isSuccess == true) {
+                        val comments = body.result.orEmpty()
                         commentDatas.clear()
                         commentDatas.addAll(comments)
                         commentAdapter.notifyDataSetChanged()
                     } else {
-                        Log.e("GetComment", "실패 code=${resp.code} msg=${resp.message}")
+                        Log.e("GetComment", "실패 code=${body?.code} msg=${body?.message}")
                     }
                 }
-                override fun onFailure(call: Call<CommentListResponse>, t: Throwable) {
+
+                override fun onFailure(call: Call<ApiResponse<List<Comment>>>, t: Throwable) {
                     Toast.makeText(this@PostDetailActivity, "네트워크 오류: ${t.message}", Toast.LENGTH_SHORT).show()
                     Log.d("RETROFIT/FAILURE", t.message.toString())
                 }
             })
     }
 
-    // 댓글 등록
+    // ===== 댓글 등록 =====
     private fun postComment(postId: Long, userId: Long, content: String, parentId: String) {
         val token = getToken()
         if (token.isNullOrBlank()) {
@@ -182,95 +191,108 @@ class PostDetailActivity : AppCompatActivity(), CommentActionListener {
 
         val commentApi = RetrofitObj.getRetrofit(this).create(CommentApiService::class.java)
         val request = CommentRequest(content = content, parentId = parentId)
+
         commentApi.createComment("Bearer $token", postId, userId, request)
-            .enqueue(object : Callback<CommentResponse> {
-                override fun onResponse(call: Call<CommentResponse>, response: Response<CommentResponse>) {
+            .enqueue(object : Callback<ApiResponse<Comment>> {
+                override fun onResponse(
+                    call: Call<ApiResponse<Comment>>,
+                    response: Response<ApiResponse<Comment>>
+                ) {
                     if (!response.isSuccessful) {
                         Toast.makeText(this@PostDetailActivity, "댓글 등록 실패: ${response.code()}", Toast.LENGTH_SHORT).show()
                         return
                     }
-                    val newComment = response.body()?.result
-                    if (newComment != null) {
+                    val body = response.body()
+                    val newComment = body?.result
+                    if (body?.isSuccess == true && newComment != null) {
                         commentDatas.add(newComment)
                         commentAdapter.notifyItemInserted(commentDatas.size - 1)
                         binding.rvComments.scrollToPosition(commentDatas.size - 1)
                         binding.etComment.text.clear()
                         Toast.makeText(this@PostDetailActivity, "댓글 등록 성공", Toast.LENGTH_SHORT).show()
+                    } else {
+                        Toast.makeText(this@PostDetailActivity, body?.message ?: "댓글 등록 실패", Toast.LENGTH_SHORT).show()
                     }
                 }
-                override fun onFailure(call: Call<CommentResponse>, t: Throwable) {
+
+                override fun onFailure(call: Call<ApiResponse<Comment>>, t: Throwable) {
                     Toast.makeText(this@PostDetailActivity, "네트워크 오류: ${t.message}", Toast.LENGTH_SHORT).show()
                     Log.d("RETROFIT/FAILURE", t.message.toString())
                 }
             })
     }
 
-    // 댓글 삭제 (userId 경로 제거: 로그의 IllegalArgumentException 해결)
+    // ===== 댓글 삭제 =====
     private fun deleteComment(postId: Long, commentId: Long) {
-        val token = getToken()
-        if (token.isNullOrBlank()) {
-            Toast.makeText(this, "로그인이 필요합니다.", Toast.LENGTH_SHORT).show()
-            return
-        }
+        val token = getToken() ?: return
+        val myUserId = getUserId()?.toLong() ?: return
 
-        val commentApi = RetrofitObj.getRetrofit(this).create(CommentApiService::class.java)
-        commentApi.deleteComment("Bearer $token", postId, commentId)
-            .enqueue(object : Callback<CommonResponse> {
-                override fun onResponse(call: Call<CommonResponse>, response: Response<CommonResponse>) {
+        val api = RetrofitObj.getRetrofit(this).create(CommentApiService::class.java)
+        api.deleteComment("Bearer $token", postId, commentId, myUserId)
+            .enqueue(object : Callback<ApiResponse<Unit>> {
+                override fun onResponse(
+                    call: Call<ApiResponse<Unit>>,
+                    response: Response<ApiResponse<Unit>>
+                ) {
                     val body = response.body()
                     if (response.isSuccessful && body?.isSuccess == true) {
-                        val index = commentDatas.indexOfFirst { it.id == commentId.toInt() }
-                        if (index != -1) {
-                            commentDatas.removeAt(index)
-                            commentAdapter.notifyItemRemoved(index)
+                        val idx = commentDatas.indexOfFirst { it.id == commentId.toInt() }
+                        if (idx != -1) {
+                            commentDatas.removeAt(idx)
+                            commentAdapter.notifyItemRemoved(idx)
                         }
-                        Toast.makeText(this@PostDetailActivity, "댓글을 삭제하였습니다", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(this@PostDetailActivity, "댓글을 삭제했어요.", Toast.LENGTH_SHORT).show()
                     } else {
-                        Toast.makeText(this@PostDetailActivity, "삭제 실패: ${body?.message ?: response.code()}", Toast.LENGTH_SHORT).show()
+                        // 서버가 "본인이 작성한 댓글만 삭제" 같은 메시지 내려주면 그대로 노출
+                        Toast.makeText(
+                            this@PostDetailActivity,
+                            body?.message ?: "삭제 실패 (${response.code()})",
+                            Toast.LENGTH_SHORT
+                        ).show()
                     }
                 }
-                override fun onFailure(call: Call<CommonResponse>, t: Throwable) {
+
+                override fun onFailure(call: Call<ApiResponse<Unit>>, t: Throwable) {
                     Toast.makeText(this@PostDetailActivity, "네트워크 오류: ${t.message}", Toast.LENGTH_SHORT).show()
                 }
             })
     }
 
-    // CommentActionListener 구현 - 대댓글 등록
+    // ===== CommentActionListener 구현 - 대댓글 등록 =====
     override fun onReplyClicked(comment: Comment) {
-        val builder = AlertDialog.Builder(this)
-            .setTitle("대댓글 작성")
-
         val input = EditText(this).apply { hint = "대댓글 내용을 입력하세요" }
-        builder.setView(input)
-        builder.setPositiveButton("등록") { _, _ ->
-            val replyText = input.text.toString()
-            if (replyText.isNotBlank()) {
-                postComment(postId.toLong(), currentUserId, replyText, comment.id.toString())
+        AlertDialog.Builder(this)
+            .setTitle("대댓글 작성")
+            .setView(input)
+            .setPositiveButton("등록") { _, _ ->
+                val replyText = input.text.toString()
+                if (replyText.isNotBlank()) {
+                    postComment(postId.toLong(), getUserId() ?: currentUserId, replyText, comment.id.toString())
 
-                // 로컬 업데이트
-                val index = commentDatas.indexOfFirst { it.id == comment.id }
-                if (index != -1) {
-                    val newReply = Reply(
-                        id = 0,
-                        content = replyText,
-                        name = "내 닉네임",
-                        dogBreed = "",
-                        profileImageUrl = "",
-                        timestamp = System.currentTimeMillis().toString()
-                    )
-                    val updatedReplies = comment.replies.toMutableList().apply { add(newReply) }
-                    commentDatas[index] = comment.copy(replies = updatedReplies)
-                    commentAdapter.notifyItemChanged(index)
+                    // 로컬 업데이트(서버 반영 전 임시 표시)
+                    val index = commentDatas.indexOfFirst { it.id == comment.id }
+                    if (index != -1) {
+                        val newReply = com.example.dogcatsquare.data.model.community.Reply(
+                            id = 0,
+                            content = replyText,
+                            name = "내 닉네임",
+                            dogBreed = "",
+                            profileImageUrl = "",
+                            timestamp = System.currentTimeMillis().toString()
+                        )
+                        val updated = comment.replies.toMutableList().apply { add(newReply) }
+                        commentDatas[index] = comment.copy(replies = updated)
+                        commentAdapter.notifyItemChanged(index)
+                    }
+                } else {
+                    Toast.makeText(this, "대댓글 내용을 입력해주세요", Toast.LENGTH_SHORT).show()
                 }
-            } else {
-                Toast.makeText(this, "대댓글 내용을 입력해주세요", Toast.LENGTH_SHORT).show()
             }
-        }
-        builder.setNegativeButton("취소") { dialog, _ -> dialog.cancel() }
-        builder.show()
+            .setNegativeButton("취소") { d, _ -> d.cancel() }
+            .show()
     }
 
-    // CommentActionListener 구현 - 댓글 삭제
+    // ===== CommentActionListener 구현 - 댓글 삭제 =====
     override fun onDeleteClicked(comment: Comment) {
         AlertDialog.Builder(this)
             .setTitle("댓글 삭제")
@@ -278,13 +300,11 @@ class PostDetailActivity : AppCompatActivity(), CommentActionListener {
             .setPositiveButton("삭제") { _, _ ->
                 deleteComment(postId.toLong(), comment.id.toLong())
             }
-            .setNegativeButton("취소") { dialog, _ ->
-                dialog.cancel()
-            }
+            .setNegativeButton("취소") { d, _ -> d.cancel() }
             .show()
     }
 
-    // 게시글 상세
+    // ===== 게시글 상세 =====
     private fun loadPostDetail(postId: Int) {
         val token = getToken()
         if (token.isNullOrBlank()) {
@@ -292,23 +312,23 @@ class PostDetailActivity : AppCompatActivity(), CommentActionListener {
             return
         }
 
-        val boardApi = RetrofitObj.getRetrofit(this)
-            .create(com.example.dogcatsquare.data.api.BoardApiService::class.java)
-
+        val boardApi = RetrofitObj.getRetrofit(this).create(BoardApiService::class.java)
         boardApi.getPost("Bearer $token", postId)
-            .enqueue(object : Callback<PostDetailResponse> {
-                override fun onResponse(call: Call<PostDetailResponse>, response: Response<PostDetailResponse>) {
+            .enqueue(object : Callback<ApiResponse<PostDetail>> {
+                override fun onResponse(
+                    call: Call<ApiResponse<PostDetail>>,
+                    response: Response<ApiResponse<PostDetail>>
+                ) {
                     Log.d("PostDetailActivity", "API Response Code: ${response.code()}")
                     if (!response.isSuccessful) {
                         Toast.makeText(this@PostDetailActivity, "게시글 조회 실패: ${response.code()}", Toast.LENGTH_SHORT).show()
                         return
                     }
 
-                    val postDetail = response.body()?.result
-                    Log.d("PostDetailActivity", "Post detail received: $postDetail")
-
-                    if (postDetail == null) {
-                        Toast.makeText(this@PostDetailActivity, "게시글 정보가 없습니다.", Toast.LENGTH_SHORT).show()
+                    val body = response.body()
+                    val postDetail = body?.result
+                    if (body?.isSuccess != true || postDetail == null) {
+                        Toast.makeText(this@PostDetailActivity, body?.message ?: "게시글 정보가 없습니다.", Toast.LENGTH_SHORT).show()
                         return
                     }
 
@@ -370,7 +390,7 @@ class PostDetailActivity : AppCompatActivity(), CommentActionListener {
                     postViewModel.updateLikeStatus(postId, isLiked)
                 }
 
-                override fun onFailure(call: Call<PostDetailResponse>, t: Throwable) {
+                override fun onFailure(call: Call<ApiResponse<PostDetail>>, t: Throwable) {
                     Log.e("PostDetailActivity", "API 호출 실패", t)
                     Toast.makeText(this@PostDetailActivity, "네트워크 오류: ${t.message}", Toast.LENGTH_SHORT).show()
                 }
@@ -385,14 +405,14 @@ class PostDetailActivity : AppCompatActivity(), CommentActionListener {
 
     private fun toggleLike() {
         val token = getToken()
-        val userId = getUserId()
-        if (token.isNullOrBlank() || userId == null) {
+        val userIdInt = getUserIdAsInt() // 👍 좋아요 API가 Int를 기대한다면 여기서 Int로 전달
+        if (token.isNullOrBlank() || userIdInt == null) {
             Toast.makeText(this, "로그인이 필요합니다.", Toast.LENGTH_SHORT).show()
             return
         }
 
         val retrofit = RetrofitObj.getRetrofit(this).create(PostApiService::class.java)
-        retrofit.fetchLike("Bearer $token", postId, userId)
+        retrofit.fetchLike("Bearer $token", postId, userIdInt)
             .enqueue(object : Callback<LikeResponse> {
                 override fun onResponse(call: Call<LikeResponse>, response: Response<LikeResponse>) {
                     if (!response.isSuccessful) return
@@ -435,7 +455,7 @@ class PostDetailActivity : AppCompatActivity(), CommentActionListener {
         val token = getToken()
         if (!token.isNullOrBlank()) {
             loadPostDetail(postId)
-            getComment(postId.toLong(), commentAdapter)
+            getComments(postId.toLong())
             setLikeButtonState(isLiked) // 로컬 상태 재적용
         }
     }

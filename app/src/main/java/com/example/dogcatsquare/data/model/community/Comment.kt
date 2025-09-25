@@ -13,14 +13,16 @@ data class Comment(
     val id: Int = 0,
     val content: String,
     val name: String,
+    @SerializedName("userId")
+    val userId: Int,
     @SerializedName("animal_type")
     val animalType: String = "",
     @SerializedName("profileImage_URL")
     val profileImageUrl: String = "",
     @SerializedName("created_at")
     val timestamp: String,
-    val replies: List<com.example.dogcatsquare.data.model.community.Reply>,
-    val parentId: String? = ""  // 기본값은 빈 문자열 또는 null로 설정
+    val replies: List<Reply> = emptyList(),
+    val parentId: String? = null
 )
 
 data class CommentRequest(
