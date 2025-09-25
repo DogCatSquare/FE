@@ -2,6 +2,7 @@ package com.example.dogcatsquare.ui.community
 
 import android.graphics.Color
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -21,15 +22,20 @@ import retrofit2.Response
 
 class CommunityFragment : Fragment() {
 
-    private lateinit var binding: FragmentCommunityBinding
+    private var _binding: FragmentCommunityBinding? = null
+    private val binding get() = _binding!!
+
     private lateinit var pagerAdapter: CommunityPagerAdapter
     private var mediator: TabLayoutMediator? = null
+
+    // 진행 중 네트워크 콜 → 화면 파괴 시 취소
+    private var getUserCall: Call<GetUserResponse>? = null
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        binding = FragmentCommunityBinding.inflate(inflater, container, false)
+        _binding = FragmentCommunityBinding.inflate(inflater, container, false)
         return binding.root
     }
 
@@ -73,39 +79,76 @@ class CommunityFragment : Fragment() {
 
     override fun onDestroyView() {
         super.onDestroyView()
+        // 미디에이터 분리
         mediator?.detach()
+        mediator = null
+
+        // 진행 중 콜 취소
+        getUserCall?.cancel()
+        getUserCall = null
+
+        // 바인딩 정리
+        _binding = null
     }
 
     private fun setInfo() {
-        val token = getToken() ?: return
-        RetrofitObj.getRetrofit(requireContext())
-            .create(UserRetrofitItf::class.java)
-            .getUser("Bearer $token")
-            .enqueue(object : Callback<GetUserResponse> {
-                override fun onResponse(call: Call<GetUserResponse>, response: Response<GetUserResponse>) {
-                    val resp = response.body() ?: return
-                    if (!resp.isSuccess) return
+        val ctx = context ?: return
+        val token = getTokenSafe() ?: return
+
+        val svc = RetrofitObj.getRetrofit(ctx).create(UserRetrofitItf::class.java)
+
+        getUserCall = svc.getUser("Bearer $token")
+        getUserCall?.enqueue(object : Callback<GetUserResponse> {
+            override fun onResponse(
+                call: Call<GetUserResponse>,
+                response: Response<GetUserResponse>
+            ) {
+                // 화면이 분리/파괴되었으면 종료
+                if (!isAdded || view == null ||
+                    viewLifecycleOwner.lifecycle.currentState.isAtLeast(
+                        androidx.lifecycle.Lifecycle.State.STARTED
+                    ).not()
+                ) return
+
+                val resp = response.body()
+                if (response.isSuccessful && resp?.isSuccess == true) {
                     val r = resp.result
-                    binding.tvNickname.text = r.nickname
-                    Glide.with(requireContext())
+
+                    // 널/빈 문자열 안전 처리
+                    binding.tvNickname.text = r.nickname ?: ""
+                    binding.tvBreed.text = r.firstPetBreed ?: ""
+                    val si = r.si ?: ""
+                    val gu = r.gu ?: ""
+                    binding.tvLocation.text = "$si $gu".trim()
+
+                    // Glide는 Fragment 레퍼런스로 생명주기 안전
+                    Glide.with(this@CommunityFragment)
                         .load(r.profileImageUrl)
                         .apply(RequestOptions.circleCropTransform())
+                        // 캐시 무효화가 꼭 필요하지 않다면 주석 처리 가능
                         .signature(ObjectKey(System.currentTimeMillis().toString()))
                         .placeholder(R.drawable.ic_profile_default)
+                        .error(R.drawable.ic_profile_default)
                         .into(binding.ivProfile)
-                    binding.tvBreed.text = r.firstPetBreed
-                    binding.tvLocation.text = "${r.si} ${r.gu}"
+                } else {
+                    Log.w("MYPAGE", "getUser fail code=${response.code()} body=$resp")
                 }
-                override fun onFailure(call: Call<GetUserResponse>, t: Throwable) {}
-            })
+            }
+
+            override fun onFailure(call: Call<GetUserResponse>, t: Throwable) {
+                // 화면 분리 시 콜백 들어와도 안전 종료
+                if (!isAdded) return
+                Log.e("MYPAGE", "getUser error", t)
+            }
+        })
     }
 
-    private fun getToken(): String? {
-        val sp = requireContext().getSharedPreferences("app_prefs", android.content.Context.MODE_PRIVATE)
+    private fun getTokenSafe(): String? {
+        val ctx = context ?: return null
+        val sp = ctx.getSharedPreferences("app_prefs", android.content.Context.MODE_PRIVATE)
         return sp.getString("token", null)
     }
 }
-
 
 enum class BoardTypes(val id: Int) {
     FREE(1),
