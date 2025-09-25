@@ -26,6 +26,15 @@ class PostAdapter(
         mItemClickListener = itemClickListener
     }
 
+    /** 외부에서 안전하게 데이터 갱신 */
+    fun submitList(items: List<GetAllPostResult>?) {
+        hotPostList.clear()
+        if (!items.isNullOrEmpty()) {
+            hotPostList.addAll(items)
+        }
+        notifyDataSetChanged()
+    }
+
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): PostViewHolder {
         val view = LayoutInflater.from(parent.context).inflate(R.layout.item_post, parent, false)
         return PostViewHolder(view)
@@ -55,15 +64,29 @@ class PostAdapter(
         private fun String?.nonBlankOrNull(): String? = this?.takeIf { it.isNotBlank() }
 
         fun bind(post: GetAllPostResult) {
-            // 텍스트 기본값 처리
-            titleText.text = post.title.orDash()
-            contentPreview.text = post.content.orDash()
-            username.text = post.username.orDash()
-            breed.text = post.animal_type.orDash()
+            // ===== 텍스트 바인딩 (널/빈 문자열 안전 처리)
+            val safeTitle = post.title.orDash()
+            val safeContent = post.content.orDash()
+            val safeUsername = post.username.orDash()
+            val safeBreed = post.animal_type.orDash()
+
+            titleText.text = safeTitle
+            username.text = safeUsername
+            breed.text = safeBreed
+
+            // 내용이 진짜 비었으면 미리보기 숨김
+            if (post.content.isNullOrBlank()) {
+                contentPreview.isGone = true
+                contentPreview.text = ""
+            } else {
+                contentPreview.isVisible = true
+                contentPreview.text = safeContent
+            }
+
             likeCountText.text = (post.likeCount ?: 0).toString()
             commentCountText.text = (post.commentCount ?: 0).toString()
 
-            // 프로필 이미지 (없으면 placeholder)
+            // ===== 프로필 이미지 (없으면 placeholder)
             Glide.with(itemView.context)
                 .load(post.profileImageURL.nonBlankOrNull())
                 .apply(RequestOptions.circleCropTransform())
@@ -71,7 +94,7 @@ class PostAdapter(
                 .error(R.drawable.ic_profile_placeholder)
                 .into(profile)
 
-            // 썸네일: thumbnailURL → images[0] → 없으면 GONE
+            // ===== 썸네일: thumbnailURL → images[0] → 없으면 GONE
             val thumbUrl = post.thumbnailURL.nonBlankOrNull()
                 ?: post.images?.firstOrNull().nonBlankOrNull()
 
