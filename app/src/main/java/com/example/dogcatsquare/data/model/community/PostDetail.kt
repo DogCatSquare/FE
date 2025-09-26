@@ -4,22 +4,16 @@ import com.google.gson.annotations.SerializedName
 
 data class PostDetail(
     val id: Int,
-    val board: String,
+    @SerializedName("boardType") val boardType: String?,
     val username: String,
     val title: String,
     val content: String,
-    @SerializedName("video_URL")
-    val videoUrl: String?,
-    @SerializedName("thumbnail_URL")
-    val thumbnailUrl: String?,
-    @SerializedName("profileImage_URL")
-    val profileImageUrl: String?,
+    @SerializedName("video_URL") val videoUrl: String?,
+    @SerializedName("thumbnail_URL") val thumbnailUrl: String?,
+    @SerializedName("profileImage_URL") val profileImageUrl: String?,
     val images: List<String>?,
-    @SerializedName("like_count")
-    val likeCount: Int,
-    @SerializedName("comment_count")
-    val commentCount: Int,
-    @SerializedName("createdAt")
-    val createdAt: String,
+    @SerializedName("like_count") val likeCount: Int,
+    @SerializedName("comment_count") val commentCount: Int,
+    @SerializedName("createdAt") val createdAt: String,
     val liked: Boolean?
 )

@@ -33,8 +33,6 @@ import retrofit2.Callback
 import retrofit2.Response
 import java.io.File
 import java.io.FileOutputStream
-import java.time.Instant
-import java.time.format.DateTimeFormatter
 
 class CreatePostActivity : AppCompatActivity() {
 
@@ -52,12 +50,14 @@ class CreatePostActivity : AppCompatActivity() {
     private val PICK_IMAGE_REQUEST = 1
 
     private var boardId: Int = -1
+    private var boardType: String? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_create_post)
 
         boardId = intent.getIntExtra("BOARD_ID", -1)
+        boardType = intent.getStringExtra("BOARD_TYPE") ?: boardTypeOf(boardId)
 
         btnComplete = findViewById(R.id.btnComplete)
         etTitle = findViewById(R.id.etTitle)
@@ -67,8 +67,7 @@ class CreatePostActivity : AppCompatActivity() {
         addPhoto = findViewById(R.id.add_photo)
 
         rvImagePreview = findViewById(R.id.rv_image_preview)
-        rvImagePreview.layoutManager =
-            LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
+        rvImagePreview.layoutManager = LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
         imageAdapter = ImagePreviewAdapter(selectedImageFiles)
         rvImagePreview.adapter = imageAdapter
 
@@ -79,6 +78,15 @@ class CreatePostActivity : AppCompatActivity() {
         etTitle.addTextChangedListener(textWatcher)
         etContent.addTextChangedListener(textWatcher)
         updateButtonState()
+    }
+
+    private fun boardTypeOf(boardId: Int): String? = when (boardId) {
+        1 -> "자유게시판"
+        2 -> "정보공유게시판"
+        3 -> "질문상담게시판"
+        4 -> "입양임보게시판"
+        5 -> "실종목격게시판"
+        else -> null
     }
 
     private val textWatcher = object : TextWatcher {
@@ -164,10 +172,13 @@ class CreatePostActivity : AppCompatActivity() {
         val title = etTitle.text.toString().trim()
         val content = etContent.text.toString().trim()
         val videoUrl = etLink.text.toString().trim()
-        val now = DateTimeFormatter.ISO_INSTANT.format(Instant.now())
 
         if (title.isEmpty() || content.isEmpty()) {
             Toast.makeText(this, "제목과 내용을 모두 입력해주세요.", Toast.LENGTH_SHORT).show()
+            return
+        }
+        if (boardType.isNullOrBlank()) {
+            Toast.makeText(this, "게시판을 선택해주세요.", Toast.LENGTH_SHORT).show()
             return
         }
 
@@ -179,11 +190,10 @@ class CreatePostActivity : AppCompatActivity() {
         }
 
         val postRequest = PostRequest(
-            boardId = boardId,
+            boardType = boardType!!,
             title = title,
             content = content,
-            videoUrl = if (videoUrl.isBlank()) null else videoUrl,
-            createdAt = now
+            videoUrl = videoUrl.ifBlank { null }
         )
 
         val requestBody = RequestBody.create(
@@ -195,7 +205,6 @@ class CreatePostActivity : AppCompatActivity() {
             if (selectedImageFiles.isNotEmpty()) {
                 selectedImageFiles.map { file ->
                     val req = RequestBody.create("image/*".toMediaTypeOrNull(), file)
-                    // 스웨거 파라미터명: communityImages
                     MultipartBody.Part.createFormData("communityImages", file.name, req)
                 }
             } else null

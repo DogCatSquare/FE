@@ -58,7 +58,10 @@ class EditPostActivity : AppCompatActivity() {
     private val PICK_IMAGE_REQUEST = 1
     private var postId: Long = -1L
     private var originalImageUrl: String? = null
-    private var postType: String = "post" // UI 용
+    private var postType: String = "post" // UI 용 (기존 로직 유지)
+
+    // ★ 추가: 서버에 보낼 게시판 타입(한글 표기)
+    private var boardTypeFromIntent: String = "자유게시판"
 
     private fun getToken(): String? =
         getSharedPreferences("app_prefs", Context.MODE_PRIVATE).getString("token", null)
@@ -86,7 +89,8 @@ class EditPostActivity : AppCompatActivity() {
 
         // 전달값 세팅
         postId = intent.getIntExtra("postId", -1).toLong()
-        postType = intent.getStringExtra("postType") ?: "post"
+        postType = intent.getStringExtra("postType") ?: "post" // UI 용 (기존 유지)
+        boardTypeFromIntent = intent.getStringExtra("boardType") ?: "자유게시판" // ★ 추가
         etTitle.setText(intent.getStringExtra("title"))
         etContent.setText(intent.getStringExtra("content"))
         etLink.setText(intent.getStringExtra("videoUrl"))
@@ -166,9 +170,11 @@ class EditPostActivity : AppCompatActivity() {
         return out
     }
 
+    // ★ 수정: 서버 요구 스키마에 맞게 boardType 포함
     private data class UpdatePostPayload(
-        val title: String,
-        val content: String,
+        @SerializedName("boardType") val boardType: String,
+        @SerializedName("title") val title: String,
+        @SerializedName("content") val content: String,
         @SerializedName("videoUrl") val videoUrl: String? = null
     )
 
@@ -194,6 +200,7 @@ class EditPostActivity : AppCompatActivity() {
 
         // 1) JSON 파트
         val payload = UpdatePostPayload(
+            boardType = boardTypeFromIntent, // ★ 추가
             title = title,
             content = content,
             videoUrl = videoUrl.ifBlank { null }
@@ -233,11 +240,16 @@ class EditPostActivity : AppCompatActivity() {
                         setResult(Activity.RESULT_OK, resultIntent)
                         finish()
                     } else {
-                        Log.e(
-                            "EditPostActivity",
-                            "수정 실패: http=${response.code()} msg=${response.errorBody()?.string()}"
-                        )
-                        Toast.makeText(this@EditPostActivity, "수정 실패", Toast.LENGTH_SHORT).show()
+                        // ★ 메시지 우선 표시하도록 개선
+                        val msg = body?.message ?: run {
+                            try {
+                                response.errorBody()?.string()
+                            } catch (_: Exception) {
+                                null
+                            }
+                        } ?: "수정 실패"
+                        Log.e("EditPostActivity", "수정 실패: http=${response.code()} msg=$msg")
+                        Toast.makeText(this@EditPostActivity, msg, Toast.LENGTH_SHORT).show()
                     }
                 }
 

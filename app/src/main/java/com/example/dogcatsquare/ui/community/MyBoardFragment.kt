@@ -110,7 +110,7 @@ class MyBoardFragment : Fragment() {
                             val posts = resp.result?.map { post ->
                                 com.example.dogcatsquare.data.model.post.Post(
                                     id = post.id,
-                                    board = post.board,
+                                    board = post.boardType,
                                     title = post.title,
                                     username = post.username,
                                     content = post.content,

@@ -36,7 +36,6 @@ class PostDetailActivity : AppCompatActivity(), CommentActionListener {
     private lateinit var binding: ActivityPostDetailBinding
     private lateinit var commentAdapter: CommentsAdapter
 
-    // TODO: 실제 로그인 사용자 ID 사용으로 교체. (임시 값 제거 권장)
     private val currentUserId: Long = 1L
 
     private val postViewModel: PostViewModel by viewModels()
@@ -50,18 +49,18 @@ class PostDetailActivity : AppCompatActivity(), CommentActionListener {
 
     private lateinit var likePref: SharedPreferences
 
+    private var boardTypeFromDetail: String? = null
+
     private fun getToken(): String? {
         val sp = getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
         return sp.getString("token", null)
     }
 
-    // ✔ Int로 저장돼 있어도 Long으로 변환해 반환 (댓글 API들이 Long 기대)
     private fun getUserId(): Long? {
         val sp = getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
         return sp.getInt("userId", -1).takeIf { it != -1 }?.toLong()
     }
 
-    // (좋아요 API가 Int를 기대한다면 사용) Long → Int 안전 변환 헬퍼
     private fun getUserIdAsInt(): Int? = getUserId()?.toInt()
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -122,6 +121,8 @@ class PostDetailActivity : AppCompatActivity(), CommentActionListener {
                                 putExtra("title", binding.tvPostTitle.text.toString())
                                 putExtra("content", binding.tvPostContent.text.toString())
                                 putExtra("videoUrl", videoUrl)
+                                // ★ 추가: 상세에서 받은 게시판 타입 전달 (없으면 "자유게시판")
+                                putExtra("boardType", boardTypeFromDetail ?: "자유게시판")
                             }
                             startActivity(editIntent)
                             true
@@ -243,7 +244,6 @@ class PostDetailActivity : AppCompatActivity(), CommentActionListener {
                         }
                         Toast.makeText(this@PostDetailActivity, "댓글을 삭제했어요.", Toast.LENGTH_SHORT).show()
                     } else {
-                        // 서버가 "본인이 작성한 댓글만 삭제" 같은 메시지 내려주면 그대로 노출
                         Toast.makeText(
                             this@PostDetailActivity,
                             body?.message ?: "삭제 실패 (${response.code()})",
@@ -332,6 +332,8 @@ class PostDetailActivity : AppCompatActivity(), CommentActionListener {
                         return
                     }
 
+                    boardTypeFromDetail = postDetail.boardType
+
                     binding.tvPostTitle.text = postDetail.title ?: ""
                     binding.tvPostContent.text = postDetail.content ?: ""
                     like_count = postDetail.likeCount ?: 0
@@ -341,8 +343,8 @@ class PostDetailActivity : AppCompatActivity(), CommentActionListener {
                     binding.tvUsername.text = postDetail.username ?: ""
 
                     // 유튜브 썸네일
-                    videoUrl = postDetail.thumbnailUrl
-                    val youtubeThumb = postDetail.thumbnailUrl?.let { getYoutubeThumbnailUrl(it) }
+                    videoUrl = postDetail.videoUrl
+                    val youtubeThumb = postDetail.videoUrl?.let { getYoutubeThumbnailUrl(it) }
                     if (!youtubeThumb.isNullOrEmpty()) {
                         binding.ivYoutubeThumbnail.visibility = View.VISIBLE
                         Glide.with(this@PostDetailActivity)
@@ -358,14 +360,12 @@ class PostDetailActivity : AppCompatActivity(), CommentActionListener {
                         binding.ivYoutubeThumbnail.setOnClickListener(null)
                     }
 
-                    // 프로필 이미지
                     Glide.with(this@PostDetailActivity)
                         .load(postDetail.profileImageUrl)
                         .placeholder(R.drawable.ic_profile_placeholder)
                         .error(R.drawable.ic_profile_placeholder)
                         .into(binding.ivProfile)
 
-                    // 이미지 배열
                     val imageViews = listOf(
                         binding.ivPostImage1, binding.ivPostImage2, binding.ivPostImage3,
                         binding.ivPostImage4, binding.ivPostImage5
@@ -385,7 +385,6 @@ class PostDetailActivity : AppCompatActivity(), CommentActionListener {
                         }
                     }
 
-                    // 로컬 좋아요 상태 재적용
                     setLikeButtonState(isLiked)
                     postViewModel.updateLikeStatus(postId, isLiked)
                 }
@@ -405,7 +404,7 @@ class PostDetailActivity : AppCompatActivity(), CommentActionListener {
 
     private fun toggleLike() {
         val token = getToken()
-        val userIdInt = getUserIdAsInt() // 👍 좋아요 API가 Int를 기대한다면 여기서 Int로 전달
+        val userIdInt = getUserIdAsInt()
         if (token.isNullOrBlank() || userIdInt == null) {
             Toast.makeText(this, "로그인이 필요합니다.", Toast.LENGTH_SHORT).show()
             return
@@ -456,7 +455,7 @@ class PostDetailActivity : AppCompatActivity(), CommentActionListener {
         if (!token.isNullOrBlank()) {
             loadPostDetail(postId)
             getComments(postId.toLong())
-            setLikeButtonState(isLiked) // 로컬 상태 재적용
+            setLikeButtonState(isLiked)
         }
     }
 }
