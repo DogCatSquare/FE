@@ -77,8 +77,8 @@ interface BoardApiService {
     fun createPost(
         @Header("Authorization") token: String,
         @Path("userId") userId: Long,
-        @Part("request") requestBody: RequestBody, // application/json
-        @Part communityImages: List<@JvmSuppressWildcards MultipartBody.Part>? // 파트명 스웨거 기준
+        @Part("request") requestBody: RequestBody,
+        @Part communityImages: List<@JvmSuppressWildcards MultipartBody.Part>?
     ): Call<ApiResponse<PostResponse>>
 
     /** 게시글 수정 (멀티파트) */
@@ -87,9 +87,9 @@ interface BoardApiService {
     fun updatePost(
         @Header("Authorization") token: String,
         @Path("postId") postId: Long,
-        @Part("request") requestJson: RequestBody, // application/json
-        @Part communityImages: List<@JvmSuppressWildcards MultipartBody.Part> = emptyList()
-    ): Call<ApiResponse<PostResponse>>
+        @Part request: okhttp3.MultipartBody.Part,
+        @Part communityImages: List<@JvmSuppressWildcards okhttp3.MultipartBody.Part> = emptyList()
+    ): Call<com.example.dogcatsquare.data.model.community.ApiResponse<Unit>>
 
     /** 게시글 단건 조회 */
     @GET("api/board/post/{postId}")

@@ -26,7 +26,6 @@ class PostAdapter(
         mItemClickListener = itemClickListener
     }
 
-    /** 외부에서 안전하게 데이터 갱신 */
     fun submitList(items: List<GetAllPostResult>?) {
         hotPostList.clear()
         if (!items.isNullOrEmpty()) {
