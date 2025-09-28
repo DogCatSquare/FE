@@ -1,5 +1,7 @@
 package com.example.dogcatsquare.data.api
 
+import com.example.dogcatsquare.data.model.home.RegisterFcmRequest
+import com.example.dogcatsquare.data.model.home.RegisterFcmResponse
 import com.example.dogcatsquare.data.model.login.CheckEmailResponse
 import com.example.dogcatsquare.data.model.login.CheckNicknameResponse
 import com.example.dogcatsquare.data.model.login.DeleteUserResponse
@@ -66,4 +68,7 @@ interface UserRetrofitItf {
 
     @DELETE("api/users")
     fun deleteUser(@Header("Authorization") token: String): Call<DeleteUserResponse>
+
+    @POST("api/fcm/register/token")
+    fun fcmToken(@Header("Authorization") token: String, @Body fcmRequest: RegisterFcmRequest): Call<RegisterFcmResponse>
 }

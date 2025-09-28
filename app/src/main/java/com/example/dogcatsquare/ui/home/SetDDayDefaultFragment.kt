@@ -21,6 +21,8 @@ import com.example.dogcatsquare.data.model.home.DDay
 import com.example.dogcatsquare.data.model.home.DeleteDDayResponse
 import com.example.dogcatsquare.data.model.home.FetchDDayRequest
 import com.example.dogcatsquare.data.model.home.FetchDDayResponse
+import com.example.dogcatsquare.data.model.home.NotificationRequest
+import com.example.dogcatsquare.data.model.home.NotificationResponse
 import com.example.dogcatsquare.data.network.RetrofitObj
 import com.example.dogcatsquare.databinding.FragmentSetDDayDefaultBinding
 import com.example.dogcatsquare.ui.viewmodel.DDayViewModel
@@ -45,6 +47,11 @@ class SetDDayDefaultFragment : Fragment() {
     private var dayDay: String = ""
     private var dayTerm: Int =  -1
     private var isAlarm: Boolean = true
+
+    private fun getUserId(): Int {
+        val sp = requireActivity().getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
+        return sp.getInt("userId", -1)
+    }
 
     private fun getToken(): String? {
         val sharedPref = activity?.getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
@@ -105,17 +112,16 @@ class SetDDayDefaultFragment : Fragment() {
 
         binding.alarmBtn.setOnCheckedChangeListener { _, isChecked ->
             dDayViewModel.setAlarmState(isChecked) // ✅ ViewModel 업데이트
+            val date = binding.dateBtn.text.toString()                  // "yyyy-MM-dd"
+            val term = binding.countText.text.toString().removeSuffix("주").toInt()
+            postDdayAlarm(dayId, date, term, isChecked)
 
             if (isChecked) {
                 // 패드 구매 알람 활성화
                 Toast.makeText(requireContext(), "알람이 설정되었습니다", Toast.LENGTH_SHORT).show()
-//                AlarmHelper.setDdayAlarm(requireContext(), DDay(dayId, dayTitle, dayDay, dayTerm, 0, true, "", ""))
-//                scheduleDdayPush(dayId, dayTitle, dayDay)
             } else {
                 // 패드 구매 알람 비활성화
                 Toast.makeText(requireContext(), "알람이 해제되었습니다", Toast.LENGTH_SHORT).show()
-//                AlarmHelper.cancelDdayAlarm(requireContext(), dayId)
-//                cancelDdayPush(dayId)
             }
         }
 
@@ -371,29 +377,47 @@ class SetDDayDefaultFragment : Fragment() {
         })
     }
 
-    //    private fun scheduleDdayPush(ddayId: Int, title: String, day: String) {
-//        val token = getToken() ?: return
-//        val api = RetrofitObj.getRetrofit(requireContext()).create(PushApi::class.java)
-//        lifecycleScope.launch(Dispatchers.IO) {
-//            try {
-//                val res = api.schedule("Bearer $token", SchedulePushReq(ddayId, title, day))
-//                Log.d("PUSH/SCHEDULE", "ok: ${res.body()?.taskId}")
-//            } catch (e: Exception) {
-//                Log.e("PUSH/SCHEDULE", "failed: ${e.message}")
-//            }
-//        }
-//    }
-//
-//    private fun cancelDdayPush(ddayId: Int) {
-//        val token = getToken() ?: return
-//        val api = RetrofitObj.getRetrofit(requireContext()).create(PushApi::class.java)
-//        lifecycleScope.launch(Dispatchers.IO) {
-//            try {
-//                api.cancel("Bearer $token", CancelPushReq(ddayId))
-//                Log.d("PUSH/CANCEL", "ok")
-//            } catch (e: Exception) {
-//                Log.e("PUSH/CANCEL", "failed: ${e.message}")
-//            }
-//        }
-//    }
+    private fun postDdayAlarm(
+        ddayId: Int,
+        startDate: String, // yyyy-MM-dd
+        termWeeks: Int,
+        enabled: Boolean
+    ) {
+        val jwt = getToken() ?: return
+        val userId = getUserId()
+        if (userId == -1) return
+
+        val api = RetrofitObj.getRetrofit(requireContext()).create(DDayRetrofitItf::class.java)
+        api.setAlarm("Bearer $jwt",
+            ddayId,
+            userId,
+            NotificationRequest(startDate, termWeeks, enabled)
+        ).enqueue(object : Callback<NotificationResponse> {
+            override fun onResponse(
+                p0: Call<NotificationResponse>,
+                p1: Response<NotificationResponse>
+            ) {
+                if (p1.isSuccessful) {
+                    p1.body()?.let {
+                        if (it.isSuccess) {
+                            val body = p1.body()
+                            Log.d("DDAY/ALARM", "ok scheduledAt=${body?.result?.scheduledAt}")
+                            if (enabled) {
+                                Toast.makeText(requireContext(), "알람이 예약되었습니다", Toast.LENGTH_SHORT).show()
+                            } else {
+                                Toast.makeText(requireContext(), "알람이 해제되었습니다", Toast.LENGTH_SHORT).show()
+                            }
+                        } else {
+                            Log.e("DDAY/ALARM", "응답 코드: ${it.code}, 응답 메시지: ${it.message}")
+                        }
+                    }
+                }
+            }
+
+            override fun onFailure(p0: Call<NotificationResponse>, p1: Throwable) {
+                Log.e("DDAY/ALARM", "error=${p1.message}")
+            }
+
+        })
+    }
 }
