@@ -58,9 +58,8 @@ class EditPostActivity : AppCompatActivity() {
     private val PICK_IMAGE_REQUEST = 1
     private var postId: Long = -1L
     private var originalImageUrl: String? = null
-    private var postType: String = "post" // UI 용 (기존 로직 유지)
+    private var postType: String = "post"
 
-    // ★ 추가: 서버에 보낼 게시판 타입(한글 표기)
     private var boardTypeFromIntent: String = "자유게시판"
 
     private fun getToken(): String? =
@@ -87,10 +86,9 @@ class EditPostActivity : AppCompatActivity() {
         btnComplete.setOnClickListener { updatePost() }
         addPhoto.setOnClickListener { openGallery() }
 
-        // 전달값 세팅
         postId = intent.getIntExtra("postId", -1).toLong()
-        postType = intent.getStringExtra("postType") ?: "post" // UI 용 (기존 유지)
-        boardTypeFromIntent = intent.getStringExtra("boardType") ?: "자유게시판" // ★ 추가
+        postType = intent.getStringExtra("postType") ?: "post"
+        boardTypeFromIntent = intent.getStringExtra("boardType") ?: "자유게시판"
         etTitle.setText(intent.getStringExtra("title"))
         etContent.setText(intent.getStringExtra("content"))
         etLink.setText(intent.getStringExtra("videoUrl"))
@@ -160,7 +158,6 @@ class EditPostActivity : AppCompatActivity() {
     }
 
     private fun getCompressedImageFile(uri: Uri): File {
-        // 간단히 사용 (Deprecated 경고는 무시)
         val bitmap: Bitmap = MediaStore.Images.Media.getBitmap(contentResolver, uri)
         val out = File(cacheDir, "compressed_${System.currentTimeMillis()}.jpg")
         FileOutputStream(out).use { fos ->
@@ -170,17 +167,28 @@ class EditPostActivity : AppCompatActivity() {
         return out
     }
 
-    // ★ 수정: 서버 요구 스키마에 맞게 boardType 포함
+    // 인텐트로 받은 boardType을 서버가 기대하는 포맷으로 맞춰줍니다.
+    private fun normalizeBoardType(raw: String?): String {
+        val v = raw?.trim()?.replace(" ", "") ?: ""
+        return when {
+            v.contains("자유") -> "자유게시판"
+            v.contains("정보") -> "정보공유게시판"
+            v.contains("질문") || v.contains("상담") -> "질문상담게시판"
+            v.contains("입양") || v.contains("임보") -> "입양임보게시판"
+            v.contains("실종") || v.contains("목격") -> "실종목격게시판"
+            else -> "자유게시판"
+        }
+    }
+
     private data class UpdatePostPayload(
-        @SerializedName("boardType") val boardType: String,
+        @SerializedName("boardType") val boardType: String,   // ★ 필수
         @SerializedName("title") val title: String,
         @SerializedName("content") val content: String,
         @SerializedName("videoUrl") val videoUrl: String? = null
     )
 
     private fun updatePost() {
-        val token = getToken()
-        if (token.isNullOrBlank()) {
+        val token = getToken() ?: run {
             Toast.makeText(this, "로그인이 필요합니다.", Toast.LENGTH_SHORT).show()
             return
         }
@@ -191,74 +199,60 @@ class EditPostActivity : AppCompatActivity() {
 
         val title = etTitle.text.toString().trim()
         val content = etContent.text.toString().trim()
-        val videoUrl = etLink.text.toString().trim()
+        val videoUrl = etLink.text.toString().trim().ifBlank { null }
 
         if (title.isEmpty() || content.isEmpty()) {
             Toast.makeText(this, "제목과 내용을 모두 입력해주세요.", Toast.LENGTH_SHORT).show()
             return
         }
 
-        // 1) JSON 파트
-        val payload = UpdatePostPayload(
-            boardType = boardTypeFromIntent, // ★ 추가
-            title = title,
-            content = content,
-            videoUrl = videoUrl.ifBlank { null }
+        val boardTypeRaw = intent.getStringExtra("boardType")    // PostDetailActivity에서 넘겼던 값
+        val boardType = normalizeBoardType(boardTypeRaw)
+
+        // 1) JSON 파트 (이름은 여기서 'request'로 지정)
+        val payload = UpdatePostPayload(boardType, title, content, videoUrl)
+        val json = Gson().toJson(payload)
+        val jsonBody = json.toRequestBody("application/json; charset=utf-8".toMediaType())
+        val requestPart = MultipartBody.Part.createFormData(
+            "request",
+            "request.json",
+            jsonBody
         )
-        val requestJson: RequestBody =
-            Gson().toJson(payload).toRequestBody("application/json; charset=utf-8".toMediaType())
 
-        // 2) 이미지 파트 (없으면 빈 리스트)
-        val imageParts: List<MultipartBody.Part> =
-            imageItems.filter { it.file != null }.map { item ->
-                val file = item.file!!
-                val body = file.asRequestBody("image/*".toMediaTypeOrNull())
-                MultipartBody.Part.createFormData("communityImages", file.name, body)
-            }
+        // 2) 이미지 파트
+        val imageParts = imageItems.filter { it.file != null }.map { item ->
+            val body = item.file!!.asRequestBody("image/*".toMediaTypeOrNull())
+            MultipartBody.Part.createFormData("communityImages", item.file.name, body)
+        }
 
-        // 3) 호출
-        val api = RetrofitObj.getRetrofit(this).create(BoardApiService::class.java)
-        api.updatePost("Bearer $token", postId, requestJson, imageParts)
-            .enqueue(object : Callback<ApiResponse<PostResponse>> {
-                override fun onResponse(
-                    call: Call<ApiResponse<PostResponse>>,
-                    response: Response<ApiResponse<PostResponse>>
-                ) {
-                    val body = response.body()
-                    if (response.isSuccessful && body?.isSuccess == true) {
-                        val resultIntent = Intent().apply {
-                            putExtra("UPDATED_POST_ID", postId)
-                            putExtra("UPDATED_TITLE", title)
-                            putExtra("UPDATED_CONTENT", content)
-                            putExtra("UPDATED_VIDEO_URL", videoUrl)
-                            putExtra(
-                                "UPDATED_IMAGE_URL",
-                                imageItems.firstOrNull { it.file != null }?.file?.absolutePath
-                                    ?: originalImageUrl
-                            )
+            Log.d("EditPostActivity", "PUT payload=$json images=${imageParts.size}")
+
+            // 3) 호출
+            val api = RetrofitObj.getRetrofit(this).create(BoardApiService::class.java)
+            api.updatePost("Bearer $token", postId, requestPart, imageParts)
+                .enqueue(object : Callback<ApiResponse<Unit>> {
+                    override fun onResponse(
+                        call: Call<ApiResponse<Unit>>,
+                        response: Response<ApiResponse<Unit>>
+                    ) {
+                        val body = response.body()
+                        if (response.isSuccessful && body?.isSuccess == true) {
+                            Toast.makeText(this@EditPostActivity, "수정되었습니다.", Toast.LENGTH_SHORT).show()
+                            setResult(Activity.RESULT_OK)
+                            finish()
+                        } else {
+                            val msg = body?.message ?: response.errorBody()?.string() ?: "수정 실패"
+                            Log.e("EditPostActivity", "수정 실패: http=${response.code()} msg=$msg")
+                            Toast.makeText(this@EditPostActivity, msg, Toast.LENGTH_SHORT).show()
                         }
-                        setResult(Activity.RESULT_OK, resultIntent)
-                        finish()
-                    } else {
-                        // ★ 메시지 우선 표시하도록 개선
-                        val msg = body?.message ?: run {
-                            try {
-                                response.errorBody()?.string()
-                            } catch (_: Exception) {
-                                null
-                            }
-                        } ?: "수정 실패"
-                        Log.e("EditPostActivity", "수정 실패: http=${response.code()} msg=$msg")
-                        Toast.makeText(this@EditPostActivity, msg, Toast.LENGTH_SHORT).show()
                     }
-                }
 
-                override fun onFailure(call: Call<ApiResponse<PostResponse>>, t: Throwable) {
-                    Log.e("EditPostActivity", "네트워크 오류: ${t.message}", t)
-                    Toast.makeText(this@EditPostActivity, "네트워크 오류", Toast.LENGTH_SHORT).show()
-                }
-            })
-    }
+                    override fun onFailure(call: Call<ApiResponse<Unit>>, t: Throwable) {
+                        Log.e("EditPostActivity", "네트워크 오류: ${t.message}", t)
+                        Toast.makeText(this@EditPostActivity, "네트워크 오류: ${t.message}", Toast.LENGTH_SHORT).show()
+                    }
+                })
+        }
 
     class ImagePreviewAdapter(private val items: List<ImageItem>) :
         RecyclerView.Adapter<ImagePreviewAdapter.ViewHolder>() {
