@@ -52,15 +52,13 @@
         <!-- 제목 -->
         <TextView
             android:id="@+id/tvTitle"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
+            android:layout_width="383dp"
+            android:layout_height="match_parent"
             android:layout_weight="1"
             android:text="새로운 장난감을 사줬어요"
+            android:textColor="#0E0E0E"
             android:textSize="16sp"
-            android:textStyle="bold"
-            android:textColor="#0E0E0E" />
-
-        <!-- 하트 아이콘 -->
+            android:textStyle="bold" />
 
         <!-- 메뉴 아이콘 -->
         <ImageView
@@ -70,7 +68,8 @@
             android:src="@drawable/ic_post_menu"
             android:contentDescription="메뉴"
             android:clickable="true"
-            android:focusable="true" />
+            android:focusable="true"
+            android:visibility="gone"/>
 
     </LinearLayout>
 
