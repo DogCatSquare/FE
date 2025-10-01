@@ -12,7 +12,7 @@ class BoardDetailActivity : AppCompatActivity() {
         binding = ActivityBoardDetailBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        val boardId = intent.getIntExtra("boardId", -1)  // 현재 게시판 ID 가져오기
-        binding.tvBoardTitle.text = "게시판 ID: $boardId"  // 예제 코드
+        val boardId = intent.getIntExtra("boardId", -1)
+        binding.tvBoardTitle.text = "게시판 ID: $boardId"
     }
 }
