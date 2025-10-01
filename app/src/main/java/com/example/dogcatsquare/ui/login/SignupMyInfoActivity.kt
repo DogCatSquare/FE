@@ -17,6 +17,9 @@ import com.example.dogcatsquare.R
 import com.example.dogcatsquare.data.api.DDayRetrofitItf
 import com.example.dogcatsquare.data.network.RetrofitObj
 import com.example.dogcatsquare.data.api.UserRetrofitItf
+import com.example.dogcatsquare.data.model.home.DDay
+import com.example.dogcatsquare.data.model.home.GetAllDDayResponse
+import com.example.dogcatsquare.data.model.home.GetAllDDayResult
 import com.example.dogcatsquare.data.model.home.NotificationRequest
 import com.example.dogcatsquare.data.model.home.NotificationResponse
 import com.example.dogcatsquare.data.model.home.RegisterFcmRequest
@@ -196,11 +199,10 @@ class SignupMyInfoActivity : AppCompatActivity() {
                                     // 2) FCM 토큰 서버 등록
                                     registerFcmIfReady(accessToken, userId)
 
-                                    // 3) 기본 D-Day 알람 예약 (가능한 경우)
-                                    // - 기본 D-Day의 ID를 저장해둔 경우에만 예약 시도
-                                    maybeScheduleDefaultAlarms(accessToken, userId)
-
-                                    moveLoginActivity(resp) // 회원가입 성공 시 로그인 화면으로 이동
+                                    fetchAndCacheDefaultDdayIds(accessToken) {
+                                        maybeScheduleDefaultAlarms(accessToken, userId)
+                                        moveLoginActivity(accessToken, userId, resp)
+                                    }
                                 } else {
                                     Log.e("Signup/FAILURE", "응답 코드: ${resp.code}, 응답 메시지: ${resp.message}")
                                 }
@@ -245,6 +247,7 @@ class SignupMyInfoActivity : AppCompatActivity() {
 
     // 기본 D-Day 알람 예약 (Call<NotificationResponse> 가정)
     private fun maybeScheduleDefaultAlarms(accessToken: String, userId: Int) {
+
         val sp = getSharedPreferences("app_prefs", MODE_PRIVATE)
         val foodDdayId = sp.getInt("food_dday_id", -1).takeIf { it > 0 }
         val padDdayId  = sp.getInt("pad_dday_id",  -1).takeIf { it > 0 }
@@ -689,6 +692,7 @@ class SignupMyInfoActivity : AppCompatActivity() {
             if (count > 1) { // 최소값 설정
                 count--
                 binding.countText.text = "${count}주"
+                foodDuring = count
             }
         }
 
@@ -697,6 +701,7 @@ class SignupMyInfoActivity : AppCompatActivity() {
             if (count < 12) { // 최대값 설정
                 count++
                 binding.countText.text = "${count}주"
+                foodDuring = count
             }
         }
 
@@ -711,6 +716,7 @@ class SignupMyInfoActivity : AppCompatActivity() {
             if (count > 1) { // 최소값 설정
                 count--
                 binding.padsCountText.text = "${count}주"
+                padDuring = count
             }
         }
 
@@ -719,13 +725,14 @@ class SignupMyInfoActivity : AppCompatActivity() {
             if (count < 12) { // 최대값 설정
                 count++
                 binding.padsCountText.text = "${count}주"
+                padDuring = count
             }
         }
 
         padDuring = count
     }
 
-    private fun moveLoginActivity(signupResponse: SignUpResponse){
+    private fun moveLoginActivity(accessToken: String, userId: Int, signupResponse: SignUpResponse){
 
         Log.d("message", signupResponse.message)
         Log.d("result", signupResponse.result.id.toString())
@@ -743,8 +750,42 @@ class SignupMyInfoActivity : AppCompatActivity() {
         // 슬라이드 효과 적용
 //        val options = ActivityOptionsCompat.makeCustomAnimation(this, R.anim.fade_in, R.anim.fade_out)
         startActivity(intent)
-
-        // 두 번째 Toast 메시지 표시 (로그인 안내)
-        Toast.makeText(this, "로그인을 진행해 주세요 :)", Toast.LENGTH_SHORT).show()
     }
+
+    // ▼ SignupMyInfoActivity 안에 추가
+    private fun fetchAndCacheDefaultDdayIds(accessToken: String, onDone: () -> Unit) {
+        val api = RetrofitObj.getRetrofit(this).create(DDayRetrofitItf::class.java)
+        Log.d("ALARM/DEFAULT", "fetch ddays to cache ids...")
+
+        // ✨ getDDays -> getAllDDays 로 변경
+        api.getAllDDays("Bearer $accessToken").enqueue(object : Callback<GetAllDDayResponse> {
+            override fun onResponse(
+                call: Call<GetAllDDayResponse>,
+                resp: Response<GetAllDDayResponse>
+            ) {
+                if (resp.isSuccessful) {
+                    val list = resp.body()?.result.orEmpty()
+
+                    val food = list.firstOrNull { it.title.contains("사료") }
+                    val pad  = list.firstOrNull { it.title.contains("패드") }
+
+                    getSharedPreferences("app_prefs", MODE_PRIVATE).edit().apply {
+                        food?.let { putInt("food_dday_id", it.id) }
+                        pad?.let  { putInt("pad_dday_id",  it.id) }
+                    }.apply()
+
+                    Log.d("ALARM/DEFAULT", "cached ids -> food=${food?.id}, pad=${pad?.id}")
+                } else {
+                    Log.e("ALARM/DEFAULT", "getDDays http=${resp.code()} err=${resp.errorBody()?.string()}")
+                }
+                onDone()
+            }
+
+            override fun onFailure(call: Call<GetAllDDayResponse>, t: Throwable) {
+                Log.e("ALARM/DEFAULT", "getAllDDays fail=${t.message}", t)
+                onDone()
+            }
+        })
+    }
+
 }
