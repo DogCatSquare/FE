@@ -24,9 +24,6 @@ import com.bumptech.glide.signature.ObjectKey
 import com.example.dogcatsquare.R
 import com.example.dogcatsquare.databinding.ActivitySignupPetInfoBinding
 import com.google.android.material.bottomsheet.BottomSheetDialog
-import okhttp3.MediaType.Companion.toMediaTypeOrNull
-import okhttp3.MultipartBody
-import okhttp3.RequestBody
 import java.io.File
 import java.io.FileOutputStream
 

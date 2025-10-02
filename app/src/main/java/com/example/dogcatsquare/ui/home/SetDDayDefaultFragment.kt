@@ -21,6 +21,8 @@ import com.example.dogcatsquare.data.model.home.DDay
 import com.example.dogcatsquare.data.model.home.DeleteDDayResponse
 import com.example.dogcatsquare.data.model.home.FetchDDayRequest
 import com.example.dogcatsquare.data.model.home.FetchDDayResponse
+import com.example.dogcatsquare.data.model.home.NotificationRequest
+import com.example.dogcatsquare.data.model.home.NotificationResponse
 import com.example.dogcatsquare.data.network.RetrofitObj
 import com.example.dogcatsquare.databinding.FragmentSetDDayDefaultBinding
 import com.example.dogcatsquare.ui.viewmodel.DDayViewModel
@@ -45,6 +47,11 @@ class SetDDayDefaultFragment : Fragment() {
     private var dayDay: String = ""
     private var dayTerm: Int =  -1
     private var isAlarm: Boolean = true
+
+    private fun getUserId(): Int {
+        val sp = requireActivity().getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
+        return sp.getInt("userId", -1)
+    }
 
     private fun getToken(): String? {
         val sharedPref = activity?.getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
@@ -105,15 +112,16 @@ class SetDDayDefaultFragment : Fragment() {
 
         binding.alarmBtn.setOnCheckedChangeListener { _, isChecked ->
             dDayViewModel.setAlarmState(isChecked) // ✅ ViewModel 업데이트
+            val date = binding.dateBtn.text.toString()                  // "yyyy-MM-dd"
+            val term = binding.countText.text.toString().removeSuffix("주").toInt()
+            postDdayAlarm(dayId, date, term, isChecked)
 
             if (isChecked) {
                 // 패드 구매 알람 활성화
                 Toast.makeText(requireContext(), "알람이 설정되었습니다", Toast.LENGTH_SHORT).show()
-                AlarmHelper.setDdayAlarm(requireContext(), DDay(dayId, dayTitle, dayDay, dayTerm, 0, true, "", ""))
             } else {
                 // 패드 구매 알람 비활성화
                 Toast.makeText(requireContext(), "알람이 해제되었습니다", Toast.LENGTH_SHORT).show()
-                AlarmHelper.cancelDdayAlarm(requireContext(), dayId)
             }
         }
 
@@ -312,11 +320,13 @@ class SetDDayDefaultFragment : Fragment() {
             if (isChecked) {
                 // 패드 구매 알람 활성화
                 Toast.makeText(requireContext(), "알람이 설정되었습니다", Toast.LENGTH_SHORT).show()
-                AlarmHelper.setDdayAlarm(requireContext(), DDay(dayId, dayTitle, dayDay, dayTerm, 0, true, "", ""))
+//                AlarmHelper.setDdayAlarm(requireContext(), DDay(dayId, dayTitle, dayDay, dayTerm, 0, true, "", ""))
+//                scheduleDdayPush(dayId, dayTitle, dayDay)
             } else {
                 // 패드 구매 알람 비활성화
                 Toast.makeText(requireContext(), "알람이 해제되었습니다", Toast.LENGTH_SHORT).show()
-                AlarmHelper.cancelDdayAlarm(requireContext(), dayId)
+//                AlarmHelper.cancelDdayAlarm(requireContext(), dayId)
+//                cancelDdayPush(dayId)
             }
         }
     }
@@ -343,9 +353,11 @@ class SetDDayDefaultFragment : Fragment() {
 
                             // ✅ 사용자가 설정한 isAlarm 값에 따라 알람 설정 또는 취소
                             if (isAlarm) {
-                                AlarmHelper.setDdayAlarm(requireContext(), DDay(id, dayTitle, day, term, 0, true, "", ""))
+//                                AlarmHelper.setDdayAlarm(requireContext(), DDay(id, dayTitle, day, term, 0, true, "", ""))
+//                                scheduleDdayPush(dayId, dayTitle, dayDay)
                             } else {
-                                AlarmHelper.cancelDdayAlarm(requireContext(), id)
+//                                AlarmHelper.cancelDdayAlarm(requireContext(), id)
+//                                cancelDdayPush(dayId)
                             }
                         } else {
                             Log.e(
@@ -360,6 +372,50 @@ class SetDDayDefaultFragment : Fragment() {
 
             override fun onFailure(call: Call<FetchDDayResponse>, t: Throwable) {
                 Log.d("RETROFIT/FAILURE", t.message.toString())
+            }
+
+        })
+    }
+
+    private fun postDdayAlarm(
+        ddayId: Int,
+        startDate: String, // yyyy-MM-dd
+        termWeeks: Int,
+        enabled: Boolean
+    ) {
+        val jwt = getToken() ?: return
+        val userId = getUserId()
+        if (userId == -1) return
+
+        val api = RetrofitObj.getRetrofit(requireContext()).create(DDayRetrofitItf::class.java)
+        api.setAlarm("Bearer $jwt",
+            ddayId,
+            userId,
+            NotificationRequest(startDate, termWeeks, enabled)
+        ).enqueue(object : Callback<NotificationResponse> {
+            override fun onResponse(
+                p0: Call<NotificationResponse>,
+                p1: Response<NotificationResponse>
+            ) {
+                if (p1.isSuccessful) {
+                    p1.body()?.let {
+                        if (it.isSuccess) {
+                            val body = p1.body()
+                            Log.d("DDAY/ALARM", "ok scheduledAt=${body?.result?.scheduledAt}")
+                            if (enabled) {
+                                Toast.makeText(requireContext(), "알람이 예약되었습니다", Toast.LENGTH_SHORT).show()
+                            } else {
+                                Toast.makeText(requireContext(), "알람이 해제되었습니다", Toast.LENGTH_SHORT).show()
+                            }
+                        } else {
+                            Log.e("DDAY/ALARM", "응답 코드: ${it.code}, 응답 메시지: ${it.message}")
+                        }
+                    }
+                }
+            }
+
+            override fun onFailure(p0: Call<NotificationResponse>, p1: Throwable) {
+                Log.e("DDAY/ALARM", "error=${p1.message}")
             }
 
         })

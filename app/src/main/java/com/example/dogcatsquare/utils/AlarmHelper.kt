@@ -1,5 +1,6 @@
 package com.example.dogcatsquare.utils
 
+import android.annotation.SuppressLint
 import android.app.AlarmManager
 import android.app.PendingIntent
 import android.content.Context
@@ -10,6 +11,7 @@ import java.text.SimpleDateFormat
 import java.util.*
 
 object AlarmHelper {
+    @SuppressLint("ScheduleExactAlarm")
     fun setDdayAlarm(context: Context, dDay: DDay) {
         if (!dDay.isAlarm) {
             Log.d("AlarmHelper", "⏰ isAlarm이 false이므로 알람을 설정하지 않음")
