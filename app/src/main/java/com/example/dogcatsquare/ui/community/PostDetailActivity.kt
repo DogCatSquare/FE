@@ -104,7 +104,6 @@ class PostDetailActivity : AppCompatActivity(), CommentActionListener {
         binding.ivSend.setOnClickListener {
             val commentText = binding.etComment.text.toString()
             if (commentText.isNotBlank()) {
-                // userId는 Long으로 전달
                 postComment(postId.toLong(), getUserId() ?: currentUserId, commentText, "")
             }
         }
@@ -309,6 +308,8 @@ class PostDetailActivity : AppCompatActivity(), CommentActionListener {
         val token = getToken()
         if (token.isNullOrBlank()) {
             Toast.makeText(this, "로그인이 필요합니다.", Toast.LENGTH_SHORT).show()
+            // 소유자 메뉴 노출 방지
+            binding.ivPostMenu.visibility = View.GONE
             return
         }
 
@@ -322,6 +323,7 @@ class PostDetailActivity : AppCompatActivity(), CommentActionListener {
                     Log.d("PostDetailActivity", "API Response Code: ${response.code()}")
                     if (!response.isSuccessful) {
                         Toast.makeText(this@PostDetailActivity, "게시글 조회 실패: ${response.code()}", Toast.LENGTH_SHORT).show()
+                        binding.ivPostMenu.visibility = View.GONE
                         return
                     }
 
@@ -329,9 +331,25 @@ class PostDetailActivity : AppCompatActivity(), CommentActionListener {
                     val postDetail = body?.result
                     if (body?.isSuccess != true || postDetail == null) {
                         Toast.makeText(this@PostDetailActivity, body?.message ?: "게시글 정보가 없습니다.", Toast.LENGTH_SHORT).show()
+                        binding.ivPostMenu.visibility = View.GONE
                         return
                     }
 
+                    // ===== 작성자 여부 체크 (userId 기반) =====
+                    // 로컬 내 userId: -1, 0, null 등은 무시
+                    val myId: Int? = getSharedPreferences("app_prefs", MODE_PRIVATE)
+                        .getInt("userId", -1)
+                        .takeIf { it > 0 }
+
+                    // 서버의 userId도 0이나 null이면 무시
+                    val ownerId: Int? = postDetail.userId?.takeIf { it > 0 }
+
+                    val isOwner = (ownerId != null && myId != null && ownerId == myId)
+
+                    // 기본값은 XML에서 gone, 소유자일 때만 보이게
+                    binding.ivPostMenu.visibility = if (isOwner) View.VISIBLE else View.GONE
+
+                    // ===== 나머지 UI 바인딩 =====
                     boardTypeFromDetail = postDetail.boardType
 
                     binding.tvPostTitle.text = postDetail.title ?: ""
@@ -352,7 +370,11 @@ class PostDetailActivity : AppCompatActivity(), CommentActionListener {
                             .placeholder(R.drawable.ic_placeholder)
                             .into(binding.ivYoutubeThumbnail)
                         binding.ivYoutubeThumbnail.setOnClickListener {
-                            startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(postDetail.thumbnailUrl)))
+                            // 썸네일 클릭 시 실제 영상 URL로 이동 (thumbnailUrl 대신 videoUrl 사용 권장)
+                            val openUrl = postDetail.videoUrl ?: postDetail.thumbnailUrl
+                            if (!openUrl.isNullOrBlank()) {
+                                startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(openUrl)))
+                            }
                         }
                     } else {
                         binding.ivYoutubeThumbnail.setImageDrawable(null)
@@ -392,6 +414,8 @@ class PostDetailActivity : AppCompatActivity(), CommentActionListener {
                 override fun onFailure(call: Call<ApiResponse<PostDetail>>, t: Throwable) {
                     Log.e("PostDetailActivity", "API 호출 실패", t)
                     Toast.makeText(this@PostDetailActivity, "네트워크 오류: ${t.message}", Toast.LENGTH_SHORT).show()
+                    // 실패 시에도 메뉴 숨김으로 유지
+                    binding.ivPostMenu.visibility = View.GONE
                 }
             })
     }
@@ -405,7 +429,7 @@ class PostDetailActivity : AppCompatActivity(), CommentActionListener {
     private fun toggleLike() {
         val token = getToken()
         val userIdInt = getUserIdAsInt()
-        if (token.isNullOrBlank() || userIdInt == null) {
+        if (token.isNullOrBlank() || userIdInt == null || userIdInt <= 0) {
             Toast.makeText(this, "로그인이 필요합니다.", Toast.LENGTH_SHORT).show()
             return
         }
@@ -456,6 +480,8 @@ class PostDetailActivity : AppCompatActivity(), CommentActionListener {
             loadPostDetail(postId)
             getComments(postId.toLong())
             setLikeButtonState(isLiked)
+        } else {
+            binding.ivPostMenu.visibility = View.GONE
         }
     }
 }
