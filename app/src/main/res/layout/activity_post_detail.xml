@@ -122,7 +122,8 @@
                     android:src="@drawable/ic_post_menu"
                     android:contentDescription="메뉴"
                     android:clickable="true"
-                    android:focusable="true" />
+                    android:focusable="true"
+                    android:visibility="gone" />/>
             </LinearLayout>
 
             <!-- 이미지 -->

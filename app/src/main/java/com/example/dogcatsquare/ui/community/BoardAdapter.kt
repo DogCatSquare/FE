@@ -37,12 +37,11 @@ class BoardAdapter(
             binding.tvBoardDescription.text = board.content
             binding.tvBoardHashtags.text = board.keywords?.joinToString(" ") { "#$it" } ?: ""
 
-            // 🔹 추가 버튼 클릭 이벤트
             binding.ivAddIcon.setOnClickListener {
                 val myBoard = com.example.dogcatsquare.data.model.community.MyBoardResult(
                     id = board.id,
                     boardId = board.id,
-                    username = "",  // 필요하면 추가
+                    username = "",
                     boardName = board.boardName
                 )
                 onAddClick(myBoard)
