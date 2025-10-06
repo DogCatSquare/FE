@@ -20,13 +20,14 @@
     <!-- 제목 -->
     <TextView
         android:id="@+id/tvTitle"
-        android:layout_width="wrap_content"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginTop="15dp"
         android:fontFamily="@font/pretendard_semibold"
         android:text="2025년! 새해 복 많이 받으세요!!"
-        android:textSize="15sp"
         android:textColor="#0E0E0E"
+        android:textSize="15sp"
+        app:layout_constraintEnd_toStartOf="@id/guideline2"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
@@ -36,13 +37,28 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
+        android:ellipsize="end"
+        android:maxLines="2"
         android:text="우리 호두도 올해로 5살이 됐어요 새해 아침부터 터그놀이 하는 중.. 호두랑 놀아주..."
         android:textColor="#616161"
-        android:maxLines="2"
-        android:ellipsize="end"
         app:layout_constraintEnd_toStartOf="@+id/guideline2"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/tvTitle" />
+
+    <!-- 날짜 -->
+    <TextView
+        android:id="@+id/tvDate"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:fontFamily="@font/pretendard_regular"
+        android:text="2025.10.06 16:31"
+        android:textColor="#9E9E9E"
+        android:textSize="10sp"
+        app:layout_constraintEnd_toStartOf="@id/guideline2"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/tvContentPreview" />
 
     <!-- 썸네일 이미지 -->
     <ImageView
@@ -51,8 +67,7 @@
         android:layout_height="80dp"
         android:src="@drawable/ic_profile_default"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="1.0"
-        app:layout_constraintStart_toEndOf="@+id/tvContentPreview"
+        app:layout_constraintStart_toEndOf="@+id/guideline2"
         app:layout_constraintTop_toTopOf="@+id/tvTitle" />
 
     <!-- 닉네임 프로필 -->
@@ -65,7 +80,7 @@
         android:src="@drawable/ic_profile_img_default"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/ivThumbnail" />
+        app:layout_constraintTop_toBottomOf="@+id/tvDate" />
 
     <!-- 닉네임 -->
     <TextView
@@ -74,8 +89,8 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
         android:text="닉네임"
-        android:textSize="13sp"
         android:textColor="#0E0E0E"
+        android:textSize="13sp"
         android:fontFamily="@font/pretendard_regular"
         app:layout_constraintStart_toEndOf="@id/post_profile_iv"
         app:layout_constraintTop_toTopOf="@id/post_profile_iv"
@@ -88,8 +103,8 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="5dp"
         android:text="포메라니안"
-        android:textSize="13sp"
         android:textColor="#9E9E9E"
+        android:textSize="13sp"
         android:fontFamily="@font/pretendard_regular"
         app:layout_constraintStart_toEndOf="@id/tvNickname"
         app:layout_constraintTop_toTopOf="@id/tvNickname"
@@ -113,8 +128,8 @@
         android:layout_height="wrap_content"
         android:layout_marginEnd="15dp"
         android:text="6"
-        android:textSize="10sp"
         android:textColor="#9E9E9E"
+        android:textSize="10sp"
         app:layout_constraintEnd_toStartOf="@id/ivComment"
         app:layout_constraintTop_toTopOf="@id/ivLike"
         app:layout_constraintBottom_toBottomOf="@id/ivLike" />
@@ -135,13 +150,18 @@
         android:id="@+id/tvCommentCount"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginEnd="0dp"
         android:text="1"
-        android:textSize="10sp"
         android:textColor="#9E9E9E"
+        android:textSize="10sp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="@id/ivComment"
         app:layout_constraintBottom_toBottomOf="@id/ivComment" />
 
-    <!-- 하단 경계선 -->
+    <!-- 구분선 -->
+    <View
+        android:id="@+id/divider"
+        android:layout_width="match_parent"
+        android:layout_height="0.5dp"
+        android:background="#E0E0E0"
+        app:layout_constraintBottom_toBottomOf="parent" />
 </androidx.constraintlayout.widget.ConstraintLayout>

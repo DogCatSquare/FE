@@ -10,16 +10,17 @@ import com.bumptech.glide.Glide
 import com.bumptech.glide.request.RequestOptions
 import com.example.dogcatsquare.R
 import com.example.dogcatsquare.data.model.community.GetAllPostResult
+import com.example.dogcatsquare.util.DateFmt
 
-class GetAllPostAdapter(private val allPostList: ArrayList<com.example.dogcatsquare.data.model.community.GetAllPostResult>) :
-    RecyclerView.Adapter<GetAllPostAdapter.PostViewHolder>() {
+class GetAllPostAdapter(
+    private val allPostList: ArrayList<GetAllPostResult>
+) : RecyclerView.Adapter<GetAllPostAdapter.PostViewHolder>() {
 
     interface OnItemClickListener {
-        fun onItemClick(post: com.example.dogcatsquare.data.model.community.GetAllPostResult)
+        fun onItemClick(post: GetAllPostResult)
     }
 
     private lateinit var mItemClickListener: OnItemClickListener
-
     fun setMyItemClickListener(itemClickListener: OnItemClickListener) {
         mItemClickListener = itemClickListener
     }
@@ -33,25 +34,34 @@ class GetAllPostAdapter(private val allPostList: ArrayList<com.example.dogcatsqu
         private val username: TextView = itemView.findViewById(R.id.tvNickname)
         private val breed: TextView = itemView.findViewById(R.id.tvDogBreed)
         private val profile: ImageView = itemView.findViewById(R.id.post_profile_iv)
+        private val dateText: TextView = itemView.findViewById(R.id.tvDate)
 
-        fun bind(post: com.example.dogcatsquare.data.model.community.GetAllPostResult) {
+        fun bind(post: GetAllPostResult) {
+            // 텍스트
             titleText.text = post.title ?: "제목 없음"
             contentPreview.text = post.content ?: "내용 없음"
-            likeCountText.text = post.likeCount.toString()
-            commentCountText.text = post.commentCount.toString()
-            username.text = post.username
-            breed.text = post.animal_type
+            username.text = post.username ?: ""
+            breed.text = post.animal_type ?: ""
 
+            likeCountText.text = (post.likeCount ?: 0).toString()
+            commentCountText.text = (post.commentCount ?: 0).toString()
+
+            dateText.text = DateFmt.format(post.createdAt)
+
+            // 프로필 이미지
             Glide.with(itemView.context)
                 .load(post.profileImageURL)
                 .apply(RequestOptions.circleCropTransform())
                 .placeholder(R.drawable.ic_profile_placeholder)
+                .error(R.drawable.ic_profile_placeholder)
                 .into(profile)
 
+            // 썸네일 이미지
             if (!post.thumbnailURL.isNullOrEmpty()) {
                 Glide.with(itemView.context)
-                    .load(post.thumbnailURL?.first())
+                    .load(post.thumbnailURL.first())
                     .placeholder(R.drawable.ic_profile_default)
+                    .error(R.drawable.ic_profile_default)
                     .into(thumbnail)
             } else {
                 thumbnail.setImageResource(R.drawable.ic_profile_default)
@@ -60,15 +70,15 @@ class GetAllPostAdapter(private val allPostList: ArrayList<com.example.dogcatsqu
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): PostViewHolder {
-        val view = LayoutInflater.from(parent.context).inflate(R.layout.item_post, parent, false)
+        val view = LayoutInflater.from(parent.context)
+            .inflate(R.layout.item_post, parent, false)
         return PostViewHolder(view)
     }
 
     override fun onBindViewHolder(holder: PostViewHolder, position: Int) {
-        holder.bind(allPostList[position])
-        holder.itemView.setOnClickListener {
-            mItemClickListener.onItemClick(allPostList[position])
-        }
+        val post = allPostList[position]
+        holder.bind(post)
+        holder.itemView.setOnClickListener { mItemClickListener.onItemClick(post) }
     }
 
     override fun getItemCount(): Int = allPostList.size

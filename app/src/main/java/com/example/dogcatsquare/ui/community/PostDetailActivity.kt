@@ -30,6 +30,7 @@ import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
 import android.content.SharedPreferences
+import com.example.dogcatsquare.util.DateFmt // ★ 날짜 포맷 유틸 사용
 
 class PostDetailActivity : AppCompatActivity(), CommentActionListener {
 
@@ -138,7 +139,6 @@ class PostDetailActivity : AppCompatActivity(), CommentActionListener {
             popup.show()
         }
 
-        // 상세 로드 + 좋아요 토글
         loadPostDetail(postId)
 
         binding.ivLike.setOnClickListener { toggleLike() }
@@ -268,7 +268,6 @@ class PostDetailActivity : AppCompatActivity(), CommentActionListener {
                 if (replyText.isNotBlank()) {
                     postComment(postId.toLong(), getUserId() ?: currentUserId, replyText, comment.id.toString())
 
-                    // 로컬 업데이트(서버 반영 전 임시 표시)
                     val index = commentDatas.indexOfFirst { it.id == comment.id }
                     if (index != -1) {
                         val newReply = com.example.dogcatsquare.data.model.community.Reply(
@@ -308,7 +307,6 @@ class PostDetailActivity : AppCompatActivity(), CommentActionListener {
         val token = getToken()
         if (token.isNullOrBlank()) {
             Toast.makeText(this, "로그인이 필요합니다.", Toast.LENGTH_SHORT).show()
-            // 소유자 메뉴 노출 방지
             binding.ivPostMenu.visibility = View.GONE
             return
         }
@@ -336,20 +334,16 @@ class PostDetailActivity : AppCompatActivity(), CommentActionListener {
                     }
 
                     // ===== 작성자 여부 체크 (userId 기반) =====
-                    // 로컬 내 userId: -1, 0, null 등은 무시
                     val myId: Int? = getSharedPreferences("app_prefs", MODE_PRIVATE)
                         .getInt("userId", -1)
                         .takeIf { it > 0 }
 
-                    // 서버의 userId도 0이나 null이면 무시
                     val ownerId: Int? = postDetail.userId?.takeIf { it > 0 }
 
                     val isOwner = (ownerId != null && myId != null && ownerId == myId)
 
-                    // 기본값은 XML에서 gone, 소유자일 때만 보이게
                     binding.ivPostMenu.visibility = if (isOwner) View.VISIBLE else View.GONE
 
-                    // ===== 나머지 UI 바인딩 =====
                     boardTypeFromDetail = postDetail.boardType
 
                     binding.tvPostTitle.text = postDetail.title ?: ""
@@ -357,7 +351,9 @@ class PostDetailActivity : AppCompatActivity(), CommentActionListener {
                     like_count = postDetail.likeCount ?: 0
                     binding.tvLikeCount.text = like_count.toString()
                     binding.tvCommentCount.text = (postDetail.commentCount ?: 0).toString()
-                    binding.tvDate.text = postDetail.createdAt ?: ""
+
+                    binding.tvDate.text = DateFmt.format(postDetail.createdAt)
+
                     binding.tvUsername.text = postDetail.username ?: ""
 
                     // 유튜브 썸네일
@@ -370,7 +366,6 @@ class PostDetailActivity : AppCompatActivity(), CommentActionListener {
                             .placeholder(R.drawable.ic_placeholder)
                             .into(binding.ivYoutubeThumbnail)
                         binding.ivYoutubeThumbnail.setOnClickListener {
-                            // 썸네일 클릭 시 실제 영상 URL로 이동 (thumbnailUrl 대신 videoUrl 사용 권장)
                             val openUrl = postDetail.videoUrl ?: postDetail.thumbnailUrl
                             if (!openUrl.isNullOrBlank()) {
                                 startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(openUrl)))
@@ -414,7 +409,6 @@ class PostDetailActivity : AppCompatActivity(), CommentActionListener {
                 override fun onFailure(call: Call<ApiResponse<PostDetail>>, t: Throwable) {
                     Log.e("PostDetailActivity", "API 호출 실패", t)
                     Toast.makeText(this@PostDetailActivity, "네트워크 오류: ${t.message}", Toast.LENGTH_SHORT).show()
-                    // 실패 시에도 메뉴 숨김으로 유지
                     binding.ivPostMenu.visibility = View.GONE
                 }
             })
@@ -451,7 +445,6 @@ class PostDetailActivity : AppCompatActivity(), CommentActionListener {
                             like_count = (like_count - 1).coerceAtLeast(0)
                         }
                         else -> {
-                            // 서버 메시지가 바뀌어도 최소한 UI는 동기화
                             isLiked = !isLiked
                             like_count = if (isLiked) (like_count + 1) else (like_count - 1).coerceAtLeast(0)
                         }
