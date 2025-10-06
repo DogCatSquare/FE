@@ -13,10 +13,11 @@ import com.bumptech.glide.Glide
 import com.example.dogcatsquare.R
 import com.example.dogcatsquare.data.model.community.Comment
 import com.example.dogcatsquare.data.model.community.Reply
+import com.example.dogcatsquare.util.DateFmt
 
 class CommentsAdapter(
-    private val comments: ArrayList<com.example.dogcatsquare.data.model.community.Comment>,
-    private val actionListener: CommentActionListener // 액션 처리를 위한 콜백 인터페이스
+    private val comments: ArrayList<Comment>,
+    private val actionListener: CommentActionListener
 ) : RecyclerView.Adapter<CommentsAdapter.CommentViewHolder>() {
 
     inner class CommentViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
@@ -36,34 +37,37 @@ class CommentsAdapter(
 
     override fun onBindViewHolder(holder: CommentViewHolder, position: Int) {
         val comment = comments[position]
+
         holder.tvUsername.text = comment.name
         holder.tvCommentContent.text = comment.content
-        holder.tvTimestamp.text = comment.timestamp
+
+        holder.tvTimestamp.text = DateFmt.format(comment.timestamp)
 
         Glide.with(holder.itemView.context)
             .load(comment.profileImageUrl)
+            .placeholder(R.drawable.ic_profile_placeholder)
+            .error(R.drawable.ic_profile_placeholder)
             .into(holder.ivProfile)
 
-        val sp = holder.itemView.context.getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
-        val myUserId = sp.getInt("userId", -1)
-        val isMine = (comment.userId == myUserId)
-
-        holder.ivReplyMenu.visibility = if (isMine) View.VISIBLE else View.GONE
-
-        val repliesList = comments.filter { it.parentId == comment.id.toString() }.map { reply ->
-            Reply(
-                id = reply.id,
-                content = reply.content,
-                name = reply.name,
-                dogBreed = "",
-                profileImageUrl = reply.profileImageUrl,
-                timestamp = reply.timestamp
-            )
-        }.toMutableList()
+        // ===== 대댓글 목록 구성 =====
+        val repliesList = comments
+            .filter { it.parentId == comment.id.toString() }
+            .map { reply ->
+                Reply(
+                    id = reply.id,
+                    content = reply.content,
+                    name = reply.name,
+                    dogBreed = "",
+                    profileImageUrl = reply.profileImageUrl,
+                    timestamp = DateFmt.format(reply.timestamp)
+                )
+            }.toMutableList()
 
         if (repliesList.isNotEmpty()) {
             holder.rvReplies.visibility = View.VISIBLE
-            holder.rvReplies.layoutManager = LinearLayoutManager(holder.itemView.context)
+            if (holder.rvReplies.layoutManager == null) {
+                holder.rvReplies.layoutManager = LinearLayoutManager(holder.itemView.context)
+            }
             val repliesAdapter = holder.rvReplies.adapter as? RepliesAdapter
             if (repliesAdapter == null) {
                 holder.rvReplies.adapter = RepliesAdapter(repliesList)
@@ -74,22 +78,21 @@ class CommentsAdapter(
             holder.rvReplies.visibility = View.GONE
         }
 
+        // ===== 댓글 메뉴 처리 =====
         holder.ivReplyMenu.visibility = View.VISIBLE
-
         holder.ivReplyMenu.setOnClickListener { view ->
             val popup = PopupMenu(view.context, view)
             popup.menuInflater.inflate(R.menu.comment_menu, popup.menu)
 
-            val sp = view.context.getSharedPreferences("app_prefs", android.content.Context.MODE_PRIVATE)
+            val sp = view.context.getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
             val myUserId = sp.getInt("userId", -1)
-            val isMine = (comment.userId == myUserId)   // ← Comment.userId 필드가 있어야 합니다
+            val isMine = (comment.userId == myUserId)
 
-            // reply는 항상, delete는 내 댓글일 때만
             popup.menu.findItem(R.id.action_reply)?.isVisible = true
             popup.menu.findItem(R.id.action_delete)?.isVisible = isMine
 
-            popup.setOnMenuItemClickListener { menuItem ->
-                when (menuItem.itemId) {
+            popup.setOnMenuItemClickListener { item ->
+                when (item.itemId) {
                     R.id.action_reply -> {
                         actionListener.onReplyClicked(comment)
                         true
