@@ -143,7 +143,14 @@ class PostDetailActivity : AppCompatActivity(), CommentActionListener {
                             true
                         }
                         R.id.menu_delete -> {
-                            // TODO: 게시글 삭제 API 연결
+                            AlertDialog.Builder(this@PostDetailActivity)
+                                .setTitle("게시글 삭제")
+                                .setMessage("정말 이 게시글을 삭제하시겠습니까?")
+                                .setPositiveButton("삭제") { _, _ ->
+                                    deletePost(postId)
+                                }
+                                .setNegativeButton("취소", null)
+                                .show()
                             Toast.makeText(this@PostDetailActivity, "게시글 삭제", Toast.LENGTH_SHORT).show()
                             true
                         }
@@ -157,6 +164,52 @@ class PostDetailActivity : AppCompatActivity(), CommentActionListener {
         loadPostDetail(postId)
 
         binding.ivLike.setOnClickListener { toggleLike() }
+    }
+
+    // 게시글 삭제
+    private fun deletePost(postId: Int) {
+        val token = getToken()
+        if (token.isNullOrBlank()) {
+            Toast.makeText(this, "로그인이 필요합니다.", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        val boardApi = RetrofitObj.getRetrofit(this).create(BoardApiService::class.java)
+        boardApi.deletePost("Bearer $token", postId)
+            .enqueue(object : Callback<ApiResponse<Unit>> {
+                override fun onResponse(
+                    call: Call<ApiResponse<Unit>>,
+                    response: Response<ApiResponse<Unit>>
+                ) {
+                    if (response.isSuccessful) {
+                        val body = response.body()
+                        if (body?.isSuccess == true) {
+                            Toast.makeText(this@PostDetailActivity, "게시글이 삭제되었습니다.", Toast.LENGTH_SHORT).show()
+                            finish() // 현재 화면 종료 → 목록으로 복귀
+                        } else {
+                            Toast.makeText(
+                                this@PostDetailActivity,
+                                body?.message ?: "삭제 실패 (${response.code()})",
+                                Toast.LENGTH_SHORT
+                            ).show()
+                        }
+                    } else {
+                        Toast.makeText(
+                            this@PostDetailActivity,
+                            "삭제 실패: ${response.code()}",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    }
+                }
+
+                override fun onFailure(call: Call<ApiResponse<Unit>>, t: Throwable) {
+                    Toast.makeText(
+                        this@PostDetailActivity,
+                        "네트워크 오류: ${t.message}",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
+            })
     }
 
     // ===== 댓글 조회 =====

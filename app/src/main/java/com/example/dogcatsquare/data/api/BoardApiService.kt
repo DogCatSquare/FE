@@ -75,4 +75,11 @@ interface BoardApiService {
         @Header("Authorization") token: String,
         @Path("postId") postId: Int
     ): Call<ApiResponse<PostDetail>>
+
+    /** 게시글 삭제 */
+    @DELETE("api/board/post/{postId}")
+    fun deletePost(
+        @Header("Authorization") token: String,
+        @Path("postId") postId: Int
+    ): Call<ApiResponse<Unit>>
 }
