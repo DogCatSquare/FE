@@ -9,6 +9,7 @@ import android.os.Bundle
 import android.provider.MediaStore
 import android.text.Editable
 import android.text.TextWatcher
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -21,13 +22,15 @@ import com.bumptech.glide.Glide
 import com.example.dogcatsquare.R
 import com.example.dogcatsquare.data.api.BoardApiService
 import com.example.dogcatsquare.data.model.community.ApiResponse
-import com.example.dogcatsquare.data.model.community.PostRequest
+import com.example.dogcatsquare.data.model.community.PostCreateRequest
 import com.example.dogcatsquare.data.model.community.PostResponse
 import com.example.dogcatsquare.data.network.RetrofitObj
 import com.google.gson.Gson
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody
 import okhttp3.RequestBody
+import okhttp3.RequestBody.Companion.asRequestBody
+import okhttp3.RequestBody.Companion.toRequestBody
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -67,7 +70,8 @@ class CreatePostActivity : AppCompatActivity() {
         addPhoto = findViewById(R.id.add_photo)
 
         rvImagePreview = findViewById(R.id.rv_image_preview)
-        rvImagePreview.layoutManager = LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
+        rvImagePreview.layoutManager =
+            LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
         imageAdapter = ImagePreviewAdapter(selectedImageFiles)
         rvImagePreview.adapter = imageAdapter
 
@@ -171,7 +175,6 @@ class CreatePostActivity : AppCompatActivity() {
     private fun createPost() {
         val title = etTitle.text.toString().trim()
         val content = etContent.text.toString().trim()
-        val videoUrl = etLink.text.toString().trim()
 
         if (title.isEmpty() || content.isEmpty()) {
             Toast.makeText(this, "제목과 내용을 모두 입력해주세요.", Toast.LENGTH_SHORT).show()
@@ -189,28 +192,31 @@ class CreatePostActivity : AppCompatActivity() {
             return
         }
 
-        val postRequest = PostRequest(
+        val linkRaw: String? = etLink.text.toString().trim().ifBlank { null }
+
+        val payload = PostCreateRequest(
             boardType = boardType!!,
             title = title,
             content = content,
-            videoUrl = videoUrl.ifBlank { null }
+            videoUrlCamel = linkRaw,   // "videoUrl"
+            videoUrlSnake = linkRaw    // "video_URL"
         )
 
-        val requestBody = RequestBody.create(
-            "application/json".toMediaTypeOrNull(),
-            Gson().toJson(postRequest)
-        )
+        val json = Gson().toJson(payload)
+        val jsonBody: RequestBody =
+            json.toRequestBody("application/json; charset=utf-8".toMediaTypeOrNull())
 
-        val imageParts: List<MultipartBody.Part>? =
-            if (selectedImageFiles.isNotEmpty()) {
-                selectedImageFiles.map { file ->
-                    val req = RequestBody.create("image/*".toMediaTypeOrNull(), file)
-                    MultipartBody.Part.createFormData("communityImages", file.name, req)
-                }
-            } else null
+        val imageParts = if (selectedImageFiles.isNotEmpty()) {
+            selectedImageFiles.map { file ->
+                val body = file.asRequestBody("image/*".toMediaTypeOrNull())
+                MultipartBody.Part.createFormData("communityImages", file.name, body)
+            }
+        } else null
+
+        Log.d("CreatePost", "json=$json")
 
         val svc = RetrofitObj.getRetrofit(this).create(BoardApiService::class.java)
-        svc.createPost("Bearer $token", userId, requestBody, imageParts)
+        svc.createPost("Bearer $token", userId, jsonBody, imageParts)
             .enqueue(object : Callback<ApiResponse<PostResponse>> {
                 override fun onResponse(
                     call: Call<ApiResponse<PostResponse>>,

@@ -38,7 +38,6 @@ class PostDetailActivity : AppCompatActivity(), CommentActionListener {
     private lateinit var commentAdapter: CommentsAdapter
 
     private val currentUserId: Long = 1L
-
     private val postViewModel: PostViewModel by viewModels()
 
     private var postId: Int = -1
@@ -51,6 +50,9 @@ class PostDetailActivity : AppCompatActivity(), CommentActionListener {
     private lateinit var likePref: SharedPreferences
 
     private var boardTypeFromDetail: String? = null
+
+    // 상세 응답을 보관해서 수정 화면으로 넘길 때 사용
+    private var currentPost: PostDetail? = null
 
     private fun getToken(): String? {
         val sp = getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
@@ -116,15 +118,28 @@ class PostDetailActivity : AppCompatActivity(), CommentActionListener {
                 setOnMenuItemClickListener { menuItem ->
                     when (menuItem.itemId) {
                         R.id.menu_edit -> {
-                            val editIntent = Intent(this@PostDetailActivity, EditPostActivity::class.java).apply {
-                                putExtra("postId", postId)
-                                putExtra("title", binding.tvPostTitle.text.toString())
-                                putExtra("content", binding.tvPostContent.text.toString())
-                                putExtra("videoUrl", videoUrl)
-                                // ★ 추가: 상세에서 받은 게시판 타입 전달 (없으면 "자유게시판")
-                                putExtra("boardType", boardTypeFromDetail ?: "자유게시판")
+                            val post = currentPost ?: run {
+                                Toast.makeText(
+                                    this@PostDetailActivity,
+                                    "게시글 정보를 불러오는 중입니다.",
+                                    Toast.LENGTH_SHORT
+                                ).show()
+                                return@setOnMenuItemClickListener true
                             }
-                            startActivity(editIntent)
+
+                            val intent = Intent(this@PostDetailActivity, EditPostActivity::class.java).apply {
+                                putExtra("postId", post.id ?: postId)
+                                putExtra("title", post.title ?: "")
+                                putExtra("content", post.content ?: "")
+
+                                val link = post.videoUrl ?: ""
+                                Log.d("POST_DETAIL→EDIT", "send videoUrl='$link' (postId=${post.id})")
+                                putExtra("videoUrl", link)
+
+                                putExtra("boardType", post.boardType ?: (boardTypeFromDetail ?: "자유게시판"))
+                                putStringArrayListExtra("images", ArrayList(post.images.orEmpty()))
+                            }
+                            startActivity(intent)
                             true
                         }
                         R.id.menu_delete -> {
@@ -333,6 +348,9 @@ class PostDetailActivity : AppCompatActivity(), CommentActionListener {
                         return
                     }
 
+                    // 현재 포스트 보관 (수정 화면으로 전달에 사용)
+                    currentPost = postDetail
+
                     // ===== 작성자 여부 체크 (userId 기반) =====
                     val myId: Int? = getSharedPreferences("app_prefs", MODE_PRIVATE)
                         .getInt("userId", -1)
@@ -353,7 +371,6 @@ class PostDetailActivity : AppCompatActivity(), CommentActionListener {
                     binding.tvCommentCount.text = (postDetail.commentCount ?: 0).toString()
 
                     binding.tvDate.text = DateFmt.format(postDetail.createdAt)
-
                     binding.tvUsername.text = postDetail.username ?: ""
 
                     // 유튜브 썸네일

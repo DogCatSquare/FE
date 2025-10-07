@@ -25,4 +25,8 @@
         <item>11월</item>
         <item>12월</item>
     </string-array>
+
+    <string name="image_preview">이미지 미리보기</string>
+    <string name="delete_image">이미지 삭제</string>
+
 </resources>
