@@ -25,8 +25,8 @@ class CommunityLocalFragment : Fragment(R.layout.fragment_community_local) {
             dogbreed = "포메라니안",
             title = "새로운 장난감을 사줬어요",
             content = "새로 사준 장난감으로 놀아줬더니 기절한 듯이 잠들었어요\n이제 5개월인데 미친 듯이 놀아서 너무 귀엽네요\n새벽에 우다다만 안하면 정말 좋을 텐데 방법이 없을까...",
-            video_URL = "",
-            thumbnail_URL = "https://example.com/sample_thumbnail.jpg",
+            videoUrl = "",
+            thumbnailUrl = "https://example.com/sample_thumbnail.jpg",
             images = listOf(R.drawable.sample_image1, R.drawable.sample_image2)
         ),
         com.example.dogcatsquare.data.model.community.LocalPost(
@@ -35,8 +35,8 @@ class CommunityLocalFragment : Fragment(R.layout.fragment_community_local) {
             dogbreed = "말티즈",
             title = "강아지 산책 후기",
             content = "새로 사준 장난감으로 놀아줬더니 기절한 듯이 잠들었어요\n이제 5개월인데 미친 듯이 놀아서 너무 귀엽네요\n새벽에 우다다만 안하면 정말 좋을 텐데 방법이 없을까...",
-            video_URL = "",
-            thumbnail_URL = "",
+            videoUrl = "",
+            thumbnailUrl = "",
             images = emptyList()
         )
     )
@@ -116,8 +116,8 @@ class CommunityLocalFragment : Fragment(R.layout.fragment_community_local) {
             putExtra("postId", post.id)
             putExtra("title", post.title)
             putExtra("content", post.content)
-            putExtra("videoUrl", post.video_URL)
-            putExtra("imageUrl", post.thumbnail_URL)
+            putExtra("videoUrl", post.videoUrl)
+            putExtra("imageUrl", post.thumbnailUrl)
         }
         Log.d("CommunityLocalFragment", "EditPostActivity 시작! postId: ${post.id}")
         editPostLauncher.launch(intent)
@@ -152,8 +152,8 @@ class CommunityLocalFragment : Fragment(R.layout.fragment_community_local) {
             localPosts[index] = localPosts[index].copy(
                 title = title,
                 content = content,
-                video_URL = videoUrl,
-                thumbnail_URL = imageUrl
+                videoUrl = videoUrl,
+                thumbnailUrl = imageUrl
             )
             localPostAdapter.notifyItemChanged(index)
         } else {

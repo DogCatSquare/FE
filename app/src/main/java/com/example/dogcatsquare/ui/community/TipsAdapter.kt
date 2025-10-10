@@ -47,8 +47,8 @@ class TipsAdapter(
             // 이미지 크기도 같이 키우기
             val imageView: ImageView = view.findViewById(R.id.ivTipThumbnail)
             val imageParams = imageView.layoutParams
-            imageParams.width = ViewGroup.LayoutParams.MATCH_PARENT // 가로를 부모 크기로
-            imageParams.height = (parent.measuredHeight * 0.35).toInt() // 기존보다 크게 조정
+            imageParams.width = ViewGroup.LayoutParams.MATCH_PARENT
+            imageParams.height = (parent.measuredHeight * 0.35).toInt()    // ← 이미 여기엔 measuredHeight 사용 중
             imageView.layoutParams = imageParams
         }
 

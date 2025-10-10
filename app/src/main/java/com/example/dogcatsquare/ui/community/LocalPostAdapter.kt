@@ -10,14 +10,15 @@ import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.example.dogcatsquare.R
 import com.example.dogcatsquare.data.model.community.LocalPost
+import com.bumptech.glide.Glide  // ★ Glide 추가
 
 class LocalPostAdapter(
     private val context: Context,
     private val localPosts: MutableList<com.example.dogcatsquare.data.model.community.LocalPost>,
-    private val onEditPost: (com.example.dogcatsquare.data.model.community.LocalPost) -> Unit, // 수정 기능 연결
+    private val onEditPost: (com.example.dogcatsquare.data.model.community.LocalPost) -> Unit,
     private val onDeletePost: (Int) -> Unit,
     private val isCompactView: Boolean,
-    private val onItemClick: ((com.example.dogcatsquare.data.model.community.LocalPost) -> Unit)? = null  // 전체 아이템 클릭 이벤트 추가
+    private val onItemClick: ((com.example.dogcatsquare.data.model.community.LocalPost) -> Unit)? = null
 ) : RecyclerView.Adapter<LocalPostAdapter.ViewHolder>() {
 
     inner class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
@@ -38,63 +39,84 @@ class LocalPostAdapter(
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val post = localPosts[position]
 
-        // 전체 아이템 클릭 시 상세 화면으로 이동하는 이벤트 처리
-        holder.itemView.setOnClickListener {
-            onItemClick?.invoke(post)
-        }
+        // 전체 아이템 클릭 시 상세 화면으로 이동
+        holder.itemView.setOnClickListener { onItemClick?.invoke(post) }
 
-        // 게시글 작성자, 견종, 내용을 설정
+        // 텍스트 바인딩
         holder.username.text = post.username
         holder.dogBreed.text = post.dogbreed
         holder.content.text = post.content
-
-        // 홈 탭에서는 2줄, 댕냥 라운지 탭에서는 3줄 표시
         holder.content.apply {
             maxLines = if (isCompactView) 2 else 3
             ellipsize = android.text.TextUtils.TruncateAt.END
         }
 
-        // 이미지가 있다면, dummy 데이터의 경우 리소스 ID를 사용한다고 가정하여 캐스팅 처리
-        if (post.images.isNotEmpty()) {
-            val imageList = post.images as? List<Int>
-            if (imageList != null && imageList.isNotEmpty()) {
-                holder.image1?.setImageResource(imageList[0])
-                holder.image1?.visibility = View.VISIBLE
+        // ===== 이미지 처리 (요구 사항 반영) =====
+        // 1) images(String URL) 시도 → Glide 로드
+        // 2) 없으면 videoUrl에서 유튜브 썸네일 생성 → 로드
+        // 3) 둘 다 없으면 GONE
+        val images: List<String>? = post.images as? List<String>
+        val firstUrl = images?.getOrNull(0)
+        val secondUrl = images?.getOrNull(1)
 
-                if (imageList.size > 1) {
-                    holder.image2?.setImageResource(imageList[1])
-                    holder.image2?.visibility = View.VISIBLE
-                } else {
-                    holder.image2?.visibility = View.GONE
-                }
+        var loadedAny = false
+
+        // 첫 번째 이미지
+        if (!firstUrl.isNullOrBlank() && holder.image1 != null) {
+            holder.image1.visibility = View.VISIBLE
+            Glide.with(holder.itemView)
+                .load(firstUrl)
+                .into(holder.image1)
+            loadedAny = true
+        } else {
+            // 유튜브 썸네일 대체 (첫 번째만)
+            val ytThumb = getYouTubeThumb(post.videoUrl)
+            if (ytThumb != null && holder.image1 != null) {
+                holder.image1.visibility = View.VISIBLE
+                Glide.with(holder.itemView)
+                    .load(ytThumb)
+                    .into(holder.image1)
+                loadedAny = true
             } else {
                 holder.image1?.visibility = View.GONE
-                holder.image2?.visibility = View.GONE
             }
+        }
+
+        // 두 번째 이미지
+        if (!secondUrl.isNullOrBlank() && holder.image2 != null) {
+            holder.image2.visibility = View.VISIBLE
+            Glide.with(holder.itemView)
+                .load(secondUrl)
+                .into(holder.image2)
+            loadedAny = true
         } else {
-            holder.image1?.visibility = View.GONE
             holder.image2?.visibility = View.GONE
         }
 
-        // 메뉴 버튼 클릭 이벤트: 수정/삭제 기능 연결
+        // 어떤 것도 못 불러왔으면 둘 다 GONE 보장
+        if (!loadedAny) {
+            holder.image1?.visibility = View.GONE
+            holder.image2?.visibility = View.GONE
+        }
+        // ===== 이미지 처리 끝 =====
+
+        // 메뉴 버튼: 수정/삭제
         holder.postMenu?.setOnClickListener { showPopupMenu(it, post, position) }
     }
 
     override fun getItemCount(): Int = localPosts.size
 
-    private fun showPopupMenu(view: View, post: com.example.dogcatsquare.data.model.community.LocalPost, position: Int) {
+    private fun showPopupMenu(
+        view: View,
+        post: com.example.dogcatsquare.data.model.community.LocalPost,
+        position: Int
+    ) {
         val popup = PopupMenu(context, view)
         popup.menuInflater.inflate(R.menu.post_menu, popup.menu)
         popup.setOnMenuItemClickListener { item ->
             when (item.itemId) {
-                R.id.menu_edit -> {
-                    onEditPost(post)
-                    true
-                }
-                R.id.menu_delete -> {
-                    onDeletePost(position)
-                    true
-                }
+                R.id.menu_edit -> { onEditPost(post); true }
+                R.id.menu_delete -> { onDeletePost(position); true }
                 else -> false
             }
         }
@@ -107,5 +129,18 @@ class LocalPostAdapter(
             notifyItemRemoved(position)
             notifyItemRangeChanged(position, localPosts.size)
         }
+    }
+
+    // ★ 유튜브 썸네일 URL 생성 헬퍼
+    // 지원: youtu.be/XXXX, youtube.com/watch?v=XXXX, youtube.com/shorts/XXXX
+    private fun getYouTubeThumb(videoUrl: String?): String? {
+        if (videoUrl.isNullOrBlank()) return null
+        val id = when {
+            "youtu.be/" in videoUrl -> videoUrl.substringAfter("youtu.be/").substringBefore('?').substringBefore('&')
+            "watch?v=" in videoUrl -> videoUrl.substringAfter("watch?v=").substringBefore('&')
+            "/shorts/" in videoUrl -> videoUrl.substringAfter("/shorts/").substringBefore('?').substringBefore('&')
+            else -> null
+        }
+        return id?.let { "https://img.youtube.com/vi/$it/hqdefault.jpg" }
     }
 }

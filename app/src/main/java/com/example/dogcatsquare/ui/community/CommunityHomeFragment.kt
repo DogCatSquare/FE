@@ -10,6 +10,7 @@ import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.dogcatsquare.R
 import com.example.dogcatsquare.data.model.community.GetAllPostResult
+import com.example.dogcatsquare.data.model.community.toResult   // ✅ 매퍼 import 추가
 import com.example.dogcatsquare.data.model.post.PopularPostResponse
 import com.example.dogcatsquare.data.network.RetrofitObj
 import com.example.dogcatsquare.databinding.FragmentCommunityHomeBinding
@@ -22,11 +23,9 @@ class CommunityHomeFragment : Fragment(R.layout.fragment_community_home) {
     private var _binding: FragmentCommunityHomeBinding? = null
     private val binding get() = _binding!!
 
-    // 어댑터가 ArrayList를 요구한다면 ArrayList로 유지
     private val hotPostDatas: ArrayList<GetAllPostResult> = arrayListOf()
     private val allPostDatas: ArrayList<GetAllPostResult> = arrayListOf()
 
-    // 진행 중 콜 보관 → 화면 파괴 시 취소
     private var popularCall: Call<PopularPostResponse>? = null
     private var tipCall: Call<com.example.dogcatsquare.data.model.community.GetAllPostResponse>? = null
 
@@ -93,11 +92,9 @@ class CommunityHomeFragment : Fragment(R.layout.fragment_community_home) {
                 val resp = response.body()
                 if (response.isSuccessful && resp?.isSuccess == true) {
                     val posts = resp.result.mapNotNull { post ->
-                        // 필수값 체크
                         val id = post.id ?: return@mapNotNull null
                         val title = post.title ?: "(제목 없음)"
 
-                        // ✅ 안전 보정 (board/username 등 null → 기본값)
                         GetAllPostResult(
                             id = id,
                             board = post.board ?: "(게시판)",
@@ -134,11 +131,11 @@ class CommunityHomeFragment : Fragment(R.layout.fragment_community_home) {
     private fun setupTipPostRecyclerView() {
         allPostDatas.clear()
 
-        val allPostRVAdapter = GetAllPostAdapter(allPostDatas)
+        val allPostRVAdapter = GetAllPostAdapter()
         binding.rvTips.apply {
             adapter = allPostRVAdapter
             layoutManager = LinearLayoutManager(context, LinearLayoutManager.VERTICAL, false)
-            setHasFixedSize(true)
+            setHasFixedSize(false)
         }
 
         allPostRVAdapter.setMyItemClickListener(object : GetAllPostAdapter.OnItemClickListener {
@@ -172,30 +169,8 @@ class CommunityHomeFragment : Fragment(R.layout.fragment_community_home) {
 
                 val resp = response.body()
                 if (response.isSuccessful && resp?.isSuccess == true) {
-                    val posts = resp.result.mapNotNull { post ->
-                        val id = post.id ?: return@mapNotNull null
-                        val title = post.title ?: "(제목 없음)"
-
-                        GetAllPostResult(
-                            id = id,
-                            board = post.board ?: "(게시판)",
-                            title = title,
-                            username = post.username ?: "(익명)",
-                            animal_type = post.animal_type ?: "",
-                            content = post.content ?: "",
-                            likeCount = post.likeCount ?: 0,
-                            commentCount = post.commentCount ?: 0,
-                            videoURL = post.videoURL ?: "",
-                            thumbnailURL = post.thumbnailURL ?: "",
-                            images = post.images ?: emptyList(),
-                            createdAt = post.createdAt ?: "",
-                            profileImageURL = post.profileImageURL ?: ""
-                        )
-                    }.take(10)
-
-                    allPostDatas.clear()
-                    allPostDatas.addAll(posts)
-                    adapter.notifyDataSetChanged()
+                    val posts = resp.result.map { it.toResult() }
+                    adapter.submitList(posts)
                 } else {
                     Log.w("AllPost", "fail code=${response.code()} body=$resp")
                 }
