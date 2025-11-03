@@ -3,7 +3,8 @@ package com.example.dogcatsquare.ui.map.walking.data
 data class WalkCreateRequestDto(
     val coordinates: List<LatLngDto>,
     val duration: Long,
-    val distance: Float
+    val distance: Float,
+    val description: String
 )
 
 // data/Request/LatLngDto.kt 파일 생성

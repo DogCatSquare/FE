@@ -7,11 +7,10 @@
 
     <androidx.fragment.app.FragmentContainerView
         android:id="@+id/map_fragment"
-        android:name="com.naver.maps.map.MapFragment"
+        android:name="com.google.android.gms.maps.SupportMapFragment"
         android:layout_width="match_parent"
         android:layout_height="761dp"
         android:layout_marginTop="16dp" />
-
     <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -39,4 +38,3 @@
     </LinearLayout>
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>
-

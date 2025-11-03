@@ -3,6 +3,7 @@ package com.example.dogcatsquare.ui.map.walking
 import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
+import android.graphics.Canvas
 import android.graphics.Color
 import android.location.Location
 import android.os.Bundle
@@ -17,19 +18,34 @@ import android.widget.EditText
 import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
+import androidx.annotation.DrawableRes
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.AppCompatImageButton
 import androidx.appcompat.widget.Toolbar
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentTransaction
 import androidx.lifecycle.ViewModelProvider
 import com.example.dogcatsquare.R
 import com.example.dogcatsquare.ui.map.walking.data.ViewModel.WalkReviewViewModel
-import com.naver.maps.geometry.LatLng
-import com.naver.maps.map.*
-import com.naver.maps.map.overlay.Marker
-import com.naver.maps.map.overlay.OverlayImage
-import com.naver.maps.map.overlay.PolylineOverlay
+// [수정됨] Naver Map import 제거
+// import com.naver.maps.geometry.LatLng
+// import com.naver.maps.map.*
+// import com.naver.maps.map.overlay.Marker
+// import com.naver.maps.map.overlay.OverlayImage
+// import com.naver.maps.map.overlay.PolylineOverlay
+
+// [수정됨] Google Map import 추가
+import com.google.android.gms.maps.CameraUpdateFactory
+import com.google.android.gms.maps.GoogleMap
+import com.google.android.gms.maps.OnMapReadyCallback
+import com.google.android.gms.maps.SupportMapFragment
+import com.google.android.gms.maps.model.BitmapDescriptor
+import com.google.android.gms.maps.model.BitmapDescriptorFactory
+import com.google.android.gms.maps.model.LatLng
+import com.google.android.gms.maps.model.MarkerOptions
+import com.google.android.gms.maps.model.PolylineOptions
+// ---
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody
 import okhttp3.RequestBody.Companion.toRequestBody
@@ -37,7 +53,9 @@ import java.io.ByteArrayOutputStream
 
 class WalkingReviewFragment : Fragment(), OnMapReadyCallback {
 
-    private lateinit var naverMap: NaverMap
+    // [수정됨] NaverMap -> GoogleMap
+    private var googleMap: GoogleMap? = null
+    // [수정됨] Naver LatLng -> Google LatLng
     private var routeCoords: ArrayList<LatLng> = arrayListOf()
     private var elapsedMinutes: Long = 0L
     private lateinit var addedImageView: ImageView
@@ -59,6 +77,7 @@ class WalkingReviewFragment : Fragment(), OnMapReadyCallback {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
+        // [수정 없음] fragment_mapwalking_review.xml을 로드
         return inflater.inflate(R.layout.fragment_mapwalking_review, container, false)
     }
 
@@ -78,6 +97,7 @@ class WalkingReviewFragment : Fragment(), OnMapReadyCallback {
 
         // Bundle에서 경과 시간(분)과 경로 좌표 목록을 받음
         elapsedMinutes = arguments?.getLong("elapsedTime", 0L) ?: 0L
+        // [수정됨] Google LatLng 타입으로 받도록 ArrayList 타입 변경
         routeCoords = arguments?.getParcelableArrayList("routeCoords") ?: arrayListOf()
 
         // 경과 시간 텍스트 업데이트 (예: "30분")
@@ -93,9 +113,9 @@ class WalkingReviewFragment : Fragment(), OnMapReadyCallback {
             openGallery()
         }
 
-        // 지도 프래그먼트 설정
-        val mapFragment = childFragmentManager.findFragmentById(R.id.map_fragment) as? MapFragment
-            ?: MapFragment.newInstance().also {
+        // [수정됨] 지도 프래그먼트 설정 (Naver MapFragment -> Google SupportMapFragment)
+        val mapFragment = childFragmentManager.findFragmentById(R.id.map_fragment) as? SupportMapFragment
+            ?: SupportMapFragment.newInstance().also {
                 childFragmentManager.beginTransaction().add(R.id.map_fragment, it).commit()
             }
         mapFragment.getMapAsync(this)
@@ -132,12 +152,13 @@ class WalkingReviewFragment : Fragment(), OnMapReadyCallback {
 
             val imagePart = bitmapToMultipart(selectedBitmap!!) // 이미지 변환
 
-            // 필요한 추가 데이터 설정
+            // [수정됨] 예제 좌표를 Google LatLng로 변경 (ViewModel도 Google LatLng를 받도록 수정 필요)
             val routeCoords = listOf(LatLng(37.5665, 126.9780)) // 예제 좌표
             val elapsedMinutes = 30L
             val distance = 5.2f
 
-            // 수정된 createWalk 호출 (token 추가)
+            // [수정됨] createWalk 호출 (token 추가)
+            // 참고: viewModel.createWalk 메서드도 Google LatLng 타입을 받도록 수정해야 합니다.
             viewModel.createWalk(token, routeCoords, elapsedMinutes, distance, content, imagePart)
 
             val transaction: FragmentTransaction = parentFragmentManager.beginTransaction()
@@ -181,33 +202,42 @@ class WalkingReviewFragment : Fragment(), OnMapReadyCallback {
         }
     }
 
-    override fun onMapReady(naverMap: NaverMap) {
-        this.naverMap = naverMap
+    // [수정됨] onMapReady(NaverMap) -> onMapReady(GoogleMap)
+    override fun onMapReady(map: GoogleMap) {
+        this.googleMap = map
 
-        naverMap.uiSettings.isLocationButtonEnabled = true
-        naverMap.locationTrackingMode = LocationTrackingMode.None
+        googleMap?.uiSettings?.isMyLocationButtonEnabled = true
 
         if (routeCoords.isNotEmpty()) {
-            val polyline = PolylineOverlay().apply {
-                coords = routeCoords
-                width = 10
-                color = Color.parseColor("#FFB200")
-            }
-            polyline.map = naverMap
+            // Polyline 그리기
+            val polylineOptions = PolylineOptions()
+                .addAll(routeCoords)
+                .width(10f)
+                .color(Color.parseColor("#FFB200"))
+            googleMap?.addPolyline(polylineOptions)
 
-            val startMarker = Marker().apply {
-                position = routeCoords.first()
-                icon = OverlayImage.fromResource(R.drawable.ic_start_marker)
-                map = naverMap
-            }
-            val endMarker = Marker().apply {
-                position = routeCoords.last()
-                icon = OverlayImage.fromResource(R.drawable.ic_end_marker)
-                map = naverMap
-            }
-            val cameraUpdate = CameraUpdate.scrollTo(routeCoords.first())
-            naverMap.moveCamera(cameraUpdate)
+            // 마커 아이콘 생성
+            val startIcon = bitmapDescriptorFromVector(requireContext(), R.drawable.ic_start_marker)
+            val endIcon = bitmapDescriptorFromVector(requireContext(), R.drawable.ic_end_marker)
 
+            // 시작 마커
+            googleMap?.addMarker(
+                MarkerOptions()
+                    .position(routeCoords.first())
+                    .icon(startIcon)
+            )
+            // 종료 마커
+            googleMap?.addMarker(
+                MarkerOptions()
+                    .position(routeCoords.last())
+                    .icon(endIcon)
+            )
+
+            // 카메라 이동
+            val cameraUpdate = CameraUpdateFactory.newLatLng(routeCoords.first())
+            googleMap?.moveCamera(cameraUpdate)
+
+            // 거리 계산
             val totalDistanceKm = calculateTotalDistance(routeCoords)
             val kmTv: TextView = view?.findViewById(R.id.km_tv) ?: return
             kmTv.text = String.format("%.1f km", totalDistanceKm)
@@ -219,6 +249,7 @@ class WalkingReviewFragment : Fragment(), OnMapReadyCallback {
             ?.getString("token", null)
     }
 
+    // [수정됨] Naver LatLng -> Google LatLng
     private fun calculateTotalDistance(coords: List<LatLng>): Float {
         var totalDistance = 0f
         for (i in 0 until coords.size - 1) {
@@ -252,4 +283,14 @@ class WalkingReviewFragment : Fragment(), OnMapReadyCallback {
         return MultipartBody.Part.createFormData("walkReviewImages", "image.jpg", requestBody)
     }
 
+    // [추가됨] MapFragment.kt와 동일한 마커 아이콘 변환 헬퍼 함수
+    private fun bitmapDescriptorFromVector(context: Context, @DrawableRes vectorResId: Int): BitmapDescriptor? {
+        return ContextCompat.getDrawable(context, vectorResId)?.run {
+            setBounds(0, 0, intrinsicWidth, intrinsicHeight)
+            val bitmap = Bitmap.createBitmap(intrinsicWidth, intrinsicHeight, Bitmap.Config.ARGB_8888)
+            val canvas = Canvas(bitmap)
+            draw(canvas)
+            BitmapDescriptorFactory.fromBitmap(bitmap)
+        }
+    }
 }

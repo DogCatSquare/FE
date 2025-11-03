@@ -3,6 +3,8 @@ package com.example.dogcatsquare.ui.map.walking
 import android.Manifest
 import android.content.*
 import android.content.pm.PackageManager
+import android.graphics.Bitmap // [추가]
+import android.graphics.Canvas // [추가]
 import android.graphics.Color
 import android.location.Location
 import android.location.LocationManager
@@ -16,6 +18,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
 import android.widget.Toast
+import androidx.annotation.DrawableRes // [추가]
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
@@ -23,23 +26,38 @@ import androidx.fragment.app.FragmentTransaction
 import com.example.dogcatsquare.LocationService
 import com.example.dogcatsquare.data.api.LocationUpdateInterface
 import com.example.dogcatsquare.R
-import com.naver.maps.geometry.LatLng
-import com.naver.maps.map.*
-import com.naver.maps.map.overlay.PolylineOverlay
-import com.naver.maps.map.util.FusedLocationSource
+
+// [수정] Google Map Import
 import com.google.android.gms.location.*
-import com.naver.maps.map.overlay.Marker
-import com.naver.maps.map.overlay.OverlayImage
+import com.google.android.gms.maps.CameraUpdateFactory
+import com.google.android.gms.maps.GoogleMap
+import com.google.android.gms.maps.OnMapReadyCallback
+import com.google.android.gms.maps.SupportMapFragment
+import com.google.android.gms.maps.model.BitmapDescriptor
+import com.google.android.gms.maps.model.BitmapDescriptorFactory
+import com.google.android.gms.maps.model.LatLng
+import com.google.android.gms.maps.model.MarkerOptions
+import com.google.android.gms.maps.model.Polyline
+import com.google.android.gms.maps.model.PolylineOptions
+// ---
 
 class WalkingMapViewFragment : Fragment(), OnMapReadyCallback, LocationUpdateInterface {
 
     private var locationService: LocationService? = null
     private var isBound = false
 
-    private val userPolyline = PolylineOverlay()
+    // [수정] Google Polyline
+    private var userPolyline: Polyline? = null
+    // [수정] PolylineOptions를 클래스 멤버로 미리 정의 (Race Condition 방지)
+    private val userPolylineOptions = PolylineOptions()
+        .width(10f)
+        .color(Color.parseColor("#FFB200"))
+
+    // [수정] Google LatLng
     private val coords = mutableListOf<LatLng>()
-    private lateinit var naverMap: NaverMap
-    private lateinit var locationSource: FusedLocationSource
+    // [수정] GoogleMap
+    private var googleMap: GoogleMap? = null
+
     private lateinit var fusedLocationClient: FusedLocationProviderClient
     private lateinit var locationRequest: LocationRequest
 
@@ -53,8 +71,7 @@ class WalkingMapViewFragment : Fragment(), OnMapReadyCallback, LocationUpdateInt
         override fun run() {
             if (isTrackingLocation) {
                 elapsedTime = System.currentTimeMillis() - startTime
-                // 필요시 UI 업데이트 가능 (예: 타이머 텍스트뷰 갱신)
-                timerHandler.postDelayed(this, 1000)  // 1초마다 갱신
+                timerHandler.postDelayed(this, 1000)
             }
         }
     }
@@ -62,6 +79,7 @@ class WalkingMapViewFragment : Fragment(), OnMapReadyCallback, LocationUpdateInt
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
     ): View? {
+        // [수정] fragment_mapwalking_mapview.xml을 사용
         val rootView = inflater.inflate(R.layout.fragment_mapwalking_mapview, container, false)
 
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(requireActivity())
@@ -74,40 +92,47 @@ class WalkingMapViewFragment : Fragment(), OnMapReadyCallback, LocationUpdateInt
             requestLocationPermission()
         }
 
-        // 지도 프래그먼트 설정
-        val mapFragment = childFragmentManager.findFragmentById(R.id.map_fragment) as MapFragment?
-            ?: MapFragment.newInstance().also {
+        // [수정] Google SupportMapFragment
+        val mapFragment = childFragmentManager.findFragmentById(R.id.map_fragment) as SupportMapFragment?
+            ?: SupportMapFragment.newInstance().also {
                 childFragmentManager.beginTransaction().replace(R.id.map_fragment, it).commit()
             }
         mapFragment.getMapAsync(this)
-        locationSource = FusedLocationSource(this, LOCATION_PERMISSION_REQUEST_CODE)
 
-        // 산책 시작 버튼 클릭 시 타이머와 위치 추적 시작
+        // 산책 시작 버튼
         val startButton: Button = rootView.findViewById(R.id.start_walk_bt)
         startButton.setOnClickListener {
+            // [수정] 맵이 준비되었는지 확인
+            if (googleMap == null) {
+                Toast.makeText(requireContext(), "지도를 불러오는 중입니다.", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
             Toast.makeText(requireContext(), "산책 시작", Toast.LENGTH_SHORT).show()
             setInitialMarker()
             startWalk()
         }
 
-        // 산책 종료 버튼 클릭 시 타이머 정지 및 화면 전환 (다음 화면에 경로 데이터 전달)
+        // 산책 종료 버튼
         val nextButton: Button = rootView.findViewById(R.id.end_walk_bt)
         nextButton.setOnClickListener {
+            if (!isTrackingLocation) {
+                Toast.makeText(requireContext(), "산책을 먼저 시작해주세요.", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
             Toast.makeText(requireContext(), "산책 종료", Toast.LENGTH_SHORT).show()
             endMarker()
             stopWalk()
 
-            // 3초 후에 다음 Fragment로 전환하며 경로 데이터를 Bundle에 담아 전달
+            // 3초 후에 다음 Fragment로 전환
             Handler(Looper.getMainLooper()).postDelayed({
                 val transaction: FragmentTransaction = parentFragmentManager.beginTransaction()
                 val walkingReviewFragment = WalkingReviewFragment()
                 val bundle = Bundle()
 
-                // elapsedTime을 분 단위로 변환하여 전달 (정수 분)
                 val minutes = elapsedTime / 1000 / 60
                 bundle.putLong("elapsedTime", minutes)
 
-                // 좌표 목록 전달 (LatLng가 Parcelable 구현체여야 함)
+                // [수정] Google LatLng 리스트를 전달
                 val coordsList = ArrayList<LatLng>(coords)
                 bundle.putParcelableArrayList("routeCoords", coordsList)
 
@@ -126,7 +151,7 @@ class WalkingMapViewFragment : Fragment(), OnMapReadyCallback, LocationUpdateInt
             isTrackingLocation = true
             startTime = System.currentTimeMillis()
             timerHandler.postDelayed(timerRunnable, 1000)
-            requestLocationUpdate() // 위치 업데이트 요청 시작
+            requestLocationUpdate()
         }
     }
 
@@ -134,7 +159,6 @@ class WalkingMapViewFragment : Fragment(), OnMapReadyCallback, LocationUpdateInt
         if (isTrackingLocation) {
             isTrackingLocation = false
             timerHandler.removeCallbacks(timerRunnable)
-            // 최종 경과 시간 업데이트
             elapsedTime = System.currentTimeMillis() - startTime
             stopLocationUpdate()
         }
@@ -188,19 +212,24 @@ class WalkingMapViewFragment : Fragment(), OnMapReadyCallback, LocationUpdateInt
             stopLocationUpdate()
         }
         unbindLocationService()
+        googleMap = null // [추가] 맵 리소스 해제
     }
 
     private val locationCallback = object : LocationCallback() {
         override fun onLocationResult(locationResult: LocationResult) {
             super.onLocationResult(locationResult)
             locationResult.locations.forEach { location ->
+                // [수정] Google LatLng
                 val latLng = LatLng(location.latitude, location.longitude)
                 updateCoords(latLng)
             }
         }
     }
 
+    // [수정] Google LatLng 및 Polyline 업데이트 로직
     private fun updateCoords(latLng: LatLng) {
+        if (googleMap == null) return // 맵이 준비되지 않으면 아무것도 하지 않음
+
         if (coords.isNotEmpty()) {
             val lastLatLng = coords.last()
             val distance = FloatArray(1)
@@ -211,18 +240,32 @@ class WalkingMapViewFragment : Fragment(), OnMapReadyCallback, LocationUpdateInt
             if (distance[0] < 5) return
         }
         coords.add(latLng)
+
+        // [수정] Google Polyline 업데이트
         if (coords.size >= 2) {
-            userPolyline.coords = coords
+            if (userPolyline != null) {
+                // 맵에 Polyline이 이미 그려져 있다면, points 목록만 갱신
+                userPolyline?.points = coords
+            } else {
+                // 맵에 Polyline이 아직 없다면 (initPolyLine이 아직 호출 안된 극단적 경우)
+                // PolylineOptions에 점을 추가하고 맵에 새로 그림
+                userPolylineOptions.addAll(coords) // <-- .points()가 아니라 .addAll()입니다.
+                userPolyline = googleMap?.addPolyline(userPolylineOptions)
+            }
         }
     }
 
-    override fun onMapReady(naverMap: NaverMap) {
-        this.naverMap = naverMap
-        naverMap.locationSource = locationSource
-        naverMap.uiSettings.isLocationButtonEnabled = true
-        naverMap.locationTrackingMode = LocationTrackingMode.Follow
+    // [수정] onMapReady (Google)
+    override fun onMapReady(map: GoogleMap) {
+        this.googleMap = map
+        googleMap?.uiSettings?.isMyLocationButtonEnabled = true
 
-        if (!hasPermission()) return
+        if (!hasPermission()) {
+            val seoul = LatLng(37.5665, 126.9780)
+            initPolyLine(seoul) // Polyline 초기화
+            googleMap?.moveCamera(CameraUpdateFactory.newLatLngZoom(seoul, 16f))
+            return
+        }
 
         if (ActivityCompat.checkSelfPermission(
                 requireContext(),
@@ -235,18 +278,23 @@ class WalkingMapViewFragment : Fragment(), OnMapReadyCallback, LocationUpdateInt
         ) {
             return
         }
+
+        googleMap?.isMyLocationEnabled = true // 내 위치 파란 점 표시
+
         fusedLocationClient.lastLocation.addOnSuccessListener { location: Location? ->
             val currentLatLng = if (location != null) {
                 LatLng(location.latitude, location.longitude)
             } else {
-                LatLng(37.5665, 126.9780)
+                LatLng(37.5665, 126.9780) // 기본 위치 (서울)
             }
             initPolyLine(currentLatLng)
-            val cameraUpdate = CameraUpdate.scrollTo(currentLatLng)
-            naverMap.moveCamera(cameraUpdate)
+            // [수정] Google CameraUpdate
+            val cameraUpdate = CameraUpdateFactory.newLatLngZoom(currentLatLng, 16f)
+            googleMap?.moveCamera(cameraUpdate)
         }
     }
 
+    // [수정] Google LatLng
     override fun sendLocation(latitude: Double, longitude: Double) {
         Log.d("MAIN_LOCATION", "$latitude, $longitude")
         updateCoords(LatLng(latitude, longitude))
@@ -289,14 +337,15 @@ class WalkingMapViewFragment : Fragment(), OnMapReadyCallback, LocationUpdateInt
         }
     }
 
+    // [수정] Google LatLng 및 Google Polyline
     private fun initPolyLine(startLatLng: LatLng) {
+        coords.clear() // [추가] 좌표 목록 초기화
         coords.add(startLatLng)
         coords.add(startLatLng)
         if (coords.size >= 2) {
-            userPolyline.coords = coords
-            userPolyline.width = 10
-            userPolyline.color = Color.parseColor("#FFB200")
-            userPolyline.map = naverMap
+            // [수정] userPolylineOptions는 이미 정의됨. addAll로 점만 추가
+            userPolylineOptions.addAll(coords)
+            userPolyline = googleMap?.addPolyline(userPolylineOptions)
         }
     }
 
@@ -308,24 +357,39 @@ class WalkingMapViewFragment : Fragment(), OnMapReadyCallback, LocationUpdateInt
         }
     }
 
-    private fun setInitialMarker() {
-        val startMarker = Marker()
-        startMarker.icon = OverlayImage.fromResource(R.drawable.ic_start_marker)
-        startMarker.position = LatLng(
-            naverMap.cameraPosition.target.latitude,
-            naverMap.cameraPosition.target.longitude
-        )
-        startMarker.map = naverMap
+    // [추가] 마커 아이콘 변환 헬퍼 (WalkingReviewFragment와 동일)
+    private fun bitmapDescriptorFromVector(context: Context, @DrawableRes vectorResId: Int): BitmapDescriptor? {
+        return ContextCompat.getDrawable(context, vectorResId)?.run {
+            setBounds(0, 0, intrinsicWidth, intrinsicHeight)
+            val bitmap = Bitmap.createBitmap(intrinsicWidth, intrinsicHeight, Bitmap.Config.ARGB_8888)
+            val canvas = Canvas(bitmap)
+            draw(canvas)
+            BitmapDescriptorFactory.fromBitmap(bitmap)
+        }
     }
 
+    // [수정] Google Marker
+    private fun setInitialMarker() {
+        val startIcon = bitmapDescriptorFromVector(requireContext(), R.drawable.ic_start_marker)
+        googleMap?.cameraPosition?.target?.let {
+            googleMap?.addMarker(
+                MarkerOptions()
+                    .position(it)
+                    .icon(startIcon)
+            )
+        }
+    }
+
+    // [수정] Google Marker
     private fun endMarker() {
-        val endMarker = Marker()
-        endMarker.icon = OverlayImage.fromResource(R.drawable.ic_end_marker)
-        endMarker.position = LatLng(
-            naverMap.cameraPosition.target.latitude,
-            naverMap.cameraPosition.target.longitude
-        )
-        endMarker.map = naverMap
+        val endIcon = bitmapDescriptorFromVector(requireContext(), R.drawable.ic_end_marker)
+        googleMap?.cameraPosition?.target?.let {
+            googleMap?.addMarker(
+                MarkerOptions()
+                    .position(it)
+                    .icon(endIcon)
+            )
+        }
     }
 
     private val connection = object : ServiceConnection {
@@ -345,4 +409,3 @@ class WalkingMapViewFragment : Fragment(), OnMapReadyCallback, LocationUpdateInt
         private const val LOCATION_PERMISSION_REQUEST_CODE = 1000
     }
 }
-
