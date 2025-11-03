@@ -1,12 +1,16 @@
 package com.example.dogcatsquare.ui.map.walking
 
 import android.content.Context
+import android.graphics.Bitmap
+import android.graphics.Canvas
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
+import androidx.annotation.DrawableRes
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -14,13 +18,26 @@ import com.example.dogcatsquare.R
 import com.example.dogcatsquare.data.network.RetrofitClient
 import com.example.dogcatsquare.data.model.map.PlaceDetailRequest
 import com.example.dogcatsquare.databinding.FragmentMapwalkingBinding
-import com.naver.maps.geometry.LatLng
-import com.naver.maps.map.CameraUpdate
-import com.naver.maps.map.MapFragment
-import com.naver.maps.map.NaverMap
-import com.naver.maps.map.OnMapReadyCallback
-import com.naver.maps.map.overlay.Marker
-import com.naver.maps.map.overlay.OverlayImage
+// Naver Map import 제거
+// import com.naver.maps.geometry.LatLng
+// import com.naver.maps.map.CameraUpdate
+// import com.naver.maps.map.MapFragment
+// import com.naver.maps.map.NaverMap
+// import com.naver.maps.map.OnMapReadyCallback
+// import com.naver.maps.map.overlay.Marker
+// import com.naver.maps.map.overlay.OverlayImage
+
+// Google Map import 추가
+import com.google.android.gms.maps.CameraUpdateFactory
+import com.google.android.gms.maps.GoogleMap
+import com.google.android.gms.maps.OnMapReadyCallback
+import com.google.android.gms.maps.SupportMapFragment
+import com.google.android.gms.maps.model.BitmapDescriptor
+import com.google.android.gms.maps.model.BitmapDescriptorFactory
+import com.google.android.gms.maps.model.LatLng
+import com.google.android.gms.maps.model.Marker
+import com.google.android.gms.maps.model.MarkerOptions
+// ---
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -33,7 +50,10 @@ class WalkingMapFragment : Fragment(), OnMapReadyCallback {
     private var placeId: Int = -1
     private var latitude: Double = 0.0
     private var longitude: Double = 0.0
-    private lateinit var naverMap: NaverMap
+
+    // [수정됨] NaverMap -> GoogleMap
+    private var googleMap: GoogleMap? = null
+    // [수정됨] Naver Marker -> Google Marker
     private var currentMarker: Marker? = null
     private var isWished = false
 
@@ -58,7 +78,8 @@ class WalkingMapFragment : Fragment(), OnMapReadyCallback {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        setupNaverMap()
+        // [수정됨] setupNaverMap -> setupGoogleMap
+        setupGoogleMap()
         setupRecyclerView()
         setupButtons()
 
@@ -67,12 +88,11 @@ class WalkingMapFragment : Fragment(), OnMapReadyCallback {
         }
     }
 
-    private fun setupNaverMap() {
-        val mapFragment = childFragmentManager.findFragmentById(R.id.mapView3) as MapFragment?
-            ?: MapFragment.newInstance().also {
-                childFragmentManager.beginTransaction().replace(R.id.mapView3, it).commit()
-            }
-        mapFragment.getMapAsync(this)
+    // [수정됨] Naver Map 설정 -> Google Map 설정
+    private fun setupGoogleMap() {
+        // XML에 <fragment>로 정의된 SupportMapFragment를 찾습니다.
+        val mapFragment = childFragmentManager.findFragmentById(R.id.mapView3) as SupportMapFragment?
+        mapFragment?.getMapAsync(this)
     }
 
     private fun setupRecyclerView() {
@@ -165,7 +185,8 @@ class WalkingMapFragment : Fragment(), OnMapReadyCallback {
                             )
                         }
 
-                        if (::naverMap.isInitialized) {
+                        // [수정됨] naverMap.isInitialized -> googleMap != null
+                        if (googleMap != null) {
                             updateMapLocation(placeDetail.latitude, placeDetail.longitude)
                         }
                     }
@@ -224,31 +245,52 @@ class WalkingMapFragment : Fragment(), OnMapReadyCallback {
         }
     }
 
-    override fun onMapReady(map: NaverMap) {
-        naverMap = map
-        naverMap.apply {
+    // [수정됨] onMapReady(NaverMap) -> onMapReady(GoogleMap)
+    override fun onMapReady(map: GoogleMap) {
+        googleMap = map
+        googleMap?.apply {
             uiSettings.apply {
-                isZoomControlEnabled = false
+                // NaverMap과 동일하게 모든 UI 설정 및 제스처 비활성화
+                isZoomControlsEnabled = false
                 isScrollGesturesEnabled = false
                 isRotateGesturesEnabled = false
                 isTiltGesturesEnabled = false
                 isZoomGesturesEnabled = false
+                isMapToolbarEnabled = false // Google Map의 경우 툴바도 비활성화
             }
         }
         updateMapLocation(latitude, longitude)
     }
 
+    // [수정됨] Naver Map API -> Google Map API
     private fun updateMapLocation(lat: Double, lng: Double) {
+        // Google Map의 LatLng 사용
         val location = LatLng(lat, lng)
 
-        currentMarker?.map = null
-        currentMarker = Marker().apply {
-            position = location
-            icon = OverlayImage.fromResource(R.drawable.ic_marker_park)
-            map = naverMap
-        }
+        // Google Map 마커 제거 방식
+        currentMarker?.remove()
 
-        naverMap.moveCamera(CameraUpdate.scrollTo(location))
+        // Google Map 마커 추가 방식
+        val icon = bitmapDescriptorFromVector(requireContext(), R.drawable.ic_marker)
+        currentMarker = googleMap?.addMarker(
+            MarkerOptions()
+                .position(location)
+                .icon(icon)
+        )
+
+        // Google Map 카메라 이동 방식
+        googleMap?.moveCamera(CameraUpdateFactory.newLatLng(location))
+    }
+
+    // [추가됨] MapFragment.kt와 동일한 마커 아이콘 변환 헬퍼 함수
+    private fun bitmapDescriptorFromVector(context: Context, @DrawableRes vectorResId: Int): BitmapDescriptor? {
+        return ContextCompat.getDrawable(context, vectorResId)?.run {
+            setBounds(0, 0, intrinsicWidth, intrinsicHeight)
+            val bitmap = Bitmap.createBitmap(intrinsicWidth, intrinsicHeight, Bitmap.Config.ARGB_8888)
+            val canvas = Canvas(bitmap)
+            draw(canvas)
+            BitmapDescriptorFactory.fromBitmap(bitmap)
+        }
     }
 
     private fun getToken(): String? {
@@ -287,6 +329,7 @@ class WalkingMapFragment : Fragment(), OnMapReadyCallback {
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
+        googleMap = null // [추가됨] 맵 리소스 해제
     }
 
     companion object {
