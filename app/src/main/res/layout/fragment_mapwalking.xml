@@ -94,16 +94,13 @@
 
         <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
-            android:layout_height="match_parent">
-
-
-            <androidx.constraintlayout.widget.Guideline
-                android:id="@+id/guideline_end2"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:background="@color/white"
-                android:orientation="vertical"
-                app:layout_constraintGuide_percent="0.95" />
+            android:layout_height="wrap_content"> <androidx.constraintlayout.widget.Guideline
+            android:id="@+id/guideline_end2"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@color/white"
+            android:orientation="vertical"
+            app:layout_constraintGuide_percent="0.95" />
 
             <androidx.constraintlayout.widget.Guideline
                 android:id="@+id/guideline_start2"
@@ -212,16 +209,15 @@
                 app:layout_constraintTop_toTopOf="@+id/textView11"
                 app:layout_constraintVertical_bias="1.0" />
 
-
-            <androidx.fragment.app.FragmentContainerView
+            <fragment
                 android:id="@+id/mapView3"
+                android:name="com.google.android.gms.maps.SupportMapFragment"
                 android:layout_width="0dp"
                 android:layout_height="201dp"
                 android:layout_marginTop="8dp"
                 app:layout_constraintEnd_toStartOf="@+id/guideline_end2"
                 app:layout_constraintStart_toStartOf="@+id/guideline_start2"
                 app:layout_constraintTop_toBottomOf="@+id/placeType" />
-
             <ImageButton
                 android:id="@+id/wishButton"
                 android:layout_width="wrap_content"
@@ -306,11 +302,9 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
-                app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/reviewAll_bt"
-                app:layout_constraintVertical_bias="0.107"
                 tools:listitem="@layout/item_mapwalking" />
 
             <ImageView
@@ -341,19 +335,17 @@
 
             <Button
                 android:id="@+id/addButton"
-                android:layout_width="374dp"
+                android:layout_width="0dp"
                 android:layout_height="56dp"
-                android:layout_marginStart="18dp"
                 android:layout_marginTop="10dp"
-                android:layout_marginEnd="19dp"
                 android:layout_marginBottom="10dp"
                 android:backgroundTint="#FFFBF1"
                 android:src="@drawable/btn_add_review"
                 android:text="산책 시작하기"
                 android:textColor="#FFB200"
                 app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toStartOf="@+id/guideline_end2"
+                app:layout_constraintStart_toStartOf="@+id/guideline_start2"
                 app:layout_constraintTop_toBottomOf="@+id/review_rv" />
 
         </androidx.constraintlayout.widget.ConstraintLayout>
