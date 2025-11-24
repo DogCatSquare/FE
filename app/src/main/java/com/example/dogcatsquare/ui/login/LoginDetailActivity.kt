@@ -54,28 +54,23 @@ class LoginDetailActivity: AppCompatActivity() {
             binding.checkBoxAll.isChecked = true
 
             handleLogin(tokenManager.getEmail() ?: "", tokenManager.getPassword() ?: "")
-        } else {
-            // 로그인 버튼 클릭 이벤트
-            binding.loginBtn.setOnClickListener {
-                val email = binding.loginEmailEt.text.toString()
-                val pw = binding.loginPwEt.text.toString()
+        }
 
-                if (email.isEmpty() || pw.isEmpty()) {
-                    binding.errorTv.visibility = View.VISIBLE
-                    binding.errorTv.text = "이메일과 비밀번호를 입력하세요"
-                } else {
-                    // 로그인 처리
-                    // 만약 자동로그인 체크되어있으면 정보 저장
-                    if (loginChecked) {
-//                        editor.putString("email", email)
-//                        editor.putString("pw", pw)
-//                        editor.putBoolean("autoLogin", true)
-//                        editor.commit()
-                        tokenManager.setAutoLogin(true)
-                        tokenManager.saveUserInfo(-1, email, pw, -1) // 나중에 서버 응답값으로 덮어씀
-                    }
-                    handleLogin(email, pw)
+        binding.loginBtn.setOnClickListener {
+            val email = binding.loginEmailEt.text.toString()
+            val pw = binding.loginPwEt.text.toString()
+
+            if (email.isEmpty() || pw.isEmpty()) {
+                binding.errorTv.visibility = View.VISIBLE
+                binding.errorTv.text = "이메일과 비밀번호를 입력하세요"
+            } else {
+                // 로그인 처리
+                // 만약 자동로그인 체크되어있으면 정보 저장
+                if (loginChecked) {
+                    tokenManager.setAutoLogin(true)
+                    tokenManager.saveUserInfo(-1, email, pw, -1) // 나중에 서버 응답값으로 덮어씀
                 }
+                handleLogin(email, pw)
             }
         }
 
