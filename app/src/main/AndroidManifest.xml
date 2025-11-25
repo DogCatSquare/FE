@@ -11,16 +11,16 @@
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_LOCATION" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
-    <!-- 알림 표시 (Android 13+ 런타임 요청 필요) -->
-    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
-    <!-- 정확한 알람 (Android 12+) -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
+
     <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
 
-    <!-- 외부 저장소 읽기 권한 추가 -->
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
-    <!-- Android 13 이상을 위한 권한 -->
     <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
+
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
 
     <application
         android:allowBackup="true"
@@ -85,6 +85,13 @@
             android:enabled="true"
             android:exported="false"
             android:foregroundServiceType="location"/>
+
+        <service
+            android:name="SseAlarmService"
+            android:enabled="true"
+            android:exported="false"
+            android:foregroundServiceType="specialUse" />
+
     </application>
 
 </manifest>

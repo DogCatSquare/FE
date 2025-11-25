@@ -1,5 +1,8 @@
 package com.example.dogcatsquare
 
+import SseAlarmService
+import android.content.Intent
+import android.os.Build
 import android.os.Bundle
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
@@ -71,6 +74,17 @@ class MainActivity : AppCompatActivity() {
                 }
             }
             false
+        }
+
+        fun startAlarmService() {
+            val serviceIntent = Intent(this, SseAlarmService::class.java)
+
+            // API 레벨 26(Oreo) 이상에서는 Context.startService() 대신 startForegroundService()를 사용해야 함
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                startForegroundService(serviceIntent)
+            } else {
+                startService(serviceIntent)
+            }
         }
     }
 }

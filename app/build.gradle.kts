@@ -133,4 +133,8 @@ dependencies {
     implementation ("com.google.firebase:firebase-analytics")
     implementation ("com.google.firebase:firebase-messaging")
 
+    // okhttp
+    implementation ("com.squareup.okhttp3:okhttp:4.12.0")
+    implementation ("com.squareup.okhttp3:okhttp-sse:4.12.0")
+
 }
