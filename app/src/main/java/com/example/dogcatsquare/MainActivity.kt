@@ -1,12 +1,12 @@
 package com.example.dogcatsquare
 
-import SseAlarmService
 import android.content.Intent
 import android.os.Build
 import android.os.Bundle
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
+import com.example.dogcatsquare.data.api.SseAlarmService
 import com.example.dogcatsquare.databinding.ActivityMainBinding
 import com.example.dogcatsquare.ui.community.CommunityFragment
 import com.example.dogcatsquare.ui.home.HomeFragment
