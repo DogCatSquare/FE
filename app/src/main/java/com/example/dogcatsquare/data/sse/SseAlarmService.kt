@@ -38,6 +38,8 @@ class SseAlarmService(private val okHttpClient: OkHttpClient) : SSEClient {
     private val _sseEvents = MutableSharedFlow<SSEAlarmResponse>(replay = 0)
     override val sseEvents: SharedFlow<SSEAlarmResponse> = _sseEvents
 
+    private val processedEventIds = mutableSetOf<Long>()
+
     // 연결 상태를 외부에 노출하기 위한 Flow
     private val _connectionStatus = MutableSharedFlow<Boolean>(replay = 1).apply {
         tryEmit(false)
@@ -85,6 +87,22 @@ class SseAlarmService(private val okHttpClient: OkHttpClient) : SSEClient {
 
                 try {
                     val alarmResponse = gson.fromJson(json, SSEAlarmResponse::class.java)
+
+                    // [수정] ID 중복 체크 로직 추가
+                    synchronized(processedEventIds) {
+                        if (processedEventIds.contains(alarmResponse.id)) {
+                            Log.d("SSEClient", "Duplicate event ID ignored: ${alarmResponse.id}")
+                            return // 이미 처리된 ID면 emit 하지 않음
+                        }
+                        processedEventIds.add(alarmResponse.id)
+
+                        // Set 크기가 너무 커지지 않게 관리 (선택 사항)
+                        if (processedEventIds.size > 100) {
+                            processedEventIds.clear() // 혹은 오래된 것 삭제 로직
+                            processedEventIds.add(alarmResponse.id)
+                        }
+                    }
+
                     scope.launch { _sseEvents.emit(alarmResponse) }
                 } catch (e: Exception) {
                     // 서버에서 다른 유형의 메시지를 보내거나 (예: 로그인 필요 메시지) 데이터 형식이 깨졌을 때 발생
