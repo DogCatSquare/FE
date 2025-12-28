@@ -35,6 +35,30 @@ android {
         }
     }
 
+    // 1. 공용 디버그 키를 위한 서명 설정 추가
+    signingConfigs {
+        create("debug") {
+            storeFile = file("debug.keystore")
+            storePassword = "android"
+            keyAlias = "androiddebugkey"
+            keyPassword = "android"
+        }
+    }
+
+    buildTypes {
+        // 2. 디버그 빌드 시 위에서 만든 설정을 사용하도록 연결
+        debug {
+            signingConfig = signingConfigs.getByName("debug")
+        }
+        release {
+            isMinifyEnabled = false
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro"
+            )
+        }
+    }
+
     // ✅ Java/Kotlin 17로 통일 (AGP 8.6 + Kotlin 2.0.x 권장)
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
