@@ -65,36 +65,22 @@ class SignupActivity : AppCompatActivity() {
 
         binding.nicknameCheckBtn.setOnClickListener {
             val nickname = binding.nicknameEt.text.toString()
-            if (!isNicknameUsed(nickname)) {
-                binding.signupNicknameCheckTv.text = "사용 가능한 닉네임입니다"
-                binding.signupNicknameCheckTv.setTextColor(ContextCompat.getColor(this, R.color.main_color1))
-                nickname_check = true
+
+            if (!binding.nicknameCheckBtn.isClickable) {
+                return@setOnClickListener
             }
-            else {
-                binding.signupNicknameCheckTv.text = "이미 사용 중인 닉네임입니다"
-                binding.signupNicknameCheckTv.setTextColor(ContextCompat.getColor(this, R.color.red))
-            }
+
+            checkNicknameOnServer(nickname)
         }
 
         binding.emailCheckBtn.setOnClickListener {
             val email = binding.emailEt.text.toString()
-            if (isEmailUsed(email) == true) { // 이미 사용 중인 이메일
-                binding.signupEmailCheckTv.text = "이미 사용 중인 이메일입니다"
-                binding.signupEmailCheckTv.setTextColor(ContextCompat.getColor(this, R.color.red))
-            }
-            else {
-                binding.signupEmailCheckTv.text = "사용 가능한 이메일입니다"
-                binding.signupEmailCheckTv.setTextColor(ContextCompat.getColor(this, R.color.main_color1))
 
-                binding.textView41.visibility = View.VISIBLE
-                binding.verifyEmailEt.visibility = View.VISIBLE
-                binding.verifyEmailBtn.visibility = View.VISIBLE
-                binding.verifyEmailTimeTv.visibility = View.VISIBLE
-                binding.verifyEmailCheckTv.visibility = View.VISIBLE
-
-                sendEmail(email)
-                startTimer()
+            if (!binding.emailCheckBtn.isClickable) {
+                return@setOnClickListener
             }
+
+            checkEmailOnServer(email)
         }
 
         binding.verifyEmailBtn.setOnClickListener {
@@ -196,49 +182,6 @@ class SignupActivity : AppCompatActivity() {
         }
     }
 
-    // 닉네임 중복 체크
-    private fun isNicknameUsed(nickname: String): Boolean {
-        var checkNickname: Boolean = false
-        val checkNicknameService = RetrofitObj.getRetrofit(this).create(UserRetrofitItf::class.java)
-        checkNicknameService.checkNickname(nickname).enqueue(object : Callback<CheckNicknameResponse>{
-            override fun onResponse(
-                call: Call<CheckNicknameResponse>,
-                response: Response<CheckNicknameResponse>
-            ) {
-                Log.d("CheckNickname/SUCCESS", response.toString())
-
-                when(response.code()) {
-                    200 -> {
-                        val resp: CheckNicknameResponse = response.body()!!
-                        if (resp != null) {
-                            if (resp.isSuccess) {
-                                if (resp.result == false) { // 일치하는 닉네임 없음 -> 중복 x
-                                    checkNickname = true
-                                    Log.d("CheckNickname/SUCCESS", checkNickname.toString())
-                                } else { // 일치하는 닉네임 있음 -> 중복 o
-                                    checkNickname = false
-                                    Log.d("CheckNickname/SUCCESS", checkNickname.toString())
-                                }
-                            } else {
-                                Log.e("CheckNickname/FAILURE", "응답 코드: ${resp.code}, 응답 메시지: ${resp.message}")
-                            }
-                        } else {
-                            Log.d("CheckNickname/FAILURE", "Response body is null")
-                            Log.e("CheckNickname/FAILURE", "응답 코드: ${resp.code}, 응답메시지: ${resp.message}")
-                        }
-                    }
-                }
-            }
-
-            override fun onFailure(call: Call<CheckNicknameResponse>, t: Throwable) {
-                Log.d("RETROFIT/FAILURE", t.message.toString())
-            }
-
-        })
-
-        return checkNickname
-    }
-
     // 이메일 체크 -> 인증
     private fun validateEmail() {
         val email = binding.emailEt.text.toString()
@@ -257,49 +200,6 @@ class SignupActivity : AppCompatActivity() {
             emailCheckTv.setTextColor(ContextCompat.getColor(this, R.color.main_color1))
             binding.emailCheckBtn.isClickable = true
         }
-    }
-
-    // 이메일 중복 체크
-    private fun isEmailUsed(email: String): Boolean {
-        var checkEmail: Boolean = false
-        val checkEmailService = RetrofitObj.getRetrofit(this).create(UserRetrofitItf::class.java)
-        checkEmailService.checkEmail(email).enqueue(object : Callback<CheckEmailResponse>{
-            override fun onResponse(
-                call: Call<CheckEmailResponse>,
-                response: Response<CheckEmailResponse>
-            ) {
-                Log.d("CheckEmail/SUCCESS", response.toString())
-
-                when(response.code()) {
-                    200 -> {
-                        val resp: CheckEmailResponse = response.body()!!
-                        if (resp != null) {
-                            if (resp.isSuccess) {
-                                if (resp.result == false) { // 일치하는 닉네임 없음 -> 중복 x
-                                    checkEmail = false
-                                    Log.d("CheckEmail/SUCCESS", checkEmail.toString())
-                                } else { // 일치하는 닉네임 있음 -> 중복 o
-                                    checkEmail = true
-                                    Log.d("CheckEmail/SUCCESS", checkEmail.toString())
-                                }
-                            } else {
-                                Log.e("CheckEmail/FAILURE", "응답 코드: ${resp.code}, 응답 메시지: ${resp.message}")
-                            }
-                        } else {
-                            Log.d("CheckEmail/FAILURE", "Response body is null")
-                            Log.e("CheckEmail/FAILURE", "응답 코드: ${resp.code}, 응답메시지: ${resp.message}")
-                        }
-                    }
-                }
-            }
-
-            override fun onFailure(call: Call<CheckEmailResponse>, t: Throwable) {
-                Log.d("RETROFIT/FAILURE", t.message.toString())
-            }
-
-        })
-
-        return checkEmail
     }
 
     // 이메일 인증
@@ -435,8 +335,9 @@ class SignupActivity : AppCompatActivity() {
 
 
     private fun checkSignup() {
-        // && email_verify_check 추가
-        if (nickname_check && pw_check && checkbox_check && phone_check && adAgree && email_verify_check) {
+        val canSignup = nickname_check && pw_check && checkbox_check && phone_check && adAgree && email_verify_check
+
+        if (canSignup) {
             val bundle = Bundle().apply {
                 putString("nickname", binding.nicknameEt.text.toString()) // 닉네임
                 putString("email", binding.emailEt.text.toString())       // 이메일
@@ -450,6 +351,106 @@ class SignupActivity : AppCompatActivity() {
             }
 
             startActivity(intent)
+        }else {
+            Toast.makeText(this, "모든 필수 항목을 올바르게 입력하고 확인해주세요.", Toast.LENGTH_LONG).show()
         }
+    }
+
+    private fun checkNicknameOnServer(nickname: String) {
+        val checkNicknameService = RetrofitObj.getRetrofit(this).create(UserRetrofitItf::class.java)
+        checkNicknameService.checkNickname(nickname).enqueue(object : Callback<CheckNicknameResponse>{
+            override fun onResponse(
+                call: Call<CheckNicknameResponse>,
+                response: Response<CheckNicknameResponse>
+            ) {
+                val checkNicknameTv = binding.signupNicknameCheckTv
+                when(response.code()) {
+                    200 -> {
+                        val resp: CheckNicknameResponse = response.body() ?: return
+
+                        // resp.result == true: 닉네임 있음 -> 중복
+                        if (resp.result == true) {
+                            checkNicknameTv.text = "이미 사용 중인 닉네임입니다"
+                            checkNicknameTv.setTextColor(ContextCompat.getColor(this@SignupActivity, R.color.red))
+                            nickname_check = false
+                        }
+                        // resp.result == false: 닉네임 없음 -> 사용 가능
+                        else {
+                            checkNicknameTv.text = "사용 가능한 닉네임입니다"
+                            checkNicknameTv.setTextColor(ContextCompat.getColor(this@SignupActivity, R.color.main_color1))
+                            nickname_check = true
+                        }
+                    }
+                    // 다른 HTTP 오류 처리
+                    else -> {
+                        checkNicknameTv.text = "서버 오류가 발생했습니다 (${response.code()})"
+                        checkNicknameTv.setTextColor(ContextCompat.getColor(this@SignupActivity, R.color.red))
+                        nickname_check = false
+                    }
+                }
+            }
+
+            override fun onFailure(call: Call<CheckNicknameResponse>, t: Throwable) {
+                Log.e("RETROFIT/FAILURE", t.message.toString())
+                Toast.makeText(this@SignupActivity, "네트워크 오류: 닉네임 확인 실패", Toast.LENGTH_SHORT).show()
+                binding.signupNicknameCheckTv.text = "네트워크 오류"
+                binding.signupNicknameCheckTv.setTextColor(ContextCompat.getColor(this@SignupActivity, R.color.red))
+                nickname_check = false
+            }
+        })
+    }
+
+    private fun checkEmailOnServer(email: String) {
+        val checkEmailService = RetrofitObj.getRetrofit(this).create(UserRetrofitItf::class.java)
+        checkEmailService.checkEmail(email).enqueue(object : Callback<CheckEmailResponse>{
+            override fun onResponse(
+                call: Call<CheckEmailResponse>,
+                response: Response<CheckEmailResponse>
+            ) {
+                val emailCheckTv = binding.signupEmailCheckTv
+                when(response.code()) {
+                    200 -> {
+                        val resp: CheckEmailResponse = response.body() ?: return
+
+                        // resp.result == true: 이메일 있음 -> 중복
+                        if (resp.result == true) {
+                            emailCheckTv.text = "이미 사용 중인 이메일입니다"
+                            emailCheckTv.setTextColor(ContextCompat.getColor(this@SignupActivity, R.color.red))
+                            email_check = false
+                        }
+                        // resp.result == false: 이메일 없음 -> 사용 가능, 인증 단계 진행
+                        else {
+                            emailCheckTv.text = "사용 가능한 이메일입니다"
+                            emailCheckTv.setTextColor(ContextCompat.getColor(this@SignupActivity, R.color.main_color1))
+                            email_check = true // 이메일 유효성 및 중복 통과
+
+                            // 인증 관련 UI 활성화 및 이메일 발송 로직 호출
+                            binding.textView41.visibility = View.VISIBLE
+                            binding.verifyEmailEt.visibility = View.VISIBLE
+                            binding.verifyEmailBtn.visibility = View.VISIBLE
+                            binding.verifyEmailTimeTv.visibility = View.VISIBLE
+                            binding.verifyEmailCheckTv.visibility = View.VISIBLE
+
+                            sendEmail(email)
+                            startTimer()
+                        }
+                    }
+                    // 다른 HTTP 오류 처리
+                    else -> {
+                        emailCheckTv.text = "서버 오류가 발생했습니다 (${response.code()})"
+                        emailCheckTv.setTextColor(ContextCompat.getColor(this@SignupActivity, R.color.red))
+                        email_check = false
+                    }
+                }
+            }
+
+            override fun onFailure(call: Call<CheckEmailResponse>, t: Throwable) {
+                Log.e("RETROFIT/FAILURE", t.message.toString())
+                Toast.makeText(this@SignupActivity, "네트워크 오류: 이메일 확인 실패", Toast.LENGTH_SHORT).show()
+                binding.signupEmailCheckTv.text = "네트워크 오류"
+                binding.signupEmailCheckTv.setTextColor(ContextCompat.getColor(this@SignupActivity, R.color.red))
+                email_check = false
+            }
+        })
     }
 }

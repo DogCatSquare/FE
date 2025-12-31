@@ -6,6 +6,22 @@
     android:backgroundTint="@color/white"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline_start"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="@color/white"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.05" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline_end"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="@color/white"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.95" />
+
     <androidx.appcompat.widget.Toolbar
         android:id="@+id/open_search_view_toolbar"
         android:layout_width="match_parent"
