@@ -6,6 +6,21 @@
     android:backgroundTint="@color/white"
     android:layout_height="match_parent">
 
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline_start"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="@color/white"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.05" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline_end"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="@color/white"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.95" />
 
     <Button
         android:id="@+id/button"
@@ -14,17 +29,14 @@
         android:layout_marginBottom="28dp"
         android:text="이전"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toStartOf="@+id/button2"
-        app:layout_constraintHorizontal_bias="0.492"
-        app:layout_constraintStart_toStartOf="parent" />
+        app:layout_constraintStart_toStartOf="@+id/guideline_start" />
 
     <Button
         android:id="@+id/button2"
         android:layout_width="158dp"
         android:layout_height="66dp"
-        android:layout_marginEnd="32dp"
         android:layout_marginBottom="28dp"
         android:text="완료"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
+        app:layout_constraintEnd_toStartOf="@+id/guideline_end" />
 </androidx.constraintlayout.widget.ConstraintLayout>
