@@ -7,10 +7,11 @@
     <androidx.appcompat.widget.Toolbar
         android:id="@+id/walking_review_toolbar"
         android:layout_width="match_parent"
-        android:layout_height="?attr/actionBarSize"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
+        android:layout_height="wrap_content"
+        android:padding="16dp"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
         app:titleTextColor="@color/black" />
 
     <ScrollView
@@ -116,36 +117,58 @@
                 android:layout_marginBottom="11dp"
                 android:backgroundTint="#F6F6F6"
                 android:ems="10"
-                android:gravity="center_horizontal"
+                android:fontFamily="@font/pretendard_regular"
+                android:gravity="start"
                 android:hint="코스를 소개해주세요. (최소 20자)"
                 android:inputType="text"
-                android:fontFamily="@font/pretendard_regular"
-                app:layout_constraintBottom_toTopOf="@id/addImg_bt"
                 app:layout_constraintEnd_toEndOf="@id/guideline2"
                 app:layout_constraintStart_toStartOf="@id/guideline1"
                 app:layout_constraintTop_toBottomOf="@id/time_distance_layout" />
 
-            <androidx.appcompat.widget.AppCompatImageButton
-                android:id="@+id/addImg_bt"
-                android:layout_width="86dp"
-                android:layout_height="86dp"
-                android:layout_marginBottom="11dp"
-                android:src="@drawable/ic_add_camera"
+            <LinearLayout
+                android:id="@+id/image_layout"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:layout_marginBottom="20dp"
+                android:orientation="horizontal"
                 app:layout_constraintBottom_toTopOf="@id/Completion_bt"
+                app:layout_constraintEnd_toEndOf="@id/guideline2"
                 app:layout_constraintStart_toStartOf="@id/guideline1"
-                app:layout_constraintTop_toBottomOf="@id/introduction_tv" />
+                app:layout_constraintTop_toBottomOf="@id/introduction_tv">
 
-            <ImageView
-                android:id="@+id/addedImageView"
-                android:layout_width="86dp"
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:gravity="center">
+
+                <androidx.appcompat.widget.AppCompatImageButton
+                    android:id="@+id/addImg_bt"
+                    android:layout_width="86dp"
+                    android:layout_height="86dp"
+                    android:src="@drawable/ic_add_camera" />
+
+                <TextView
+                    android:id="@+id/tv_image_count"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:text="0/5"
+                    android:textSize="12sp"
+                    android:textColor="@color/gray4" />
+            </LinearLayout>
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/rv_selected_images"
+                android:layout_width="match_parent"
                 android:layout_height="86dp"
-                android:layout_marginStart="12dp"
-                android:layout_marginBottom="11dp"
-                android:src="@drawable/dog_sample"
-                app:layout_constraintBottom_toTopOf="@id/Completion_bt"
-                app:layout_constraintStart_toEndOf="@id/addImg_bt"
-                app:layout_constraintTop_toBottomOf="@id/introduction_tv"
-                app:layout_constraintVertical_bias="0.733" />
+                android:layout_marginStart="8dp"
+                android:orientation="horizontal"
+                app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+                tools:listitem="@layout/item_selected_image" />
+
+            </LinearLayout>
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/Completion_bt"

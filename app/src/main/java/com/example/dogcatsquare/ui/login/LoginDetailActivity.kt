@@ -20,6 +20,7 @@ import com.example.dogcatsquare.data.model.login.LoginRequest
 import com.example.dogcatsquare.data.model.login.LoginResponse
 import com.example.dogcatsquare.data.model.login.RefreshTokenResponse
 import com.example.dogcatsquare.databinding.ActivityLoginDetailBinding
+import com.example.dogcatsquare.utils.FcmUtils.updateFcmToken
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -130,6 +131,7 @@ class LoginDetailActivity: AppCompatActivity() {
                     val result = response.body()!!.result
                     tokenManager.saveTokens(result.token, result.refreshToken)
                     tokenManager.saveUserInfo(result.userId, result.email, password, result.cityId)
+                    updateFcmToken(this@LoginDetailActivity)
                     navigateToMain()
                 } else {
                     binding.errorTv.visibility = View.VISIBLE

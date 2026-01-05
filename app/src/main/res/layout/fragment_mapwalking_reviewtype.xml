@@ -209,17 +209,6 @@
             android:textSize="10dp"
             android:textStyle="bold" />
 
-        <Button
-            android:id="@+id/writing_bt"
-            android:layout_width="wrap_content"
-            android:layout_height="50dp"
-            android:backgroundTint="#F6F6F6"
-            android:onClick="onButtonClick"
-            android:text="직접작성"
-            android:textColor="#9E9E9E"
-            android:textSize="10dp"
-            android:textStyle="bold" />
-
     </GridLayout>
 
     <com.google.android.material.button.MaterialButton

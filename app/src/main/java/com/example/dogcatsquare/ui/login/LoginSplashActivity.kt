@@ -14,6 +14,7 @@ import com.example.dogcatsquare.data.model.login.RefreshTokenResponse
 import com.example.dogcatsquare.data.network.RetrofitClient
 import com.example.dogcatsquare.data.network.RetrofitObj
 import com.example.dogcatsquare.databinding.ActivityLoginSplashBinding
+import com.example.dogcatsquare.utils.FcmUtils.updateFcmToken
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -52,6 +53,8 @@ class LoginSplashActivity : AppCompatActivity() {
                 if (response.isSuccessful && response.body()?.isSuccess == true) {
                     val result = response.body()!!.result
                     tokenManager.saveTokens(result.accessToken, result.refreshToken)
+
+                    updateFcmToken(this@LoginSplashActivity)
                     moveToMain()
                 } else {
                     Log.e("LoginActivity", "토큰 갱신 실패: ${response.body()?.message}")

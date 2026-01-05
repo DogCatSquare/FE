@@ -70,28 +70,49 @@
         app:layout_constraintStart_toStartOf="@id/guideline_start"
         app:layout_constraintTop_toBottomOf="@+id/imageView12" />
 
-    <HorizontalScrollView
+    <LinearLayout
+        android:id="@+id/image_layout"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
+        android:layout_marginTop="12dp"
+        android:layout_marginBottom="20dp"
+        android:orientation="horizontal"
         app:layout_constraintStart_toStartOf="@id/guideline_start"
         app:layout_constraintEnd_toEndOf="@id/guideline_end"
         app:layout_constraintTop_toBottomOf="@+id/etReview">
 
         <LinearLayout
-            android:id="@+id/imageContainer"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:orientation="horizontal">
+            android:orientation="vertical"
+            android:gravity="center">
 
-            <ImageView
-                android:id="@+id/imageView14"
+            <androidx.appcompat.widget.AppCompatImageButton
+                android:id="@+id/addImg_bt"
+                android:layout_width="86dp"
+                android:layout_height="86dp"
+                android:src="@drawable/ic_add_camera" />
+
+            <TextView
+                android:id="@+id/tv_image_count"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:src="@drawable/bt_add_photo" />
-
+                android:layout_marginTop="4dp"
+                android:text="0/5"
+                android:textSize="12sp"
+                android:textColor="@color/gray4" />
         </LinearLayout>
-    </HorizontalScrollView>
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/rv_selected_images"
+            android:layout_width="match_parent"
+            android:layout_height="86dp"
+            android:layout_marginStart="8dp"
+            android:orientation="horizontal"
+            app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+            tools:listitem="@layout/item_selected_image" />
+
+    </LinearLayout>
 
     <ImageView
         android:id="@+id/doneButton"
