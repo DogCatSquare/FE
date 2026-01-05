@@ -49,7 +49,7 @@ class WalkReviewViewModel : ViewModel() {
         elapsedMinutes: Long,
         distance: Float,
         content: String,
-        image: MultipartBody.Part
+        image: List<MultipartBody.Part>
     ) {
         viewModelScope.launch {
             try {
@@ -73,7 +73,7 @@ class WalkReviewViewModel : ViewModel() {
                 //
                 val response = apiService.createWalk(
                     walkCreateRequestDto = walkCreateRequestDto,
-                    walkReviewImages = listOf(image) // API는 이미지 리스트(List)를 받음
+                    walkReviewImages = image // API는 이미지 리스트(List)를 받음
                 )
 
                 _walkCreateResponse.postValue(response)

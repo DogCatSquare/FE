@@ -40,6 +40,7 @@ import com.example.dogcatsquare.databinding.FragmentHomeBinding
 import com.example.dogcatsquare.ui.community.PostDetailActivity
 import com.example.dogcatsquare.ui.map.location.MapDetailFragment
 import com.example.dogcatsquare.ui.map.location.MapFragment
+import com.example.dogcatsquare.ui.map.walking.WalkingMapFragment
 import com.example.dogcatsquare.ui.mypage.HorizontalSpacingItemDecoration
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
@@ -339,8 +340,8 @@ class HomeFragment : Fragment() {
                 val (currentLat, currentLng) = MapFragment().getMapCurrentPosition()
 
                 // placeType에 따라 다른 Fragment로 전환
-                if (place.category == "HOSPITAL") {
-                    val fragment = MapDetailFragment.newInstance(place.id, currentLat, currentLng)
+                if (place.category == "PARK") {
+                    val fragment = WalkingMapFragment.newInstance(place.id, currentLat, currentLng)
                     requireActivity().supportFragmentManager.beginTransaction()
                         .replace(R.id.main_frm, fragment)
                         .addToBackStack(null)

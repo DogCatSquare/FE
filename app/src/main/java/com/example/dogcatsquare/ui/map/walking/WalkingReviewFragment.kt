@@ -26,6 +26,8 @@ import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentTransaction
 import androidx.lifecycle.ViewModelProvider
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.example.dogcatsquare.R
 import com.example.dogcatsquare.ui.map.walking.data.ViewModel.WalkReviewViewModel
 // [수정됨] Naver Map import 제거
@@ -63,12 +65,16 @@ class WalkingReviewFragment : Fragment(), OnMapReadyCallback {
     // 후기 입력 UI
     private lateinit var reviewContentEditText: EditText
     private lateinit var submitReviewButton: Button
+    private lateinit var tvImageCount: TextView
+    private lateinit var rvSelectedImages: RecyclerView
+    private lateinit var imageAdapter: SelectedImageAdapter
 
     // ViewModel for API 호출
     private lateinit var viewModel: WalkReviewViewModel
 
     private val PICK_IMAGE_REQUEST = 1001
-    private var selectedBitmap: Bitmap? = null
+//    private var selectedBitmap: Bitmap? = null
+    private var selectedBitmaps: MutableList<Bitmap> = mutableListOf()
 
     // 예시 산책로 ID (실제 값으로 초기화 필요)
     private var walkId: Long = 20L
@@ -104,13 +110,26 @@ class WalkingReviewFragment : Fragment(), OnMapReadyCallback {
         val minTv: TextView = view.findViewById(R.id.min_tv)
         minTv.text = "$elapsedMinutes 분"
 
-        // ImageView 초기화
-        addedImageView = view.findViewById(R.id.addedImageView)
+        // 1. UI 및 리사이클러뷰 초기화
+        tvImageCount = view.findViewById(R.id.tv_image_count)
+        rvSelectedImages = view.findViewById(R.id.rv_selected_images)
+        reviewContentEditText = view.findViewById(R.id.introduction_tv)
+        submitReviewButton = view.findViewById(R.id.Completion_bt)
 
-        // 갤러리 오픈 버튼 설정
-        val addImgButton: AppCompatImageButton = view.findViewById(R.id.addImg_bt)
-        addImgButton.setOnClickListener {
-            openGallery()
+        imageAdapter = SelectedImageAdapter(selectedBitmaps) { position ->
+            selectedBitmaps.removeAt(position)
+            updateImageUI()
+        }
+        rvSelectedImages.adapter = imageAdapter
+        rvSelectedImages.layoutManager = LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false)
+
+        // 2. 갤러리 버튼
+        view.findViewById<AppCompatImageButton>(R.id.addImg_bt).setOnClickListener {
+            if (selectedBitmaps.size >= 5) {
+                Toast.makeText(requireContext(), "사진은 최대 5장까지 가능합니다.", Toast.LENGTH_SHORT).show()
+            } else {
+                openGallery()
+            }
         }
 
         // [수정됨] 지도 프래그먼트 설정 (Naver MapFragment -> Google SupportMapFragment)
@@ -129,18 +148,20 @@ class WalkingReviewFragment : Fragment(), OnMapReadyCallback {
             transaction.commit()
         }
 
-        reviewContentEditText = view.findViewById(R.id.introduction_tv)
-        submitReviewButton = view.findViewById(R.id.Completion_bt)
-
         submitReviewButton.setOnClickListener {
             val content = reviewContentEditText.text.toString().trim()
             if (content.isEmpty()) {
-                Toast.makeText(requireContext(), "후기 내용을 입력하세요.", Toast.LENGTH_SHORT).show()
+                Toast.makeText(requireContext(), "리뷰는 20자 이상 작성해주세요.", Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
 
-            if (selectedBitmap == null) {
-                Toast.makeText(requireContext(), "후기 이미지는 필수입니다.", Toast.LENGTH_SHORT).show()
+            if (selectedBitmaps.isEmpty()) {
+                Toast.makeText(requireContext(), "최소 1장의 사진을 추가해주세요.", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+
+            if (selectedBitmaps.isEmpty() && content.isEmpty()) {
+                Toast.makeText(requireContext(), "리뷰는 20자 이상 작성하고 최소 1장의 사진을 추가해주세요.", Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
 
@@ -150,7 +171,7 @@ class WalkingReviewFragment : Fragment(), OnMapReadyCallback {
                 return@setOnClickListener
             }
 
-            val imagePart = bitmapToMultipart(selectedBitmap!!) // 이미지 변환
+            val imageParts = bitmapsToMultipart(selectedBitmaps) // 이미지 변환
 
             // [수정됨] 예제 좌표를 Google LatLng로 변경 (ViewModel도 Google LatLng를 받도록 수정 필요)
             val routeCoords = listOf(LatLng(37.5665, 126.9780)) // 예제 좌표
@@ -159,7 +180,7 @@ class WalkingReviewFragment : Fragment(), OnMapReadyCallback {
 
             // [수정됨] createWalk 호출 (token 추가)
             // 참고: viewModel.createWalk 메서드도 Google LatLng 타입을 받도록 수정해야 합니다.
-            viewModel.createWalk(token, routeCoords, elapsedMinutes, distance, content, imagePart)
+            viewModel.createWalk(token, routeCoords, elapsedMinutes, distance, content, imageParts)
 
             val transaction: FragmentTransaction = parentFragmentManager.beginTransaction()
 
@@ -185,21 +206,39 @@ class WalkingReviewFragment : Fragment(), OnMapReadyCallback {
 
     private fun openGallery() {
         val intent = Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI)
+        intent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true)
         startActivityForResult(intent, PICK_IMAGE_REQUEST)
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
         if (requestCode == PICK_IMAGE_REQUEST && resultCode == AppCompatActivity.RESULT_OK && data != null) {
-            val selectedImageUri = data.data
-            try {
-                val bitmap: Bitmap = MediaStore.Images.Media.getBitmap(requireContext().contentResolver, selectedImageUri)
-                selectedBitmap = bitmap
-                addedImageView.setImageBitmap(bitmap)
-            } catch (e: Exception) {
-                e.printStackTrace()
+            val clipData = data.clipData
+            if (clipData != null) {
+                // 여러 장 선택 처리
+                for (i in 0 until clipData.itemCount) {
+                    if (selectedBitmaps.size < 5) {
+                        val uri = clipData.getItemAt(i).uri
+                        val bitmap = MediaStore.Images.Media.getBitmap(requireContext().contentResolver, uri)
+                        selectedBitmaps.add(bitmap)
+                    }
+                }
+            } else {
+                // 한 장 선택 처리
+                data.data?.let { uri ->
+                    if (selectedBitmaps.size < 5) {
+                        val bitmap = MediaStore.Images.Media.getBitmap(requireContext().contentResolver, uri)
+                        selectedBitmaps.add(bitmap)
+                    }
+                }
             }
+            updateImageUI()
         }
+    }
+
+    private fun updateImageUI() {
+        imageAdapter.notifyDataSetChanged()
+        tvImageCount.text = "${selectedBitmaps.size}/5"
     }
 
     // [수정됨] onMapReady(NaverMap) -> onMapReady(GoogleMap)
@@ -274,13 +313,28 @@ class WalkingReviewFragment : Fragment(), OnMapReadyCallback {
         return Base64.encodeToString(byteArray, Base64.NO_WRAP)
     }
 
-    private fun bitmapToMultipart(bitmap: Bitmap): MultipartBody.Part {
-        val outputStream = ByteArrayOutputStream()
-        bitmap.compress(Bitmap.CompressFormat.JPEG, 80, outputStream)
-        val byteArray = outputStream.toByteArray()
+//    private fun bitmapToMultipart(bitmap: Bitmap): MultipartBody.Part {
+//        val outputStream = ByteArrayOutputStream()
+//        bitmap.compress(Bitmap.CompressFormat.JPEG, 80, outputStream)
+//        val byteArray = outputStream.toByteArray()
+//
+//        val requestBody = byteArray.toRequestBody("image/*".toMediaTypeOrNull())
+//        return MultipartBody.Part.createFormData("walkReviewImages", "image.jpg", requestBody)
+//    }
 
-        val requestBody = byteArray.toRequestBody("image/*".toMediaTypeOrNull())
-        return MultipartBody.Part.createFormData("walkReviewImages", "image.jpg", requestBody)
+    private fun bitmapsToMultipart(bitmaps: List<Bitmap>): List<MultipartBody.Part> {
+        val parts = mutableListOf<MultipartBody.Part>()
+
+        bitmaps.forEachIndexed { index, bitmap ->
+            val outputStream = ByteArrayOutputStream()
+            bitmap.compress(Bitmap.CompressFormat.JPEG, 80, outputStream)
+            val byteArray = outputStream.toByteArray()
+            val requestBody = byteArray.toRequestBody("image/*".toMediaTypeOrNull())
+
+            // "walkReviewImages"는 서버 API의 파라미터 이름과 일치해야 합니다.
+            parts.add(MultipartBody.Part.createFormData("walkReviewImages", "image_$index.jpg", requestBody))
+        }
+        return parts
     }
 
     // [추가됨] MapFragment.kt와 동일한 마커 아이콘 변환 헬퍼 함수

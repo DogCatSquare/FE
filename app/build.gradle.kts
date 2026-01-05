@@ -37,7 +37,7 @@ android {
 
     // 1. 공용 디버그 키를 위한 서명 설정 추가
     signingConfigs {
-        create("debug") {
+        getByName("debug") {
             storeFile = file("debug.keystore")
             storePassword = "android"
             keyAlias = "androiddebugkey"

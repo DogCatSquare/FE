@@ -46,7 +46,6 @@ class WalkingReviewTypeFragment : Fragment() {
         binding.wastebasketBt.setOnClickListener { onButtonClick(it) }
         binding.stairsBt.setOnClickListener { onButtonClick(it) }
         binding.drinkingBt.setOnClickListener { onButtonClick(it) }
-        binding.writingBt.setOnClickListener { onButtonClick(it) }
     }
 
     // 버튼 클릭 시 호출될 함수
@@ -92,7 +91,6 @@ class WalkingReviewTypeFragment : Fragment() {
             binding.wastebasketBt.id -> toggleButtonState(binding.wastebasketBt)
             binding.stairsBt.id -> toggleButtonState(binding.stairsBt)
             binding.drinkingBt.id -> toggleButtonState(binding.drinkingBt)
-            binding.writingBt.id -> toggleButtonState(binding.writingBt)
         }
     }
 

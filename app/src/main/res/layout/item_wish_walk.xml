@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
@@ -26,7 +25,7 @@
         android:id="@+id/placeImg"
         android:layout_width="48dp"
         android:layout_height="48dp"
-        android:layout_marginTop="16dp"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="@+id/guideline_start"
         app:layout_constraintTop_toTopOf="parent"
         app:srcCompat="@drawable/ic_trail_default" />
@@ -57,20 +56,22 @@
 
     <TextView
         android:id="@+id/placeName"
-        android:layout_width="wrap_content"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
+        android:layout_marginEnd="16dp"
         android:fontFamily="@font/pretendard_medium"
         android:text="서대문 안산자락길"
         android:textColor="@color/black"
         android:textSize="18dp"
+        app:layout_constraintEnd_toStartOf="@+id/iv_wish"
         app:layout_constraintStart_toEndOf="@+id/placeImg"
         app:layout_constraintTop_toTopOf="@+id/placeImg" />
 
     <TextView
         android:id="@+id/placeDistance"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_height="0dp"
         android:layout_marginTop="5dp"
         android:fontFamily="@font/pretendard_regular"
         android:text="0.55km"
@@ -83,13 +84,14 @@
     <TextView
         android:id="@+id/placeLocation"
         android:layout_width="0dp"
-        android:layout_height="wrap_content"
+        android:layout_height="0dp"
         android:layout_marginStart="5dp"
-        android:layout_marginEnd="5dp"
+        android:layout_marginEnd="16dp"
         android:fontFamily="@font/pretendard_regular"
         android:text="서울시 서대문구 봉원사길 75-66"
         android:textColor="@color/gray5"
         android:textSize="12dp"
+        app:layout_constraintBottom_toBottomOf="@+id/placeDistance"
         app:layout_constraintEnd_toStartOf="@id/iv_wish"
         app:layout_constraintHorizontal_bias="0"
         app:layout_constraintStart_toEndOf="@+id/placeDistance"
@@ -102,7 +104,7 @@
         android:layout_marginTop="16dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/placeImg"
+        app:layout_constraintTop_toBottomOf="@+id/placeLocation"
         app:srcCompat="@drawable/ic_map_contour_place" />
 
     <androidx.constraintlayout.widget.ConstraintLayout
