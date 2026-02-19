@@ -88,15 +88,10 @@ class CommentsAdapter(
             val myUserId = sp.getInt("userId", -1)
             val isMine = (comment.userId == myUserId)
 
-            popup.menu.findItem(R.id.action_reply)?.isVisible = true
             popup.menu.findItem(R.id.action_delete)?.isVisible = isMine
 
             popup.setOnMenuItemClickListener { item ->
                 when (item.itemId) {
-                    R.id.action_reply -> {
-                        actionListener.onReplyClicked(comment)
-                        true
-                    }
                     R.id.action_delete -> {
                         actionListener.onDeleteClicked(comment)
                         true
