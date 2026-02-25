@@ -175,8 +175,26 @@ class WalkingMapFragment : Fragment(), OnMapReadyCallback {
                             addressTv.text = placeDetail.address
                             rightText.text = walkResponse.walks.size.toString()
 
-                            // RecyclerView에 데이터 설정
-                            walkRVAdapter.updateData(walkResponse.walks)
+                            if (walkResponse.walks.isEmpty()) {
+                                // 추천 코스가 없을 때
+                                reviewRv.visibility = View.GONE
+                                defaultWalkText.visibility = View.VISIBLE
+
+                                // 숫자와 전체보기 버튼 숨기기
+                                rightText.visibility = View.GONE
+                                reviewAllBt.visibility = View.GONE
+                            } else {
+                                // 추천 코스가 있을 때
+                                reviewRv.visibility = View.VISIBLE
+                                defaultWalkText.visibility = View.GONE
+
+                                // 숫자와 전체보기 버튼 보이기
+                                rightText.visibility = View.VISIBLE
+                                reviewAllBt.visibility = View.VISIBLE
+
+                                // RecyclerView에 데이터 설정
+                                walkRVAdapter.updateData(walkResponse.walks)
+                            }
 
                             isWished = placeDetail.wished
                             wishButton.setImageResource(
@@ -185,7 +203,6 @@ class WalkingMapFragment : Fragment(), OnMapReadyCallback {
                             )
                         }
 
-                        // [수정됨] naverMap.isInitialized -> googleMap != null
                         if (googleMap != null) {
                             updateMapLocation(placeDetail.latitude, placeDetail.longitude)
                         }
