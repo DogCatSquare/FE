@@ -41,8 +41,7 @@
         app:layout_constraintStart_toEndOf="@id/guideline_mid"
         app:layout_constraintTop_toTopOf="@+id/searchBox"
         app:layout_constraintVertical_bias="0.571"
-        app:srcCompat="@drawable/btn_filter"
-        tools:ignore="MissingConstraints" />
+        app:srcCompat="@drawable/btn_filter" />
 
     <EditText
         android:id="@+id/searchBox"
@@ -59,8 +58,7 @@
         app:layout_constraintBottom_toTopOf="@+id/scrollView3"
         app:layout_constraintEnd_toStartOf="@+id/guideline_mid"
         app:layout_constraintStart_toEndOf="@+id/backButton"
-        app:layout_constraintTop_toTopOf="parent"
-        tools:ignore="MissingConstraints" />
+        app:layout_constraintTop_toTopOf="parent" />
 
     <ImageView
         android:layout_width="15dp"
@@ -94,13 +92,15 @@
 
         <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"> <androidx.constraintlayout.widget.Guideline
-            android:id="@+id/guideline_end2"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:background="@color/white"
-            android:orientation="vertical"
-            app:layout_constraintGuide_percent="0.95" />
+            android:layout_height="wrap_content">
+
+            <androidx.constraintlayout.widget.Guideline
+                android:id="@+id/guideline_end2"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@color/white"
+                android:orientation="vertical"
+                app:layout_constraintGuide_percent="0.95" />
 
             <androidx.constraintlayout.widget.Guideline
                 android:id="@+id/guideline_start2"
@@ -132,7 +132,7 @@
                 android:layout_marginTop="55dp"
                 android:layout_marginBottom="10dp"
                 android:src="@drawable/ic_myreview"
-                app:layout_constraintBottom_toTopOf="@+id/mapView3"
+                app:layout_constraintBottom_toTopOf="@+id/mapCardView"
                 app:layout_constraintStart_toStartOf="@+id/guideline_start2"
                 app:layout_constraintTop_toTopOf="parent"
                 app:tint="#696969" />
@@ -146,7 +146,7 @@
                 android:text=" 리뷰(3)"
                 android:textColor="#696969"
                 android:textSize="14sp"
-                app:layout_constraintBottom_toTopOf="@+id/mapView3"
+                app:layout_constraintBottom_toTopOf="@+id/mapCardView"
                 app:layout_constraintStart_toEndOf="@+id/imageView1"
                 app:layout_constraintTop_toBottomOf="@+id/placeName" />
 
@@ -209,15 +209,24 @@
                 app:layout_constraintTop_toTopOf="@+id/textView11"
                 app:layout_constraintVertical_bias="1.0" />
 
-            <fragment
-                android:id="@+id/mapView3"
-                android:name="com.google.android.gms.maps.SupportMapFragment"
+            <androidx.cardview.widget.CardView
+                android:id="@+id/mapCardView"
                 android:layout_width="0dp"
                 android:layout_height="201dp"
                 android:layout_marginTop="8dp"
+                app:cardCornerRadius="8dp"
+                app:cardElevation="0dp"
                 app:layout_constraintEnd_toStartOf="@+id/guideline_end2"
                 app:layout_constraintStart_toStartOf="@+id/guideline_start2"
-                app:layout_constraintTop_toBottomOf="@+id/placeType" />
+                app:layout_constraintTop_toBottomOf="@+id/placeType">
+
+                <fragment
+                    android:id="@+id/mapView3"
+                    android:name="com.google.android.gms.maps.SupportMapFragment"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent" />
+            </androidx.cardview.widget.CardView>
+
             <ImageButton
                 android:id="@+id/wishButton"
                 android:layout_width="wrap_content"
@@ -238,7 +247,7 @@
                 android:textColor="#0E0E0E"
                 android:textSize="16sp"
                 app:layout_constraintStart_toStartOf="@+id/guideline_start2"
-                app:layout_constraintTop_toBottomOf="@+id/mapView3" />
+                app:layout_constraintTop_toBottomOf="@+id/mapCardView" />
 
             <TextView
                 android:id="@+id/address_tv"
@@ -251,7 +260,7 @@
                 android:textSize="16sp"
                 app:layout_constraintEnd_toStartOf="@+id/guideline_end2"
                 app:layout_constraintStart_toEndOf="@+id/address_title"
-                app:layout_constraintTop_toBottomOf="@+id/mapView3" />
+                app:layout_constraintTop_toBottomOf="@+id/mapCardView" />
 
             <View
                 android:id="@+id/gray_line"
@@ -307,46 +316,39 @@
                 app:layout_constraintTop_toBottomOf="@+id/reviewAll_bt"
                 tools:listitem="@layout/item_mapwalking" />
 
-            <ImageView
-                android:id="@+id/defaultWalkImage"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
-                android:scaleType="centerCrop"
-                android:src="@drawable/img_detail_default"
-                android:visibility="gone"
-                app:layout_constraintEnd_toEndOf="@id/guideline_end2"
-                app:layout_constraintStart_toStartOf="@id/guideline_start2"
-                app:layout_constraintTop_toBottomOf="@+id/reviewAll_bt" />
-
             <TextView
                 android:id="@+id/defaultWalkText"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_marginTop="72dp"
+                android:paddingBottom="83dp"
                 android:text="아직 추천된 코스가 없어요\n이웃들을 위해 산책코스를 추천해보세요"
                 android:textAlignment="center"
                 android:textColor="#9E9E9E"
                 android:textSize="14sp"
                 android:visibility="gone"
-                app:layout_constraintBottom_toBottomOf="@+id/defaultWalkImage"
-                app:layout_constraintEnd_toEndOf="@+id/defaultWalkImage"
-                app:layout_constraintStart_toStartOf="@+id/defaultWalkImage"
-                app:layout_constraintTop_toTopOf="@+id/defaultWalkImage" />
+                app:layout_constraintEnd_toEndOf="@id/guideline_end2"
+                app:layout_constraintStart_toStartOf="@id/guideline_start2"
+                app:layout_constraintTop_toBottomOf="@+id/leftText" />
 
-            <Button
+            <androidx.constraintlayout.widget.Barrier
+                android:id="@+id/contentBarrier"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                app:barrierDirection="bottom"
+                app:constraint_referenced_ids="review_rv,defaultWalkText" />
+
+            <ImageView
                 android:id="@+id/addButton"
                 android:layout_width="0dp"
-                android:layout_height="56dp"
-                android:layout_marginTop="10dp"
-                android:layout_marginBottom="10dp"
-                android:backgroundTint="#FFFBF1"
-                android:src="@drawable/btn_add_review"
-                android:text="산책 시작하기"
-                android:textColor="#FFB200"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:layout_marginBottom="16dp"
+                android:src="@drawable/btn_add_course"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toStartOf="@+id/guideline_end2"
                 app:layout_constraintStart_toStartOf="@+id/guideline_start2"
-                app:layout_constraintTop_toBottomOf="@+id/review_rv" />
+                app:layout_constraintTop_toBottomOf="@+id/contentBarrier" />
 
         </androidx.constraintlayout.widget.ConstraintLayout>
 

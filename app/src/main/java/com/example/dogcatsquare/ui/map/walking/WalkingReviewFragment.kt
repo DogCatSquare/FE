@@ -65,7 +65,6 @@ class WalkingReviewFragment : Fragment(), OnMapReadyCallback {
     // 후기 입력 UI
     private lateinit var reviewContentEditText: EditText
     private lateinit var submitReviewButton: Button
-    private lateinit var tvImageCount: TextView
     private lateinit var rvSelectedImages: RecyclerView
     private lateinit var imageAdapter: SelectedImageAdapter
 
@@ -93,12 +92,8 @@ class WalkingReviewFragment : Fragment(), OnMapReadyCallback {
         // ViewModel 초기화
         viewModel = ViewModelProvider(this)[WalkReviewViewModel::class.java]
 
-        // 툴바 설정
-        (activity as? AppCompatActivity)?.apply {
-            val toolbar: Toolbar = view.findViewById(R.id.walking_review_toolbar)
-            setSupportActionBar(toolbar)
-            supportActionBar?.title = "산책 기록"
-            supportActionBar?.setDisplayHomeAsUpEnabled(true)
+        view.findViewById<ImageView>(R.id.back_btn).setOnClickListener {
+            parentFragmentManager.popBackStack() // 이전 화면으로 돌아가기
         }
 
         // Bundle에서 경과 시간(분)과 경로 좌표 목록을 받음
@@ -108,10 +103,9 @@ class WalkingReviewFragment : Fragment(), OnMapReadyCallback {
 
         // 경과 시간 텍스트 업데이트 (예: "30분")
         val minTv: TextView = view.findViewById(R.id.min_tv)
-        minTv.text = "$elapsedMinutes 분"
+        minTv.text = elapsedMinutes.toString()
 
         // 1. UI 및 리사이클러뷰 초기화
-        tvImageCount = view.findViewById(R.id.tv_image_count)
         rvSelectedImages = view.findViewById(R.id.rv_selected_images)
         reviewContentEditText = view.findViewById(R.id.introduction_tv)
         submitReviewButton = view.findViewById(R.id.Completion_bt)
@@ -238,7 +232,6 @@ class WalkingReviewFragment : Fragment(), OnMapReadyCallback {
 
     private fun updateImageUI() {
         imageAdapter.notifyDataSetChanged()
-        tvImageCount.text = "${selectedBitmaps.size}/5"
     }
 
     // [수정됨] onMapReady(NaverMap) -> onMapReady(GoogleMap)
@@ -279,7 +272,7 @@ class WalkingReviewFragment : Fragment(), OnMapReadyCallback {
             // 거리 계산
             val totalDistanceKm = calculateTotalDistance(routeCoords)
             val kmTv: TextView = view?.findViewById(R.id.km_tv) ?: return
-            kmTv.text = String.format("%.1f km", totalDistanceKm)
+            kmTv.text = String.format("%.1f", totalDistanceKm)
         }
     }
 

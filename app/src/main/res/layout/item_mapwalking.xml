@@ -1,16 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:backgroundTint="@color/white"
-    xmlns:app="http://schemas.android.com/apk/res-auto">
+    android:backgroundTint="@color/white">
 
     <androidx.constraintlayout.widget.Guideline
         android:id="@+id/guideline_end2"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:background="@color/white"
         android:orientation="vertical"
         app:layout_constraintGuide_percent="0.95" />
 
@@ -18,12 +17,9 @@
         android:id="@+id/guideline_start2"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:background="@color/white"
         android:orientation="vertical"
         app:layout_constraintGuide_percent="0.05" />
 
-
-    <!-- User Image -->
     <ImageView
         android:id="@+id/userImg"
         android:layout_width="30dp"
@@ -36,21 +32,19 @@
         app:layout_constraintTop_toTopOf="@+id/userName"
         app:srcCompat="@drawable/ic_profile_img_default" />
 
-    <!-- User Name -->
     <TextView
         android:id="@+id/userName"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="16dp"
         android:layout_marginTop="16dp"
+        android:fontFamily="@font/pretendard_semibold"
         android:text="이름"
-        android:textSize="16sp"
         android:textColor="#0E0E0E"
+        android:textSize="16sp"
         app:layout_constraintStart_toEndOf="@+id/userImg"
-        app:layout_constraintTop_toTopOf="parent"
-        app:tint="#696969" />
+        app:layout_constraintTop_toTopOf="parent" />
 
-    <!-- Pet Type -->
     <TextView
         android:id="@+id/petType"
         android:layout_width="wrap_content"
@@ -62,7 +56,6 @@
         app:layout_constraintBottom_toBottomOf="@+id/userName"
         app:layout_constraintStart_toEndOf="@+id/userName" />
 
-    <!-- Walk Time -->
     <TextView
         android:id="@+id/walkTime"
         android:layout_width="wrap_content"
@@ -73,7 +66,6 @@
         app:layout_constraintStart_toEndOf="@+id/userImg"
         app:layout_constraintTop_toBottomOf="@+id/userName" />
 
-    <!-- Walk Distance -->
     <TextView
         android:id="@+id/walkKm"
         android:layout_width="wrap_content"
@@ -85,63 +77,75 @@
         app:layout_constraintStart_toEndOf="@+id/walkTime"
         app:layout_constraintTop_toTopOf="@+id/walkTime" />
 
-    <!-- Wish Icon -->
-
-    <!-- Map View -->
-
-
-    <!-- Walk Image -->
-
-    <androidx.cardview.widget.CardView
-        android:id="@+id/mapCardView"
-        android:layout_width="200dp"
+    <HorizontalScrollView
+        android:id="@+id/walkContentScroll"
+        android:layout_width="0dp"
         android:layout_height="120dp"
         android:layout_marginTop="12dp"
-        app:cardCornerRadius="12dp"
-        app:cardElevation="0dp"
+        android:scrollbars="none"
+        app:layout_constraintEnd_toEndOf="@id/guideline_end2"
         app:layout_constraintStart_toStartOf="@id/guideline_start2"
         app:layout_constraintTop_toBottomOf="@+id/walkTime">
 
-        <com.naver.maps.map.MapView
-            android:id="@+id/mapView"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent" />
-
-    </androidx.cardview.widget.CardView>
-
-    <androidx.cardview.widget.CardView
-        android:id="@+id/imageCardView"
-        android:layout_width="120dp"
-        android:layout_height="120dp"
-        android:layout_marginStart="20dp"
-        app:cardCornerRadius="12dp"
-        app:cardElevation="0dp"
-        app:layout_constraintEnd_toStartOf="@+id/guideline_end2"
-        app:layout_constraintHorizontal_bias="1.0"
-        app:layout_constraintStart_toEndOf="@+id/mapCardView"
-        app:layout_constraintTop_toTopOf="@+id/mapCardView">
-
-        <ImageView
-            android:id="@+id/walkImg"
-            android:layout_width="match_parent"
+        <LinearLayout
+            android:layout_width="wrap_content"
             android:layout_height="match_parent"
-            android:scaleType="centerCrop"
-            app:srcCompat="@drawable/dog_sample" />
+            android:orientation="horizontal">
 
-    </androidx.cardview.widget.CardView>
+            <androidx.cardview.widget.CardView
+                android:id="@+id/mapCardView"
+                android:layout_width="200dp"
+                android:layout_height="match_parent"
+                app:cardCornerRadius="12dp"
+                app:cardElevation="0dp">
 
-    <!-- Walk Text -->
+                <com.google.android.gms.maps.MapView
+                    android:id="@+id/mapView"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent" />
+            </androidx.cardview.widget.CardView>
+
+            <LinearLayout
+                android:id="@+id/imageContainer"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_marginStart="8dp"
+                android:orientation="horizontal">
+
+                <androidx.cardview.widget.CardView
+                    android:id="@+id/imageCardView"
+                    android:layout_width="120dp"
+                    android:layout_height="match_parent"
+                    app:cardCornerRadius="12dp"
+                    app:cardElevation="0dp">
+
+                    <ImageView
+                        android:id="@+id/walkImg"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:background="#F2F2F2"
+                        android:scaleType="centerCrop"
+                        app:srcCompat="@drawable/ic_place_img_default" />
+                </androidx.cardview.widget.CardView>
+
+            </LinearLayout>
+        </LinearLayout>
+    </HorizontalScrollView>
+
     <TextView
         android:id="@+id/walkText"
         android:layout_width="0dp"
-        android:layout_height="40dp"
+        android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
-        android:text="산책로 본문"
+        android:ellipsize="end"
+        android:maxLines="2"
+        android:text="산책로 본문 내용이 여기에 들어갑니다."
+        android:textColor="#5B5B5B"
+        android:textSize="13sp"
         app:layout_constraintEnd_toEndOf="@id/guideline_end2"
         app:layout_constraintStart_toStartOf="@id/guideline_start2"
-        app:layout_constraintTop_toBottomOf="@+id/mapCardView" />
+        app:layout_constraintTop_toBottomOf="@+id/walkContentScroll" />
 
-    <!-- Profile Image -->
     <ImageView
         android:id="@+id/profile_iv"
         android:layout_width="65dp"
@@ -151,23 +155,22 @@
         app:layout_constraintStart_toStartOf="@id/guideline_start2"
         app:layout_constraintTop_toBottomOf="@+id/walkText" />
 
-    <!-- Walk Date -->
     <TextView
         android:id="@+id/walkDate"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="24.12.27"
+        android:textColor="#7C7C7C"
         android:textSize="12sp"
         app:layout_constraintBottom_toBottomOf="@+id/profile_iv"
-        app:layout_constraintEnd_toEndOf="@id/guideline_end2"
-        app:tint="#696969" />
+        app:layout_constraintEnd_toEndOf="@id/guideline_end2" />
 
-    <!-- Map Contour Icon -->
     <ImageView
         android:id="@+id/imageView22"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
+        android:paddingBottom="8dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/profile_iv"

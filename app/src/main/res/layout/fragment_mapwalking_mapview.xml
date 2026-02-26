@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
 <androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
@@ -9,31 +10,61 @@
         android:id="@+id/map_fragment"
         android:name="com.google.android.gms.maps.SupportMapFragment"
         android:layout_width="match_parent"
-        android:layout_height="761dp"
-        android:layout_marginTop="16dp" />
-    <LinearLayout
+        android:layout_height="match_parent" />
+
+    <androidx.cardview.widget.CardView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:layout_gravity="end|bottom"
-        android:padding="16dp">
+        android:layout_gravity="top|center_horizontal"
+        android:layout_marginTop="16dp"
+        app:cardBackgroundColor="@color/white"
+        app:cardCornerRadius="10dp"
+        app:cardElevation="0dp">
 
-        <Button
-            android:id="@+id/start_walk_bt"
+        <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="산책 시작"
-            android:layout_marginBottom="8dp"
-            android:backgroundTint="#FFB200"
-            android:textColor="#FFFFFF" />
+            android:paddingHorizontal="24dp"
+            android:paddingVertical="4dp"
+            android:text="산책 경로를 지도에 표시해주세요"
+            android:textColor="#9E9E9E"
+            android:textSize="14sp"
+            android:textStyle="normal" />
+    </androidx.cardview.widget.CardView>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom"
+        android:layout_marginBottom="40dp"
+        android:orientation="horizontal"
+        android:paddingLeft="20dp"
+        android:paddingRight="20dp">
 
         <Button
             android:id="@+id/end_walk_bt"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="산책 종료"
-            android:backgroundTint="#FF6347"
-            android:textColor="#FFFFFF" />
+            android:layout_width="0dp"
+            android:layout_height="56dp"
+            android:layout_weight="132"
+            android:layout_marginEnd="8dp"
+            android:background="@drawable/btn_finish_style"
+            android:text="종료"
+            android:textColor="#FFB200"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            app:backgroundTint="@null" />
+
+        <Button
+            android:id="@+id/start_walk_bt"
+            android:layout_width="0dp"
+            android:layout_height="56dp"
+            android:layout_weight="226"
+            android:background="@drawable/btn_start_style"
+            android:text="산책시작"
+            android:textColor="@color/white"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            app:backgroundTint="@null" />
 
     </LinearLayout>
 
