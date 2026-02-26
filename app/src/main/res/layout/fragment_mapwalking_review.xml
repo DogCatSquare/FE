@@ -1,23 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    xmlns:app="http://schemas.android.com/apk/res-auto">
+    android:background="@color/white">
 
-    <androidx.appcompat.widget.Toolbar
-        android:id="@+id/walking_review_toolbar"
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/header_layout"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:padding="16dp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:titleTextColor="@color/black" />
+        android:layout_height="56dp"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <ImageView
+            android:id="@+id/back_btn"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:paddingHorizontal="20dp"
+            android:src="@drawable/ic_back_button"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <TextView
+            android:id="@+id/header_title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="산책코스 추천하기"
+            android:textColor="#0E0E0E"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="#F6F6F6"
+            app:layout_constraintBottom_toBottomOf="parent" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
     <ScrollView
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_marginTop="80dp">
+        android:layout_height="0dp"
+        android:fillViewport="true"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/header_layout">
 
         <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
@@ -27,7 +57,6 @@
                 android:id="@+id/guideline1"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:background="@color/white"
                 android:orientation="vertical"
                 app:layout_constraintGuide_percent="0.05" />
 
@@ -35,150 +64,247 @@
                 android:id="@+id/guideline2"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:background="@color/white"
                 android:orientation="vertical"
                 app:layout_constraintGuide_percent="0.95" />
 
             <TextView
                 android:id="@+id/address_tv"
-                android:layout_width="wrap_content"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:text="서대문 안산자락길"
-                android:textSize="20sp"
-                android:textStyle="bold"
+                android:layout_marginTop="12dp"
                 android:fontFamily="@font/pretendard_medium"
+                android:text="서대문 안산자락길"
+                android:textColor="#0E0E0E"
+                android:textSize="22sp"
+                android:textStyle="bold"
+                app:layout_constraintEnd_toEndOf="@id/guideline2"
                 app:layout_constraintStart_toStartOf="@id/guideline1"
-                app:layout_constraintTop_toTopOf="parent"
-                tools:ignore="MissingConstraints" />
+                app:layout_constraintTop_toTopOf="parent" />
 
             <TextView
                 android:id="@+id/textView7"
-                android:layout_width="wrap_content"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
-                android:text="산책 경로를 지도에 표시해주세요."
                 android:fontFamily="@font/pretendard_regular"
+                android:text="산책 경로를 지도에 표시해주세요"
+                android:textColor="#757575"
+                android:textSize="14sp"
+                app:layout_constraintEnd_toEndOf="@id/guideline2"
                 app:layout_constraintStart_toStartOf="@id/guideline1"
                 app:layout_constraintTop_toBottomOf="@id/address_tv" />
 
-            <fragment
-                android:id="@+id/map_fragment"
-                android:name="com.google.android.gms.maps.SupportMapFragment"
+            <androidx.cardview.widget.CardView
+                android:id="@+id/map_card_view"
                 android:layout_width="0dp"
-                android:layout_height="250dp"
-                android:layout_marginTop="12dp"
+                android:layout_height="240dp"
+                android:layout_marginTop="16dp"
+                app:cardCornerRadius="8dp"
+                app:cardElevation="0dp"
                 app:layout_constraintEnd_toEndOf="@id/guideline2"
                 app:layout_constraintStart_toStartOf="@id/guideline1"
-                app:layout_constraintTop_toBottomOf="@id/textView7" />
+                app:layout_constraintTop_toBottomOf="@id/textView7">
+
+                <fragment
+                    android:id="@+id/map_fragment"
+                    android:name="com.google.android.gms.maps.SupportMapFragment"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent" />
+            </androidx.cardview.widget.CardView>
+
             <androidx.constraintlayout.widget.ConstraintLayout
                 android:id="@+id/time_distance_layout"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
                 app:layout_constraintEnd_toEndOf="@id/guideline2"
                 app:layout_constraintStart_toStartOf="@id/guideline1"
-                app:layout_constraintTop_toBottomOf="@id/map_fragment">
+                app:layout_constraintTop_toBottomOf="@id/map_card_view">
 
-                <TextView
-                    android:id="@+id/km_tv"
-                    android:layout_width="182dp"
-                    android:layout_height="50dp"
-                    android:layout_marginTop="11dp"
-                    android:backgroundTint="#F6F6F6"
-                    android:gravity="center"
-                    android:text="2.5 Km"
-                    android:textSize="20sp"
-                    android:fontFamily="@font/pretendard_medium"
+                <androidx.cardview.widget.CardView
+                    android:id="@+id/km_card"
+                    android:layout_width="0dp"
+                    android:layout_height="56dp"
+                    android:layout_marginEnd="6dp"
+                    app:cardBackgroundColor="#F6F6F6"
+                    app:cardCornerRadius="8dp"
+                    app:cardElevation="0dp"
                     app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toStartOf="@+id/min_card"
                     app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toTopOf="parent" />
+                    app:layout_constraintTop_toTopOf="parent">
 
-                <TextView
-                    android:id="@+id/min_tv"
-                    android:layout_width="182dp"
-                    android:layout_height="50dp"
-                    android:layout_marginStart="8dp"
-                    android:layout_marginTop="11dp"
-                    android:backgroundTint="#F6F6F6"
-                    android:gravity="center"
-                    android:text="30 분"
-                    android:textSize="20sp"
-                    android:fontFamily="@font/pretendard_medium"
+                    <androidx.constraintlayout.widget.ConstraintLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent">
+
+                        <TextView
+                            android:id="@+id/km_tv"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:fontFamily="@font/pretendard_medium"
+                            android:text="3.5"
+                            android:textColor="#0E0E0E"
+                            android:textSize="20sp"
+                            android:textStyle="bold"
+                            app:layout_constraintBottom_toBottomOf="parent"
+                            app:layout_constraintEnd_toEndOf="parent"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintTop_toTopOf="parent" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginEnd="20dp"
+                            android:fontFamily="@font/pretendard_regular"
+                            android:text="km"
+                            android:textColor="#0E0E0E"
+                            android:textSize="16sp"
+                            app:layout_constraintBottom_toBottomOf="parent"
+                            app:layout_constraintEnd_toEndOf="parent"
+                            app:layout_constraintTop_toTopOf="parent" />
+                    </androidx.constraintlayout.widget.ConstraintLayout>
+                </androidx.cardview.widget.CardView>
+
+                <androidx.cardview.widget.CardView
+                    android:id="@+id/min_card"
+                    android:layout_width="0dp"
+                    android:layout_height="56dp"
+                    android:layout_marginStart="6dp"
+                    app:cardBackgroundColor="#F6F6F6"
+                    app:cardCornerRadius="8dp"
+                    app:cardElevation="0dp"
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintStart_toEndOf="@id/km_tv"
-                    app:layout_constraintTop_toTopOf="parent" />
+                    app:layout_constraintStart_toEndOf="@id/km_card"
+                    app:layout_constraintTop_toTopOf="parent">
+
+                    <androidx.constraintlayout.widget.ConstraintLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent">
+
+                        <TextView
+                            android:id="@+id/min_tv"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:fontFamily="@font/pretendard_medium"
+                            android:text="30"
+                            android:textColor="#0E0E0E"
+                            android:textSize="20sp"
+                            android:textStyle="bold"
+                            app:layout_constraintBottom_toBottomOf="parent"
+                            app:layout_constraintEnd_toEndOf="parent"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintTop_toTopOf="parent" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginEnd="20dp"
+                            android:fontFamily="@font/pretendard_regular"
+                            android:text="분"
+                            android:textColor="#0E0E0E"
+                            android:textSize="16sp"
+                            app:layout_constraintBottom_toBottomOf="parent"
+                            app:layout_constraintEnd_toEndOf="parent"
+                            app:layout_constraintTop_toTopOf="parent" />
+                    </androidx.constraintlayout.widget.ConstraintLayout>
+                </androidx.cardview.widget.CardView>
             </androidx.constraintlayout.widget.ConstraintLayout>
 
-            <EditText
-                android:id="@+id/introduction_tv"
+            <androidx.cardview.widget.CardView
+                android:id="@+id/introduction_card"
                 android:layout_width="0dp"
-                android:layout_height="200dp"
-                android:layout_marginTop="10dp"
-                android:layout_marginBottom="11dp"
-                android:backgroundTint="#F6F6F6"
-                android:ems="10"
-                android:fontFamily="@font/pretendard_regular"
-                android:gravity="start"
-                android:hint="코스를 소개해주세요. (최소 20자)"
-                android:inputType="text"
+                android:layout_height="140dp"
+                android:layout_marginTop="16dp"
+                app:cardBackgroundColor="#F6F6F6"
+                app:cardCornerRadius="8dp"
+                app:cardElevation="0dp"
                 app:layout_constraintEnd_toEndOf="@id/guideline2"
                 app:layout_constraintStart_toStartOf="@id/guideline1"
-                app:layout_constraintTop_toBottomOf="@id/time_distance_layout" />
+                app:layout_constraintTop_toBottomOf="@id/time_distance_layout">
 
-            <LinearLayout
+                <androidx.constraintlayout.widget.ConstraintLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent">
+
+                    <EditText
+                        android:id="@+id/introduction_tv"
+                        android:layout_width="match_parent"
+                        android:layout_height="0dp"
+                        android:background="@null"
+                        android:fontFamily="@font/pretendard_regular"
+                        android:gravity="top|start"
+                        android:hint="코스를 소개해주세요. (최소 20자)"
+                        android:textSize="16sp"
+                        android:inputType="textMultiLine"
+                        android:padding="16dp"
+                        android:textColorHint="#9E9E9E"
+                        app:layout_constraintBottom_toTopOf="@+id/text_length_counter"
+                        app:layout_constraintTop_toTopOf="parent" />
+
+                    <TextView
+                        android:id="@+id/text_length_counter"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginEnd="16dp"
+                        android:layout_marginBottom="12dp"
+                        android:text="0/300"
+                        android:textColor="#9E9E9E"
+                        android:textSize="12sp"
+                        app:layout_constraintBottom_toBottomOf="parent"
+                        app:layout_constraintEnd_toEndOf="parent" />
+                </androidx.constraintlayout.widget.ConstraintLayout>
+            </androidx.cardview.widget.CardView>
+
+            <HorizontalScrollView
                 android:id="@+id/image_layout"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="12dp"
-                android:layout_marginBottom="20dp"
-                android:orientation="horizontal"
+                android:layout_marginTop="16dp"
+                android:layout_marginBottom="24dp"
+                android:scrollbars="none"
                 app:layout_constraintBottom_toTopOf="@id/Completion_bt"
                 app:layout_constraintEnd_toEndOf="@id/guideline2"
                 app:layout_constraintStart_toStartOf="@id/guideline1"
-                app:layout_constraintTop_toBottomOf="@id/introduction_tv">
+                app:layout_constraintTop_toBottomOf="@id/introduction_card">
 
-            <LinearLayout
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:gravity="center">
-
-                <androidx.appcompat.widget.AppCompatImageButton
-                    android:id="@+id/addImg_bt"
-                    android:layout_width="86dp"
-                    android:layout_height="86dp"
-                    android:src="@drawable/ic_add_camera" />
-
-                <TextView
-                    android:id="@+id/tv_image_count"
+                <LinearLayout
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="4dp"
-                    android:text="0/5"
-                    android:textSize="12sp"
-                    android:textColor="@color/gray4" />
-            </LinearLayout>
+                    android:orientation="horizontal">
 
-            <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/rv_selected_images"
-                android:layout_width="match_parent"
-                android:layout_height="86dp"
-                android:layout_marginStart="8dp"
-                android:orientation="horizontal"
-                app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-                tools:listitem="@layout/item_selected_image" />
+                    <androidx.recyclerview.widget.RecyclerView
+                        android:id="@+id/rv_selected_images"
+                        android:layout_width="wrap_content"
+                        android:layout_height="86dp"
+                        android:nestedScrollingEnabled="false"
+                        android:orientation="horizontal"
+                        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+                        tools:listitem="@layout/item_selected_image" />
 
-            </LinearLayout>
+                    <androidx.appcompat.widget.AppCompatImageButton
+                        android:id="@+id/addImg_bt"
+                        android:layout_width="86dp"
+                        android:layout_height="86dp"
+                        android:background="@null"
+                        android:scaleType="fitCenter"
+                        android:src="@drawable/ic_add_camera" />
+
+                </LinearLayout>
+            </HorizontalScrollView>
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/Completion_bt"
-                android:layout_width="0dp"
-                android:layout_height="50dp"
-                android:layout_marginBottom="28dp"
-                android:text="완료"
                 style="@style/CustomMaterialButton3"
+                android:layout_width="0dp"
+                android:layout_height="56dp"
+                android:layout_marginBottom="32dp"
                 android:insetTop="0dp"
                 android:insetBottom="0dp"
+                android:text="완료"
+                android:textSize="16sp"
+                android:textStyle="bold"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="@id/guideline2"
                 app:layout_constraintStart_toStartOf="@id/guideline1" />
