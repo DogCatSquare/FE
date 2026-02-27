@@ -296,7 +296,7 @@ class WalkingMapFragment : Fragment(), OnMapReadyCallback {
         )
 
         // Google Map 카메라 이동 방식
-        googleMap?.moveCamera(CameraUpdateFactory.newLatLng(location))
+        googleMap?.moveCamera(CameraUpdateFactory.newLatLngZoom(location, 16f))
     }
 
     // [추가됨] MapFragment.kt와 동일한 마커 아이콘 변환 헬퍼 함수
