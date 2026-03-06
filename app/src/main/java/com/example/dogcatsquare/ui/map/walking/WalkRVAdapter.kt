@@ -6,6 +6,7 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.example.dogcatsquare.R
+import com.example.dogcatsquare.data.model.home.Event
 import com.example.dogcatsquare.data.model.walk.Walk
 import com.example.dogcatsquare.databinding.ItemMapwalkingBinding
 import com.naver.maps.geometry.LatLng
@@ -16,7 +17,7 @@ import com.naver.maps.map.overlay.OverlayImage
 import java.text.SimpleDateFormat
 import java.util.Locale
 
-class WalkRVAdapter(private val onItemClick: (Int) -> Unit) : RecyclerView.Adapter<WalkRVAdapter.ViewHolder>() {
+class WalkRVAdapter(private val onItemClick: (Int) -> Unit, private var walkList: ArrayList<Walk>) : RecyclerView.Adapter<WalkRVAdapter.ViewHolder>() {
     private var walks: List<Walk> = emptyList()
 
     inner class ViewHolder(private val binding: ItemMapwalkingBinding) : RecyclerView.ViewHolder(binding.root) {
@@ -79,14 +80,14 @@ class WalkRVAdapter(private val onItemClick: (Int) -> Unit) : RecyclerView.Adapt
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        val walk = walks[position]
+        val walk = walkList[position]
         holder.bind(walk)
     }
 
-    override fun getItemCount(): Int = walks.size
+    override fun getItemCount(): Int = walkList.size
 
-    fun updateData(newWalks: List<Walk>) {
-        walks = newWalks
+    fun updateData(newWalks: ArrayList<Walk>) {
+        walkList = newWalks
         notifyDataSetChanged()
     }
 }
