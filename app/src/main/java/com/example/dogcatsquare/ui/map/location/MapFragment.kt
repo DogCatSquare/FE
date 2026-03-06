@@ -737,7 +737,7 @@ class MapFragment : Fragment(), OnMapReadyCallback {
         if (checkLocationPermission()) {
             moveToCurrentLocation()
         } else {
-            val seoul = LatLng(37.5664056, 126.9778222)
+            val seoul = LatLng(37.4979, 127.0276)
             map.moveCamera(CameraUpdateFactory.newLatLngZoom(seoul, 14f))
             resetAndLoadPlaces(seoul)
         }

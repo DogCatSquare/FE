@@ -9,6 +9,7 @@
         android:id="@+id/walking_review_toolbar"
         android:layout_width="match_parent"
         android:layout_height="?attr/actionBarSize"
+        app:navigationIcon="@drawable/ic_back"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
@@ -30,7 +31,7 @@
             android:id="@+id/review_rv"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            tools:listitem="@layout/item_mapwaling_review" />
+            tools:listitem="@layout/item_mapwalking" />
 
     </ScrollView>
 

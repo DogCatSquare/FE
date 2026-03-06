@@ -18,6 +18,8 @@ data class WalkDetail(
     val special: List<Special>,
     val startCoordinates: List<Coordinate>,
     val endCoordinates: List<Coordinate>,
+    val startAddress: String,
+    val endAddress: String,
     val createdAt: String,
     val updatedAt: String,
     val createdBy: CreatedBy
