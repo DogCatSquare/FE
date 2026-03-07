@@ -7,11 +7,10 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.example.dogcatsquare.R
-import com.example.dogcatsquare.data.model.community.Post
 import com.example.dogcatsquare.databinding.ItemMyCommunityBinding
 import com.example.dogcatsquare.ui.community.PostDetailActivity
 
-class MyCommunityRVAdpater(private val myPostList: ArrayList<com.example.dogcatsquare.data.model.post.Post>) : RecyclerView.Adapter<MyCommunityRVAdpater.MyCommunityAdapterViewHolder>(){
+class MyCommunityRVAdapter(private val myPostList: ArrayList<com.example.dogcatsquare.data.model.post.Post>) : RecyclerView.Adapter<MyCommunityRVAdapter.MyCommunityAdapterViewHolder>(){
     interface OnItemClickListener {
         fun onItemClick(myPost: com.example.dogcatsquare.data.model.post.Post)
     }
@@ -25,12 +24,12 @@ class MyCommunityRVAdpater(private val myPostList: ArrayList<com.example.dogcats
     override fun onCreateViewHolder(
         parent: ViewGroup,
         viewType: Int
-    ): MyCommunityRVAdpater.MyCommunityAdapterViewHolder {
+    ): MyCommunityRVAdapter.MyCommunityAdapterViewHolder {
         val binding = ItemMyCommunityBinding.inflate(LayoutInflater.from(parent.context), parent, false)
         return MyCommunityAdapterViewHolder(binding)
     }
 
-    override fun onBindViewHolder(holder: MyCommunityRVAdpater.MyCommunityAdapterViewHolder, position: Int) {
+    override fun onBindViewHolder(holder: MyCommunityRVAdapter.MyCommunityAdapterViewHolder, position: Int) {
         val myPost = myPostList[position]
         holder.itemView.setOnClickListener {
             mItemClickListener.onItemClick(myPostList[position])

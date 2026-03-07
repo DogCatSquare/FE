@@ -534,6 +534,7 @@
                 android:orientation="vertical"
                 android:scrollbars="vertical"
                 app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+                tools:itemCount="5"
                 tools:listitem="@layout/item_mapwaling_review" />
 
             <com.google.android.material.button.MaterialButton
@@ -541,9 +542,11 @@
                 style="@style/CustomMaterialButton8"
                 android:layout_width="match_parent"
                 android:layout_height="50dp"
-                android:layout_marginTop="20dp"
-                android:layout_marginBottom="20dp"
                 android:layout_marginVertical="16dp"
+                android:layout_marginStart="20dp"
+                android:layout_marginTop="20dp"
+                android:layout_marginEnd="20dp"
+                android:layout_marginBottom="20dp"
                 android:insetTop="0dp"
                 android:insetBottom="0dp"
                 android:text="후기 작성하기" />

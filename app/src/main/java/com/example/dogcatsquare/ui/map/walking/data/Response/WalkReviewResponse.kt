@@ -27,3 +27,7 @@ data class User(
     val profileImageUrl: String
 )
 
+data class ReviewCreateRequestDto(
+    val content: String
+)
+

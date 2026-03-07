@@ -7,7 +7,7 @@ import androidx.lifecycle.ViewModel
 import com.example.dogcatsquare.data.network.RetrofitClient
 import com.example.dogcatsquare.ui.map.walking.data.Response.WalkDetail
 import com.example.dogcatsquare.ui.map.walking.data.Response.WalkDetailResponse
-import com.example.dogcatsquare.ui.map.walking.WalkApiService
+import com.example.dogcatsquare.ui.map.walking.WalkingApiService
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -23,7 +23,7 @@ class WalkDetailViewModel : ViewModel() {
     private val _walkDetailState = MutableLiveData<WalkDetailState>()
     val walkDetailState: LiveData<WalkDetailState> get() = _walkDetailState
 
-    private val apiService = RetrofitClient.retrofit.create(WalkApiService::class.java)
+    private val apiService = RetrofitClient.retrofit.create(WalkingApiService::class.java)
 
     // 특정 산책로 상세 조회 함수
     fun fetchWalkDetail(walkId: Int) {

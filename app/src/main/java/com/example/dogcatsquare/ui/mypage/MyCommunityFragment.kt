@@ -10,7 +10,6 @@ import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.dogcatsquare.data.api.MyPageRetrofitItf
 import com.example.dogcatsquare.data.model.mypage.GetMyPostResponse
-import com.example.dogcatsquare.data.model.community.Post
 import com.example.dogcatsquare.data.network.RetrofitObj
 import com.example.dogcatsquare.databinding.FragmentMyCommunityBinding
 import retrofit2.Call
@@ -51,7 +50,7 @@ class MyCommunityFragment : Fragment() {
     private fun setupMyCommunityRecyclerView() {
         communityDatas.clear()
 
-        val myCommunityRVAdpater = MyCommunityRVAdpater(communityDatas)
+        val myCommunityRVAdpater = MyCommunityRVAdapter(communityDatas)
         binding.myCommunityRv.adapter = myCommunityRVAdpater
         binding.myCommunityRv.layoutManager = LinearLayoutManager(context, LinearLayoutManager.VERTICAL, true).apply {
             stackFromEnd = true
@@ -60,7 +59,7 @@ class MyCommunityFragment : Fragment() {
         getMyPost(myCommunityRVAdpater)
     }
 
-    private fun getMyPost(adapter: MyCommunityRVAdpater) {
+    private fun getMyPost(adapter: MyCommunityRVAdapter) {
         val token = getToken()
         val userId = getUserId()
 

@@ -67,6 +67,6 @@ class ReviewAdapter(private var reviews: List<WalkReview>) : RecyclerView.Adapte
         val nicknameTextView: TextView = itemView.findViewById(R.id.name_title)
         val breedTextView: TextView = itemView.findViewById(R.id.name_tv)
         val contentTextView: TextView = itemView.findViewById(R.id.review_tv)
-        val reviewImageView: ImageView = itemView.findViewById(R.id.review_image)
+        val reviewImageView: ImageView = itemView.findViewById(R.id.review_iv)
     }
 }
