@@ -9,6 +9,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.replace
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.RequestOptions
 import com.bumptech.glide.signature.ObjectKey
@@ -65,8 +66,15 @@ class MypageFragment : Fragment() {
                 .commitAllowingStateLoss()
         }
 
+        binding.constraintLayout4.setOnClickListener {
+            requireActivity().supportFragmentManager.beginTransaction()
+                .replace(R.id.main_frm, AnnouncementFragment())
+                .addToBackStack(null)
+                .commitAllowingStateLoss()
+        }
+
         // 회원탈퇴 클릭
-        binding.deleteTv.setOnClickListener {
+        binding.constraintLayout5.setOnClickListener {
             showDeleteDialog()
         }
 
