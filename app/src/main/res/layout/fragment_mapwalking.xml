@@ -334,8 +334,9 @@
                 app:layout_constraintStart_toStartOf="@+id/defaultWalkImage"
                 app:layout_constraintTop_toTopOf="@+id/defaultWalkImage" />
 
-            <Button
+            <com.google.android.material.button.MaterialButton
                 android:id="@+id/addButton"
+                style="@style/CustomMaterialButton8"
                 android:layout_width="0dp"
                 android:layout_height="56dp"
                 android:layout_marginTop="10dp"
@@ -343,6 +344,8 @@
                 android:backgroundTint="#FFFBF1"
                 android:src="@drawable/btn_add_review"
                 android:text="산책하고 후기 작성하기"
+                android:insetTop="0dp"
+                android:insetBottom="0dp"
                 android:textColor="#FFB200"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toStartOf="@+id/guideline_end2"
