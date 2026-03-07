@@ -8,6 +8,8 @@ import android.graphics.Color
 import android.location.Location
 import android.os.Bundle
 import android.provider.MediaStore
+import android.text.Editable
+import android.text.TextWatcher
 import android.util.Base64
 import android.util.Log
 import android.view.LayoutInflater
@@ -116,6 +118,19 @@ class WalkingReviewFragment : Fragment(), OnMapReadyCallback {
         rvSelectedImages = view.findViewById(R.id.rv_selected_images)
         reviewContentEditText = view.findViewById(R.id.introduction_tv)
         submitReviewButton = view.findViewById(R.id.Completion_bt)
+
+        val textLengthCounter: TextView = view.findViewById(R.id.text_length_counter)
+
+        reviewContentEditText.addTextChangedListener(object : TextWatcher {
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+                val length = s?.length ?: 0
+                textLengthCounter.text = "$length/300"
+            }
+
+            override fun afterTextChanged(s: Editable?) {}
+        })
 
         imageAdapter = SelectedImageAdapter(selectedBitmaps) { position ->
             selectedBitmaps.removeAt(position)
