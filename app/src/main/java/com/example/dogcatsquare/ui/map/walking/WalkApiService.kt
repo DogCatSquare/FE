@@ -1,7 +1,8 @@
 package com.example.dogcatsquare.ui.map.walking
 
-import com.example.dogcatsquare.ui.map.walking.data.Address
+import com.example.dogcatsquare.data.model.map.BaseResponse
 import com.example.dogcatsquare.ui.map.walking.data.Request.Coordinate
+import com.example.dogcatsquare.ui.map.walking.data.Response.ReviewCreateRequestDto
 import com.example.dogcatsquare.ui.map.walking.data.Response.WalkDetailResponse
 import com.example.dogcatsquare.ui.map.walking.data.Response.WalkResponse
 import com.example.dogcatsquare.ui.map.walking.data.Response.WalkReviewResponse
@@ -12,6 +13,7 @@ import okhttp3.RequestBody
 import okhttp3.ResponseBody
 import retrofit2.Call
 import retrofit2.http.Body
+import retrofit2.http.DELETE
 import retrofit2.http.GET
 import retrofit2.http.Header
 import retrofit2.http.Multipart
@@ -20,7 +22,7 @@ import retrofit2.http.Part
 import retrofit2.http.Path
 import retrofit2.http.Query
 
-interface WalkApiService {
+interface WalkingApiService {
 
     // 산책로 목록 조회
     @POST("/api/walks")
@@ -43,18 +45,18 @@ interface WalkApiService {
     //산책로 후기 등록
     @Multipart
     @POST("api/walks/{walkId}/reviews")
-    fun saveWalkReview(
-        @Path("walkId") walkId: Long,
-        @Part("reviewCreateRequestDto") reviewCreateRequestDto: RequestBody,
+    suspend fun saveWalkReview(
+        @Header("Authorization") token: String,
+        @Path("walkId") walkId: Int,
+        @Part("reviewCreateRequestDto") reviewCreateRequestDto: ReviewCreateRequestDto,
         @Part walkReviewImages: List<MultipartBody.Part>
-    ): Call<WalkReviewResponse>
+    ): BaseResponse<WalkReviewResponse>
 
     //산책로 등록
     @Multipart
     @POST("/api/walks/create")
     suspend fun createWalk(
-        @Header("Authorization") token: String,
-        @Part walkCreateRequestDto: MultipartBody.Part,
+        @Part("walkCreateRequestDto") walkCreateRequestDto: WalkCreateRequestDto,
         @Part walkReviewImages: List<MultipartBody.Part>
     ): WalkCreateResponse
 }
