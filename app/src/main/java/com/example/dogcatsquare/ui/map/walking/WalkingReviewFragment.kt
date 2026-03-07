@@ -282,7 +282,8 @@ class WalkingReviewFragment : Fragment(), OnMapReadyCallback {
             )
 
             // 카메라 이동
-            val cameraUpdate = CameraUpdateFactory.newLatLngZoom(routeCoords.first(), 16f)
+            val cameraUpdate = CameraUpdateFactory.newLatLngZoom(routeCoords.first(), 15.0f)
+
             googleMap?.moveCamera(cameraUpdate)
 
             // 거리 계산

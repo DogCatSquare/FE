@@ -96,19 +96,21 @@ class WalkingMapFragment : Fragment(), OnMapReadyCallback {
     }
 
     private fun setupRecyclerView() {
-        walkRVAdapter = WalkRVAdapter { walkId ->
-            val fragment = WalkingStartViewFragment.newInstance(walkId)
-            parentFragmentManager.beginTransaction()
-                .replace(R.id.main_frm, fragment)
-                .addToBackStack(null)
-                .commit()
-        }
+        walkRVAdapter = WalkRVAdapter (
+            onItemClick = { walkId ->
+                val fragment = WalkingStartViewFragment.newInstance(walkId)
+                parentFragmentManager.beginTransaction()
+                    .replace(R.id.main_frm, fragment)
+                    .addToBackStack(null)
+                    .commit()
+            },
+            walkList = arrayListOf() // 초기 데이터로 빈 리스트 전달
+        )
         binding.reviewRv.apply {
             adapter = walkRVAdapter
             layoutManager = LinearLayoutManager(context)
         }
     }
-
 
     private fun setupButtons() {
         binding.apply {
@@ -116,9 +118,16 @@ class WalkingMapFragment : Fragment(), OnMapReadyCallback {
                 requireActivity().supportFragmentManager.popBackStack()
             }
 
+            // 산책로
             reviewAllBt.setOnClickListener {
+                val fragment = WalkingReviewAllFragment().apply {
+                    arguments = Bundle().apply {
+                        // 현재 상세 페이지의 walkId 또는 placeId를 넘겨줘야 함
+                        putString("walkName", binding.placeName.text.toString())
+                    }
+                }
                 parentFragmentManager.beginTransaction()
-                    .replace(R.id.main_frm, WalkingReviewAllFragment())
+                    .replace(R.id.main_frm, fragment)
                     .addToBackStack(null)
                     .commit()
             }
@@ -148,10 +157,13 @@ class WalkingMapFragment : Fragment(), OnMapReadyCallback {
     }
 
     private fun loadPlaceDetails(placeId: Int) {
+        Log.d("WalkingMapFragment", "🚀 loadPlaceDetails 시작 - placeId: $placeId")
+
         lifecycleScope.launch {
             try {
                 val token = getToken()
                 if (token == null) {
+                    Log.e("WalkingMapFragment", "❌ 토큰 없음: 로그인이 필요함")
                     Toast.makeText(requireContext(), "로그인이 필요합니다.", Toast.LENGTH_SHORT).show()
                     return@launch
                 }
@@ -161,6 +173,7 @@ class WalkingMapFragment : Fragment(), OnMapReadyCallback {
                     longitude = longitude
                 )
 
+                Log.d("WalkingMapFragment", "📡 장소 상세정보 요청 중... 위도: $latitude, 경도: $longitude")
                 val response = withContext(Dispatchers.IO) {
                     RetrofitClient.placesApiService.getPlaceById(
                         token = "Bearer $token",
@@ -171,12 +184,15 @@ class WalkingMapFragment : Fragment(), OnMapReadyCallback {
 
                 if (response.isSuccess) {
                     response.result?.let { placeDetail ->
+                        Log.d("WalkingMapFragment", "📡 산책로 목록 검색 요청 중 (키워드: ${placeDetail.name})")
                         // 산책로 검색 수행
                         val walkResponse = withContext(Dispatchers.IO) {
                             RetrofitClient.walkApiService.searchWalks(
                                 title = placeDetail.name
                             )
                         }
+
+                        Log.d("WalkingMapFragment", "✅ 산책로 목록 수신 성공: ${walkResponse.walks.size}개 발견")
 
                         binding.apply {
                             placeName.text = placeDetail.name
@@ -204,7 +220,7 @@ class WalkingMapFragment : Fragment(), OnMapReadyCallback {
                                 reviewAllBt.visibility = View.VISIBLE
 
                                 // RecyclerView에 데이터 설정
-                                walkRVAdapter.updateData(walkResponse.walks)
+                                walkRVAdapter.updateData(ArrayList(walkResponse.walks))
                             }
 
                             isWished = placeDetail.wished
@@ -219,6 +235,7 @@ class WalkingMapFragment : Fragment(), OnMapReadyCallback {
                         }
                     }
                 } else {
+                    Log.e("WalkingMapFragment", "❌ 서버 에러 응답: ${response.message}")
                     Toast.makeText(
                         requireContext(),
                         response.message ?: "상세 정보를 불러오는데 실패했습니다.",
@@ -226,6 +243,7 @@ class WalkingMapFragment : Fragment(), OnMapReadyCallback {
                     ).show()
                 }
             } catch (e: Exception) {
+                Log.e("WalkingMapFragment", "💥 예외 발생 (Exception): ${e.message}")
                 handleError(e)
             }
         }
@@ -307,7 +325,12 @@ class WalkingMapFragment : Fragment(), OnMapReadyCallback {
         )
 
         // Google Map 카메라 이동 방식
-        googleMap?.moveCamera(CameraUpdateFactory.newLatLngZoom(location, 16f))
+        googleMap?.moveCamera(
+            CameraUpdateFactory.newLatLngZoom(
+                location,
+                15.0f
+            )
+        )
     }
 
     // [추가됨] MapFragment.kt와 동일한 마커 아이콘 변환 헬퍼 함수

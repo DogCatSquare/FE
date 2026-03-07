@@ -1,4 +1,4 @@
-package com.example.dogcatsquare.ui.map.walking.data.viewmodel
+package com.example.dogcatsquare.ui.map.walking.data.viewmodelc
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -27,7 +27,12 @@ class WalkListViewModel(private val repository: WalkRepository) : ViewModel() {
             try {
                 val request = Coordinate(latitude, longitude, 0)
                 val response = repository.getWalkList(request)
-                _walkListState.value = WalkListState.Success(response)
+
+                if (response.isSuccess) {
+                    _walkListState.value = WalkListState.Success(response)
+                } else {
+                    _walkListState.value = WalkListState.Error(response.message)
+                }
             } catch (e: Exception) {
                 _walkListState.value = WalkListState.Error("네트워크 오류: ${e.message}")
             }

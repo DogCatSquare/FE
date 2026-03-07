@@ -79,16 +79,15 @@ class CommentsAdapter(
         }
 
         // ===== 댓글 메뉴 처리 =====
-        holder.ivReplyMenu.visibility = View.VISIBLE
+        val sp = holder.itemView.context.getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
+        val myUserId = sp.getInt("userId", -1)
+        val isMine = (comment.userId == myUserId)
+
+        holder.ivReplyMenu.visibility = if (isMine) View.VISIBLE else View.GONE
+
         holder.ivReplyMenu.setOnClickListener { view ->
             val popup = PopupMenu(view.context, view)
             popup.menuInflater.inflate(R.menu.comment_menu, popup.menu)
-
-            val sp = view.context.getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
-            val myUserId = sp.getInt("userId", -1)
-            val isMine = (comment.userId == myUserId)
-
-            popup.menu.findItem(R.id.action_delete)?.isVisible = isMine
 
             popup.setOnMenuItemClickListener { item ->
                 when (item.itemId) {

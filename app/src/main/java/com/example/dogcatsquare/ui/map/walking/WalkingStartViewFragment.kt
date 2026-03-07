@@ -1,5 +1,8 @@
 package com.example.dogcatsquare.ui.map.walking
 
+import android.content.Context
+import android.graphics.Bitmap
+import android.graphics.Canvas
 import android.graphics.Color
 import android.os.Bundle
 import android.util.Log
@@ -11,6 +14,7 @@ import android.widget.ImageView
 import android.widget.TextView
 import androidx.appcompat.widget.Toolbar
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -25,18 +29,13 @@ import com.example.dogcatsquare.ui.map.walking.data.Response.WalkReview
 import com.example.dogcatsquare.ui.map.walking.data.ViewModel.WalkDetailState
 import com.example.dogcatsquare.ui.map.walking.data.ViewModel.WalkDetailViewModel
 import com.example.dogcatsquare.ui.map.walking.data.ViewModel.WalkReviewViewModel
+import com.google.android.gms.maps.CameraUpdateFactory
+import com.google.android.gms.maps.GoogleMap
+import com.google.android.gms.maps.SupportMapFragment
+import com.google.android.gms.maps.model.MarkerOptions
 import com.naver.maps.geometry.LatLng
-import com.naver.maps.geometry.LatLngBounds
-import com.naver.maps.map.CameraUpdate
-import com.naver.maps.map.NaverMap
-import com.naver.maps.map.OnMapReadyCallback
-import com.naver.maps.map.overlay.Marker
-import com.naver.maps.map.overlay.OverlayImage
-import com.naver.maps.map.overlay.PolylineOverlay
-import okhttp3.ResponseBody
-import retrofit2.Call
-import retrofit2.Callback
-import retrofit2.Response
+import com.google.android.gms.maps.OnMapReadyCallback
+import com.google.android.gms.maps.model.BitmapDescriptor
 
 class WalkingStartViewFragment : Fragment(), OnMapReadyCallback {
 
@@ -44,12 +43,17 @@ class WalkingStartViewFragment : Fragment(), OnMapReadyCallback {
     private val walkDetailViewModel: WalkDetailViewModel by viewModels()
     private val walkReviewViewModel: WalkReviewViewModel by viewModels()
     private var walkId: String? = null
-    private var naverMap: NaverMap? = null
-    private var userPolyline = PolylineOverlay()
     private val coords = mutableListOf<LatLng>()
     private var walk: Walk? = null
     private var lat : Double? = null
     private var lon : Double? = null
+
+    private lateinit var googleMap: GoogleMap
+    private var placeLatitude: Double = 0.0
+    private var placeLongitude: Double = 0.0
+    private var currentMarker: com.google.android.gms.maps.model.Marker? = null
+    private var actualPlaceLatitude: Double? = null
+    private var actualPlaceLongitude: Double? = null
 
     val apiService: WalkApiService by lazy {
         retrofit.create(WalkApiService::class.java)
@@ -65,6 +69,60 @@ class WalkingStartViewFragment : Fragment(), OnMapReadyCallback {
         }
     }
 
+    private fun setupGoogleMap() {
+        val mapFragment =
+            childFragmentManager.findFragmentById(R.id.map_fragment) as SupportMapFragment
+        mapFragment.getMapAsync(this)
+    }
+
+    override fun onMapReady(map: GoogleMap) {
+        googleMap = map
+
+        googleMap.uiSettings.apply {
+            isZoomControlsEnabled = false
+            isScrollGesturesEnabled = false
+            isRotateGesturesEnabled = false
+            isTiltGesturesEnabled = false
+            isZoomGesturesEnabled = false
+        }
+
+        val latitude = actualPlaceLatitude ?: placeLatitude
+        val longitude = actualPlaceLongitude ?: placeLongitude
+
+        updateMapLocation(latitude, longitude)
+    }
+
+    private fun updateMapLocation(lat: Double, lng: Double) {
+        val location = com.google.android.gms.maps.model.LatLng(lat, lng)
+        Log.d("MapDetailFragment", "Updating map location to: lat=$lat, lng=$lng")
+
+        currentMarker?.remove()
+
+        googleMap.moveCamera(
+            CameraUpdateFactory.newLatLngZoom(
+                location,
+                15.0f
+            )
+        )
+
+        val markerIcon = bitmapDescriptorFromVector(requireContext(), R.drawable.ic_marker)
+
+        currentMarker = googleMap.addMarker(
+            MarkerOptions()
+                .position(location)
+                .icon(markerIcon)
+        )
+    }
+
+    private fun bitmapDescriptorFromVector(context: Context, vectorResId: Int): BitmapDescriptor? {
+        val vectorDrawable = ContextCompat.getDrawable(context, vectorResId)
+        vectorDrawable!!.setBounds(0, 0, vectorDrawable.intrinsicWidth, vectorDrawable.intrinsicHeight)
+        val bitmap = Bitmap.createBitmap(vectorDrawable.intrinsicWidth, vectorDrawable.intrinsicHeight, Bitmap.Config.ARGB_8888)
+        val canvas = Canvas(bitmap)
+        vectorDrawable.draw(canvas)
+        return com.google.android.gms.maps.model.BitmapDescriptorFactory.fromBitmap(bitmap)
+    }
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -72,6 +130,7 @@ class WalkingStartViewFragment : Fragment(), OnMapReadyCallback {
         val view = inflater.inflate(R.layout.fragment_mapwalking_startview, container, false)
         walkId = arguments?.getInt("walkId")?.toString()
         Log.d("WalkingStartViewFragment", "Received walkId: $walkId")
+        setupGoogleMap()
 
         val address = arguments?.getString("address", "서대문 안산지락길")
         val placeId = walkId?.toIntOrNull()
@@ -95,52 +154,32 @@ class WalkingStartViewFragment : Fragment(), OnMapReadyCallback {
         recyclerView.adapter = reviewAdapter
 
         // MapFragment 설정
-        val mapFragment =
-            childFragmentManager.findFragmentById(R.id.map_fragment) as com.naver.maps.map.MapFragment?
-                ?: com.naver.maps.map.MapFragment.newInstance().also {
-                    childFragmentManager.beginTransaction().replace(R.id.map_fragment, it).commit()
+        walkDetailViewModel.walkDetailState.observe(viewLifecycleOwner) { state ->
+            when (state) {
+                is WalkDetailState.Loading -> {
+                    // 필요 시 로딩 프로그래스바 표시
                 }
+                is WalkDetailState.Success -> {
+                    val walkDetail = state.walkDetail
 
-        mapFragment?.getMapAsync { map ->
-            naverMap = map
-            Log.d("WalkingStartView", "NaverMap initialized")
+                    // UI 텍스트 및 이미지 업데이트 (이미 만들어두신 updateUI 호출)
+                    updateUI(view, walkDetail)
 
-            // 마커 추가 및 카메라 이동
-            walkDetailViewModel.walkDetailState.observe(viewLifecycleOwner) { state ->
-                when (state) {
-                    is WalkDetailState.Success -> {
-                        Log.d("WalkingStartView", "Walk Detail Success: ${state.walkDetail}")
-                        val walkDetail = state.walkDetail
-                        if (walkDetail != null) {
-                            (activity as? AppCompatActivity)?.supportActionBar?.title =
-                                walkDetail.title
-                            updateUI(view, walkDetail)
-
-                            // first() 대신 firstOrNull() 사용
-                            val startCoordinate = walkDetail.startCoordinates.firstOrNull()
-                            val endCoordinate = walkDetail.endCoordinates.firstOrNull()
-
-                            if (startCoordinate != null && endCoordinate != null) {
-                                lat = startCoordinate.latitude
-                                lon = startCoordinate.longitude
-
-                                fetchAddress(lat!!, lon!!)
-                            }
-
-                            // 좌표가 null이 아닌 경우에만 마커 설정
-                            if (startCoordinate != null && endCoordinate != null) {
-                                setInitialMarker(startCoordinate, endCoordinate)
-                            } else {
-                                Log.e("WalkingStartView", "좌표가 유효하지 않습니다: 시작 좌표나 끝 좌표가 없음.")
-                            }
+                    // 지도 관련 로직: 시작 좌표가 있으면 지도를 이동시키고 마커를 찍음
+                    val startCoord = walkDetail.startCoordinates?.firstOrNull()
+                    if (startCoord != null) {
+                        // 구글맵이 준비된 상태인지 확인 후 업데이트
+                        if (::googleMap.isInitialized) {
+                            updateMapLocation(startCoord.latitude, startCoord.longitude)
+                        } else {
+                            // 구글맵이 아직 준비 안됐다면 좌표만 저장해둠 (onMapReady에서 사용)
+                            actualPlaceLatitude = startCoord.latitude
+                            actualPlaceLongitude = startCoord.longitude
                         }
                     }
-
-                    is WalkDetailState.Error -> {
-                        Log.e("WalkingStartView", "API 호출 실패: ${state.message}")
-                    }
-
-                    WalkDetailState.Loading -> TODO()
+                }
+                is WalkDetailState.Error -> {
+                    Log.e("WalkingStartView", "상세 정보 로드 실패: ${state.message}")
                 }
             }
         }
@@ -206,24 +245,30 @@ class WalkingStartViewFragment : Fragment(), OnMapReadyCallback {
         return view
     }
 
-        private fun updateUI(view: View, walkDetail: WalkDetail) {
+    private fun updateUI(view: View, walkDetail: WalkDetail) {
         val descriptionTextView: TextView = view.findViewById(R.id.review_tv)
         val lengthTextView: TextView = view.findViewById(R.id.length_tv)
         val timeTextView: TextView = view.findViewById(R.id.time_tv)
         val profileIg: ImageView = view.findViewById(R.id.profile_ig)
         val profileNameTv: TextView = view.findViewById(R.id.profile_name_tv)
         val profileTv: TextView = view.findViewById(R.id.profile_tv)
+        val startTv: TextView = view.findViewById(R.id.start_tv)
+        val endTv: TextView = view.findViewById(R.id.end_tv)
+        val toolbar: Toolbar = view.findViewById(R.id.walking_start_toolbar)
 
+        toolbar.title = walkDetail.title // API 응답의 title로 변경
         descriptionTextView.text = walkDetail.description
         lengthTextView.text = "${walkDetail.distance} km"
         timeTextView.text = "${walkDetail.time} 분"
+        startTv.text = "${walkDetail.startAddress}"
+        endTv.text = "${walkDetail.endAddress}"
 
         Glide.with(requireContext())
             .load(walkDetail.createdBy.profileImageUrl)
             .into(profileIg)
 
         profileNameTv.text = walkDetail.createdBy.nickname
-        profileTv.text = walkDetail.createdBy.breed ?: "알 수 없음"
+        profileTv.text = walkDetail.createdBy.breed ?: ""
 
         // 난이도에 따라 이미지 변경
         val difficultyResId = when (walkDetail.difficulty) {
@@ -231,84 +276,75 @@ class WalkingStartViewFragment : Fragment(), OnMapReadyCallback {
             "HIGH" -> R.drawable.ic_difficulty
             else -> R.drawable.ic_normal
         }
-        val difficultyImageView: ImageView = view.findViewById(R.id.difficulty_iv)
-        difficultyImageView.setImageResource(difficultyResId)
 
-        // 리스트가 비어있지 않은지 확인 후 첫 번째 좌표 가져오기
-        val startCoordinate = walkDetail.startCoordinates.firstOrNull()
-        val endCoordinate = walkDetail.endCoordinates.firstOrNull()
+        // 2. 편의시설(Special) 이미지 설정
+        // walkDetail.special 이 List<String> 형태라고 가정합니다.
+        val filter1 = view.findViewById<ImageView>(R.id.filter1) // XML에 ID 추가 필요
+        filter1.setImageResource(difficultyResId)
 
-        if (startCoordinate != null && endCoordinate != null) {
-            setInitialMarker(startCoordinate, endCoordinate)
-        } else {
-            Log.e("WalkingStartView", "좌표가 유효하지 않습니다: 시작 좌표나 끝 좌표가 없음.")
-        }
-    }
+        val filter2 = view.findViewById<ImageView>(R.id.filter2)     // XML에 ID 추가 필요
+        val filter3 = view.findViewById<ImageView>(R.id.filter3)
 
+        // 초기에는 안 보이게 설정하거나 기본값 세팅
+        filter2.visibility = View.GONE
+        filter3.visibility = View.GONE
 
-    private fun setInitialMarker(startCoordinate: Coordinate, endCoordinate: Coordinate) {
-        if (naverMap == null) {
-            Log.e("WalkingStartView", "NaverMap is not initialized.")
-            return
-        }
+        walkDetail.special?.take(2)?.forEachIndexed { index, type ->
+            // 인덱스에 따라 어떤 ImageView에 넣을지 결정합니다.
+            val targetImageView = if (index == 0) filter2 else filter3
 
-        if (startCoordinate != null && endCoordinate != null) {
-            // Start Marker
-            val startMarker = Marker().apply {
-                icon = OverlayImage.fromResource(R.drawable.ic_start_marker)
-                position = LatLng(startCoordinate.latitude, startCoordinate.longitude)
-                map = naverMap
-            }
-
-            // End Marker
-            val endMarker = Marker().apply {
-                icon = OverlayImage.fromResource(R.drawable.ic_end_marker)
-                position = LatLng(endCoordinate.latitude, endCoordinate.longitude)
-                map = naverMap
-            }
-
-            coords.add(LatLng(startCoordinate.latitude, startCoordinate.longitude))
-            coords.add(LatLng(endCoordinate.latitude, endCoordinate.longitude))
-
-            userPolyline.coords = coords
-            userPolyline.color = Color.parseColor("#FFB200")
-            userPolyline.width = 10
-            userPolyline.map = naverMap
-
-            // bounds에 맞춰 카메라를 이동
-            val bounds = LatLngBounds(LatLng(startCoordinate.latitude, startCoordinate.longitude), LatLng(endCoordinate.latitude, endCoordinate.longitude))
-            val cameraUpdate = CameraUpdate.fitBounds(bounds, 200)
-            naverMap?.moveCamera(cameraUpdate)
-        } else {
-            Log.e("WalkingStartView", "Invalid coordinates: start or end coordinate is null.")
-        }
-    }
-
-    private fun fetchAddress(latitude: Double, longitude: Double) {
-        apiService.getAddress(latitude, longitude).enqueue(object : Callback<ResponseBody> {
-            override fun onResponse(call: Call<ResponseBody>, response: Response<ResponseBody>) {
-                if (response.isSuccessful) {
-                    val address = response.body()?.string() ?: "주소를 찾을 수 없습니다."
-                    view?.let { fragmentView ->
-                        val start_tv = fragmentView.findViewById<TextView>(R.id.start_tv)
-                        val end_tv = fragmentView.findViewById<TextView>(R.id.end_tv)
-
-                        start_tv.text = address
-                        end_tv.text = address
-                    }
-                } else {
-                    Log.e("WalkingStartView", "주소 요청 실패: ${response.errorBody()}")
+            when (type.type) {
+                "WASTEBASKET" -> {
+                    targetImageView.visibility = View.VISIBLE
+                    targetImageView.setImageResource(R.drawable.ic_garbage)
+                }
+                "WATER" -> {
+                    targetImageView.visibility = View.VISIBLE
+                    targetImageView.setImageResource(R.drawable.ic__water)
+                }
+                "TOILET" -> {
+                    targetImageView.visibility = View.VISIBLE
+                    targetImageView.setImageResource(R.drawable.ic_toilet)
+                }
+                "PARKING" -> {
+                    targetImageView.visibility = View.VISIBLE
+                    targetImageView.setImageResource(R.drawable.ic_park)
+                }
+                "STAIRS" -> {
+                    targetImageView.visibility = View.VISIBLE
+                    targetImageView.setImageResource(R.drawable.ic_stairs)
                 }
             }
+        }
 
-            override fun onFailure(call: Call<ResponseBody>, t: Throwable) {
-                Log.e("WalkingStartView", "주소 요청 중 오류 발생: ${t.message}")
-            }
-        })
-    }
+        val imageButtons = listOf(
+            view.findViewById<ImageButton>(R.id.walk_img1),
+            view.findViewById<ImageButton>(R.id.walk_img2),
+            view.findViewById<ImageButton>(R.id.walk_img3),
+            view.findViewById<ImageButton>(R.id.walk_img4),
+            view.findViewById<ImageButton>(R.id.walk_img5)
+        )
 
-    override fun onMapReady(naverMap: NaverMap) {
-        this.naverMap = naverMap
-        userPolyline.map = naverMap
+        // 모든 버튼 초기화 (숨기기)
+        imageButtons.forEach { it.visibility = View.GONE }
+
+        // 데이터 로드 (최대 5개)
+        walkDetail.walkImageUrl?.take(5)?.forEachIndexed { index, url ->
+            val button = imageButtons[index]
+            button.visibility = View.VISIBLE
+            Glide.with(requireContext())
+                .load(url)
+                .into(button)
+        }
+
+        // 리스트가 비어있지 않은지 확인 후 첫 번째 좌표 가져오기
+//        val startCoordinate = walkDetail.startCoordinates?.firstOrNull()
+//        val endCoordinate = walkDetail.endCoordinates?.firstOrNull()
+
+//        if (startCoordinate != null && endCoordinate != null) {
+//            setInitialMarker(startCoordinate, endCoordinate)
+//        } else {
+//            Log.e("WalkingStartView", "좌표가 유효하지 않습니다: 시작 좌표나 끝 좌표가 없음.")
+//        }
     }
 }
