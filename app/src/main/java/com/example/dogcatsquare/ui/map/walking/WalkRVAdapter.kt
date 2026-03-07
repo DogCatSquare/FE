@@ -16,6 +16,10 @@ import com.example.dogcatsquare.data.model.walk.Walk
 import com.example.dogcatsquare.databinding.ItemMapwalkingBinding
 import java.text.SimpleDateFormat
 import java.util.Locale
+import com.google.android.gms.maps.CameraUpdateFactory
+import com.google.android.gms.maps.model.LatLng
+import com.google.android.gms.maps.model.LatLngBounds
+import com.google.android.gms.maps.model.PolylineOptions
 
 class WalkRVAdapter(private val onItemClick: (Int) -> Unit, private var walkList: ArrayList<Walk>) : RecyclerView.Adapter<WalkRVAdapter.ViewHolder>() {
     private var walks: List<Walk> = emptyList()
@@ -83,11 +87,52 @@ class WalkRVAdapter(private val onItemClick: (Int) -> Unit, private var walkList
                     addDefaultPlaceholder()
                 }
 
-                // 5. 구글 지도 초기화 (가벼운 설정)
+                // 5. 구글 지도 설정 및 줌 범위 조정
                 mapView.onCreate(null)
                 mapView.getMapAsync { googleMap ->
-                    googleMap.uiSettings.isMapToolbarEnabled = false
-                    // 필요 시 여기에 walk.coordinates를 이용한 Polyline 그리기 로직 추가
+                    // 리사이클러뷰 스크롤 시 지도 터치와 충돌하지 않도록 모든 제스처 막기
+                    googleMap.uiSettings.apply {
+                        isMapToolbarEnabled = false
+                        setAllGesturesEnabled(false)
+                    }
+
+                    // 🌟 뷰홀더가 재사용될 때 이전 데이터가 겹치지 않게 지도 초기화
+                    googleMap.clear()
+
+                    // 서버에서 받은 좌표 데이터가 있다면 선을 그리고 줌을 맞춥니다
+                    if (!walk.coordinates.isNullOrEmpty()) {
+                        val boundsBuilder = LatLngBounds.Builder()
+                        val polylineOptions = PolylineOptions()
+                            .width(10f)
+                            .color(Color.parseColor("#FFB200"))
+
+                        // 모든 좌표를 돌면서 선(Polyline)에 점을 추가하고 상자(Bounds) 크기를 늘립니다.
+                        walk.coordinates.forEach { coord ->
+                            // TODO: coord.latitude, coord.longitude는 실제 DTO 변수명에 맞게 수정하세요
+                            val latLng = LatLng(coord.latitude, coord.longitude)
+                            polylineOptions.add(latLng)
+                            boundsBuilder.include(latLng)
+                        }
+
+                        // 지도에 주황색 선 그리기
+                        googleMap.addPolyline(polylineOptions)
+
+                        // 🌟 방법 A: 경로 전체가 한눈에 다 들어오게 '자동 줌' (추천!)
+                        try {
+                            val bounds = boundsBuilder.build()
+                            val padding = dpToPx(30f) // 테두리 여백 30dp
+                            googleMap.setOnMapLoadedCallback {
+                                googleMap.moveCamera(CameraUpdateFactory.newLatLngBounds(bounds, padding))
+                            }
+                        } catch (e: Exception) {
+                            Log.e("WalkRVAdapter", "Bounds 렌더링 에러", e)
+                        }
+
+                        /* // 🌟 방법 B: 무조건 특정 배율(예: 15f)로 '고정 줌' 하고 싶다면 위 방법 A를 지우고 아래 코드를 쓰세요!
+                        val startLocation = LatLng(walk.coordinates[0].latitude, walk.coordinates[0].longitude)
+                        googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(startLocation, 15f))
+                        */
+                    }
                 }
 
                 // 6. 날짜 포맷팅

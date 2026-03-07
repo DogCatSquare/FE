@@ -1,19 +1,26 @@
 package com.example.dogcatsquare.ui.map.walking.data
 
 data class WalkCreateRequestDto(
-    val coordinates: List<LatLngDto>,
-    val duration: Long,
-    val distance: Float,
-    val description: String
+    val title: String,
+    val description: String,
+    val time: Int,
+    val distance: Int,
+    val difficulty: String,
+    val special: List<SpecialDto>,
+    val coordinates: List<CoordinateDto>
 )
 
-// data/Request/LatLngDto.kt 파일 생성
-data class LatLngDto(
+data class SpecialDto(
+    val type: String,
+    val customValue: String
+)
+
+data class CoordinateDto(
     val latitude: Double,
-    val longitude: Double
+    val longitude: Double,
+    val sequence: Int
 )
 
-// data/Response/WalkCreateResponse.kt 파일 생성
 data class WalkCreateResponse(
     val isSuccess: Boolean,
     val code: String,

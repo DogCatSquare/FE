@@ -8,6 +8,8 @@ import android.graphics.Color
 import android.location.Location
 import android.os.Bundle
 import android.provider.MediaStore
+import android.text.Editable
+import android.text.TextWatcher
 import android.util.Base64
 import android.util.Log
 import android.view.LayoutInflater
@@ -78,6 +80,8 @@ class WalkingReviewFragment : Fragment(), OnMapReadyCallback {
     // 예시 산책로 ID (실제 값으로 초기화 필요)
     private var walkId: Long = 20L
 
+    private var placeName: String = ""
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -90,7 +94,7 @@ class WalkingReviewFragment : Fragment(), OnMapReadyCallback {
         super.onViewCreated(view, savedInstanceState)
 
         // ViewModel 초기화
-        viewModel = ViewModelProvider(this)[WalkReviewViewModel::class.java]
+        viewModel = ViewModelProvider(requireActivity())[WalkReviewViewModel::class.java]
 
         view.findViewById<ImageView>(R.id.back_btn).setOnClickListener {
             parentFragmentManager.popBackStack() // 이전 화면으로 돌아가기
@@ -105,10 +109,28 @@ class WalkingReviewFragment : Fragment(), OnMapReadyCallback {
         val minTv: TextView = view.findViewById(R.id.min_tv)
         minTv.text = elapsedMinutes.toString()
 
+        placeName = arguments?.getString("placeName") ?: "알 수 없는 장소"
+
+        val addressTv: TextView = view.findViewById(R.id.address_tv)
+        addressTv.text = placeName
+
         // 1. UI 및 리사이클러뷰 초기화
         rvSelectedImages = view.findViewById(R.id.rv_selected_images)
         reviewContentEditText = view.findViewById(R.id.introduction_tv)
         submitReviewButton = view.findViewById(R.id.Completion_bt)
+
+        val textLengthCounter: TextView = view.findViewById(R.id.text_length_counter)
+
+        reviewContentEditText.addTextChangedListener(object : TextWatcher {
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+                val length = s?.length ?: 0
+                textLengthCounter.text = "$length/300"
+            }
+
+            override fun afterTextChanged(s: Editable?) {}
+        })
 
         imageAdapter = SelectedImageAdapter(selectedBitmaps) { position ->
             selectedBitmaps.removeAt(position)
@@ -136,26 +158,27 @@ class WalkingReviewFragment : Fragment(), OnMapReadyCallback {
         // Completion 버튼 (다음 화면으로 이동)
         val completionButton: Button = view.findViewById(R.id.Completion_bt)
         completionButton.setOnClickListener {
+            val fragment = WalkingReviewTypeFragment().apply {
+                arguments = Bundle().apply {
+                    putString("placeName", placeName) // 장소 이름 넘기기
+                }
+            }
             val transaction: FragmentTransaction = parentFragmentManager.beginTransaction()
-            transaction.replace(R.id.main_frm, WalkingReviewTypeFragment())
+            transaction.replace(R.id.main_frm, fragment)
             transaction.addToBackStack(null)
             transaction.commit()
         }
 
         submitReviewButton.setOnClickListener {
             val content = reviewContentEditText.text.toString().trim()
+
+            // 유효성 검사
             if (content.isEmpty()) {
                 Toast.makeText(requireContext(), "리뷰는 20자 이상 작성해주세요.", Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
-
             if (selectedBitmaps.isEmpty()) {
                 Toast.makeText(requireContext(), "최소 1장의 사진을 추가해주세요.", Toast.LENGTH_SHORT).show()
-                return@setOnClickListener
-            }
-
-            if (selectedBitmaps.isEmpty() && content.isEmpty()) {
-                Toast.makeText(requireContext(), "리뷰는 20자 이상 작성하고 최소 1장의 사진을 추가해주세요.", Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
 
@@ -165,36 +188,29 @@ class WalkingReviewFragment : Fragment(), OnMapReadyCallback {
                 return@setOnClickListener
             }
 
-            val imageParts = bitmapsToMultipart(selectedBitmaps) // 이미지 변환
+            // Multipart 이미지 변환
+            val imageParts = bitmapsToMultipart(selectedBitmaps)
 
-            // [수정됨] 예제 좌표를 Google LatLng로 변경 (ViewModel도 Google LatLng를 받도록 수정 필요)
-            val routeCoords = listOf(LatLng(37.5665, 126.9780)) // 예제 좌표
-            val elapsedMinutes = 30L
-            val distance = 5.2f
+            viewModel.tempToken = "Bearer $token"
 
-            // [수정됨] createWalk 호출 (token 추가)
-            // 참고: viewModel.createWalk 메서드도 Google LatLng 타입을 받도록 수정해야 합니다.
-            viewModel.createWalk(token, routeCoords, elapsedMinutes, distance, content, imageParts)
+            // 🌟 API 호출 대신, SharedViewModel에 데이터 임시 저장
+            viewModel.tempRouteCoords = this.routeCoords
+            viewModel.tempElapsedMinutes = this.elapsedMinutes
+            viewModel.tempDistance = calculateTotalDistance(this.routeCoords) // 실제 거리 적용
+            viewModel.tempContent = content
+            viewModel.tempImages = imageParts
+            viewModel.tempPlaceName = this.placeName
 
-            val transaction: FragmentTransaction = parentFragmentManager.beginTransaction()
-
-            transaction.replace(R.id.main_frm, WalkingReviewTypeFragment())
-            transaction.addToBackStack(null)
-            transaction.commit()
-        }
-
-
-        // 후기 제출 성공 시 처리
-        viewModel.reviewResponse.observe(viewLifecycleOwner) { response ->
-            response?.let {
-                Log.d("WalkReview", "후기 제출 성공: $it")
-                Toast.makeText(requireContext(), "산책로 후기 작성 완료!", Toast.LENGTH_SHORT).show()
-
-                val transaction: FragmentTransaction = parentFragmentManager.beginTransaction()
-                transaction.replace(R.id.main_frm, WalkingReviewTypeFragment())
-                transaction.addToBackStack(null)
-                transaction.commit()
+            // 데이터 저장 후 다음 화면(TypeFragment)으로 전환
+            val fragment = WalkingReviewTypeFragment().apply {
+                arguments = Bundle().apply {
+                    putString("placeName", placeName)
+                }
             }
+            parentFragmentManager.beginTransaction()
+                .replace(R.id.main_frm, fragment)
+                .addToBackStack(null)
+                .commit()
         }
     }
 
@@ -267,6 +283,7 @@ class WalkingReviewFragment : Fragment(), OnMapReadyCallback {
 
             // 카메라 이동
             val cameraUpdate = CameraUpdateFactory.newLatLngZoom(routeCoords.first(), 15.0f)
+
             googleMap?.moveCamera(cameraUpdate)
 
             // 거리 계산
