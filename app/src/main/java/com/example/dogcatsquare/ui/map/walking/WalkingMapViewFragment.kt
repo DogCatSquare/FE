@@ -82,6 +82,8 @@ class WalkingMapViewFragment : Fragment(), OnMapReadyCallback, LocationUpdateInt
         // [수정] fragment_mapwalking_mapview.xml을 사용
         val rootView = inflater.inflate(R.layout.fragment_mapwalking_mapview, container, false)
 
+        val placeName = arguments?.getString("placeName") ?: "알 수 없는 장소"
+
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(requireActivity())
         setupLocationRequest()
 
@@ -135,6 +137,8 @@ class WalkingMapViewFragment : Fragment(), OnMapReadyCallback, LocationUpdateInt
                 // [수정] Google LatLng 리스트를 전달
                 val coordsList = ArrayList<LatLng>(coords)
                 bundle.putParcelableArrayList("routeCoords", coordsList)
+
+                bundle.putString("placeName", placeName)
 
                 walkingReviewFragment.arguments = bundle
                 transaction.replace(R.id.main_frm, walkingReviewFragment)

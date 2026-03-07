@@ -59,11 +59,5 @@ interface WalkingApiService {
         @Part("walkCreateRequestDto") walkCreateRequestDto: WalkCreateRequestDto,
         @Part walkReviewImages: List<MultipartBody.Part>
     ): WalkCreateResponse
-
-    // 산책로 후기 삭제
-//    @DELETE
-//    fun deleteWalkingReview(
-//
-//    ):
 }
 

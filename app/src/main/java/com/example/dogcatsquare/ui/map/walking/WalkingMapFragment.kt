@@ -133,8 +133,19 @@ class WalkingMapFragment : Fragment(), OnMapReadyCallback {
             }
 
             addButton.setOnClickListener {
+                // 1. 현재 화면(binding)에 세팅된 장소 이름 가져오기
+                val currentPlaceName = binding.placeName.text.toString()
+
+                // 2. 다음 화면으로 넘어갈 때 Bundle에 장소 이름 담아주기
+                val fragment = WalkingMapViewFragment().apply {
+                    arguments = Bundle().apply {
+                        putString("placeName", currentPlaceName) // "placeName" 이라는 이름으로 저장
+                    }
+                }
+
+                // 3. 화면 전환
                 parentFragmentManager.beginTransaction()
-                    .replace(R.id.main_frm, WalkingMapViewFragment())
+                    .replace(R.id.main_frm, fragment)
                     .addToBackStack(null)
                     .commit()
             }
