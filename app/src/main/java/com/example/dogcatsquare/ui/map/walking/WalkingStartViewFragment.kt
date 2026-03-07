@@ -260,7 +260,7 @@ class WalkingStartViewFragment : Fragment(), OnMapReadyCallback {
     private fun setupButtons() {
         binding.apply {
             // 후기 목록 버튼
-            val reviewButton = binding.reviewBt
+            val reviewButton = binding.reviewButton
             reviewButton.setOnClickListener {
                 val fragment = WalkingReviewListFragment().apply {
                     arguments = Bundle().apply {
@@ -281,9 +281,9 @@ class WalkingStartViewFragment : Fragment(), OnMapReadyCallback {
             }
 
             // 후기 작성 버튼
-            val reviewListBtn = binding.reviewButton
+            val reviewListBtn = binding.reviewBt
             reviewListBtn.setOnClickListener {
-                val fragment = WalkingReviewListFragment().apply {
+                val fragment = WalkingReviewAddFragment().apply {
                     arguments = Bundle().apply {
                         putInt("walkId", walkId?.toInt() ?: -1)
                     }

@@ -184,7 +184,7 @@ class WalkingReviewListFragment : Fragment() {
 
     private fun setupAddReviewButton() {
         binding.addReview.setOnClickListener {
-            val mapAddReviewFragment = MapAddReviewFragment.newInstance(walkId)
+            val mapAddReviewFragment = WalkingReviewAddFragment.newInstance(walkId)
             requireActivity().supportFragmentManager.beginTransaction()
                 .setCustomAnimations(
                     R.anim.slide_in_right,

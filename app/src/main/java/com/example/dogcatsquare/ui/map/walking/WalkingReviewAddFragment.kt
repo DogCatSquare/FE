@@ -24,6 +24,7 @@ import com.example.dogcatsquare.data.network.RetrofitClient
 import com.example.dogcatsquare.databinding.FragmentMapAddReviewBinding
 import com.example.dogcatsquare.ui.map.location.MapAddReviewFragment
 import com.example.dogcatsquare.ui.map.location.MapDetailFragment
+import com.example.dogcatsquare.ui.map.walking.data.Response.ReviewCreateRequestDto
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -35,7 +36,7 @@ import java.io.ByteArrayOutputStream
 class WalkingReviewAddFragment : Fragment() {
     private var _binding: FragmentMapAddReviewBinding? = null
     private val binding get() = _binding!!
-    private var placeId: Int = -1
+    private var walkId: Int = -1
 
     private var selectedBitmaps: MutableList<Bitmap> = mutableListOf()
     private lateinit var imageAdapter: SelectedImageAdapter
@@ -48,7 +49,7 @@ class WalkingReviewAddFragment : Fragment() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         arguments?.let {
-            placeId = it.getInt("placeId", -1)
+            walkId = it.getInt("walkId", -1)
         }
     }
 
@@ -155,18 +156,18 @@ class WalkingReviewAddFragment : Fragment() {
                     val outputStream = ByteArrayOutputStream()
                     bitmap.compress(Bitmap.CompressFormat.JPEG, 80, outputStream)
                     val requestBody = outputStream.toByteArray().toRequestBody("image/*".toMediaTypeOrNull())
-                    MultipartBody.Part.createFormData("placeReviewImages", "review_image_$index.jpg", requestBody)
+                    MultipartBody.Part.createFormData("walkReviewImages", "review_image_$index.jpg", requestBody)
                 }
 
                 val reviewContent = binding.etReview.getText().toString()
-                val reviewRequest = PlaceReviewRequest(content = reviewContent, placeReviewImages = emptyList())
+                val reviewRequest = ReviewCreateRequestDto(content = reviewContent)
 
                 val response = withContext(Dispatchers.IO) {
-                    RetrofitClient.placesApiService.createPlaceReview(
+                    RetrofitClient.walkingApiService.saveWalkReview(
                         token = "Bearer $token",
-                        placeId = placeId,
-                        request = reviewRequest,
-                        images = imageParts
+                        walkId = walkId,
+                        reviewCreateRequestDto = reviewRequest,
+                        walkReviewImages = imageParts
                     )
                 }
 
