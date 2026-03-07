@@ -120,7 +120,7 @@ class WalkingMapFragment : Fragment(), OnMapReadyCallback {
 
             // 산책로
             reviewAllBt.setOnClickListener {
-                val fragment = WalkingReviewAllFragment().apply {
+                val fragment = WalkingListFragment().apply {
                     arguments = Bundle().apply {
                         // 현재 상세 페이지의 walkId 또는 placeId를 넘겨줘야 함
                         putString("walkName", binding.placeName.text.toString())

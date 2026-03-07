@@ -1,6 +1,5 @@
 package com.example.dogcatsquare.ui.map.walking
 
-import com.example.dogcatsquare.ui.map.walking.data.Address
 import com.example.dogcatsquare.ui.map.walking.data.Request.Coordinate
 import com.example.dogcatsquare.ui.map.walking.data.Response.WalkDetailResponse
 import com.example.dogcatsquare.ui.map.walking.data.Response.WalkResponse
@@ -12,6 +11,7 @@ import okhttp3.RequestBody
 import okhttp3.ResponseBody
 import retrofit2.Call
 import retrofit2.http.Body
+import retrofit2.http.DELETE
 import retrofit2.http.GET
 import retrofit2.http.Multipart
 import retrofit2.http.POST
@@ -19,7 +19,7 @@ import retrofit2.http.Part
 import retrofit2.http.Path
 import retrofit2.http.Query
 
-interface WalkApiService {
+interface WalkingApiService {
 
     // 산책로 목록 조회
     @POST("/api/walks")
@@ -55,5 +55,11 @@ interface WalkApiService {
         @Part("walkCreateRequestDto") walkCreateRequestDto: WalkCreateRequestDto,
         @Part walkReviewImages: List<MultipartBody.Part>
     ): WalkCreateResponse
+
+    // 산책로 후기 삭제
+//    @DELETE
+//    fun deleteWalkingReview(
+//
+//    ):
 }
 

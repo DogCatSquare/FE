@@ -1,99 +1,115 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="165dp"
-    android:paddingTop="10dp"
-    android:paddingLeft="20dp"
-    android:backgroundTint="@color/white"
-    xmlns:app="http://schemas.android.com/apk/res-auto">
+    android:layout_height="wrap_content"
+    android:backgroundTint="@color/white">
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline_start"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="@color/white"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.05" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline_end"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="@color/white"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.95" />
 
     <ImageView
         android:id="@+id/review_image"
         android:layout_width="34dp"
         android:layout_height="34dp"
-        android:layout_centerVertical="true"
         android:layout_alignParentStart="true"
-        android:layout_marginStart="16dp"
-        android:src="@drawable/dog_sample"
+        android:layout_centerVertical="true"
+        android:layout_marginTop="8dp"
+        android:background="@drawable/circle_background"
         android:contentDescription="리뷰 이미지"
-        android:background="@drawable/circle_background" />
+        android:src="@drawable/dog_sample"
+        app:layout_constraintStart_toStartOf="@+id/guideline_start"
+        app:layout_constraintTop_toTopOf="parent" />
 
     <TextView
         android:id="@+id/name_title"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginStart="7dp"
         android:text="닉네임"
-        android:textSize="16dp"
         android:textColor="#000000"
-        app:layout_constraintStart_toEndOf="@id/review_image"
-        app:layout_constraintTop_toTopOf="@id/review_image"
+        android:textSize="16dp"
         app:layout_constraintBottom_toBottomOf="@id/review_image"
-        android:layout_marginStart="7dp" />
+        app:layout_constraintStart_toEndOf="@id/review_image"
+        app:layout_constraintTop_toTopOf="@id/review_image" />
 
     <TextView
         android:id="@+id/name_tv"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginStart="6dp"
         android:text="포메라니안"
-        android:textSize="14dp"
         android:textColor="#757575"
-        app:layout_constraintStart_toEndOf="@id/name_title"
-        app:layout_constraintTop_toTopOf="@id/review_image"
+        android:textSize="14dp"
         app:layout_constraintBottom_toBottomOf="@id/review_image"
-        android:layout_marginStart="6dp" />
+        app:layout_constraintStart_toEndOf="@id/name_title"
+        app:layout_constraintTop_toTopOf="@id/review_image" />
 
     <ImageButton
         android:id="@+id/review_button"
         android:layout_width="2.5dp"
         android:layout_height="13dp"
+        android:layout_marginStart="200dp"
         android:backgroundTint="@color/white"
-        android:src="@drawable/ic_more"
         android:contentDescription="리뷰 버튼"
-        app:layout_constraintStart_toEndOf="@id/name_tv"
-        app:layout_constraintTop_toTopOf="@id/review_image"
+        android:src="@drawable/ic_more"
         app:layout_constraintBottom_toBottomOf="@id/review_image"
-        app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginStart="200dp" />
+        app:layout_constraintEnd_toStartOf="@+id/guideline_end"
+        app:layout_constraintHorizontal_bias="1.0"
+        app:layout_constraintStart_toEndOf="@id/name_tv"
+        app:layout_constraintTop_toTopOf="@id/review_image" />
 
     <TextView
         android:id="@+id/review_tv"
         android:layout_width="263dp"
         android:layout_height="66dp"
         android:layout_marginTop="16dp"
+        android:paddingLeft="5dp"
         android:text="강아지 종합접종이랑 중성화했어요. 의사선생님이 친절하시고 꼼꼼히 봐주셔서 좋아요."
         android:textColor="#757575"
         android:textSize="14dp"
-        android:paddingLeft="5dp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/name_tv" />
+        app:layout_constraintStart_toStartOf="@+id/guideline_start"
+        app:layout_constraintTop_toBottomOf="@+id/review_image" />
 
     <TextView
         android:id="@+id/date_tv"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
-        android:text="2025.01.23"
+        android:layout_marginBottom="8dp"
         android:paddingLeft="5dp"
+        android:text="2025.01.23"
         android:textColor="#9E9E9E"
         android:textSize="12dp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
-        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="@+id/guideline_start"
         app:layout_constraintTop_toBottomOf="@id/review_tv" />
 
     <ImageView
         android:id="@+id/review_iv"
         android:layout_width="200px"
         android:layout_height="200px"
-        android:src="@drawable/dog_sample"
         android:background="@drawable/bg_round_square"
         android:contentDescription="리뷰 이미지"
-        app:layout_constraintStart_toEndOf="@id/review_tv"
-        app:layout_constraintTop_toTopOf="@id/review_tv"
-        android:layout_marginStart="16dp" />
+        android:src="@drawable/dog_sample"
+        app:layout_constraintEnd_toStartOf="@+id/guideline_end"
+        app:layout_constraintHorizontal_bias="1.0"
+        app:layout_constraintStart_toEndOf="@+id/review_tv"
+        app:layout_constraintTop_toTopOf="@id/review_tv" />
 
     <View
         android:id="@+id/separator_line"

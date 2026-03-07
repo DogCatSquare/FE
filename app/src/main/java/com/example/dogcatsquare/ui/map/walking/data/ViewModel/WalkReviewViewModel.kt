@@ -9,22 +9,19 @@ import com.example.dogcatsquare.data.network.RetrofitClient
 
 // [수정] === 이것이 핵심입니다 ===
 // 'data.api'의 WalkApiService가 아닌, 'ui.map.walking'의 WalkApiService를 임포트합니다.
-import com.example.dogcatsquare.ui.map.walking.WalkApiService
+import com.example.dogcatsquare.ui.map.walking.WalkingApiService
 // ===
 
 import com.example.dogcatsquare.ui.map.walking.data.LatLngDto
 import com.example.dogcatsquare.ui.map.walking.data.Response.WalkReviewResponse
 import com.example.dogcatsquare.ui.map.walking.data.WalkCreateRequestDto
 import com.example.dogcatsquare.ui.map.walking.data.WalkCreateResponse
-import com.google.gson.Gson
 
 // [수정] Google Map의 LatLng를 임포트합니다.
 import com.google.android.gms.maps.model.LatLng
 
 import kotlinx.coroutines.launch
-import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody
-import okhttp3.RequestBody.Companion.toRequestBody
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -40,7 +37,7 @@ class WalkReviewViewModel : ViewModel() {
     // [수정]
     // RetrofitClient.walkApiService는 'data.api'의 잘못된 서비스를 참조하므로
     // 'ui.map.walking'의 올바른 서비스로 직접 인스턴스를 생성합니다.
-    private val apiService = RetrofitClient.retrofit.create(WalkApiService::class.java)
+    private val apiService = RetrofitClient.retrofit.create(WalkingApiService::class.java)
 
     fun createWalk(
         token: String,
