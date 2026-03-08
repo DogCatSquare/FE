@@ -82,11 +82,12 @@ class AlarmFragment : Fragment() {
 
     private fun handleNewSSEAlarm(sseAlarm: SSEAlarmResponse) {
         // SSEAlarmResponse를 Alarm 데이터 모델로 변환
+        val formattedDate = com.example.dogcatsquare.util.DateFmt.format(sseAlarm.createdAt).replace(".", "-")
         val newAlarm = Alarm(
             id = sseAlarm.id,
             name = sseAlarm.type ?: "새로운 알림",
             content = sseAlarm.content,
-            date = sseAlarm.createdAt
+            date = formattedDate
         )
 
         // UI 업데이트는 Main Dispatcher에서 처리
