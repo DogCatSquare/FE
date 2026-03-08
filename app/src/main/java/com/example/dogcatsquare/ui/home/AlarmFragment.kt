@@ -38,12 +38,7 @@ class AlarmFragment : Fragment() {
         return sharedPref?.getString("token", null)
     }
 
-    // SSEClient 인스턴스 (실제로는 DI/ViewModel로 관리)
-    private val sseClient: SSEClient by lazy {
-        // OkHttpClient 인스턴스 생성 (필요에 따라 설정 추가)
-        val okHttpClient = OkHttpClient.Builder().build()
-        SseAlarmService(okHttpClient)
-    }
+    // SSEClient는 MainActivity의 전역 sseClient를 사용합니다.
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -62,20 +57,7 @@ class AlarmFragment : Fragment() {
     override fun onStart() {
         super.onStart()
 
-        val userJwtToken = getToken()
-        if (userJwtToken != null) {
-            sseClient.startListening(userJwtToken)
-        }
-    }
-
-    override fun onStop() {
-        super.onStop()
-        // Fragment가 사용자에게 보이지 않을 때 SSE 연결 종료 (리소스 해제)
-        sseClient.stopListening()
-    }
-
-    override fun onResume() {
-        super.onResume()
+        // SSE 관리는 이제 MainActivity에서 하므로, 별도 시작 로직이 없습니다.
         // 알림 목록 화면으로 들어왔을 때 전체 읽음 처리
     }
 
@@ -90,8 +72,9 @@ class AlarmFragment : Fragment() {
 
     private fun observeSSEEvents() {
         // lifecycleScope를 사용하여 Fragment의 생명주기에 맞게 코루틴 실행
+        val mainActivity = requireActivity() as com.example.dogcatsquare.MainActivity
         viewLifecycleOwner.lifecycleScope.launch {
-            sseClient.sseEvents.collectLatest { sseAlarm ->
+            mainActivity.sseClient.sseEvents.collectLatest { sseAlarm ->
                 handleNewSSEAlarm(sseAlarm)
             }
         }
