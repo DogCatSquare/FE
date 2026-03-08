@@ -56,7 +56,8 @@ interface WalkingApiService {
     @Multipart
     @POST("/api/walks/create")
     suspend fun createWalk(
-        @Part("walkCreateRequestDto") walkCreateRequestDto: WalkCreateRequestDto,
+        @Header("Authorization") token: String,
+        @Part walkCreateRequestDto: MultipartBody.Part,
         @Part walkReviewImages: List<MultipartBody.Part>
     ): WalkCreateResponse
 }
