@@ -249,10 +249,10 @@ class SignupActivity : AppCompatActivity() {
 
     private fun startTimer() {
         countDownTimer?.cancel() // 기존 타이머가 있으면 취소
-        val totalTime = 5 * 60 * 1000L // 5분 (300,000ms)
+        val totalTime = 3 * 60 * 1000L // 3분 (180,000ms)
 
         // 타이머 텍스트 초기화
-        binding.verifyEmailTimeTv.text = "05:00"
+        binding.verifyEmailTimeTv.text = "03:00"
         binding.verifyEmailTimeTv.visibility = View.VISIBLE
 
         countDownTimer = object : CountDownTimer(totalTime, 1000) {
@@ -285,8 +285,8 @@ class SignupActivity : AppCompatActivity() {
         val passwordCheck = binding.pwCheckEt.text.toString()
         val passwordCheckTv = binding.signupPwCheckTv
 
-        // 정규식: 소문자, 숫자 포함 8~15자
-        val passwordRegex = "^(?=.*[a-z])(?=.*\\d)[a-zA-Z\\d]{8,15}$".toRegex()
+        // 정규식: 소문자, 숫자 포함 8~15자 (대문자 및 특수문자 가능)
+        val passwordRegex = "^(?=.*[a-z])(?=.*\\d)[a-zA-Z\\d!@#%^&*()_+\\-=\\[\\]{};':\"\\\\|,.<>/?~]{8,15}$".toRegex()
 
         if (!password.matches(passwordRegex)) {
             passwordCheckTv.text = "소문자, 숫자 필수 포함 8~15자"
