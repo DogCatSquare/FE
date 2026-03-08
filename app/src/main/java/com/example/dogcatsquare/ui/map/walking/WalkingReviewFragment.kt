@@ -31,6 +31,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.dogcatsquare.R
+import com.example.dogcatsquare.LoadingDialog
 import com.example.dogcatsquare.ui.map.walking.data.ViewModel.WalkReviewViewModel
 // [수정됨] Naver Map import 제거
 // import com.naver.maps.geometry.LatLng
@@ -63,6 +64,7 @@ class WalkingReviewFragment : Fragment(), OnMapReadyCallback {
     private var routeCoords: ArrayList<LatLng> = arrayListOf()
     private var elapsedMinutes: Long = 0L
     private lateinit var addedImageView: ImageView
+    private lateinit var loadingDialog: LoadingDialog
 
     // 후기 입력 UI
     private lateinit var reviewContentEditText: EditText
@@ -92,6 +94,7 @@ class WalkingReviewFragment : Fragment(), OnMapReadyCallback {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        loadingDialog = LoadingDialog(requireContext())
 
         // ViewModel 초기화
         viewModel = ViewModelProvider(requireActivity())[WalkReviewViewModel::class.java]
@@ -182,8 +185,13 @@ class WalkingReviewFragment : Fragment(), OnMapReadyCallback {
                 return@setOnClickListener
             }
 
+            if (!loadingDialog.isDialogShowing) {
+                loadingDialog.show()
+            }
+
             val token = getToken()
             if (token.isNullOrEmpty()) {
+                if (loadingDialog.isDialogShowing) loadingDialog.dismiss()
                 Toast.makeText(requireContext(), "로그인이 필요합니다.", Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
@@ -207,6 +215,7 @@ class WalkingReviewFragment : Fragment(), OnMapReadyCallback {
                     putString("placeName", placeName)
                 }
             }
+            if (loadingDialog.isDialogShowing) loadingDialog.dismiss()
             parentFragmentManager.beginTransaction()
                 .replace(R.id.main_frm, fragment)
                 .addToBackStack(null)
@@ -355,6 +364,13 @@ class WalkingReviewFragment : Fragment(), OnMapReadyCallback {
             val canvas = Canvas(bitmap)
             draw(canvas)
             BitmapDescriptorFactory.fromBitmap(bitmap)
+        }
+    }
+
+    override fun onStop() {
+        super.onStop()
+        if (::loadingDialog.isInitialized && loadingDialog.isDialogShowing) {
+            loadingDialog.dismiss()
         }
     }
 }

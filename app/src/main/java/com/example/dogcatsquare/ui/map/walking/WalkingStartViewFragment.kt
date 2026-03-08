@@ -20,6 +20,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.example.dogcatsquare.R
+import com.example.dogcatsquare.LoadingDialog
 import com.example.dogcatsquare.data.network.RetrofitClient.retrofit
 import com.example.dogcatsquare.databinding.FragmentMapwalkingStartviewBinding
 import com.example.dogcatsquare.ui.map.walking.data.Response.Walk
@@ -55,6 +56,7 @@ class WalkingStartViewFragment : Fragment(), OnMapReadyCallback {
     private var currentMarker: com.google.android.gms.maps.model.Marker? = null
     private var actualPlaceLatitude: Double? = null
     private var actualPlaceLongitude: Double? = null
+    private lateinit var loadingDialog: LoadingDialog
 
     val apiService: WalkingApiService by lazy {
         retrofit.create(WalkingApiService::class.java)
@@ -186,6 +188,7 @@ class WalkingStartViewFragment : Fragment(), OnMapReadyCallback {
         savedInstanceState: Bundle?
     ): View? {
         _binding = FragmentMapwalkingStartviewBinding.inflate(inflater, container, false)
+        loadingDialog = LoadingDialog(requireContext())
 
         walkId = arguments?.getInt("walkId")?.toString()
         Log.d("WalkingStartViewFragment", "Received walkId: $walkId")
@@ -208,9 +211,14 @@ class WalkingStartViewFragment : Fragment(), OnMapReadyCallback {
         walkDetailViewModel.walkDetailState.observe(viewLifecycleOwner) { state ->
             when (state) {
                 is WalkDetailState.Loading -> {
-                    // 필요 시 로딩 프로그래스바 표시
+                    if (!loadingDialog.isDialogShowing) {
+                        loadingDialog.show()
+                    }
                 }
                 is WalkDetailState.Success -> {
+                    if (loadingDialog.isDialogShowing) {
+                        loadingDialog.dismiss()
+                    }
                     val walkDetail = state.walkDetail
 
                     // UI 텍스트 및 이미지 업데이트 (이미 만들어두신 updateUI 호출)
@@ -230,6 +238,9 @@ class WalkingStartViewFragment : Fragment(), OnMapReadyCallback {
                     }
                 }
                 is WalkDetailState.Error -> {
+                    if (loadingDialog.isDialogShowing) {
+                        loadingDialog.dismiss()
+                    }
                     Log.e("WalkingStartView", "상세 정보 로드 실패: ${state.message}")
                 }
             }
@@ -405,10 +416,15 @@ class WalkingStartViewFragment : Fragment(), OnMapReadyCallback {
             walkDetailViewModel.walkDetailState.observe(viewLifecycleOwner) { state ->
                 when (state) {
                     is WalkDetailState.Loading -> {
-                        // 필요 시 로딩 프로그래스바 표시
+                        if (!loadingDialog.isDialogShowing) {
+                            loadingDialog.show()
+                        }
                     }
 
                     is WalkDetailState.Success -> {
+                        if (loadingDialog.isDialogShowing) {
+                            loadingDialog.dismiss()
+                        }
                         val walkDetail = state.walkDetail
 
                         // UI 텍스트 및 이미지 업데이트 (이미 만들어두신 updateUI 호출)
@@ -429,10 +445,20 @@ class WalkingStartViewFragment : Fragment(), OnMapReadyCallback {
                     }
 
                     is WalkDetailState.Error -> {
+                        if (loadingDialog.isDialogShowing) {
+                            loadingDialog.dismiss()
+                        }
                         Log.e("WalkingStartView", "상세 정보 로드 실패: ${state.message}")
                     }
                 }
             }
+        }
+    }
+
+    override fun onStop() {
+        super.onStop()
+        if (::loadingDialog.isInitialized && loadingDialog.isDialogShowing) {
+            loadingDialog.dismiss()
         }
     }
 }

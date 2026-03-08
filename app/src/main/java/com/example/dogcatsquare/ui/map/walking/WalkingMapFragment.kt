@@ -37,6 +37,7 @@ import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.Marker
 import com.google.android.gms.maps.model.MarkerOptions
+import com.example.dogcatsquare.LoadingDialog
 // ---
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -56,9 +57,11 @@ class WalkingMapFragment : Fragment(), OnMapReadyCallback {
     // [수정됨] Naver Marker -> Google Marker
     private var currentMarker: Marker? = null
     private var isWished = false
+    private lateinit var loadingDialog: LoadingDialog
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        loadingDialog = LoadingDialog(requireContext())
         arguments?.let {
             placeId = it.getInt("placeId", -1)
             latitude = it.getDouble("latitude", 0.0)
@@ -158,6 +161,7 @@ class WalkingMapFragment : Fragment(), OnMapReadyCallback {
 
     private fun loadPlaceDetails(placeId: Int) {
         Log.d("WalkingMapFragment", "🚀 loadPlaceDetails 시작 - placeId: $placeId")
+        if (!loadingDialog.isDialogShowing) loadingDialog.show()
 
         lifecycleScope.launch {
             try {
@@ -245,6 +249,8 @@ class WalkingMapFragment : Fragment(), OnMapReadyCallback {
             } catch (e: Exception) {
                 Log.e("WalkingMapFragment", "💥 예외 발생 (Exception): ${e.message}")
                 handleError(e)
+            } finally {
+                if (loadingDialog.isDialogShowing) loadingDialog.dismiss()
             }
         }
     }
@@ -381,6 +387,13 @@ class WalkingMapFragment : Fragment(), OnMapReadyCallback {
         super.onDestroyView()
         _binding = null
         googleMap = null // [추가됨] 맵 리소스 해제
+    }
+
+    override fun onStop() {
+        super.onStop()
+        if (::loadingDialog.isInitialized && loadingDialog.isDialogShowing) {
+            loadingDialog.dismiss()
+        }
     }
 
     companion object {
