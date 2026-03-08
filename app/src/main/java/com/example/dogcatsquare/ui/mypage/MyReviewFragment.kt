@@ -80,7 +80,7 @@ class MyReviewFragment : Fragment() {
                                 id = review.id,
                                 title = review.title,
                                 content = review.content,
-                                createdAt = review.createdAt,
+                                createdAt = com.example.dogcatsquare.util.DateFmt.format(review.createdAt).replace(".", "-"),
                                 imageUrls = review.imageUrls,
                                 placeId = review.placeId,
                                 walkId = review.walkId
