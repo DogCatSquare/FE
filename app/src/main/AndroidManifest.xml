@@ -87,10 +87,12 @@
             android:foregroundServiceType="location"/>
 
         <service
-            android:name="SseAlarmService"
-            android:enabled="true"
-            android:exported="false"
-            android:foregroundServiceType="specialUse" />
+            android:name=".utils.MyFirebaseMessagingService"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="com.google.firebase.MESSAGING_EVENT" />
+            </intent-filter>
+        </service>
 
     </application>
 

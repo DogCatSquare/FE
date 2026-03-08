@@ -23,6 +23,7 @@ import com.example.dogcatsquare.ui.map.location.MapAddReviewFragment
 import com.example.dogcatsquare.ui.map.location.MapDetailFragment
 import com.example.dogcatsquare.ui.map.location.MapReviewFragment
 import com.example.dogcatsquare.ui.map.location.MapReviewRVAdapter
+import com.example.dogcatsquare.LoadingDialog
 import com.example.dogcatsquare.ui.map.walking.data.Response.WalkReview
 import com.example.dogcatsquare.ui.map.walking.data.ViewModel.WalkDetailViewModel
 import com.example.dogcatsquare.ui.map.walking.data.ViewModel.WalkReviewViewModel

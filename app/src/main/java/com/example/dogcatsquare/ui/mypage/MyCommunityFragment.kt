@@ -85,7 +85,7 @@ class MyCommunityFragment : Fragment() {
                                 video_URL = post.videoUrl,
                                 thumbnail_URL = post.thumbnailUrl,
                                 images = post.images,
-                                createdAt = post.createdAt,
+                                createdAt = com.example.dogcatsquare.util.DateFmt.format(post.createdAt).replace(".", "-"),
                                 profileImage_URL = post.profileImageUrl
                             )
                         }.toList()

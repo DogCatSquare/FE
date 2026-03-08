@@ -265,28 +265,51 @@ class AddDDayFragment : Fragment() {
         val token = getToken()
 
         val addDDayService = RetrofitObj.getRetrofit(requireContext()).create(DDayRetrofitItf::class.java)
-        addDDayService.addDDay("Bearer $token", AddDDayRequest(title, day, term)).enqueue(object : Callback<AddDDayResponse> {
-            override fun onResponse(call: Call<AddDDayResponse>, response: Response<AddDDayResponse>) {
-                Log.d("AddDDay/Response", response.toString())
-
-                if (response.isSuccessful) {
-                    val resp = response.body()
-                    resp?.let { resp ->
-                        if (resp.isSuccess) {
-                            ddayCount++
-                            parentFragmentManager.popBackStack()
-                        } else {
-                            Log.e("AddDDay/ERROR", "디데이 불러오기 실패: ${resp.message}")
-                        }
+        
+        // D-Day 개수 체크 로직
+        addDDayService.getAllDDays("Bearer $token").enqueue(object : Callback<com.example.dogcatsquare.data.model.home.GetAllDDayResponse> {
+            override fun onResponse(
+                call: Call<com.example.dogcatsquare.data.model.home.GetAllDDayResponse>,
+                response: Response<com.example.dogcatsquare.data.model.home.GetAllDDayResponse>
+            ) {
+                if (response.isSuccessful && response.body()?.isSuccess == true) {
+                    val currentCount = response.body()?.result?.size ?: 0
+                    if (currentCount >= 4) {
+                        Toast.makeText(requireContext(), "디데이는 최대 4개까지만 추가할 수 있습니다.", Toast.LENGTH_SHORT).show()
+                        return
                     }
-                } else {
-                    Log.e("AddDDay/ERROR", "응답 코드: ${response.code()}")
+
+                    // 4개 미만일 경우 추가 진행
+                    addDDayService.addDDay("Bearer $token", AddDDayRequest(title, day, term)).enqueue(object : Callback<AddDDayResponse> {
+                        override fun onResponse(call: Call<AddDDayResponse>, response2: Response<AddDDayResponse>) {
+                            Log.d("AddDDay/Response", response2.toString())
+            
+                            if (response2.isSuccessful) {
+                                val resp = response2.body()
+                                resp?.let {
+                                    if (it.isSuccess) {
+                                        ddayCount++
+                                        parentFragmentManager.popBackStack()
+                                    } else {
+                                        Log.e("AddDDay/ERROR", "디데이 추가 실패: ${it.message}")
+                                    }
+                                }
+                            } else {
+                                Log.e("AddDDay/ERROR", "응답 코드: ${response2.code()}")
+                            }
+                        }
+            
+                        override fun onFailure(call: Call<AddDDayResponse>, t: Throwable) {
+                            Log.d("RETROFIT/FAILURE", t.message.toString())
+                        }
+                    })
                 }
             }
 
-            override fun onFailure(call: Call<AddDDayResponse>, t: Throwable) {
-                Log.d("RETROFIT/FAILURE", t.message.toString())            }
-
+            override fun onFailure(call: Call<com.example.dogcatsquare.data.model.home.GetAllDDayResponse>, t: Throwable) {
+                Log.e("AddDDay/ERROR", "D-Day 목록 조회 실패", t)
+                Toast.makeText(requireContext(), "네트워크 오류", Toast.LENGTH_SHORT).show()
+            }
         })
     }
 }
