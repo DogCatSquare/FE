@@ -151,7 +151,7 @@ class MapFragment : Fragment(), OnMapReadyCallback {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         // 로딩 다이얼로그 초기화
-        loadingDialog = LoadingDialog(requireContext())
+        loadingDialog = LoadingDialog(requireContext(), true)
     }
 
     override fun onCreateView(
