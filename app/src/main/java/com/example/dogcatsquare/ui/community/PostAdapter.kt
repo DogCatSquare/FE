@@ -22,6 +22,7 @@ class PostAdapter(
     }
 
     private var mItemClickListener: OnItemClickListener? = null
+
     fun setMyItemClickListener(itemClickListener: OnItemClickListener) {
         mItemClickListener = itemClickListener
     }
@@ -35,7 +36,8 @@ class PostAdapter(
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): PostViewHolder {
-        val view = LayoutInflater.from(parent.context).inflate(R.layout.item_post, parent, false)
+        val view = LayoutInflater.from(parent.context)
+            .inflate(R.layout.item_post, parent, false)
         return PostViewHolder(view)
     }
 
@@ -48,6 +50,30 @@ class PostAdapter(
     }
 
     override fun getItemCount(): Int = hotPostList.size
+
+    private fun extractYouTubeVideoId(url: String?): String? {
+        if (url.isNullOrBlank()) return null
+
+        val patterns = listOf(
+            "[?&]v=([a-zA-Z0-9_-]{11})",
+            "youtu\\.be/([a-zA-Z0-9_-]{11})",
+            "youtube\\.com/shorts/([a-zA-Z0-9_-]{11})",
+            "youtube\\.com/embed/([a-zA-Z0-9_-]{11})"
+        )
+
+        for (pattern in patterns) {
+            val match = Regex(pattern, RegexOption.IGNORE_CASE).find(url)
+            if (match != null && match.groupValues.size > 1) {
+                return match.groupValues[1]
+            }
+        }
+        return null
+    }
+
+    private fun youtubeThumbnail(url: String?): String? {
+        val videoId = extractYouTubeVideoId(url) ?: return null
+        return "https://img.youtube.com/vi/$videoId/hqdefault.jpg"
+    }
 
     inner class PostViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         private val titleText: TextView = itemView.findViewById(R.id.tvTitle)
@@ -63,7 +89,6 @@ class PostAdapter(
         private fun String?.nonBlankOrNull(): String? = this?.takeIf { it.isNotBlank() }
 
         fun bind(post: GetAllPostResult) {
-            // ===== 텍스트 바인딩 (널/빈 문자열 안전 처리)
             val safeTitle = post.title.orDash()
             val safeContent = post.content.orDash()
             val safeUsername = post.username.orDash()
@@ -73,7 +98,6 @@ class PostAdapter(
             username.text = safeUsername
             breed.text = safeBreed
 
-            // 내용이 진짜 비었으면 미리보기 숨김
             if (post.content.isNullOrBlank()) {
                 contentPreview.isGone = true
                 contentPreview.text = ""
@@ -85,7 +109,6 @@ class PostAdapter(
             likeCountText.text = (post.likeCount ?: 0).toString()
             commentCountText.text = (post.commentCount ?: 0).toString()
 
-            // ===== 프로필 이미지 (없으면 placeholder)
             Glide.with(itemView.context)
                 .load(post.profileImageURL.nonBlankOrNull())
                 .apply(RequestOptions.circleCropTransform())
@@ -93,9 +116,14 @@ class PostAdapter(
                 .error(R.drawable.ic_profile_placeholder)
                 .into(profile)
 
-            // ===== 썸네일: thumbnailURL → images[0] → 없으면 GONE
-            val thumbUrl = post.thumbnailURL.nonBlankOrNull()
-                ?: post.images?.firstOrNull().nonBlankOrNull()
+            Glide.with(itemView.context).clear(thumbnail)
+
+            val videoUrl = post.videoURL.nonBlankOrNull()
+
+            val thumbUrl =
+                youtubeThumbnail(videoUrl)
+                    ?: post.images?.firstOrNull().nonBlankOrNull()
+                    ?: post.thumbnailURL.nonBlankOrNull()
 
             if (thumbUrl != null) {
                 thumbnail.isVisible = true
