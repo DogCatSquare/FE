@@ -10,7 +10,8 @@ import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.dogcatsquare.R
 import com.example.dogcatsquare.data.model.community.GetAllPostResult
-import com.example.dogcatsquare.data.model.community.toResult   // ✅ 매퍼 import 추가
+import com.example.dogcatsquare.data.model.community.PostListItem
+import com.example.dogcatsquare.data.model.community.toResult
 import com.example.dogcatsquare.data.model.post.PopularPostResponse
 import com.example.dogcatsquare.data.network.RetrofitObj
 import com.example.dogcatsquare.databinding.FragmentCommunityHomeBinding
@@ -24,7 +25,6 @@ class CommunityHomeFragment : Fragment(R.layout.fragment_community_home) {
     private val binding get() = _binding!!
 
     private val hotPostDatas: ArrayList<GetAllPostResult> = arrayListOf()
-    private val allPostDatas: ArrayList<GetAllPostResult> = arrayListOf()
 
     private var popularCall: Call<PopularPostResponse>? = null
     private var tipCall: Call<com.example.dogcatsquare.data.model.community.GetAllPostResponse>? = null
@@ -129,7 +129,6 @@ class CommunityHomeFragment : Fragment(R.layout.fragment_community_home) {
 
     // ==== 꿀팁 게시물(Vertical) ====
     private fun setupTipPostRecyclerView() {
-        allPostDatas.clear()
 
         val allPostRVAdapter = GetAllPostAdapter()
         binding.rvTips.apply {
@@ -139,7 +138,7 @@ class CommunityHomeFragment : Fragment(R.layout.fragment_community_home) {
         }
 
         allPostRVAdapter.setMyItemClickListener(object : GetAllPostAdapter.OnItemClickListener {
-            override fun onItemClick(post: GetAllPostResult) {
+            override fun onItemClick(post: PostListItem) {
                 val ctx = context ?: return
                 startActivity(
                     Intent(ctx, PostDetailActivity::class.java)
@@ -169,8 +168,7 @@ class CommunityHomeFragment : Fragment(R.layout.fragment_community_home) {
 
                 val resp = response.body()
                 if (response.isSuccessful && resp?.isSuccess == true) {
-                    val posts = resp.result.map { it.toResult() }
-                    adapter.submitList(posts)
+                    adapter.submitList(resp.result)
                 } else {
                     Log.w("AllPost", "fail code=${response.code()} body=$resp")
                 }
@@ -196,8 +194,7 @@ class CommunityHomeFragment : Fragment(R.layout.fragment_community_home) {
             getPopularPost(adapter)
         }
         (binding.rvTips.adapter as? GetAllPostAdapter)?.let { adapter ->
-            allPostDatas.clear()
-            adapter.notifyDataSetChanged()
+            adapter.submitList(emptyList())
             getTipPost(adapter)
         }
     }

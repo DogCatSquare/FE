@@ -27,7 +27,7 @@ class CommunityLocalFragment : Fragment(R.layout.fragment_community_local) {
             content = "새로 사준 장난감으로 놀아줬더니 기절한 듯이 잠들었어요\n이제 5개월인데 미친 듯이 놀아서 너무 귀엽네요\n새벽에 우다다만 안하면 정말 좋을 텐데 방법이 없을까...",
             videoUrl = "",
             thumbnailUrl = "https://example.com/sample_thumbnail.jpg",
-            images = listOf(R.drawable.sample_image1, R.drawable.sample_image2)
+            images = emptyList()
         ),
         com.example.dogcatsquare.data.model.community.LocalPost(
             id = 2L,

@@ -74,7 +74,7 @@ class MyBoardPostRVAdapter(
             val yt = youtubeThumb(videoUrl)
 
             // 우선순위: 썸네일 → 첫번째 이미지 → 유튜브 → (없으면 mp4 프레임 추출)
-            val primaryThumb = thumbUrl ?: firstImage ?: yt
+            val primaryThumb = yt ?: firstImage ?: thumbUrl
 
             // 먼저 전부 클리어
             val imageViews = listOf(ivPostImage1, ivPostImage2, ivPostImage3, ivPostImage4, ivPostImage5)

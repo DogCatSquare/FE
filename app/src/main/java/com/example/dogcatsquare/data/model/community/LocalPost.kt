@@ -8,5 +8,5 @@ data class LocalPost(
     val content: String?,
     val videoUrl: String?,
     val thumbnailUrl: String?,
-    val images: List<Any>
+    val images: List<String>
 )
