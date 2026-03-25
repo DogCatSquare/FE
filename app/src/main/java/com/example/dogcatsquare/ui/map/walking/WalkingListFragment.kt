@@ -7,6 +7,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
@@ -27,7 +28,8 @@ class WalkingListFragment : Fragment() {
 
     private lateinit var reviewAdapter: WalkRVAdapter
     private val walkReviewViewModel: WalkReviewViewModel by viewModels()
-    private var walkId: Int? = null  // null 가능성 고려
+
+    private var walkId: Int? = null
     private var placeId: Int = -1
     private var latitude: Double = 0.0
     private var longitude: Double = 0.0
@@ -41,21 +43,24 @@ class WalkingListFragment : Fragment() {
         }
     }
 
-    private fun setupRecyclerView() {
-        reviewAdapter = WalkRVAdapter (
-            onItemClick = { walkId ->
-                val fragment = WalkingStartViewFragment.newInstance(walkId)
-                parentFragmentManager.beginTransaction()
-                    .replace(R.id.main_frm, fragment)
-                    .addToBackStack(null)
-                    .commit()
-            },
-            walkList = arrayListOf() // 초기 데이터로 빈 리스트 전달
-        )
-        binding.reviewRv.apply {
-            adapter = reviewAdapter
-            layoutManager = LinearLayoutManager(context)
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View {
+        _binding = FragmentMapwalkingReviewallBinding.inflate(inflater, container, false)
+
+        (activity as? AppCompatActivity)?.apply {
+            setSupportActionBar(binding.walkingReviewToolbar)
+            supportActionBar?.title = "이웃들의 추천코스"
+            supportActionBar?.setDisplayHomeAsUpEnabled(true)
+
+            binding.walkingReviewToolbar.setNavigationOnClickListener {
+                parentFragmentManager.popBackStack()
+            }
         }
+
+        return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -65,24 +70,49 @@ class WalkingListFragment : Fragment() {
         fetchData()
     }
 
+    private fun setupRecyclerView() {
+        reviewAdapter = WalkRVAdapter(
+            onItemClick = { walkId ->
+                val fragment = WalkingStartViewFragment.newInstance(walkId)
+                parentFragmentManager.beginTransaction()
+                    .replace(R.id.main_frm, fragment)
+                    .addToBackStack(null)
+                    .commit()
+            },
+            onDeleteClick = { walk ->
+                AlertDialog.Builder(requireContext())
+                    .setMessage("이 산책로를 삭제할까요?")
+                    .setPositiveButton("삭제") { _, _ ->
+                        deleteWalk(walk.walkId)
+                    }
+                    .setNegativeButton("취소", null)
+                    .show()
+            },
+            walkList = arrayListOf()
+        )
+
+        binding.reviewRv.apply {
+            adapter = reviewAdapter
+            layoutManager = LinearLayoutManager(context)
+        }
+    }
+
     private fun getToken(): String? {
         return activity?.getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
             ?.getString("token", null)
     }
 
     private fun fetchData() {
-        // 전달받은 walkId를 사용하여 API 호출
-        // WalkingMapFragment에서 넘겨줄 때 "walkId"라는 키를 사용했는지 확인 필요
         val name = arguments?.getString("walkName", "") ?: ""
-        if (name != "") {
+        if (name.isNotEmpty()) {
             loadPlaceDetails(name)
         } else {
-            Log.e("ReviewAllFragment", "유효하지 않은 walkId")
+            Log.e("WalkingListFragment", "유효하지 않은 walkName")
         }
     }
 
     private fun loadPlaceDetails(name: String) {
-        Log.d("WalkingMapFragment", "🚀 loadPlaceDetails 시작 - placeId: $placeId")
+        Log.d("WalkingListFragment", "🚀 산책로 목록 조회 시작 - name: $name")
 
         lifecycleScope.launch {
             try {
@@ -92,19 +122,55 @@ class WalkingListFragment : Fragment() {
                     )
                 }
 
-                // walkResponse 자체는 Boolean이 아니므로 데이터 존재 여부를 체크해야 합니다.
                 if (walkResponse.walks.isNotEmpty()) {
-                    binding.apply {
-                        Log.d("ReviewAllFragment", "데이터 업데이트: ${walkResponse.walks.size}개")
-                        // WalkSearchResponse 내부의 walks 리스트를 어댑터에 전달합니다.
-                        reviewAdapter.updateData(ArrayList(walkResponse.walks))
-                    }
+                    Log.d("WalkingListFragment", "데이터 업데이트: ${walkResponse.walks.size}개")
+                    reviewAdapter.updateData(ArrayList(walkResponse.walks))
                 } else {
-                    Log.d("ReviewAllFragment", "검색 결과가 없습니다.")
+                    Log.d("WalkingListFragment", "검색 결과가 없습니다.")
+                    reviewAdapter.updateData(arrayListOf())
                     Toast.makeText(requireContext(), "추천 코스가 없습니다.", Toast.LENGTH_SHORT).show()
                 }
             } catch (e: Exception) {
-                Log.e("WalkingMapFragment", "💥 예외 발생 (Exception): ${e.message}")
+                Log.e("WalkingListFragment", "💥 예외 발생: ${e.message}", e)
+                handleError(e)
+            }
+        }
+    }
+
+    private fun deleteWalk(walkId: Int) {
+        lifecycleScope.launch {
+            try {
+                val token = getToken()
+                if (token == null) {
+                    Toast.makeText(requireContext(), "로그인이 필요합니다.", Toast.LENGTH_SHORT).show()
+                    return@launch
+                }
+
+                val response = withContext(Dispatchers.IO) {
+                    RetrofitClient.walkApiService.deleteWalk(
+                        token = "Bearer $token",
+                        walkId = walkId
+                    )
+                }
+
+                if (response.isSuccess) {
+                    Toast.makeText(requireContext(), "산책로가 삭제되었습니다.", Toast.LENGTH_SHORT).show()
+
+                    val name = arguments?.getString("walkName", "") ?: ""
+                    if (name.isNotEmpty()) {
+                        loadPlaceDetails(name)
+                    } else {
+                        reviewAdapter.updateData(arrayListOf())
+                    }
+                } else {
+                    Toast.makeText(
+                        requireContext(),
+                        response.message ?: "산책로 삭제에 실패했습니다.",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
+            } catch (e: Exception) {
+                Log.e("WalkingListFragment", "삭제 중 예외 발생: ${e.message}", e)
                 handleError(e)
             }
         }
@@ -123,29 +189,9 @@ class WalkingListFragment : Fragment() {
             is java.io.IOException -> "네트워크 연결을 확인해주세요."
             else -> "알 수 없는 오류가 발생했습니다: ${e.message}"
         }
+
         Toast.makeText(requireContext(), errorMessage, Toast.LENGTH_SHORT).show()
-        Log.e("WalkingMapFragment", "Error: ", e)
-    }
-
-    override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View {
-        _binding = FragmentMapwalkingReviewallBinding.inflate(inflater, container, false)
-
-        // 툴바 설정
-        (activity as? AppCompatActivity)?.apply {
-            setSupportActionBar(binding.walkingReviewToolbar)
-            supportActionBar?.title = "이웃들의 추천코스"
-            supportActionBar?.setDisplayHomeAsUpEnabled(true)
-
-            binding.walkingReviewToolbar.setNavigationOnClickListener {
-                parentFragmentManager.popBackStack()
-            }
-        }
-
-        return binding.root
+        Log.e("WalkingListFragment", "Error: ", e)
     }
 
     override fun onDestroyView() {
