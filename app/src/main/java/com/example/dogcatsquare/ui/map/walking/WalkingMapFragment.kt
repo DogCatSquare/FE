@@ -329,7 +329,7 @@ class WalkingMapFragment : Fragment(), OnMapReadyCallback {
 
                 if (response.isSuccess) {
                     Toast.makeText(requireContext(), "산책로가 삭제되었습니다.", Toast.LENGTH_SHORT).show()
-                    loadPlaceDetails(placeId)
+                    loadPlaceDetails(googlePlaceId)
                 } else {
                     Toast.makeText(
                         requireContext(),
