@@ -95,12 +95,12 @@ class MapDetailFragment : Fragment(), OnMapReadyCallback {
                 .commit()
         }
 
-        arguments?.getInt("placeId")?.let { placeId ->
-            loadPlaceDetails(placeId)
+        arguments?.getString("googlePlaceId")?.let { googlePlaceId ->
+            loadPlaceDetails(googlePlaceId)
         }
     }
 
-    private fun loadPlaceDetails(placeId: Int) {
+    private fun loadPlaceDetails(googlePlaceId: String) {
         lifecycleScope.launch {
             try {
                 val token = getToken()
@@ -119,7 +119,7 @@ class MapDetailFragment : Fragment(), OnMapReadyCallback {
                 val response = withContext(Dispatchers.IO) {
                     RetrofitClient.placesApiService.getPlaceById(
                         token = "Bearer $token",
-                        placeId = placeId,
+                        googlePlaceId = googlePlaceId,
                         request = request
                     )
                 }
@@ -288,7 +288,7 @@ class MapDetailFragment : Fragment(), OnMapReadyCallback {
                                         val response = withContext(Dispatchers.IO) {
                                             RetrofitClient.placesApiService.toggleWish(
                                                 token = "Bearer $token",
-                                                placeId = placeDetail.id
+                                                googlePlaceId = placeDetail.googlePlaceId
                                             )
                                         }
 
@@ -464,7 +464,7 @@ class MapDetailFragment : Fragment(), OnMapReadyCallback {
                 addView(innerCard)
 
                 setOnClickListener {
-                    val placeId = arguments?.getInt("placeId") ?: return@setOnClickListener
+                    val googlePlaceId = arguments?.getString("googlePlaceId") ?: return@setOnClickListener
                     val placeName = binding.placeName.text.toString()
 
                     // 카테고리에 따른 기본 키워드 설정
@@ -477,7 +477,7 @@ class MapDetailFragment : Fragment(), OnMapReadyCallback {
 
                     // MapAddKeywordFragment로 이동
                     val fragment = MapAddKeywordFragment.newInstance(
-                        placeId = placeId,
+                        googlePlaceId = googlePlaceId,
                         placeName = placeName,
                         defaultKeywords = defaultKeywords.toTypedArray(),
                         category = category,
@@ -650,8 +650,8 @@ class MapDetailFragment : Fragment(), OnMapReadyCallback {
                             nickname
                         ) {
                             // 리뷰가 삭제되면 장소 상세 정보를 새로고침
-                            arguments?.getInt("placeId")?.let { placeId ->
-                                loadPlaceDetails(placeId)
+                            arguments?.getString("googlePlaceId")?.let { googlePlaceId ->
+                                loadPlaceDetails(googlePlaceId)
                             }
                         }
                         binding.reviewRV.apply {
@@ -663,8 +663,8 @@ class MapDetailFragment : Fragment(), OnMapReadyCallback {
 
                         // "더보기" 버튼 클릭 이벤트 설정
                         binding.reviewPlus.setOnClickListener {
-                            val placeId = arguments?.getInt("placeId") ?: return@setOnClickListener
-                            val mapReviewFragment = MapReviewFragment.newInstance(placeId)
+                            val googlePlaceId = arguments?.getString("googlePlaceId") ?: return@setOnClickListener
+                            val mapReviewFragment = MapReviewFragment.newInstance(googlePlaceId)
                             requireActivity().supportFragmentManager.beginTransaction()
                                 .setCustomAnimations(
                                     R.anim.slide_in_right,
@@ -683,8 +683,8 @@ class MapDetailFragment : Fragment(), OnMapReadyCallback {
 
                     // 리뷰 작성 버튼 클릭 이벤트 설정
                     binding.addButton.setOnClickListener {
-                        arguments?.getInt("placeId")?.let { placeId ->
-                            val mapAddReviewFragment = MapAddReviewFragment.newInstance(placeId)
+                        arguments?.getString("googlePlaceId")?.let { googlePlaceId ->
+                            val mapAddReviewFragment = MapAddReviewFragment.newInstance(googlePlaceId)
                             requireActivity().supportFragmentManager.beginTransaction()
                                 .setCustomAnimations(
                                     R.anim.slide_in_right,
@@ -722,8 +722,8 @@ class MapDetailFragment : Fragment(), OnMapReadyCallback {
 
                     // 리뷰가 없는 경우의 리뷰 작성 버튼 클릭 이벤트
                     binding.addButton.setOnClickListener {
-                        arguments?.getInt("placeId")?.let { placeId ->
-                            val mapAddReviewFragment = MapAddReviewFragment.newInstance(placeId)
+                        arguments?.getString("googlePlaceId")?.let { googlePlaceId ->
+                            val mapAddReviewFragment = MapAddReviewFragment.newInstance(googlePlaceId)
                             requireActivity().supportFragmentManager.beginTransaction()
                                 .setCustomAnimations(
                                     R.anim.slide_in_right,
@@ -963,8 +963,8 @@ class MapDetailFragment : Fragment(), OnMapReadyCallback {
         }
 
         binding.reviewPlus.setOnClickListener {
-            val placeId = arguments?.getInt("placeId") ?: return@setOnClickListener
-            val mapReviewFragment = MapReviewFragment.newInstance(placeId)
+            val googlePlaceId = arguments?.getString("googlePlaceId") ?: return@setOnClickListener
+            val mapReviewFragment = MapReviewFragment.newInstance(googlePlaceId)
             requireActivity().supportFragmentManager.beginTransaction()
                 .setCustomAnimations(
                     R.anim.slide_in_right,
@@ -981,8 +981,8 @@ class MapDetailFragment : Fragment(), OnMapReadyCallback {
 
     private fun setupAddReviewButton() {
         binding.addButton.setOnClickListener {
-            arguments?.getInt("placeId")?.let { placeId ->
-                val mapAddReviewFragment = MapAddReviewFragment.newInstance(placeId)
+            arguments?.getString("googlePlaceId")?.let { googlePlaceId ->
+                val mapAddReviewFragment = MapAddReviewFragment.newInstance(googlePlaceId)
                 requireActivity().supportFragmentManager.beginTransaction()
                     .setCustomAnimations(
                         R.anim.slide_in_right,  // 새 프래그먼트가 오른쪽에서 들어옴
@@ -1019,16 +1019,16 @@ class MapDetailFragment : Fragment(), OnMapReadyCallback {
     }
 
     fun refreshPlaceDetails() {
-        arguments?.getInt("placeId")?.let { id ->
+        arguments?.getString("googlePlaceId")?.let { id ->
             loadPlaceDetails(id)
         }
     }
 
     companion object {
-        fun newInstance(placeId: Int, latitude: Double, longitude: Double): MapDetailFragment {
+        fun newInstance(googlePlaceId: String, latitude: Double, longitude: Double): MapDetailFragment {
             return MapDetailFragment().apply {
                 arguments = Bundle().apply {
-                    putInt("placeId", placeId)
+                    putString("googlePlaceId", googlePlaceId)
                     putDouble("latitude", latitude)
                     putDouble("longitude", longitude)
                 }

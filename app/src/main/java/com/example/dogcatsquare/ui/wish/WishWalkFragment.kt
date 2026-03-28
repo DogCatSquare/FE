@@ -81,7 +81,7 @@ class WishWalkFragment : Fragment() {
                 val (currentLat, currentLng) = MapFragment().getMapCurrentPosition()
 
                 // 상세 조회 부분
-                val fragment = WalkingMapFragment.newInstance(place.id, currentLat, currentLng)
+                val fragment = WalkingMapFragment.newInstance(place.googlePlaceId, currentLat, currentLng)
                 requireActivity().supportFragmentManager.beginTransaction()
                     .replace(R.id.main_frm, fragment)
                     .addToBackStack(null)
@@ -108,7 +108,7 @@ class WishWalkFragment : Fragment() {
 
                         val wishes = resp.result.map { wish ->
                             WishPlace(
-                                id = wish.id,
+                                googlePlaceId = wish.googlePlaceId,
                                 name = wish.name,
                                 address = wish.address,
                                 category = categoryMap[wish.category] ?: wish.category,

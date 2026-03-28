@@ -1,5 +1,7 @@
 package com.example.dogcatsquare.data.model.wish
 
+import com.google.gson.annotations.SerializedName
+
 data class GetMyWishResponse(
     val isSuccess: Boolean,
     val code: String,
@@ -8,7 +10,7 @@ data class GetMyWishResponse(
 )
 
 data class MyWishContent(
-    val id: Int,
+    @SerializedName("googlePlaceId") val googlePlaceId: String,
     val name: String,
     val address: String,
     val category: String,

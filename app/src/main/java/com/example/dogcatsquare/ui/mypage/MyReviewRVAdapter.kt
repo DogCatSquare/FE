@@ -44,18 +44,18 @@ class MyReviewRVAdapter(private val myReviewList: ArrayList<ReviewContent>, priv
 
             // 설정 클릭(수정, 삭제)
             binding.settingIv.setOnClickListener {
-                showPopupMenu(it, itemView.context, myReview.id, myReview.walkId, myReview.placeId)
+                showPopupMenu(it, itemView.context, myReview.id, myReview.walkId, myReview.googlePlaceId)
             }
         }
     }
 
-    private fun showPopupMenu(view: View, myReview: Context, id: Int, walkId: Int?, placeId: Int?) {
+    private fun showPopupMenu(view: View, myReview: Context, id: Int, walkId: Int?, googlePlaceId: String?) {
         val popup = PopupMenu(myReview, view)
         popup.menuInflater.inflate(R.menu.review_menu, popup.menu)
         popup.setOnMenuItemClickListener { item ->
             when (item.itemId) {
                 R.id.review_delete -> {
-                    onDeleteReview(DeleteReviewParams(id, placeId, walkId))
+                    onDeleteReview(DeleteReviewParams(id, googlePlaceId, walkId))
                     true
                 }
                 else -> false
@@ -67,6 +67,6 @@ class MyReviewRVAdapter(private val myReviewList: ArrayList<ReviewContent>, priv
 
 data class DeleteReviewParams(
     val reviewId: Int,
-    val placeId: Int?,
+    val googlePlaceId: String?,
     val walkId: Int?
 )

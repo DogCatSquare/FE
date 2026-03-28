@@ -120,13 +120,13 @@ class WishPlaceFragment : Fragment() {
 
                 // placeType에 따라 다른 Fragment로 전환
                 if (place.category == "병원") {
-                    val fragment = MapDetailFragment.newInstance(place.id, currentLat, currentLng)
+                    val fragment = MapDetailFragment.newInstance(place.googlePlaceId, currentLat, currentLng)
                     requireActivity().supportFragmentManager.beginTransaction()
                         .replace(R.id.main_frm, fragment)
                         .addToBackStack(null)
                         .commitAllowingStateLoss()
                 } else {
-                    val fragment = MapDetailFragment.newInstance(place.id, currentLat, currentLng)
+                    val fragment = MapDetailFragment.newInstance(place.googlePlaceId, currentLat, currentLng)
                     requireActivity().supportFragmentManager.beginTransaction()
                         .replace(R.id.main_frm, fragment)
                         .addToBackStack(null)
@@ -153,7 +153,7 @@ class WishPlaceFragment : Fragment() {
 
                         val wishes = resp.result.map { wish ->
                             WishPlace(
-                                id = wish.id,
+                                googlePlaceId = wish.googlePlaceId,
                                 name = wish.name,
                                 address = wish.address,
                                 category = categoryMap[wish.category] ?: wish.category,

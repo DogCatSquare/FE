@@ -211,7 +211,7 @@ class MapReviewRVAdapter(
             if (isCurrentUserReview) {
                 // 내가 작성한 리뷰인 경우 - 바로 삭제
                 popupView.setOnClickListener {
-                    deleteReview(view.context, review.placeId, review.id)
+                    deleteReview(view.context, review.googlePlaceId, review.id)
                     popupWindow.dismiss()
                 }
             } else {
@@ -233,7 +233,7 @@ class MapReviewRVAdapter(
         }
     }
 
-    private fun deleteReview(context: Context, placeId: Int, reviewId: Int) {
+    private fun deleteReview(context: Context, googlePlaceId: String, reviewId: Int) {
         val token = context.getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
             .getString("token", null)
 
@@ -246,7 +246,7 @@ class MapReviewRVAdapter(
             try {
                 val response = RetrofitClient.placesApiService.deleteReview(
                     token = "Bearer $token",
-                    placeId = placeId,
+                    googlePlaceId = googlePlaceId,
                     reviewId = reviewId
                 )
 

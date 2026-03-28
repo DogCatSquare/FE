@@ -423,7 +423,7 @@ class MapFragment : Fragment(), OnMapReadyCallback {
 
                     val newPlaces = pageResponse.content.map { place ->
                         MapPlace(
-                            id = place.id,
+                            id = place.googlePlaceId,
                             placeName = place.name,
                             placeType = convertCategory(place.category),
                             placeDistance = "${String.format("%.2f", place.distance)}km",
@@ -477,7 +477,7 @@ class MapFragment : Fragment(), OnMapReadyCallback {
 
                     val newPlaces = pageResponse.content.map { place ->
                         MapPlace(
-                            id = place.id,
+                            id = place.googlePlaceId,
                             placeName = place.name,
                             placeType = convertCategory(place.category),
                             placeDistance = "${String.format("%.2f", place.distance)}km",
@@ -646,7 +646,7 @@ class MapFragment : Fragment(), OnMapReadyCallback {
                         val (currentLat, currentLng) = getMapCurrentPosition()
                         val fragment = WalkingMapFragment().apply {
                             arguments = Bundle().apply {
-                                putInt("placeId", place.id)
+                                putString("googlePlaceId", place.id)
                                 putDouble("latitude", currentLat)
                                 putDouble("longitude", currentLng)
                             }
@@ -668,7 +668,7 @@ class MapFragment : Fragment(), OnMapReadyCallback {
                         val (currentLat, currentLng) = getMapCurrentPosition()
                         val fragment = MapDetailFragment().apply {
                             arguments = Bundle().apply {
-                                putInt("placeId", place.id)
+                                putString("googlePlaceId", place.id)
                                 putDouble("latitude", currentLat)
                                 putDouble("longitude", currentLng)
                             }

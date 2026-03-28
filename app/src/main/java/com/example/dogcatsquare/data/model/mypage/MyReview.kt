@@ -16,6 +16,6 @@ data class ReviewContent(
     val content: String,
     val createdAt: String,
     val imageUrls: List<String>?,
-    val placeId: Int?,
+    val googlePlaceId: String?,
     val walkId: Int?
 )

@@ -17,7 +17,7 @@ import com.example.dogcatsquare.data.model.map.SearchPlacesRequest
 import com.example.dogcatsquare.databinding.FragmentSearchResultBinding
 import com.example.dogcatsquare.ui.map.location.MapDetailFragment
 import com.example.dogcatsquare.ui.map.location.MapPlaceRVAdapter
-import com.example.dogcatsquare.ui.map.walking.WalkingStartViewFragment
+import com.example.dogcatsquare.ui.map.walking.WalkingMapFragment
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -98,7 +98,9 @@ class SearchResultFragment : Fragment() {
                 // 2. placeType 비교 값 수정: "HOSPITAL", "PARK" 대신 변환된 값인 "동물병원", "산책로"와 비교합니다.
                 when (place.placeType) {
                     "동물병원" -> navigateToDetailFragment(place.id)
-                    "산책로" -> navigateToFragment(WalkingStartViewFragment())
+                    "산책로" -> {
+                        navigateToFragment(WalkingMapFragment.newInstance(place.id, latitude, longitude))
+                    }
                     else -> navigateToDetailFragment(place.id)
                 }
             }
@@ -155,7 +157,7 @@ class SearchResultFragment : Fragment() {
                 if (response.isSuccess) {
                     val newPlaces = response.result?.content?.map { place ->
                         MapPlace(
-                            id = place.id,
+                            id = place.googlePlaceId,
                             placeName = place.name,
                             placeType = convertCategory(place.category),
                             placeDistance = "${String.format("%.2f", place.distance)}km",
@@ -211,10 +213,10 @@ class SearchResultFragment : Fragment() {
         mapPlaceRVAdapter.submitList(placeDatas)
     }
 
-    private fun navigateToDetailFragment(placeId: Int) {
+    private fun navigateToDetailFragment(googlePlaceId: String) {
         val fragment = MapDetailFragment().apply {
             arguments = Bundle().apply {
-                putInt("placeId", placeId)
+                putString("googlePlaceId", googlePlaceId)
                 putDouble("latitude", latitude)
                 putDouble("longitude", longitude)
             }

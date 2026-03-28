@@ -9,7 +9,7 @@ data class GetHotPlaceResponse(
     @SerializedName("result") var result: List<GetHotPlaceResult>
 )
 data class GetHotPlaceResult(
-    @SerializedName("id") var id: Int,
+    @SerializedName("googlePlaceId") var googlePlaceId: String,
     @SerializedName("name") var name: String,
     @SerializedName("address") var address: String,
     @SerializedName("category") var category: String,

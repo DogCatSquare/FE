@@ -18,8 +18,7 @@ interface WishRetrofitObj {
     @POST("api/places/wishlist")
     fun getMyWish(@Header("Authorization") token: String, @Body myLocation: MyLocation): Call<GetMyWishResponse>
 
-    @POST("api/wishlist/places/{placeId}")
-    fun fetchMyWishPlaceList(@Header("Authorization") token: String, @Path("placeId") placeId: Int): Call<FetchMyWishPlaceResponse>
+    fun fetchMyWishPlaceList(@Header("Authorization") token: String, @Path("googlePlaceId") googlePlaceId: String): Call<FetchMyWishPlaceResponse>
 
     @GET("api/wishlist/walks")
     fun getMyWalkWish(@Header("Authorization") token: String): Call<GetMyWalkWishResponse>

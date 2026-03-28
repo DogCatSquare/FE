@@ -27,7 +27,7 @@ class MyReviewFragment : Fragment() {
     var currentPage = 1 // 현재 페이지 번호를 관리하는 변수
     private val id: Int = -1
     private val walkId: Int? = null
-    private val placeId: Int? = null
+    private val googlePlaceId: String? = null
 
     private fun getToken(): String?{
         val sharedPref = activity?.getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
@@ -54,7 +54,7 @@ class MyReviewFragment : Fragment() {
         myReviewDatas.clear()
 
         val myReviewRVAdapter = MyReviewRVAdapter(myReviewDatas) { params ->
-            onDeleteReview(params.reviewId, params.placeId, params.walkId)
+            onDeleteReview(params.reviewId, params.googlePlaceId, params.walkId)
         }
         binding.myReviewRv.adapter = myReviewRVAdapter
         binding.myReviewRv.layoutManager = LinearLayoutManager(context, LinearLayoutManager.VERTICAL, false)
@@ -82,7 +82,7 @@ class MyReviewFragment : Fragment() {
                                 content = review.content,
                                 createdAt = com.example.dogcatsquare.util.DateFmt.format(review.createdAt).replace(".", "-"),
                                 imageUrls = review.imageUrls,
-                                placeId = review.placeId,
+                                googlePlaceId = review.googlePlaceId,
                                 walkId = review.walkId
                             )
                         }
@@ -103,13 +103,13 @@ class MyReviewFragment : Fragment() {
         })
     }
 
-    private fun onDeleteReview(reviewId: Int, placeId: Int?, walkId: Int?) {
+    private fun onDeleteReview(reviewId: Int, googlePlaceId: String?, walkId: Int?) {
         val token = getToken()
         val deleteReviewService = RetrofitObj.getRetrofit(requireContext()).create(ReviewRetrofitItf::class.java)
 
         if (walkId == null) {
-            if (placeId != null) {
-                deleteReviewService.deletePlaceReview("Bearer $token", placeId, reviewId).enqueue(object : Callback<DeleteReviewResponse> {
+            if (googlePlaceId != null) {
+                deleteReviewService.deletePlaceReview("Bearer $token", googlePlaceId, reviewId).enqueue(object : Callback<DeleteReviewResponse> {
                     override fun onResponse(call: Call<DeleteReviewResponse>, response: Response<DeleteReviewResponse>) {
                         Log.d("RETROFIT/SUCCESS", response.toString())
 

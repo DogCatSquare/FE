@@ -48,7 +48,7 @@ class WalkingMapFragment : Fragment(), OnMapReadyCallback {
     private val binding get() = _binding!!
 
     private lateinit var walkRVAdapter: WalkRVAdapter
-    private var placeId: Int = -1
+    private var googlePlaceId: String = ""
     private var latitude: Double = 0.0
     private var longitude: Double = 0.0
 
@@ -63,7 +63,7 @@ class WalkingMapFragment : Fragment(), OnMapReadyCallback {
         super.onCreate(savedInstanceState)
         loadingDialog = LoadingDialog(requireContext())
         arguments?.let {
-            placeId = it.getInt("placeId", -1)
+            googlePlaceId = it.getString("googlePlaceId", "") ?: ""
             latitude = it.getDouble("latitude", 0.0)
             longitude = it.getDouble("longitude", 0.0)
         }
@@ -86,8 +86,8 @@ class WalkingMapFragment : Fragment(), OnMapReadyCallback {
         setupRecyclerView()
         setupButtons()
 
-        if (placeId != -1) {
-            loadPlaceDetails(placeId)
+        if (googlePlaceId != "") {
+            loadPlaceDetails(googlePlaceId)
         }
     }
 
@@ -154,13 +154,13 @@ class WalkingMapFragment : Fragment(), OnMapReadyCallback {
             }
 
             wishButton.setOnClickListener {
-                toggleWish(placeId)
+                toggleWish(googlePlaceId)
             }
         }
     }
 
-    private fun loadPlaceDetails(placeId: Int) {
-        Log.d("WalkingMapFragment", "🚀 loadPlaceDetails 시작 - placeId: $placeId")
+    private fun loadPlaceDetails(googlePlaceId: String) {
+        Log.d("WalkingMapFragment", "🚀 loadPlaceDetails 시작 - googlePlaceId: $googlePlaceId")
         if (!loadingDialog.isDialogShowing) loadingDialog.show()
 
         lifecycleScope.launch {
@@ -181,52 +181,20 @@ class WalkingMapFragment : Fragment(), OnMapReadyCallback {
                 val response = withContext(Dispatchers.IO) {
                     RetrofitClient.placesApiService.getPlaceById(
                         token = "Bearer $token",
-                        placeId = placeId,
+                        googlePlaceId = googlePlaceId,
                         request = request
                     )
                 }
 
                 if (response.isSuccess) {
                     response.result?.let { placeDetail ->
-                        Log.d("WalkingMapFragment", "📡 산책로 목록 검색 요청 중 (키워드: ${placeDetail.name})")
-                        // 산책로 검색 수행
-                        val walkResponse = withContext(Dispatchers.IO) {
-                            RetrofitClient.walkApiService.searchWalks(
-                                title = placeDetail.name
-                            )
-                        }
-
-                        Log.d("WalkingMapFragment", "✅ 산책로 목록 수신 성공: ${walkResponse.walks.size}개 발견")
-
+                        // 1. 상단 장소 정보 즉시 업데이트
                         binding.apply {
                             placeName.text = placeDetail.name
                             placeLocation.text = placeDetail.address.split(" ").getOrNull(2) ?: ""
-                            placeType.text = "리뷰(${walkResponse.walks.size})"
                             placeDistance.text = "${String.format("%.2f", placeDetail.distance)}km"
                             addressTv.text = placeDetail.address
-                            rightText.text = walkResponse.walks.size.toString()
-
-                            if (walkResponse.walks.isEmpty()) {
-                                // 추천 코스가 없을 때
-                                reviewRv.visibility = View.GONE
-                                defaultWalkText.visibility = View.VISIBLE
-
-                                // 숫자와 전체보기 버튼 숨기기
-                                rightText.visibility = View.GONE
-                                reviewAllBt.visibility = View.GONE
-                            } else {
-                                // 추천 코스가 있을 때
-                                reviewRv.visibility = View.VISIBLE
-                                defaultWalkText.visibility = View.GONE
-
-                                // 숫자와 전체보기 버튼 보이기
-                                rightText.visibility = View.VISIBLE
-                                reviewAllBt.visibility = View.VISIBLE
-
-                                // RecyclerView에 데이터 설정
-                                walkRVAdapter.updateData(ArrayList(walkResponse.walks))
-                            }
-
+                            
                             isWished = placeDetail.wished
                             wishButton.setImageResource(
                                 if (isWished) R.drawable.ic_wish_check
@@ -236,6 +204,42 @@ class WalkingMapFragment : Fragment(), OnMapReadyCallback {
 
                         if (googleMap != null) {
                             updateMapLocation(placeDetail.latitude, placeDetail.longitude)
+                        }
+
+                        // 2. 산책로 목록 검색 (별도 에러 처리로 장소 정보 표시를 방해하지 않음)
+                        try {
+                            Log.d("WalkingMapFragment", "📡 산책로 목록 검색 요청 중 (키워드: ${placeDetail.name})")
+                            val walkResponse = withContext(Dispatchers.IO) {
+                                RetrofitClient.walkApiService.searchWalks(
+                                    title = placeDetail.name
+                                )
+                            }
+                            Log.d("WalkingMapFragment", "✅ 산책로 목록 수신 성공: ${walkResponse.walks.size}개 발견")
+
+                            binding.apply {
+                                placeType.text = "리뷰(${walkResponse.walks.size})"
+                                rightText.text = walkResponse.walks.size.toString()
+
+                                if (walkResponse.walks.isEmpty()) {
+                                    reviewRv.visibility = View.GONE
+                                    defaultWalkText.visibility = View.VISIBLE
+                                    rightText.visibility = View.GONE
+                                    reviewAllBt.visibility = View.GONE
+                                } else {
+                                    reviewRv.visibility = View.VISIBLE
+                                    defaultWalkText.visibility = View.GONE
+                                    rightText.visibility = View.VISIBLE
+                                    reviewAllBt.visibility = View.VISIBLE
+                                    walkRVAdapter.updateData(ArrayList(walkResponse.walks))
+                                }
+                            }
+                        } catch (e: Exception) {
+                            Log.e("WalkingMapFragment", "⚠️ 산책로 검색 실패: ${e.message}")
+                            binding.apply {
+                                placeType.text = "리뷰(0)"
+                                reviewRv.visibility = View.GONE
+                                defaultWalkText.visibility = View.VISIBLE
+                            }
                         }
                     }
                 } else {
@@ -255,7 +259,7 @@ class WalkingMapFragment : Fragment(), OnMapReadyCallback {
         }
     }
 
-    private fun toggleWish(placeId: Int) {
+    private fun toggleWish(googlePlaceId: String) {
         lifecycleScope.launch {
             try {
                 val token = getToken()
@@ -267,7 +271,7 @@ class WalkingMapFragment : Fragment(), OnMapReadyCallback {
                 val response = withContext(Dispatchers.IO) {
                     RetrofitClient.placesApiService.toggleWish(
                         token = "Bearer $token",
-                        placeId = placeId
+                        googlePlaceId = googlePlaceId
                     )
                 }
 
@@ -397,10 +401,10 @@ class WalkingMapFragment : Fragment(), OnMapReadyCallback {
     }
 
     companion object {
-        fun newInstance(placeId: Int, latitude: Double, longitude: Double): WalkingMapFragment {
+        fun newInstance(googlePlaceId: String, latitude: Double, longitude: Double): WalkingMapFragment {
             return WalkingMapFragment().apply {
                 arguments = Bundle().apply {
-                    putInt("placeId", placeId)
+                    putString("googlePlaceId", googlePlaceId)
                     putDouble("latitude", latitude)
                     putDouble("longitude", longitude)
                 }

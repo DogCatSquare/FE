@@ -3,7 +3,7 @@ package com.example.dogcatsquare.data.model.map
 import com.google.gson.annotations.SerializedName
 
 data class PlaceItem(
-    @SerializedName("id") val id: Int,
+    @SerializedName("googlePlaceId") val googlePlaceId: String,
     @SerializedName("name") val name: String,
     @SerializedName("address") val address: String,
     @SerializedName("category") val category: String,
@@ -40,7 +40,7 @@ data class SearchPlacesRequest(
 )
 
 data class PlaceDetailResponse(
-    @SerializedName("id") val id: Int,
+    @SerializedName("googlePlaceId") val googlePlaceId: String,
     @SerializedName("name") val name: String,
     @SerializedName("address") val address: String,
     @SerializedName("category") val category: String,

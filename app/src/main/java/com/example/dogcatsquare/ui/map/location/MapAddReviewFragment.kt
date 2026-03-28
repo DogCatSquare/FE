@@ -38,7 +38,7 @@ import java.io.ByteArrayOutputStream
 class MapAddReviewFragment : Fragment() {
     private var _binding: FragmentMapAddReviewBinding? = null
     private val binding get() = _binding!!
-    private var placeId: Int = -1
+    private var googlePlaceId: String = ""
 
     private var selectedBitmaps: MutableList<Bitmap> = mutableListOf()
     private lateinit var imageAdapter: SelectedImageAdapter
@@ -51,7 +51,7 @@ class MapAddReviewFragment : Fragment() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         arguments?.let {
-            placeId = it.getInt("placeId", -1)
+            googlePlaceId = it.getString("googlePlaceId", "") ?: ""
         }
     }
 
@@ -167,7 +167,7 @@ class MapAddReviewFragment : Fragment() {
                 val response = withContext(Dispatchers.IO) {
                     RetrofitClient.placesApiService.createPlaceReview(
                         token = "Bearer $token",
-                        placeId = placeId,
+                        googlePlaceId = googlePlaceId,
                         request = reviewRequest,
                         images = imageParts
                     )
@@ -223,8 +223,8 @@ class MapAddReviewFragment : Fragment() {
     }
 
     companion object {
-        fun newInstance(placeId: Int) = MapAddReviewFragment().apply {
-            arguments = Bundle().apply { putInt("placeId", placeId) }
+        fun newInstance(googlePlaceId: String) = MapAddReviewFragment().apply {
+            arguments = Bundle().apply { putString("googlePlaceId", googlePlaceId) }
         }
     }
 }

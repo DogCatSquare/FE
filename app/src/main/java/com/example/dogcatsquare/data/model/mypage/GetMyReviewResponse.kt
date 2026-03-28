@@ -25,7 +25,7 @@ data class PostContent(
     @SerializedName("content") val content: String,
     @SerializedName("createdAt") val createdAt: String,
     @SerializedName("imageUrls") val imageUrls: List<String>?,
-    @SerializedName("placeId") val placeId: Int,
-    @SerializedName("walkId") val walkId: Int
+    @SerializedName("googlePlaceId") val googlePlaceId: String?,
+    @SerializedName("walkId") val walkId: Int?
 )
 

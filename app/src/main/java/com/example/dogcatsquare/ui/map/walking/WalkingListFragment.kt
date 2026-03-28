@@ -28,14 +28,14 @@ class WalkingListFragment : Fragment() {
     private lateinit var reviewAdapter: WalkRVAdapter
     private val walkReviewViewModel: WalkReviewViewModel by viewModels()
     private var walkId: Int? = null  // null 가능성 고려
-    private var placeId: Int = -1
+    private var googlePlaceId: String = ""
     private var latitude: Double = 0.0
     private var longitude: Double = 0.0
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         arguments?.let {
-            placeId = it.getInt("placeId", -1)
+            googlePlaceId = it.getString("googlePlaceId", "") ?: ""
             latitude = it.getDouble("latitude", 0.0)
             longitude = it.getDouble("longitude", 0.0)
         }
@@ -82,7 +82,7 @@ class WalkingListFragment : Fragment() {
     }
 
     private fun loadPlaceDetails(name: String) {
-        Log.d("WalkingMapFragment", "🚀 loadPlaceDetails 시작 - placeId: $placeId")
+        Log.d("WalkingMapFragment", "🚀 loadPlaceDetails 시작 - googlePlaceId: $googlePlaceId")
 
         lifecycleScope.launch {
             try {

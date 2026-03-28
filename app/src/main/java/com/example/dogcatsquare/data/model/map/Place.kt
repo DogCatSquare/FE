@@ -1,7 +1,7 @@
 package com.example.dogcatsquare.data.model.map
 
 data class Place(
-    var id: Int,
+    var googlePlaceId: String,
     var name: String,
     var address: String?,
     var category: String,

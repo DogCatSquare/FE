@@ -155,7 +155,7 @@ class WishPlaceRVAdapter(private val context: Context, private val placeList: Ar
         val token = "Bearer $bearer_token"
 
         val wishService = RetrofitObj.getRetrofit(context).create(WishRetrofitObj::class.java)
-        wishService.fetchMyWishPlaceList(token, place.id).enqueue(object :
+        wishService.fetchMyWishPlaceList(token, place.googlePlaceId).enqueue(object :
             Callback<FetchMyWishPlaceResponse> {
             override fun onResponse(
                 call: Call<FetchMyWishPlaceResponse>,
