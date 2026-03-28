@@ -30,7 +30,7 @@ class MapAddKeywordFragment : Fragment() {
     private var _binding: FragmentMapAddKeywordBinding? = null
     private val binding get() = _binding!!
 
-    private var placeId: Int = 0
+    private var googlePlaceId: String = ""
     private var placeName: String = ""
     private var defaultKeywords: Array<String> = emptyArray()
     private var category: String = ""
@@ -50,7 +50,7 @@ class MapAddKeywordFragment : Fragment() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         arguments?.let {
-            placeId = it.getInt("placeId")
+            googlePlaceId = it.getString("googlePlaceId", "") ?: ""
             placeName = it.getString("placeName", "")
             defaultKeywords = it.getStringArray("defaultKeywords") ?: emptyArray()
             category = it.getString("category", "")
@@ -204,7 +204,7 @@ class MapAddKeywordFragment : Fragment() {
                     val response = withContext(Dispatchers.IO) {
                         RetrofitClient.placesApiService.updatePlaceUserInfo(
                             token = "Bearer $token",
-                            placeId = placeId,
+                            googlePlaceId = googlePlaceId,
                             request = PlaceUserInfoRequest(
                                 keywords = selectedKeywords.toList(),
                                 additionalInfo = additionalInfo
@@ -429,7 +429,7 @@ class MapAddKeywordFragment : Fragment() {
 
     companion object {
         fun newInstance(
-            placeId: Int,
+            googlePlaceId: String,
             placeName: String,
             defaultKeywords: Array<String>,
             category: String,
@@ -437,7 +437,7 @@ class MapAddKeywordFragment : Fragment() {
             additionalInfo: String
         ) = MapAddKeywordFragment().apply {
             arguments = Bundle().apply {
-                putInt("placeId", placeId)
+                putString("googlePlaceId", googlePlaceId)
                 putString("placeName", placeName)
                 putStringArray("defaultKeywords", defaultKeywords)
                 putString("category", category)

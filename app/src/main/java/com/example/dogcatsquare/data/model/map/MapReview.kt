@@ -9,5 +9,5 @@ data class MapReview(
     val createdAt: String?,
     val userId: Int,
     val placeReviewImageUrl: List<String>?,
-    val placeId: Int
+    val googlePlaceId: String
 )

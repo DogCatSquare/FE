@@ -23,7 +23,7 @@ class MapReviewFragment : Fragment() {
     private var _binding: FragmentMapReviewBinding? = null
     private val binding get() = _binding!!
 
-    private var placeId: Int = -1
+    private var googlePlaceId: String = ""
     private var currentPage = 0
     private var isLastPage = false
     private var isLoading = false
@@ -33,7 +33,7 @@ class MapReviewFragment : Fragment() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         arguments?.let {
-            placeId = it.getInt(ARG_PLACE_ID, -1)
+            googlePlaceId = it.getString(ARG_PLACE_ID, "") ?: ""
         }
     }
 
@@ -101,7 +101,7 @@ class MapReviewFragment : Fragment() {
     }
 
     private fun loadReviews() {
-        if (placeId == -1) {
+        if (googlePlaceId == "") {
             Toast.makeText(requireContext(), "잘못된 접근입니다.", Toast.LENGTH_SHORT).show()
             return
         }
@@ -118,7 +118,7 @@ class MapReviewFragment : Fragment() {
                 val response = withContext(Dispatchers.IO) {
                     RetrofitClient.placesApiService.getReviews(
                         token = "Bearer $token",
-                        placeId = placeId,
+                        googlePlaceId = googlePlaceId,
                         page = currentPage
                     )
                 }
@@ -181,7 +181,7 @@ class MapReviewFragment : Fragment() {
 
     private fun setupAddReviewButton() {
         binding.addReview.setOnClickListener {
-            val mapAddReviewFragment = MapAddReviewFragment.newInstance(placeId)
+            val mapAddReviewFragment = MapAddReviewFragment.newInstance(googlePlaceId)
             requireActivity().supportFragmentManager.beginTransaction()
                 .setCustomAnimations(
                     R.anim.slide_in_right,
@@ -253,11 +253,11 @@ class MapReviewFragment : Fragment() {
     }
 
     companion object {
-        private const val ARG_PLACE_ID = "placeId"
+        private const val ARG_PLACE_ID = "googlePlaceId"
 
-        fun newInstance(placeId: Int) = MapReviewFragment().apply {
+        fun newInstance(googlePlaceId: String) = MapReviewFragment().apply {
             arguments = Bundle().apply {
-                putInt(ARG_PLACE_ID, placeId)
+                putString(ARG_PLACE_ID, googlePlaceId)
             }
         }
     }

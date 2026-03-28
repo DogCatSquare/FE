@@ -1,7 +1,7 @@
 package com.example.dogcatsquare.data.model.wish
 
 data class WishPlace(
-    val id: Int,
+    val googlePlaceId: String,
     val name: String,
     val address: String,
     val category: String,

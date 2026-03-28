@@ -1,7 +1,7 @@
 package com.example.dogcatsquare.data.model.map
 
 data class MapPlace(
-    val id: Int,
+    val id: String,
     var placeName: String? = "",
     var placeType: String? = "",
     var placeDistance: String? = "",

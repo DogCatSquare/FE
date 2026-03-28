@@ -11,7 +11,7 @@ import android.widget.FrameLayout
 import androidx.fragment.app.FragmentActivity
 import com.example.dogcatsquare.databinding.DialogLoadingBinding
 
-class LoadingDialog(private val context: Context) {
+class LoadingDialog(private val context: Context, private val isTransparentBackground: Boolean = false) {
     private lateinit var binding: DialogLoadingBinding
     private val handler = Handler(Looper.getMainLooper())
     private var currentDots = 0
@@ -39,8 +39,13 @@ class LoadingDialog(private val context: Context) {
             binding = DialogLoadingBinding.inflate(LayoutInflater.from(context))
             loadingView = binding.root
 
-            // 배경을 반투명하게 설정
-            binding.root.setBackgroundColor(Color.parseColor("#99000000")) // 반투명 배경
+            if (isTransparentBackground) {
+                binding.root.setBackgroundColor(Color.parseColor("#99000000"))
+                binding.loadingTextView.setTextColor(Color.WHITE)
+            } else {
+                binding.root.setBackgroundColor(Color.parseColor("#FFFFFF"))
+                binding.loadingTextView.setTextColor(Color.BLACK)
+            }
 
             binding.root.isClickable = true
         }

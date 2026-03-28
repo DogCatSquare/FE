@@ -2,6 +2,7 @@ package com.example.dogcatsquare.data.network
 
 import android.util.Log
 import com.example.dogcatsquare.NaverGeocodeService
+import com.example.dogcatsquare.data.api.NoticeRetrofitItf
 import com.example.dogcatsquare.data.api.PlacesApiService
 import com.example.dogcatsquare.data.api.UserRetrofitItf
 import com.example.dogcatsquare.data.api.WalkApiService
@@ -95,5 +96,8 @@ object RetrofitClient {
     }
     val walkingApiService: WalkingApiService by lazy {
         retrofit.create(WalkingApiService::class.java)
+    }
+    val noticeApiService: NoticeRetrofitItf by lazy {
+        retrofit.create(NoticeRetrofitItf::class.java)
     }
 }

@@ -46,7 +46,7 @@ class WalkingReviewListFragment : Fragment() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         arguments?.let {
-            walkId = it.getInt("walkId", -1)
+            walkId = it.getInt(ARG_WALK_ID, -1)
         }
     }
 
@@ -132,7 +132,7 @@ class WalkingReviewListFragment : Fragment() {
                 val reviews = response.result?.walkReviews?.map { walkReview ->
                     WalkReview(
                         reviewId = walkReview.reviewId,
-                        walkId = walkReview.walkId,
+                        walkId = walkId.toLong(),
                         content = walkReview.content,
                         walkReviewImageUrl = walkReview.walkReviewImageUrl,
                         createdAt = walkReview.createdAt,
@@ -185,7 +185,7 @@ class WalkingReviewListFragment : Fragment() {
 
     private fun setupAddReviewButton() {
         binding.addReview.setOnClickListener {
-            val mapAddReviewFragment = WalkingReviewAddFragment.newInstance(walkId)
+            val walkingReviewAddFragment = WalkingReviewAddFragment.newInstance(walkId)
             requireActivity().supportFragmentManager.beginTransaction()
                 .setCustomAnimations(
                     R.anim.slide_in_right,
@@ -194,7 +194,7 @@ class WalkingReviewListFragment : Fragment() {
                     R.anim.slide_out_right
                 )
                 .hide(this)
-                .add(R.id.main_frm, mapAddReviewFragment)
+                .add(R.id.main_frm, walkingReviewAddFragment)
                 .addToBackStack(null)
                 .commit()
         }
@@ -257,11 +257,11 @@ class WalkingReviewListFragment : Fragment() {
     }
 
     companion object {
-        private const val ARG_PLACE_ID = "placeId"
+        private const val ARG_WALK_ID = "walkId"
 
-        fun newInstance(placeId: Int) = WalkingReviewListFragment().apply {
+        fun newInstance(walkId: Int) = WalkingReviewListFragment().apply {
             arguments = Bundle().apply {
-                putInt(ARG_PLACE_ID, placeId)
+                putInt(ARG_WALK_ID, walkId)
             }
         }
     }

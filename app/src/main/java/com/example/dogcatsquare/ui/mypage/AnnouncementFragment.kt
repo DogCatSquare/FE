@@ -6,14 +6,21 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.example.dogcatsquare.data.model.announcement.AnnouncementResponse
+import android.util.Log
+import com.example.dogcatsquare.R
+import com.example.dogcatsquare.data.model.announcement.Notice
+import com.example.dogcatsquare.data.model.map.BaseResponse
+import com.example.dogcatsquare.data.network.RetrofitClient
 import com.example.dogcatsquare.databinding.FragmentAnnouncementBinding
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
 
 class AnnouncementFragment : Fragment() {
     private var _binding: FragmentAnnouncementBinding? = null
     private val binding get() = _binding!!
 
-    private var announcementDatas = ArrayList<AnnouncementResponse>()
+    private var announcementDatas = ArrayList<Notice>()
     private lateinit var announcementRVAdapter: AnnouncementRVAdapter
 
     override fun onCreateView(
@@ -23,8 +30,8 @@ class AnnouncementFragment : Fragment() {
     ): View? {
         _binding = FragmentAnnouncementBinding.inflate(inflater, container, false)
 
-        setupAnnouncementRV() // 1. 리사이클러뷰 먼저 설정
-        setDummyData()        // 2. 그 다음 데이터 채우기
+        setupAnnouncementRV()
+        fetchNotices() // API 호출로 변경
         updateVisibility()
 
         binding.backBtn.setOnClickListener {
@@ -40,23 +47,43 @@ class AnnouncementFragment : Fragment() {
         binding.announcementRv.adapter = announcementRVAdapter
         binding.announcementRv.layoutManager = LinearLayoutManager(context, LinearLayoutManager.VERTICAL, false)
 
-        // 공지사항 api 연결
+        announcementRVAdapter.setMyItemClickListener(object : AnnouncementRVAdapter.OnItemClickListener {
+            override fun onItemClick(announcement: Notice) {
+                val detailFragment = AnnouncementDetailFragment.newInstance(announcement.id)
+                requireActivity().supportFragmentManager.beginTransaction()
+                    .replace(R.id.main_frm, detailFragment)
+                    .addToBackStack(null)
+                    .commit()
+            }
+        })
     }
 
-    // 공지사항 더미데이터
-    private fun setDummyData() {
-        announcementDatas.apply {
-            add(AnnouncementResponse(1, "공지", "서비스 이용약관 개정 안내", "2026.03.07"))
-            add(AnnouncementResponse(2, "업데이트", "v2.1.0 버전 업데이트 배포 완료", "2026.03.05"))
-            add(AnnouncementResponse(3, "이벤트", "봄맞이 산책 인증 이벤트 당첨자 발표", "2026.03.01"))
-            add(AnnouncementResponse(4, "공지", "시스템 정기 점검 안내 (03/10)", "2026.02.28"))
-            add(AnnouncementResponse(5, "업데이트", "강아지/고양이 등록 프로세스 개선 안내", "2026.02.25"))
-            add(AnnouncementResponse(6, "이벤트", "친구 초대하고 포인트 받아가세요!", "2026.02.20"))
-        }
+    private fun fetchNotices() {
+        RetrofitClient.noticeApiService.getNotices().enqueue(object : Callback<BaseResponse<List<Notice>>> {
+            override fun onResponse(
+                call: Call<BaseResponse<List<Notice>>>,
+                response: Response<BaseResponse<List<Notice>>>
+            ) {
+                if (response.isSuccessful) {
+                    val baseResponse = response.body()
+                    if (baseResponse?.isSuccess == true) {
+                        announcementDatas.clear()
+                        baseResponse.result?.let { notices ->
+                            announcementDatas.addAll(notices)
+                        }
+                        announcementRVAdapter.notifyDataSetChanged()
+                        updateVisibility()
+                    }
+                }
+            }
 
-        // 데이터가 추가된 후 어댑터에 알림 (어댑터 변수명이 announcementAdapter인 경우)
-        announcementRVAdapter.notifyDataSetChanged()
+            override fun onFailure(call: Call<BaseResponse<List<Notice>>>, t: Throwable) {
+                Log.e("AnnouncementFragment", "Failed to fetch notices", t)
+            }
+        })
     }
+
+
 
     private fun updateVisibility() {
         if (announcementDatas.isEmpty()) {

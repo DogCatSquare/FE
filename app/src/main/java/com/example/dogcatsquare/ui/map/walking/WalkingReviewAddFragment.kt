@@ -221,8 +221,8 @@ class WalkingReviewAddFragment : Fragment() {
     }
 
     companion object {
-        fun newInstance(placeId: Int) = WalkingReviewAddFragment().apply {
-            arguments = Bundle().apply { putInt("walkId", placeId) }
+        fun newInstance(walkId: Int) = WalkingReviewAddFragment().apply {
+            arguments = Bundle().apply { putInt("walkId", walkId) }
         }
     }
 }

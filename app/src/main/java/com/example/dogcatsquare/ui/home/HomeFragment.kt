@@ -341,13 +341,13 @@ class HomeFragment : Fragment() {
 
                 // placeType에 따라 다른 Fragment로 전환
                 if (place.category == "PARK") {
-                    val fragment = WalkingMapFragment.newInstance(place.id, currentLat, currentLng)
+                    val fragment = WalkingMapFragment.newInstance(place.googlePlaceId, currentLat, currentLng)
                     requireActivity().supportFragmentManager.beginTransaction()
                         .replace(R.id.main_frm, fragment)
                         .addToBackStack(null)
                         .commitAllowingStateLoss()
                 } else {
-                    val fragment = MapDetailFragment.newInstance(place.id, currentLat, currentLng)
+                    val fragment = MapDetailFragment.newInstance(place.googlePlaceId, currentLat, currentLng)
                     requireActivity().supportFragmentManager.beginTransaction()
                         .replace(R.id.main_frm, fragment)
                         .addToBackStack(null)
@@ -374,7 +374,7 @@ class HomeFragment : Fragment() {
 
                         val places = resp.result.map { place ->
                             Place (
-                                id = place.id,
+                                googlePlaceId = place.googlePlaceId,
                                 name = place.name,
                                 address = place.address,
                                 category = categoryMap[place.category] ?: place.category,

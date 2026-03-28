@@ -42,17 +42,17 @@ interface PlacesApiService {
         @Body request: SearchPlacesRequest
     ): BaseResponse<PageResponse<PlaceItem>>
 
-    @POST("api/places/{placeId}")
+    @POST("api/places/{googlePlaceId}")
     suspend fun getPlaceById(
         @Header("Authorization") token: String,
-        @Path("placeId") placeId: Int,
+        @Path("googlePlaceId") googlePlaceId: String,
         @Body request: PlaceDetailRequest
     ): BaseResponse<PlaceDetailResponse>
 
-    @POST("api/wishlist/places/{placeId}")
+    @POST("api/wishlist/places/{googlePlaceId}")
     suspend fun toggleWish(
         @Header("Authorization") token: String,
-        @Path("placeId") placeId: Int
+        @Path("googlePlaceId") googlePlaceId: String
     ): BaseResponse<Boolean>
 
     @POST("api/places/hot/{cityId}")
@@ -64,26 +64,26 @@ interface PlacesApiService {
         @Body request: WalkListRequest
     ): BaseResponse<WalkListResponse>
 
-    @POST("api/places/{placeId}/data")
+    @POST("api/places/{googlePlaceId}/data")
     suspend fun updatePlaceUserInfo(
         @Header("Authorization") token: String,
-        @Path("placeId") placeId: Int,
+        @Path("googlePlaceId") googlePlaceId: String,
         @Body request: PlaceUserInfoRequest
     ): BaseResponse<String>
 
     @Multipart
-    @POST("api/places/{placeId}/reviews")
+    @POST("api/places/{googlePlaceId}/reviews")
     suspend fun createPlaceReview(
         @Header("Authorization") token: String,
-        @Path("placeId") placeId: Int,
+        @Path("googlePlaceId") googlePlaceId: String,
         @Part("request") request: PlaceReviewRequest,
         @Part images: List<MultipartBody.Part>
     ): BaseResponse<Int>
 
-    @GET("api/places/{placeId}/reviews")
+    @GET("api/places/{googlePlaceId}/reviews")
     suspend fun getReviews(
         @Header("Authorization") token: String,
-        @Path("placeId") placeId: Int,
+        @Path("googlePlaceId") googlePlaceId: String,
         @Query("page") page: Int
     ): BaseResponse<PageResponse<MapReview>>
 
@@ -101,10 +101,10 @@ interface PlacesApiService {
         @Body request: FilterPlacesRequest
     ): BaseResponse<PageResponse<PlaceItem>>
 
-    @retrofit2.http.DELETE("api/places/{placeId}/reviews/{reviewId}")
+    @retrofit2.http.DELETE("api/places/{googlePlaceId}/reviews/{reviewId}")
     suspend fun deleteReview(
         @Header("Authorization") token: String,
-        @Path("placeId") placeId: Int,
+        @Path("googlePlaceId") googlePlaceId: String,
         @Path("reviewId") reviewId: Int
     ): BaseResponse<Int>
 }
