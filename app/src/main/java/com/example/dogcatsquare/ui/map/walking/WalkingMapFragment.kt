@@ -99,7 +99,7 @@ class WalkingMapFragment : Fragment(), OnMapReadyCallback {
     }
 
     private fun setupRecyclerView() {
-        walkRVAdapter = WalkRVAdapter (
+        walkRVAdapter = WalkRVAdapter(
             onItemClick = { walkId ->
                 val fragment = WalkingStartViewFragment.newInstance(walkId)
                 parentFragmentManager.beginTransaction()
@@ -107,8 +107,18 @@ class WalkingMapFragment : Fragment(), OnMapReadyCallback {
                     .addToBackStack(null)
                     .commit()
             },
-            walkList = arrayListOf() // 초기 데이터로 빈 리스트 전달
+            onDeleteClick = { walk ->
+                androidx.appcompat.app.AlertDialog.Builder(requireContext())
+                    .setMessage("이 산책로를 삭제할까요?")
+                    .setPositiveButton("삭제") { _, _ ->
+                        deleteWalk(walk.walkId)
+                    }
+                    .setNegativeButton("취소", null)
+                    .show()
+            },
+            walkList = arrayListOf()
         )
+
         binding.reviewRv.apply {
             adapter = walkRVAdapter
             layoutManager = LinearLayoutManager(context)
@@ -301,6 +311,37 @@ class WalkingMapFragment : Fragment(), OnMapReadyCallback {
         }
     }
 
+    private fun deleteWalk(walkId: Int) {
+        lifecycleScope.launch {
+            try {
+                val token = getToken()
+                if (token == null) {
+                    Toast.makeText(requireContext(), "로그인이 필요합니다.", Toast.LENGTH_SHORT).show()
+                    return@launch
+                }
+
+                val response = withContext(Dispatchers.IO) {
+                    RetrofitClient.walkApiService.deleteWalk(
+                        token = "Bearer $token",
+                        walkId = walkId
+                    )
+                }
+
+                if (response.isSuccess) {
+                    Toast.makeText(requireContext(), "산책로가 삭제되었습니다.", Toast.LENGTH_SHORT).show()
+                    loadPlaceDetails(placeId)
+                } else {
+                    Toast.makeText(
+                        requireContext(),
+                        response.message ?: "산책로 삭제에 실패했습니다.",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
+            } catch (e: Exception) {
+                handleError(e)
+            }
+        }
+    }
     // [수정됨] onMapReady(NaverMap) -> onMapReady(GoogleMap)
     override fun onMapReady(map: GoogleMap) {
         googleMap = map

@@ -56,6 +56,16 @@
         app:layout_constraintBottom_toBottomOf="@+id/userName"
         app:layout_constraintStart_toEndOf="@+id/userName" />
 
+    <ImageView
+        android:id="@+id/ivMenu"
+        android:layout_width="20dp"
+        android:layout_height="20dp"
+        android:src="@drawable/ic_reply_menu"
+        android:contentDescription="Menu"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/userName"
+        android:layout_marginEnd="16dp"/>
+
     <TextView
         android:id="@+id/walkTime"
         android:layout_width="wrap_content"
