@@ -304,14 +304,14 @@ class MapDetailFragment : Fragment(), OnMapReadyCallback {
 
                                             Toast.makeText(
                                                 requireContext(),
-                                                if (isWished) "찜 목록에 추가되었습니다."
-                                                else "찜 목록에서 제거되었습니다.",
+                                                if (isWished) "위시리스트에 추가되었습니다."
+                                                else "위시리스트에서 제외되었습니다.",
                                                 Toast.LENGTH_SHORT
                                             ).show()
                                         } else {
                                             Toast.makeText(
                                                 requireContext(),
-                                                response.message ?: "요청 처리에 실패했습니다.",
+                                                "오류가 발생했습니다.",
                                                 Toast.LENGTH_SHORT
                                             ).show()
                                         }

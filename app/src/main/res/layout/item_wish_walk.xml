@@ -3,7 +3,8 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content">
+    android:layout_height="wrap_content"
+    android:paddingBottom="16dp">
 
     <androidx.constraintlayout.widget.Guideline
         android:id="@+id/guideline_start"
@@ -25,7 +26,7 @@
         android:id="@+id/placeImg"
         android:layout_width="48dp"
         android:layout_height="48dp"
-        app:layout_constraintBottom_toBottomOf="parent"
+        android:layout_marginTop="16dp"
         app:layout_constraintStart_toStartOf="@+id/guideline_start"
         app:layout_constraintTop_toTopOf="parent"
         app:srcCompat="@drawable/ic_trail_default" />
@@ -64,7 +65,7 @@
         android:text="서대문 안산자락길"
         android:textColor="@color/black"
         android:textSize="18dp"
-        app:layout_constraintEnd_toStartOf="@+id/iv_wish"
+        app:layout_constraintEnd_toStartOf="@+id/iv_expand"
         app:layout_constraintStart_toEndOf="@+id/placeImg"
         app:layout_constraintTop_toTopOf="@+id/placeImg" />
 
@@ -92,7 +93,7 @@
         android:textColor="@color/gray5"
         android:textSize="12dp"
         app:layout_constraintBottom_toBottomOf="@+id/placeDistance"
-        app:layout_constraintEnd_toStartOf="@id/iv_wish"
+        app:layout_constraintEnd_toStartOf="@id/iv_expand"
         app:layout_constraintHorizontal_bias="0"
         app:layout_constraintStart_toEndOf="@+id/placeDistance"
         app:layout_constraintTop_toTopOf="@+id/placeDistance" />
@@ -127,11 +128,12 @@
     </androidx.constraintlayout.widget.ConstraintLayout>
 
     <ImageView
-        android:id="@+id/iv_wish"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        app:layout_constraintBottom_toBottomOf="parent"
+        android:id="@+id/iv_expand"
+        android:layout_width="24dp"
+        android:layout_height="24dp"
+        app:layout_constraintBottom_toBottomOf="@+id/placeImg"
         app:layout_constraintEnd_toStartOf="@+id/guideline_end"
-        app:layout_constraintTop_toTopOf="parent"
-        app:srcCompat="@drawable/btn_wish" />
+        app:layout_constraintTop_toTopOf="@+id/placeImg"
+        app:srcCompat="@drawable/ic_chevron_down"
+        app:tint="#6D6D6D"/>
 </androidx.constraintlayout.widget.ConstraintLayout>

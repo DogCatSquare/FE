@@ -19,6 +19,7 @@ import com.example.dogcatsquare.data.model.wish.FetchMyWishPlaceResponse
 import com.example.dogcatsquare.data.model.wish.WishPlace
 import com.example.dogcatsquare.data.network.RetrofitObj
 import com.example.dogcatsquare.databinding.ItemWishPlaceBinding
+import kotlinx.coroutines.launch
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -154,31 +155,25 @@ class WishPlaceRVAdapter(private val context: Context, private val placeList: Ar
     private fun toggleWishStatus(place: WishPlace, position: Int) {
         val token = "Bearer $bearer_token"
 
-        val wishService = RetrofitObj.getRetrofit(context).create(WishRetrofitObj::class.java)
-        wishService.fetchMyWishPlaceList(token, place.googlePlaceId).enqueue(object :
-            Callback<FetchMyWishPlaceResponse> {
-            override fun onResponse(
-                call: Call<FetchMyWishPlaceResponse>,
-                response: Response<FetchMyWishPlaceResponse>
-            ) {
-                if (response.isSuccessful) {
-                    val result = response.body()?.result ?: false
-                    if (!result) { // ❌ result == false 이면 삭제
-                        placeList.removeAt(position)
-                        notifyItemRemoved(position)
+        kotlinx.coroutines.CoroutineScope(kotlinx.coroutines.Dispatchers.Main).launch {
+            try {
+                val response = com.example.dogcatsquare.data.network.RetrofitClient.placesApiService.toggleWish(token, place.googlePlaceId)
+                if (response.isSuccess) {
+                    // 위시리스트 アイ템 삭제
+                    val actualPos = placeList.indexOf(place)
+                    if (actualPos != -1) {
+                        placeList.removeAt(actualPos)
+                        notifyItemRemoved(actualPos)
+                        android.widget.Toast.makeText(context, "위시리스트에서 제외되었습니다.", android.widget.Toast.LENGTH_SHORT).show()
                         Log.d("WishPlaceRVAdapter", "위시 삭제 성공: ${place.name}")
                     }
                 } else {
-                    Log.e("WishPlaceRVAdapter", "위시 변경 실패: ${response.errorBody()?.string()}")
+                    android.widget.Toast.makeText(context, response.message ?: "위시 해제 실패", android.widget.Toast.LENGTH_SHORT).show()
                 }
+            } catch (e: Exception) {
+                Log.e("WishPlaceRVAdapter", "위시 변경 에러", e)
+                android.widget.Toast.makeText(context, "네트워크 오류", android.widget.Toast.LENGTH_SHORT).show()
             }
-
-            override fun onFailure(
-                call: Call<FetchMyWishPlaceResponse>,
-                t: Throwable
-            ) {
-                Log.e("WishPlaceRVAdapter", "위시 변경 실패", t)
-            }
-        })
+        }
     }
 }

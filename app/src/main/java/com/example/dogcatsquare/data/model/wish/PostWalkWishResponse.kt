@@ -1,6 +1,6 @@
 package com.example.dogcatsquare.data.model.wish
 
-data class FetchMyWishPlaceResponse(
+data class PostWalkWishResponse(
     val isSuccess: Boolean,
     val code: String,
     val message: String,

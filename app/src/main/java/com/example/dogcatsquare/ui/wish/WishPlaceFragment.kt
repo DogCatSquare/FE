@@ -60,10 +60,7 @@ class WishPlaceFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        sortTextView = binding.sortButton.findViewById(R.id.sortText)
-
         setupRecyclerView()
-        setupSortButton()
     }
 
     private fun setupRecyclerView() {
@@ -165,7 +162,8 @@ class WishPlaceFragment : Fragment() {
                                 imgUrl = wish.imgUrl ?: "",
                                 reviewCount = wish.reviewCount,
                                 keywords = wish.keywords,
-                                isWish = true
+                                isWish = true,
+                                walks = wish.walks
                             )
                         }.filter { it.category != "PARK" } // "산책로"인 경우 제외
 
@@ -181,17 +179,6 @@ class WishPlaceFragment : Fragment() {
             }
 
         })
-    }
-
-    private fun setupSortButton() {
-        binding.sortButton.setOnClickListener {
-            val sortDialog = SortDialogFragment().apply {
-                arguments = Bundle().apply {
-                    putString("currentSortType", currentSortType)
-                }
-            }
-            sortDialog.show(childFragmentManager, "SortDialog")
-        }
     }
 
     fun updateSortText(sortType: String) {
