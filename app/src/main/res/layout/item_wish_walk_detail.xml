@@ -1,125 +1,212 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content">
+    android:layout_height="wrap_content"
+    android:paddingTop="16dp"
+    android:paddingBottom="16dp"
+    android:background="@color/white">
 
     <ImageView
         android:id="@+id/userImg"
-        android:layout_width="30dp"
-        android:layout_height="30dp"
-        android:layout_marginStart="24dp"
-        app:layout_constraintBottom_toBottomOf="@+id/walkDistance"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:layout_marginStart="16dp"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="@+id/userName"
-        app:srcCompat="@drawable/ic_profile_img_default" />
+        app:layout_constraintTop_toTopOf="parent"
+        app:srcCompat="@drawable/ic_profile_placeholder" />
 
     <TextView
         android:id="@+id/userName"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
-        android:layout_marginTop="16dp"
-        android:text="이름"
-        android:textSize="16dp"
+        android:layout_marginStart="8dp"
+        android:fontFamily="@font/pretendard_bold"
+        android:text="닉네임"
+        android:textColor="@color/black"
+        android:textSize="14sp"
         app:layout_constraintStart_toEndOf="@+id/userImg"
-        app:layout_constraintTop_toTopOf="parent"
-        app:tint="#696969" />
+        app:layout_constraintTop_toTopOf="@+id/userImg" />
 
     <TextView
         android:id="@+id/petType"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="8dp"
+        android:layout_marginStart="4dp"
+        android:fontFamily="@font/pretendard_medium"
         android:text="포메라니안"
-        android:textSize="14dp"
+        android:textColor="#A0A0A0"
+        android:textSize="13sp"
         app:layout_constraintBottom_toBottomOf="@+id/userName"
-        app:layout_constraintStart_toEndOf="@+id/userName" />
+        app:layout_constraintStart_toEndOf="@+id/userName"
+        app:layout_constraintTop_toTopOf="@+id/userName" />
 
     <TextView
-        android:id="@+id/walkDistance"
+        android:id="@+id/tv_walk_header_text"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
-        android:text="5km"
-        android:textSize="12dp"
-        app:layout_constraintStart_toEndOf="@+id/userImg"
+        android:layout_marginEnd="12dp"
+        android:fontFamily="@font/pretendard_medium"
+        android:text="해당 공원에 대한 산책로"
+        android:textColor="#333333"
+        android:textSize="13sp"
+        app:layout_constraintBottom_toBottomOf="@+id/iv_wish_detail"
+        app:layout_constraintEnd_toStartOf="@+id/iv_wish_detail"
+        app:layout_constraintTop_toTopOf="@+id/iv_wish_detail" />
+
+    <TextView
+        android:id="@+id/walkTimeDistance"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:fontFamily="@font/pretendard_regular"
+        android:text="소요시간 1h · 5km"
+        android:textColor="#A0A0A0"
+        android:textSize="12sp"
+        app:layout_constraintBottom_toBottomOf="@+id/userImg"
+        app:layout_constraintStart_toStartOf="@+id/userName"
         app:layout_constraintTop_toBottomOf="@+id/userName" />
 
-    <TextView
-        android:id="@+id/walkTime"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="12dp"
-        android:text="1시간 소요"
-        android:textSize="12sp"
-        app:layout_constraintBottom_toBottomOf="@+id/walkDistance"
-        app:layout_constraintStart_toEndOf="@+id/walkDistance"
-        app:layout_constraintTop_toTopOf="@+id/walkDistance" />
-
     <ImageView
-        android:id="@+id/imageView28"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:id="@+id/iv_wish_detail"
+        android:layout_width="24dp"
+        android:layout_height="24dp"
         android:layout_marginEnd="16dp"
         app:layout_constraintBottom_toBottomOf="@+id/userImg"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="@+id/userImg"
         app:srcCompat="@drawable/btn_wish" />
 
-    <ImageView
-        android:id="@+id/walkImg"
-        android:layout_width="wrap_content"
+    <HorizontalScrollView
+        android:id="@+id/hsv_images"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
+        android:layout_marginTop="12dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp"
+        android:scrollbars="none"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/walkTime"
-        app:srcCompat="@drawable/ic_walk_default" />
+        app:layout_constraintTop_toBottomOf="@+id/userImg">
+
+        <LinearLayout
+            android:id="@+id/ll_images"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <androidx.cardview.widget.CardView
+                android:layout_width="140dp"
+                android:layout_height="140dp"
+                android:layout_marginEnd="8dp"
+                app:cardCornerRadius="8dp"
+                app:cardElevation="0dp">
+                <com.google.android.gms.maps.MapView
+                    android:id="@+id/mapView"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    app:liteMode="true" />
+            </androidx.cardview.widget.CardView>
+
+            <androidx.cardview.widget.CardView
+                android:layout_width="140dp"
+                android:layout_height="140dp"
+                android:layout_marginEnd="8dp"
+                app:cardCornerRadius="8dp"
+                app:cardElevation="0dp">
+                <ImageView
+                    android:id="@+id/walkImg2"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:scaleType="centerCrop"
+                    android:src="#EFEFEF"/>
+            </androidx.cardview.widget.CardView>
+
+            <androidx.cardview.widget.CardView
+                android:layout_width="140dp"
+                android:layout_height="140dp"
+                app:cardCornerRadius="8dp"
+                app:cardElevation="0dp">
+                <ImageView
+                    android:id="@+id/walkImg3"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:scaleType="centerCrop"
+                    android:src="#EFEFEF"/>
+            </androidx.cardview.widget.CardView>
+        </LinearLayout>
+    </HorizontalScrollView>
 
     <TextView
         android:id="@+id/walkText"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginStart="24dp"
-        android:layout_marginTop="8dp"
-        android:layout_marginEnd="24dp"
-        android:text="산책로 본문"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="12dp"
+        android:layout_marginEnd="16dp"
+        android:fontFamily="@font/pretendard_regular"
+        android:text="한바퀴돌면 한시간 정도 걸려요.\n길도 잘되어 있고 화장실도 깨끗합니다."
+        android:textColor="#333333"
+        android:textSize="13sp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/walkImg" />
+        app:layout_constraintTop_toBottomOf="@+id/hsv_images" />
 
-    <ImageView
-        android:id="@+id/profile_iv"
+    <LinearLayout
+        android:id="@+id/ll_tags"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="24dp"
-        android:layout_marginTop="8dp"
+        android:layout_marginTop="12dp"
+        android:layout_marginStart="16dp"
+        android:orientation="horizontal"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/walkText"
-        app:srcCompat="@drawable/ic_map_char"
-        app:tint="#EFEFF0"/>
+        app:layout_constraintTop_toBottomOf="@+id/walkText">
+
+        <TextView
+            android:id="@+id/tag1"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="#F2FAEE"
+            android:paddingHorizontal="8dp"
+            android:paddingVertical="4dp"
+            android:text="난이도 중"
+            android:textColor="#4CAF50"
+            android:textSize="11sp" />
+
+        <TextView
+            android:id="@+id/tag2"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="6dp"
+            android:background="#F2FAEE"
+            android:paddingHorizontal="8dp"
+            android:paddingVertical="4dp"
+            android:text="쓰레기통"
+            android:textColor="#4CAF50"
+            android:textSize="11sp" />
+
+        <TextView
+            android:id="@+id/tag3"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="6dp"
+            android:background="#F2FAEE"
+            android:paddingHorizontal="8dp"
+            android:paddingVertical="4dp"
+            android:text="화장실"
+            android:textColor="#4CAF50"
+            android:textSize="11sp" />
+    </LinearLayout>
 
     <TextView
         android:id="@+id/walkDate"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginEnd="24dp"
-        android:text="24.12.27"
-        android:textSize="12dp"
-        app:layout_constraintBottom_toBottomOf="@+id/profile_iv"
+        android:layout_marginEnd="16dp"
+        android:text="1시간 전"
+        android:textColor="#A0A0A0"
+        android:textSize="11sp"
+        app:layout_constraintBottom_toBottomOf="@+id/ll_tags"
         app:layout_constraintEnd_toEndOf="parent"
-        app:tint="#696969"/>
-
-    <ImageView
-        android:id="@+id/imageView22"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/profile_iv"
-        app:srcCompat="@drawable/ic_map_contour_place" />
+        app:layout_constraintTop_toTopOf="@+id/ll_tags" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

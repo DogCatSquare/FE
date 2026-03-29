@@ -101,7 +101,7 @@ class WalkingMapFragment : Fragment(), OnMapReadyCallback {
     private fun setupRecyclerView() {
         walkRVAdapter = WalkRVAdapter(
             onItemClick = { walkId ->
-                val fragment = WalkingStartViewFragment.newInstance(walkId)
+                val fragment = WalkingStartViewFragment.newInstance(walkId, googlePlaceId)
                 parentFragmentManager.beginTransaction()
                     .replace(R.id.main_frm, fragment)
                     .addToBackStack(null)

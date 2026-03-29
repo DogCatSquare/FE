@@ -21,5 +21,14 @@ data class MyWishContent(
     val open: Boolean?,
     val imgUrl: String?,
     val reviewCount: Int,
-    val keywords: List<String>?
+    val keywords: List<String>?,
+    val walks: List<MyWishWalkContent>?
+)
+
+data class MyWishWalkContent(
+    val walkId: Long,
+    val title: String,
+    val distance: Double,
+    val time: Int,
+    val walkImageUrl: List<String>
 )

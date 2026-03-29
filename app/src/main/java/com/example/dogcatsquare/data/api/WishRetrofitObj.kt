@@ -25,4 +25,11 @@ interface WishRetrofitObj {
 
     @DELETE("api/wishlist/walks/{walkId}")
     fun deleteWalkWish(@Header("Authorization") token: String, @Path("walkId") walkId: Int): Call<DeleteWalkWishResponse>
+
+    @POST("api/wishlist/walks/{walkId}")
+    fun addWalkWish(
+        @Header("Authorization") token: String,
+        @Path("walkId") walkId: Long,
+        @Query("googlePlaceId") googlePlaceId: String
+    ): Call<com.example.dogcatsquare.data.model.wish.PostWalkWishResponse>
 }

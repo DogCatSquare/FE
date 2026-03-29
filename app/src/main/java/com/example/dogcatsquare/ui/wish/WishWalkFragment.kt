@@ -120,7 +120,8 @@ class WishWalkFragment : Fragment() {
                                 imgUrl = wish.imgUrl ?: "",
                                 reviewCount = wish.reviewCount,
                                 keywords = wish.keywords,
-                                isWish = true
+                                isWish = true,
+                                walks = wish.walks
                             )
                         }.filter { it.category == "산책로" } // "산책로"인 경우만
 

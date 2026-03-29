@@ -1,46 +1,34 @@
 package com.example.dogcatsquare.ui.wish
 
 import android.content.Context
-import android.graphics.Color
 import android.icu.text.DecimalFormat
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import androidx.transition.TransitionManager
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.MultiTransformation
 import com.bumptech.glide.load.resource.bitmap.CenterCrop
 import com.bumptech.glide.load.resource.bitmap.RoundedCorners
 import com.example.dogcatsquare.R
-import com.example.dogcatsquare.data.api.WishRetrofitObj
-import com.example.dogcatsquare.data.model.wish.FetchMyWishPlaceResponse
 import com.example.dogcatsquare.data.model.wish.WishPlace
-import com.example.dogcatsquare.data.network.RetrofitObj
-import com.example.dogcatsquare.databinding.ItemWishPlaceBinding
 import com.example.dogcatsquare.databinding.ItemWishWalkBinding
 import com.example.dogcatsquare.ui.map.location.PlaceType
-import com.example.dogcatsquare.ui.wish.WishPlaceRVAdapter.ViewHolder
-import retrofit2.Call
-import retrofit2.Callback
-import retrofit2.Response
 
-data class WalkItem(
-    val placeName: String,
-    val placeDistance: String,
-    val placeLocation: String,
-    val details: List<WalkDetailItem>
-)
+class WishWalkAdapter(
+    private val walkList: ArrayList<WishPlace>,
+    private val bearer_token: String?,
+    private val context: Context
+) : RecyclerView.Adapter<WishWalkAdapter.ViewHolder>() {
 
-class WishWalkAdapter(private val walkList: ArrayList<WishPlace>, private val bearer_token: String?, private val context: Context) : RecyclerView.Adapter<WishWalkAdapter.ViewHolder>() {
     interface OnItemClickListener {
         fun onItemClick(place: WishPlace)
     }
 
     private lateinit var mItemClickListener: OnItemClickListener
+    private val expandedPositionSet = mutableSetOf<Int>()
 
     fun setMyItemClickListener(itemClickListener: OnItemClickListener) {
         mItemClickListener = itemClickListener
@@ -53,17 +41,15 @@ class WishWalkAdapter(private val walkList: ArrayList<WishPlace>, private val be
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        holder.bind(walkList[position])
-        holder.itemView.setOnClickListener {
-            mItemClickListener.onItemClick(walkList[position])
-        }
+        holder.bind(walkList[position], position)
     }
 
     override fun getItemCount(): Int = walkList.size
 
     inner class ViewHolder(val binding: ItemWishWalkBinding) :
         RecyclerView.ViewHolder(binding.root) {
-        fun bind(place: WishPlace) {
+        
+        fun bind(place: WishPlace, position: Int) {
             binding.placeName.text = place.name
 
             val decimalFormat = DecimalFormat("#.##")
@@ -74,7 +60,7 @@ class WishWalkAdapter(private val walkList: ArrayList<WishPlace>, private val be
             // 카테고리별 기본 이미지 설정
             val defaultImageRes = PlaceType.fromString(place.category).defaultImage
 
-            // 이미지 처리
+            // 이미지 처리 - 첫번째 유저 프로필이나 디폴트 세팅
             if (place.imgUrl != null) {
                 Glide.with(binding.placeImg.context)
                     .load(place.imgUrl)
@@ -92,40 +78,47 @@ class WishWalkAdapter(private val walkList: ArrayList<WishPlace>, private val be
                 binding.placeImg.setImageResource(defaultImageRes)
             }
 
-            binding.ivWish.setOnClickListener {
-                toggleWishStatus(place, adapterPosition)
-            }
-        }
-    }
+            // Expand / Collapse State
+            val isExpanded = expandedPositionSet.contains(position)
+            binding.expandableLayout.visibility = if (isExpanded) View.VISIBLE else View.GONE
+            binding.ivExpand.setImageResource(if (isExpanded) R.drawable.ic_chevron_up else R.drawable.ic_chevron_down)
 
-    private fun toggleWishStatus(place: WishPlace, position: Int) {
-        val token = "Bearer $bearer_token"
-
-        val wishService = RetrofitObj.getRetrofit(context).create(WishRetrofitObj::class.java)
-        wishService.fetchMyWishPlaceList(token, place.googlePlaceId).enqueue(object :
-            Callback<FetchMyWishPlaceResponse> {
-            override fun onResponse(
-                call: Call<FetchMyWishPlaceResponse>,
-                response: Response<FetchMyWishPlaceResponse>
-            ) {
-                if (response.isSuccessful) {
-                    val result = response.body()?.result ?: false
-                    if (!result) { // ❌ result == false 이면 삭제
-                        walkList.removeAt(position)
-                        notifyItemRemoved(position)
-                        Log.d("WishPlaceRVAdapter", "위시 삭제 성공: ${place.name}")
+            // Child Adapter
+            if (!place.walks.isNullOrEmpty()) {
+                val detailAdapter = WishWalkDetailAdapter(bearer_token, context) { removedWalk ->
+                    // Remove the walk from the list and update UI
+                    val updatedWalks = place.walks!!.filter { it.walkId != removedWalk.walkId }
+                    place.walks = updatedWalks
+                    if (updatedWalks.isEmpty()) {
+                        walkList.removeAt(adapterPosition)
+                        notifyItemRemoved(adapterPosition)
+                    } else {
+                        notifyItemChanged(adapterPosition)
                     }
+                }
+                binding.detailsRecyclerView.layoutManager = LinearLayoutManager(context)
+                binding.detailsRecyclerView.adapter = detailAdapter
+                detailAdapter.submitList(place.walks!!)
+            } else {
+                binding.detailsRecyclerView.adapter = null
+            }
+
+            // Click Listeners
+            binding.ivExpand.setOnClickListener {
+                if (expandedPositionSet.contains(position)) {
+                    expandedPositionSet.remove(position)
                 } else {
-                    Log.e("WishPlaceRVAdapter", "위시 변경 실패: ${response.errorBody()?.string()}")
+                    expandedPositionSet.add(position)
+                }
+                notifyItemChanged(position)
+            }
+            
+            // Allow clicking the item view to expand as well, or go to map. Using map nav for now.
+            binding.root.setOnClickListener {
+                if (::mItemClickListener.isInitialized) {
+                    mItemClickListener.onItemClick(place)
                 }
             }
-
-            override fun onFailure(
-                call: Call<FetchMyWishPlaceResponse>,
-                t: Throwable
-            ) {
-                Log.e("WishPlaceRVAdapter", "위시 변경 실패", t)
-            }
-        })
+        }
     }
 }

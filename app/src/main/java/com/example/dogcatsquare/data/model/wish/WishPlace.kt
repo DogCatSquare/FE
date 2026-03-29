@@ -13,5 +13,6 @@ data class WishPlace(
     val imgUrl: String?,
     val reviewCount: Int,
     val keywords: List<String>?,
-    var isWish: Boolean
+    var isWish: Boolean,
+    var walks: List<MyWishWalkContent>? = null
 )

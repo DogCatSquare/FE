@@ -165,7 +165,8 @@ class WishPlaceFragment : Fragment() {
                                 imgUrl = wish.imgUrl ?: "",
                                 reviewCount = wish.reviewCount,
                                 keywords = wish.keywords,
-                                isWish = true
+                                isWish = true,
+                                walks = wish.walks
                             )
                         }.filter { it.category != "PARK" } // "산책로"인 경우 제외
 

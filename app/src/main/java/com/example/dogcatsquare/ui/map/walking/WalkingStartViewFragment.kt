@@ -45,6 +45,7 @@ class WalkingStartViewFragment : Fragment(), OnMapReadyCallback {
     private val walkDetailViewModel: WalkDetailViewModel by viewModels()
     private val walkReviewViewModel: WalkReviewViewModel by viewModels()
     private var walkId: String? = null
+    private var googlePlaceId: String? = null
     private val coords = mutableListOf<LatLng>()
     private var walk: Walk? = null
     private var lat : Double? = null
@@ -63,15 +64,17 @@ class WalkingStartViewFragment : Fragment(), OnMapReadyCallback {
     }
 
     companion object {
-        fun newInstance(walkId: Int): WalkingStartViewFragment {
+        fun newInstance(walkId: Int, googlePlaceId: String? = null): WalkingStartViewFragment {
             val fragment = WalkingStartViewFragment()
             val args = Bundle()
             args.putInt("walkId", walkId)
+            if (googlePlaceId != null) {
+                args.putString("googlePlaceId", googlePlaceId)
+            }
             fragment.arguments = args
             return fragment
         }
     }
-
     private fun setupGoogleMap() {
         val mapFragment =
             childFragmentManager.findFragmentById(R.id.map_fragment) as SupportMapFragment
@@ -191,7 +194,8 @@ class WalkingStartViewFragment : Fragment(), OnMapReadyCallback {
         loadingDialog = LoadingDialog(requireContext())
 
         walkId = arguments?.getInt("walkId")?.toString()
-        Log.d("WalkingStartViewFragment", "Received walkId: $walkId")
+        googlePlaceId = arguments?.getString("googlePlaceId")
+        Log.d("WalkingStartViewFragment", "Received walkId: $walkId, googlePlaceId: $googlePlaceId")
 
         val address = arguments?.getString("address", "서대문 안산지락길")
         val walkId = walkId?.toIntOrNull()
@@ -250,11 +254,52 @@ class WalkingStartViewFragment : Fragment(), OnMapReadyCallback {
         val wishBt: ImageButton = binding.wishBt
         var isChecked = false
         wishBt.setOnClickListener {
-            isChecked = !isChecked
-            if (isChecked) {
-                wishBt.setImageResource(R.drawable.ic_wish_check)
+            val token = activity?.getSharedPreferences("app_prefs", Context.MODE_PRIVATE)?.getString("token", null)
+            if (token == null) {
+                android.widget.Toast.makeText(requireContext(), "로그인이 필요합니다.", android.widget.Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+            if (walkId == null || googlePlaceId == null) {
+                android.widget.Toast.makeText(requireContext(), "산책로 정보를 확인할 수 없습니다.", android.widget.Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+
+            val wishService = retrofit.create(com.example.dogcatsquare.data.api.WishRetrofitObj::class.java)
+
+            if (!isChecked) {
+                // 저장 안됨 -> 저장 (추가)
+                wishService.addWalkWish("Bearer $token", walkId!!.toLong(), googlePlaceId!!).enqueue(object : retrofit2.Callback<com.example.dogcatsquare.data.model.wish.PostWalkWishResponse> {
+                    override fun onResponse(call: retrofit2.Call<com.example.dogcatsquare.data.model.wish.PostWalkWishResponse>, response: retrofit2.Response<com.example.dogcatsquare.data.model.wish.PostWalkWishResponse>) {
+                        if (response.isSuccessful && response.body()?.isSuccess == true) {
+                            isChecked = true
+                            wishBt.setImageResource(R.drawable.ic_wish_check)
+                            android.widget.Toast.makeText(requireContext(), "산책로가 위시리스트에 추가되었습니다.", android.widget.Toast.LENGTH_SHORT).show()
+                        } else {
+                            android.widget.Toast.makeText(requireContext(), "추가 실패: ${response.message()}", android.widget.Toast.LENGTH_SHORT).show()
+                        }
+                    }
+
+                    override fun onFailure(call: retrofit2.Call<com.example.dogcatsquare.data.model.wish.PostWalkWishResponse>, t: Throwable) {
+                        android.widget.Toast.makeText(requireContext(), "네트워크 오류 발생", android.widget.Toast.LENGTH_SHORT).show()
+                    }
+                })
             } else {
-                wishBt.setImageResource(R.drawable.ic_wish)
+                // 저장 됨 -> 해제 (삭제)
+                wishService.deleteWalkWish("Bearer $token", walkId!!.toInt()).enqueue(object : retrofit2.Callback<com.example.dogcatsquare.data.model.wish.DeleteWalkWishResponse> {
+                    override fun onResponse(call: retrofit2.Call<com.example.dogcatsquare.data.model.wish.DeleteWalkWishResponse>, response: retrofit2.Response<com.example.dogcatsquare.data.model.wish.DeleteWalkWishResponse>) {
+                        if (response.isSuccessful && response.body()?.isSuccess == true) {
+                            isChecked = false
+                            wishBt.setImageResource(R.drawable.ic_wish)
+                            android.widget.Toast.makeText(requireContext(), "산책로 위시가 해제되었습니다.", android.widget.Toast.LENGTH_SHORT).show()
+                        } else {
+                            android.widget.Toast.makeText(requireContext(), "해제 실패: ${response.message()}", android.widget.Toast.LENGTH_SHORT).show()
+                        }
+                    }
+
+                    override fun onFailure(call: retrofit2.Call<com.example.dogcatsquare.data.model.wish.DeleteWalkWishResponse>, t: Throwable) {
+                        android.widget.Toast.makeText(requireContext(), "네트워크 오류 발생", android.widget.Toast.LENGTH_SHORT).show()
+                    }
+                })
             }
         }
 
