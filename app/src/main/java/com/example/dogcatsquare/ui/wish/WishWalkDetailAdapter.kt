@@ -75,11 +75,11 @@ class WishWalkDetailAdapter(
                                     ivWishDetail.setImageResource(R.drawable.ic_wish)
                                     onWalkRemoved(item)
                                 } else {
-                                    Toast.makeText(context, "위시 해제 실패: ${response.message()}", Toast.LENGTH_SHORT).show()
+                                    Toast.makeText(context, "오류가 발생했습니다.", Toast.LENGTH_SHORT).show()
                                 }
                             }
                             override fun onFailure(call: Call<DeleteWalkWishResponse>, t: Throwable) {
-                                Toast.makeText(context, "네트워크 오류", Toast.LENGTH_SHORT).show()
+                                Toast.makeText(context, "네트워크 오류가 발생했습니다.", Toast.LENGTH_SHORT).show()
                             }
                         })
                 }

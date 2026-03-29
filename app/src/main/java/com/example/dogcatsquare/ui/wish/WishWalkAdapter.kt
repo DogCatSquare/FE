@@ -89,12 +89,7 @@ class WishWalkAdapter(
                     // Remove the walk from the list and update UI
                     val updatedWalks = place.walks!!.filter { it.walkId != removedWalk.walkId }
                     place.walks = updatedWalks
-                    if (updatedWalks.isEmpty()) {
-                        walkList.removeAt(adapterPosition)
-                        notifyItemRemoved(adapterPosition)
-                    } else {
-                        notifyItemChanged(adapterPosition)
-                    }
+                    notifyItemChanged(adapterPosition)
                 }
                 binding.detailsRecyclerView.layoutManager = LinearLayoutManager(context)
                 binding.detailsRecyclerView.adapter = detailAdapter

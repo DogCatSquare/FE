@@ -23,7 +23,7 @@ interface WishRetrofitObj {
     @GET("api/wishlist/walks")
     fun getMyWalkWish(@Header("Authorization") token: String): Call<GetMyWalkWishResponse>
 
-    @DELETE("api/wishlist/walks/{walkId}")
+    @DELETE("api/wishlist/walks/{walkId}/cancel")
     fun deleteWalkWish(@Header("Authorization") token: String, @Path("walkId") walkId: Int): Call<DeleteWalkWishResponse>
 
     @POST("api/wishlist/walks/{walkId}")
