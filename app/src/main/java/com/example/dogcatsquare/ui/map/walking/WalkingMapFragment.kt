@@ -10,24 +10,19 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.annotation.DrawableRes
+import androidx.appcompat.app.AlertDialog
+import androidx.appcompat.widget.PopupMenu
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.example.dogcatsquare.LoadingDialog
 import com.example.dogcatsquare.R
-import com.example.dogcatsquare.data.network.RetrofitClient
 import com.example.dogcatsquare.data.model.map.PlaceDetailRequest
+import com.example.dogcatsquare.data.model.walk.ReportRequest
+import com.example.dogcatsquare.data.model.walk.Walk
+import com.example.dogcatsquare.data.network.RetrofitClient
 import com.example.dogcatsquare.databinding.FragmentMapwalkingBinding
-// Naver Map import 제거
-// import com.naver.maps.geometry.LatLng
-// import com.naver.maps.map.CameraUpdate
-// import com.naver.maps.map.MapFragment
-// import com.naver.maps.map.NaverMap
-// import com.naver.maps.map.OnMapReadyCallback
-// import com.naver.maps.map.overlay.Marker
-// import com.naver.maps.map.overlay.OverlayImage
-
-// Google Map import 추가
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
@@ -37,13 +32,13 @@ import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.Marker
 import com.google.android.gms.maps.model.MarkerOptions
-import com.example.dogcatsquare.LoadingDialog
-// ---
+import com.google.gson.Gson
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 class WalkingMapFragment : Fragment(), OnMapReadyCallback {
+
     private var _binding: FragmentMapwalkingBinding? = null
     private val binding get() = _binding!!
 
@@ -52,12 +47,17 @@ class WalkingMapFragment : Fragment(), OnMapReadyCallback {
     private var latitude: Double = 0.0
     private var longitude: Double = 0.0
 
-    // [수정됨] NaverMap -> GoogleMap
     private var googleMap: GoogleMap? = null
-    // [수정됨] Naver Marker -> Google Marker
     private var currentMarker: Marker? = null
     private var isWished = false
     private lateinit var loadingDialog: LoadingDialog
+
+    data class ErrorResponse(
+        val isSuccess: Boolean? = null,
+        val code: String? = null,
+        val message: String? = null,
+        val result: Any? = null
+    )
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -81,20 +81,18 @@ class WalkingMapFragment : Fragment(), OnMapReadyCallback {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        // [수정됨] setupNaverMap -> setupGoogleMap
         setupGoogleMap()
         setupRecyclerView()
         setupButtons()
 
-        if (googlePlaceId != "") {
+        if (googlePlaceId.isNotEmpty()) {
             loadPlaceDetails(googlePlaceId)
         }
     }
 
-    // [수정됨] Naver Map 설정 -> Google Map 설정
     private fun setupGoogleMap() {
-        // XML에 <fragment>로 정의된 SupportMapFragment를 찾습니다.
-        val mapFragment = childFragmentManager.findFragmentById(R.id.mapView3) as SupportMapFragment?
+        val mapFragment =
+            childFragmentManager.findFragmentById(R.id.mapView3) as SupportMapFragment?
         mapFragment?.getMapAsync(this)
     }
 
@@ -107,14 +105,8 @@ class WalkingMapFragment : Fragment(), OnMapReadyCallback {
                     .addToBackStack(null)
                     .commit()
             },
-            onDeleteClick = { walk ->
-                androidx.appcompat.app.AlertDialog.Builder(requireContext())
-                    .setMessage("이 산책로를 삭제할까요?")
-                    .setPositiveButton("삭제") { _, _ ->
-                        deleteWalk(walk.walkId)
-                    }
-                    .setNegativeButton("취소", null)
-                    .show()
+            onMenuClick = { walk, anchorView ->
+                showWalkMenu(walk, anchorView)
             },
             walkList = arrayListOf()
         )
@@ -125,17 +117,77 @@ class WalkingMapFragment : Fragment(), OnMapReadyCallback {
         }
     }
 
+    private fun showWalkMenu(walk: Walk, anchorView: View) {
+        val popupMenu = PopupMenu(requireContext(), anchorView)
+        popupMenu.menuInflater.inflate(R.menu.walk_menu, popupMenu.menu)
+
+        popupMenu.setOnMenuItemClickListener { item ->
+            when (item.itemId) {
+                R.id.action_delete -> {
+                    AlertDialog.Builder(requireContext())
+                        .setMessage("이 산책로를 삭제할까요?")
+                        .setPositiveButton("삭제") { _, _ ->
+                            deleteWalk(walk.walkId)
+                        }
+                        .setNegativeButton("취소", null)
+                        .show()
+                    true
+                }
+
+                R.id.action_report -> {
+                    showReportTypeDialog(walk.walkId)
+                    true
+                }
+
+                else -> false
+            }
+        }
+
+        popupMenu.show()
+    }
+
+    private fun showReportTypeDialog(walkId: Int) {
+        val reportLabels = arrayOf(
+            "홍보성",
+            "욕설 비방 혐오",
+            "음란 선정성",
+            "도배",
+            "개인정보 노출",
+            "기타"
+        )
+
+        val reportTypes = arrayOf(
+            "ADVERTISEMENT",
+            "ABUSE_HATE_SPEECH",
+            "ADULT_CONTENT",
+            "SPAM",
+            "PERSONAL_INFO",
+            "OTHER"
+        )
+
+        AlertDialog.Builder(requireContext())
+            .setTitle("신고 사유를 선택하세요")
+            .setItems(reportLabels) { _, which ->
+                val selectedType = reportTypes[which]
+                if (selectedType == "OTHER") {
+                    reportWalk(walkId, selectedType, "기타")
+                } else {
+                    reportWalk(walkId, selectedType, null)
+                }
+            }
+            .setNegativeButton("취소", null)
+            .show()
+    }
+
     private fun setupButtons() {
         binding.apply {
             backButton.setOnClickListener {
                 requireActivity().supportFragmentManager.popBackStack()
             }
 
-            // 산책로
             reviewAllBt.setOnClickListener {
                 val fragment = WalkingListFragment().apply {
                     arguments = Bundle().apply {
-                        // 현재 상세 페이지의 walkId 또는 placeId를 넘겨줘야 함
                         putString("walkName", binding.placeName.text.toString())
                     }
                 }
@@ -146,17 +198,14 @@ class WalkingMapFragment : Fragment(), OnMapReadyCallback {
             }
 
             addButton.setOnClickListener {
-                // 1. 현재 화면(binding)에 세팅된 장소 이름 가져오기
                 val currentPlaceName = binding.placeName.text.toString()
 
-                // 2. 다음 화면으로 넘어갈 때 Bundle에 장소 이름 담아주기
                 val fragment = WalkingMapViewFragment().apply {
                     arguments = Bundle().apply {
-                        putString("placeName", currentPlaceName) // "placeName" 이라는 이름으로 저장
+                        putString("placeName", currentPlaceName)
                     }
                 }
 
-                // 3. 화면 전환
                 parentFragmentManager.beginTransaction()
                     .replace(R.id.main_frm, fragment)
                     .addToBackStack(null)
@@ -187,7 +236,6 @@ class WalkingMapFragment : Fragment(), OnMapReadyCallback {
                     longitude = longitude
                 )
 
-                Log.d("WalkingMapFragment", "📡 장소 상세정보 요청 중... 위도: $latitude, 경도: $longitude")
                 val response = withContext(Dispatchers.IO) {
                     RetrofitClient.placesApiService.getPlaceById(
                         token = "Bearer $token",
@@ -198,33 +246,26 @@ class WalkingMapFragment : Fragment(), OnMapReadyCallback {
 
                 if (response.isSuccess) {
                     response.result?.let { placeDetail ->
-                        // 1. 상단 장소 정보 즉시 업데이트
                         binding.apply {
                             placeName.text = placeDetail.name
                             placeLocation.text = placeDetail.address.split(" ").getOrNull(2) ?: ""
                             placeDistance.text = "${String.format("%.2f", placeDetail.distance)}km"
                             addressTv.text = placeDetail.address
-                            
+
                             isWished = placeDetail.wished
                             wishButton.setImageResource(
-                                if (isWished) R.drawable.ic_wish_check
-                                else R.drawable.ic_wish
+                                if (isWished) R.drawable.ic_wish_check else R.drawable.ic_wish
                             )
                         }
 
-                        if (googleMap != null) {
+                        googleMap?.let {
                             updateMapLocation(placeDetail.latitude, placeDetail.longitude)
                         }
 
-                        // 2. 산책로 목록 검색 (별도 에러 처리로 장소 정보 표시를 방해하지 않음)
                         try {
-                            Log.d("WalkingMapFragment", "📡 산책로 목록 검색 요청 중 (키워드: ${placeDetail.name})")
                             val walkResponse = withContext(Dispatchers.IO) {
-                                RetrofitClient.walkApiService.searchWalks(
-                                    title = placeDetail.name
-                                )
+                                RetrofitClient.walkApiService.searchWalks(title = placeDetail.name)
                             }
-                            Log.d("WalkingMapFragment", "✅ 산책로 목록 수신 성공: ${walkResponse.walks.size}개 발견")
 
                             binding.apply {
                                 placeType.text = "리뷰(${walkResponse.walks.size})"
@@ -253,7 +294,6 @@ class WalkingMapFragment : Fragment(), OnMapReadyCallback {
                         }
                     }
                 } else {
-                    Log.e("WalkingMapFragment", "❌ 서버 에러 응답: ${response.message}")
                     Toast.makeText(
                         requireContext(),
                         response.message ?: "상세 정보를 불러오는데 실패했습니다.",
@@ -261,7 +301,7 @@ class WalkingMapFragment : Fragment(), OnMapReadyCallback {
                     ).show()
                 }
             } catch (e: Exception) {
-                Log.e("WalkingMapFragment", "💥 예외 발생 (Exception): ${e.message}")
+                Log.e("WalkingMapFragment", "💥 예외 발생: ${e.message}", e)
                 handleError(e)
             } finally {
                 if (loadingDialog.isDialogShowing) loadingDialog.dismiss()
@@ -288,20 +328,18 @@ class WalkingMapFragment : Fragment(), OnMapReadyCallback {
                 if (response.isSuccess) {
                     isWished = response.result ?: !isWished
                     binding.wishButton.setImageResource(
-                        if (isWished) R.drawable.ic_wish_check
-                        else R.drawable.ic_wish
+                        if (isWished) R.drawable.ic_wish_check else R.drawable.ic_wish
                     )
 
                     Toast.makeText(
                         requireContext(),
-                        if (isWished) "위시리스트에 추가되었습니다."
-                        else "위시리스트에서 제외되었습니다.",
+                        if (isWished) "위시리스트에 추가되었습니다." else "위시리스트에서 제외되었습니다.",
                         Toast.LENGTH_SHORT
                     ).show()
                 } else {
                     Toast.makeText(
                         requireContext(),
-                        "오류가 발생했습니다.",
+                        response.message ?: "오류가 발생했습니다.",
                         Toast.LENGTH_SHORT
                     ).show()
                 }
@@ -342,32 +380,56 @@ class WalkingMapFragment : Fragment(), OnMapReadyCallback {
             }
         }
     }
-    // [수정됨] onMapReady(NaverMap) -> onMapReady(GoogleMap)
+
+    private fun reportWalk(walkId: Int, reportType: String, otherReason: String?) {
+        lifecycleScope.launch {
+            try {
+                val token = getToken()
+                if (token == null) {
+                    Toast.makeText(requireContext(), "로그인이 필요합니다.", Toast.LENGTH_SHORT).show()
+                    return@launch
+                }
+
+                val response = withContext(Dispatchers.IO) {
+                    RetrofitClient.walkApiService.reportWalk(
+                        token = "Bearer $token",
+                        walkId = walkId,
+                        body = ReportRequest(
+                            reportType = reportType,
+                            otherReason = otherReason
+                        )
+                    )
+                }
+
+                Toast.makeText(
+                    requireContext(),
+                    response.message ?: "산책로가 신고되었습니다.",
+                    Toast.LENGTH_SHORT
+                ).show()
+            } catch (e: Exception) {
+                handleError(e)
+            }
+        }
+    }
+
     override fun onMapReady(map: GoogleMap) {
         googleMap = map
-        googleMap?.apply {
-            uiSettings.apply {
-                // NaverMap과 동일하게 모든 UI 설정 및 제스처 비활성화
-                isZoomControlsEnabled = false
-                isScrollGesturesEnabled = false
-                isRotateGesturesEnabled = false
-                isTiltGesturesEnabled = false
-                isZoomGesturesEnabled = false
-                isMapToolbarEnabled = false // Google Map의 경우 툴바도 비활성화
-            }
+        googleMap?.uiSettings?.apply {
+            isZoomControlsEnabled = false
+            isScrollGesturesEnabled = false
+            isRotateGesturesEnabled = false
+            isTiltGesturesEnabled = false
+            isZoomGesturesEnabled = false
+            isMapToolbarEnabled = false
         }
         updateMapLocation(latitude, longitude)
     }
 
-    // [수정됨] Naver Map API -> Google Map API
     private fun updateMapLocation(lat: Double, lng: Double) {
-        // Google Map의 LatLng 사용
         val location = LatLng(lat, lng)
 
-        // Google Map 마커 제거 방식
         currentMarker?.remove()
 
-        // Google Map 마커 추가 방식
         val icon = bitmapDescriptorFromVector(requireContext(), R.drawable.ic_marker)
         currentMarker = googleMap?.addMarker(
             MarkerOptions()
@@ -375,20 +437,22 @@ class WalkingMapFragment : Fragment(), OnMapReadyCallback {
                 .icon(icon)
         )
 
-        // Google Map 카메라 이동 방식
         googleMap?.moveCamera(
-            CameraUpdateFactory.newLatLngZoom(
-                location,
-                15.0f
-            )
+            CameraUpdateFactory.newLatLngZoom(location, 15.0f)
         )
     }
 
-    // [추가됨] MapFragment.kt와 동일한 마커 아이콘 변환 헬퍼 함수
-    private fun bitmapDescriptorFromVector(context: Context, @DrawableRes vectorResId: Int): BitmapDescriptor? {
+    private fun bitmapDescriptorFromVector(
+        context: Context,
+        @DrawableRes vectorResId: Int
+    ): BitmapDescriptor? {
         return ContextCompat.getDrawable(context, vectorResId)?.run {
             setBounds(0, 0, intrinsicWidth, intrinsicHeight)
-            val bitmap = Bitmap.createBitmap(intrinsicWidth, intrinsicHeight, Bitmap.Config.ARGB_8888)
+            val bitmap = Bitmap.createBitmap(
+                intrinsicWidth,
+                intrinsicHeight,
+                Bitmap.Config.ARGB_8888
+            )
             val canvas = Canvas(bitmap)
             draw(canvas)
             BitmapDescriptorFactory.fromBitmap(bitmap)
@@ -400,11 +464,32 @@ class WalkingMapFragment : Fragment(), OnMapReadyCallback {
             ?.getString("token", null)
     }
 
+    private fun parseErrorMessage(e: retrofit2.HttpException): String? {
+        return try {
+            val errorBody = e.response()?.errorBody()?.string()
+            Log.e("WalkingMapFragment", "errorBody = $errorBody")
+
+            if (errorBody.isNullOrBlank()) return null
+
+            val errorResponse = Gson().fromJson(errorBody, ErrorResponse::class.java)
+            val resultMessage = errorResponse.result as? String
+
+            when {
+                !resultMessage.isNullOrBlank() -> resultMessage
+                !errorResponse.message.isNullOrBlank() -> errorResponse.message
+                else -> null
+            }
+        } catch (ex: Exception) {
+            Log.e("WalkingMapFragment", "parseErrorMessage 실패", ex)
+            null
+        }
+    }
+
     private fun handleError(e: Exception) {
         val errorMessage = when (e) {
             is retrofit2.HttpException -> {
-                when (e.code()) {
-                    401 -> "로그인이 필요합니다."
+                parseErrorMessage(e) ?: when (e.code()) {
+                    401 -> "잘못된 토큰입니다."
                     403 -> "권한이 없습니다."
                     404 -> "데이터를 찾을 수 없습니다."
                     else -> "서버 오류가 발생했습니다. (${e.code()})"
@@ -413,25 +498,15 @@ class WalkingMapFragment : Fragment(), OnMapReadyCallback {
             is java.io.IOException -> "네트워크 연결을 확인해주세요."
             else -> "알 수 없는 오류가 발생했습니다: ${e.message}"
         }
+
         Toast.makeText(requireContext(), errorMessage, Toast.LENGTH_SHORT).show()
         Log.e("WalkingMapFragment", "Error: ", e)
-    }
-
-    private fun convertCategory(category: String): String {
-        return when (category) {
-            "HOSPITAL" -> "동물병원"
-            "HOTEL" -> "호텔"
-            "RESTAURANT" -> "식당"
-            "CAFE" -> "카페"
-            "ETC" -> "기타"
-            else -> category
-        }
     }
 
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
-        googleMap = null // [추가됨] 맵 리소스 해제
+        googleMap = null
     }
 
     override fun onStop() {
@@ -442,7 +517,11 @@ class WalkingMapFragment : Fragment(), OnMapReadyCallback {
     }
 
     companion object {
-        fun newInstance(googlePlaceId: String, latitude: Double, longitude: Double): WalkingMapFragment {
+        fun newInstance(
+            googlePlaceId: String,
+            latitude: Double,
+            longitude: Double
+        ): WalkingMapFragment {
             return WalkingMapFragment().apply {
                 arguments = Bundle().apply {
                     putString("googlePlaceId", googlePlaceId)
