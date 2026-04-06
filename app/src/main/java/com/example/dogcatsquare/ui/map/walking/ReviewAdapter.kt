@@ -11,8 +11,13 @@ import com.example.dogcatsquare.R
 import com.example.dogcatsquare.databinding.ItemMapwalingReviewBinding
 import com.example.dogcatsquare.ui.map.walking.data.Response.WalkReview
 import com.example.dogcatsquare.ui.map.walking.data.Review
+import kotlinx.coroutines.launch
 
-class ReviewAdapter(private var reviews: List<WalkReview>) : RecyclerView.Adapter<ReviewAdapter.ReviewViewHolder>() {
+class ReviewAdapter(
+    private var reviews: List<WalkReview>,
+    private var currentUserNickname: String = "",
+    private val onReviewDeleted: () -> Unit = {}
+) : RecyclerView.Adapter<ReviewAdapter.ReviewViewHolder>() {
 
     // 클릭 리스너 변수 선언
     private var onItemClickListener: ((WalkReview) -> Unit)? = null
@@ -56,6 +61,88 @@ class ReviewAdapter(private var reviews: List<WalkReview>) : RecyclerView.Adapte
         holder.itemView.setOnClickListener {
             onItemClickListener?.invoke(review)
         }
+
+        val isCurrentUserReview = review.createdBy.nickname == currentUserNickname && currentUserNickname.isNotEmpty()
+        holder.reviewMenuButton.setOnClickListener { view ->
+            val popup = androidx.appcompat.widget.PopupMenu(view.context, view)
+            popup.menuInflater.inflate(R.menu.menu_review_all, popup.menu)
+
+            popup.setOnMenuItemClickListener { item ->
+                when (item.itemId) {
+                    R.id.action_delete -> {
+                        if (isCurrentUserReview) {
+                            deleteReview(view.context, review.walkId.toInt(), review.reviewId.toInt())
+                        } else {
+                            android.widget.Toast.makeText(view.context, "권한이 없습니다.", android.widget.Toast.LENGTH_SHORT).show()
+                        }
+                        true
+                    }
+                    R.id.action_report -> {
+                        if (isCurrentUserReview) {
+                            android.widget.Toast.makeText(view.context, "자신의 후기는 신고할 수 없습니다.", android.widget.Toast.LENGTH_SHORT).show()
+                        } else {
+                            val activity = view.context as androidx.fragment.app.FragmentActivity
+                            val walkReviewReportFragment = com.example.dogcatsquare.ui.map.walking.WalkReviewReportFragment.newInstance(review.walkId.toInt(), review.reviewId.toInt())
+            
+                            activity.supportFragmentManager.beginTransaction()
+                                .replace(R.id.main_frm, walkReviewReportFragment)
+                                .addToBackStack(null)
+                                .commit()
+                        }
+                        true
+                    }
+                    else -> false
+                }
+            }
+            popup.show()
+        }
+    }
+
+    private fun deleteReview(context: android.content.Context, walkId: Int, reviewId: Int) {
+        val token = context.getSharedPreferences("app_prefs", android.content.Context.MODE_PRIVATE)
+            .getString("token", null)
+
+        if (token == null) {
+            android.widget.Toast.makeText(context, "로그인이 필요합니다.", android.widget.Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        kotlinx.coroutines.CoroutineScope(kotlinx.coroutines.Dispatchers.IO).launch {
+            try {
+                val response = com.example.dogcatsquare.data.network.RetrofitClient.walkingApiService.deleteWalkReview(
+                    token = "Bearer $token",
+                    walkId = walkId,
+                    reviewId = reviewId
+                )
+
+                kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.Main) {
+                    if (response.isSuccess) {
+                        android.widget.Toast.makeText(context, "리뷰가 삭제되었습니다.", android.widget.Toast.LENGTH_SHORT).show()
+                        // 1. Immutable List를 처리하기 어려우니 다시 fetch 되도록 콜백 호출
+                        onReviewDeleted()
+                    } else {
+                        if (response.message?.contains("정지") == true) {
+                            android.widget.Toast.makeText(context, response.message, android.widget.Toast.LENGTH_SHORT).show()
+                        } else {
+                            android.widget.Toast.makeText(
+                                context,
+                                response.message ?: "리뷰 삭제에 실패했습니다.",
+                                android.widget.Toast.LENGTH_SHORT
+                            ).show()
+                        }
+                    }
+                }
+            } catch (e: Exception) {
+                kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.Main) {
+                    val errorMessage = if (e is retrofit2.HttpException && e.code() == 403) {
+                        "권한이 없습니다."
+                    } else {
+                        "오류가 발생했습니다: ${e.message}"
+                    }
+                    android.widget.Toast.makeText(context, errorMessage, android.widget.Toast.LENGTH_SHORT).show()
+                }
+            }
+        }
     }
 
     override fun getItemCount(): Int {
@@ -68,5 +155,6 @@ class ReviewAdapter(private var reviews: List<WalkReview>) : RecyclerView.Adapte
         val breedTextView: TextView = itemView.findViewById(R.id.name_tv)
         val contentTextView: TextView = itemView.findViewById(R.id.review_tv)
         val reviewImageView: ImageView = itemView.findViewById(R.id.review_iv)
+        val reviewMenuButton: android.widget.ImageButton = itemView.findViewById(R.id.review_button)
     }
 }

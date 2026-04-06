@@ -5,6 +5,11 @@
         <!-- <item name="colorPrimary">@color/my_light_primary</item> -->
         <item name="android:windowLightStatusBar">true</item>
         <item name="android:statusBarColor">@color/white</item>
+        <item name="popupMenuStyle">@style/CustomPopupStyle</item>
+    </style>
+
+    <style name="CustomPopupStyle" parent="Widget.AppCompat.PopupMenu">
+        <item name="android:popupBackground">@color/white</item>
     </style>
 
     <style name="Theme.DogCatSquare" parent="Base.Theme.DogCatSquare" />

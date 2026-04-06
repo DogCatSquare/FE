@@ -16,6 +16,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
@@ -36,6 +37,7 @@ import com.google.android.gms.maps.model.MarkerOptions
 import com.naver.maps.geometry.LatLng
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.model.BitmapDescriptor
+import kotlinx.coroutines.launch
 
 class WalkingStartViewFragment : Fragment(), OnMapReadyCallback {
     private var _binding: FragmentMapwalkingStartviewBinding? = null
@@ -138,50 +140,42 @@ class WalkingStartViewFragment : Fragment(), OnMapReadyCallback {
     }
 
     private fun setupRecyclerView() {
-//        walkRVAdapter = WalkRVAdapter (
-//            onItemClick = { walkId ->
-//                val fragment = WalkingStartViewFragment.newInstance(walkId)
-//                parentFragmentManager.beginTransaction()
-//                    .replace(R.id.main_frm, fragment)
-//                    .addToBackStack(null)
-//                    .commit()
-//            },
-//            walkList = arrayListOf() // 초기 데이터로 빈 리스트 전달
-//        )
-//        binding.reviewRv.apply {
-//            adapter = walkRVAdapter
-//            layoutManager = LinearLayoutManager(context)
-//        }
         // 리사이클러뷰 설정
         val recyclerView: RecyclerView = binding.reviewRecyclerView
         recyclerView.layoutManager = LinearLayoutManager(context)
 
-        reviewAdapter = ReviewAdapter(emptyList())
-        recyclerView.adapter = reviewAdapter
+        viewLifecycleOwner.lifecycleScope.launch {
+            val nickname = fetchUserNickname()
 
-        // 산책로 후기
-        walkReviewViewModel.reviewResponse.observe(viewLifecycleOwner) { response ->
-            if (response != null) {
-                val reviews = response.result?.walkReviews?.map { walkReview ->
-                    WalkReview(
-                        reviewId = walkReview.reviewId,
-                        walkId = walkReview.walkId,
-                        content = walkReview.content,
-                        walkReviewImageUrl = walkReview.walkReviewImageUrl,
-                        createdAt = walkReview.createdAt,
-                        updatedAt = walkReview.updatedAt,
-                        createdBy = walkReview.createdBy
-                    )
-                } ?: emptyList()
+            reviewAdapter = ReviewAdapter(emptyList(), nickname)
+            recyclerView.adapter = reviewAdapter
 
-                reviewAdapter = ReviewAdapter(reviews)
-                recyclerView.adapter = reviewAdapter
-                reviewAdapter.notifyDataSetChanged()
+            // 산책로 후기
+            walkReviewViewModel.reviewResponse.observe(viewLifecycleOwner) { response ->
+                if (response != null) {
+                    val reviews = response.result?.walkReviews?.map { walkReview ->
+                        WalkReview(
+                            reviewId = walkReview.reviewId,
+                            walkId = walkReview.walkId,
+                            content = walkReview.content,
+                            walkReviewImageUrl = walkReview.walkReviewImageUrl,
+                            createdAt = walkReview.createdAt,
+                            updatedAt = walkReview.updatedAt,
+                            createdBy = walkReview.createdBy
+                        )
+                    } ?: emptyList()
 
-                val reviewSubtitle: TextView = binding.reviewSubtitle
-                reviewSubtitle.text = "${reviews.size}"
-            } else {
-                Log.e("WalkingStartView", "Failed to load reviews.")
+                    reviewAdapter = ReviewAdapter(reviews, nickname, onReviewDeleted = {
+                        walkId?.toIntOrNull()?.let { id -> walkReviewViewModel.getWalkReviews(id) }
+                    })
+                    recyclerView.adapter = reviewAdapter
+                    reviewAdapter.notifyDataSetChanged()
+
+                    val reviewSubtitle: TextView = binding.reviewSubtitle
+                    reviewSubtitle.text = "${reviews.size}"
+                } else {
+                    Log.e("WalkingStartView", "Failed to load reviews.")
+                }
             }
         }
     }
@@ -505,5 +499,25 @@ class WalkingStartViewFragment : Fragment(), OnMapReadyCallback {
         if (::loadingDialog.isInitialized && loadingDialog.isDialogShowing) {
             loadingDialog.dismiss()
         }
+    }
+
+    private suspend fun fetchUserNickname(): String {
+        try {
+            val token = activity?.getSharedPreferences("app_prefs", Context.MODE_PRIVATE)?.getString("token", null) ?: return ""
+
+            val response = kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
+                com.example.dogcatsquare.data.network.RetrofitClient.userApiService.getUser("Bearer $token").execute()
+            }
+
+            if (response.isSuccessful) {
+                val userResponse = response.body()
+                if (userResponse != null && userResponse.isSuccess) {
+                    return userResponse.result?.nickname ?: ""
+                }
+            }
+        } catch (e: Exception) {
+            Log.e("WalkingStartView", "사용자 정보 가져오기 중 예외 발생", e)
+        }
+        return ""
     }
 }

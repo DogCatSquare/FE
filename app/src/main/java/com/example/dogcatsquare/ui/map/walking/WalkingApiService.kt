@@ -60,5 +60,22 @@ interface WalkingApiService {
         @Part walkCreateRequestDto: MultipartBody.Part,
         @Part walkReviewImages: List<MultipartBody.Part>
     ): WalkCreateResponse
+
+    // 산책로 후기 삭제
+    @DELETE("/api/walks/{walkId}/reviews/{reviewId}")
+    suspend fun deleteWalkReview(
+        @Header("Authorization") token: String,
+        @Path("walkId") walkId: Int,
+        @Path("reviewId") reviewId: Int
+    ): BaseResponse<Unit>
+
+    // 산책로 후기 신고
+    @POST("/api/walks/{walkId}/reviews/{reviewId}/report")
+    suspend fun reportWalkReview(
+        @Header("Authorization") token: String,
+        @Path("walkId") walkId: Int,
+        @Path("reviewId") reviewId: Int,
+        @Body body: com.example.dogcatsquare.data.model.walk.ReportRequest
+    ): BaseResponse<Unit>
 }
 

@@ -26,7 +26,9 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 class WalkingReviewListAdapter(
-    private val reviewList: ArrayList<WalkReview>
+    private val reviewList: ArrayList<WalkReview>,
+    private var currentUserNickname: String = "",
+    private val onReviewDeleted: () -> Unit = {}
 ) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
     private val SINGLE_IMAGE_TYPE = 0
@@ -35,6 +37,11 @@ class WalkingReviewListAdapter(
     fun updateReviews(newReviews: List<WalkReview>) {
         reviewList.clear()
         reviewList.addAll(newReviews)
+        notifyDataSetChanged()
+    }
+
+    fun updateNickname(nickname: String) {
+        currentUserNickname = nickname
         notifyDataSetChanged()
     }
 
@@ -190,93 +197,91 @@ class WalkingReviewListAdapter(
     }
 
     private fun setupEtcButton(etcButton: View, review: WalkReview) {
-//        etcButton.setOnClickListener { view ->
-//            val popupView = LayoutInflater.from(view.context)
-//                .inflate(
-//                    if (isCurrentUserReview) R.layout.popup_menu_my_review
-//                    else R.layout.popup_menu_custom,
-//                    null
-//                )
-//
-//            val popupWindow = PopupWindow(
-//                popupView,
-//                ViewGroup.LayoutParams.WRAP_CONTENT,
-//                ViewGroup.LayoutParams.WRAP_CONTENT,
-//                true
-//            ).apply {
-//                setBackgroundDrawable(view.context.getDrawable(R.drawable.custom_popup_background))
-//                elevation = 10f
-//            }
+        val isCurrentUserReview = review.createdBy.nickname == currentUserNickname && currentUserNickname.isNotEmpty()
 
-//            if (isCurrentUserReview) {
-//                // 내가 작성한 리뷰인 경우 - 바로 삭제
-//                popupView.setOnClickListener {
-//                    deleteReview(view.context, review.googlePlaceId, review.id)
-//                    popupWindow.dismiss()
-//                }
-//            } else {
-//                // 다른 사람의 리뷰인 경우 - 신고하기 기능
-//                popupView.setOnClickListener {
-//                    val activity = view.context as FragmentActivity
-//                    val mapReportFragment = MapReportFragment.newInstance(review.reviewId)
-//
-//                    activity.supportFragmentManager.beginTransaction()
-//                        .replace(R.id.main_frm, mapReportFragment)
-//                        .addToBackStack(null)
-//                        .commit()
-//
-//                    popupWindow.dismiss()
-//                }
-//            }
-//
-//            popupWindow.showAsDropDown(view, 0, 0)
-//        }
-//        }
+        etcButton.setOnClickListener { view ->
+            val popup = androidx.appcompat.widget.PopupMenu(view.context, view)
+            popup.menuInflater.inflate(R.menu.menu_review_all, popup.menu)
 
-//    private fun deleteReview(context: Context, googlePlaceId: Int, reviewId: Int) {
-//        val token = context.getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
-//            .getString("token", null)
-//
-//        if (token == null) {
-//            Toast.makeText(context, "로그인이 필요합니다.", Toast.LENGTH_SHORT).show()
-//            return
-//        }
-//
-//        CoroutineScope(Dispatchers.IO).launch {
-//            try {
-//                val response = RetrofitClient.walkingApiService.(
-//                    token = "Bearer $token",
-//                    googlePlaceId = googlePlaceId,
-//                    reviewId = reviewId
-//                )
-//
-//                withContext(Dispatchers.Main) {
-//                    if (response.isSuccess) {
-//                        Toast.makeText(context, "리뷰가 삭제되었습니다.", Toast.LENGTH_SHORT).show()
-//                        val position = reviewList.indexOfFirst { it.id == reviewId }
-//                        if (position != -1) {
-//                            reviewList.removeAt(position)
-//                            notifyItemRemoved(position)
-//                        }
-//                        onReviewDeleted()
-//                    } else {
-//                        Toast.makeText(
-//                            context,
-//                            response.message ?: "리뷰 삭제에 실패했습니다.",
-//                            Toast.LENGTH_SHORT
-//                        ).show()
-//                    }
-//                }
-//            } catch (e: Exception) {
-//                withContext(Dispatchers.Main) {
-//                    Toast.makeText(
-//                        context,
-//                        "오류가 발생했습니다: ${e.message}",
-//                        Toast.LENGTH_SHORT
-//                    ).show()
-//                }
-//            }
-//        }
-//    }
+            popup.setOnMenuItemClickListener { item ->
+                when (item.itemId) {
+                    R.id.action_delete -> {
+                        if (isCurrentUserReview) {
+                            deleteReview(view.context, review.walkId.toInt(), review.reviewId.toInt())
+                        } else {
+                            Toast.makeText(view.context, "권한이 없습니다.", Toast.LENGTH_SHORT).show()
+                        }
+                        true
+                    }
+                    R.id.action_report -> {
+                        if (isCurrentUserReview) {
+                            Toast.makeText(view.context, "자신의 후기는 신고할 수 없습니다.", Toast.LENGTH_SHORT).show()
+                        } else {
+                            val activity = view.context as FragmentActivity
+                            val walkReviewReportFragment = WalkReviewReportFragment.newInstance(review.walkId.toInt(), review.reviewId.toInt())
+            
+                            activity.supportFragmentManager.beginTransaction()
+                                .replace(R.id.main_frm, walkReviewReportFragment)
+                                .addToBackStack(null)
+                                .commit()
+                        }
+                        true
+                    }
+                    else -> false
+                }
+            }
+            popup.show()
+        }
+    }
+
+    private fun deleteReview(context: Context, walkId: Int, reviewId: Int) {
+        val token = context.getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
+            .getString("token", null)
+
+        if (token == null) {
+            Toast.makeText(context, "로그인이 필요합니다.", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
+                val response = RetrofitClient.walkingApiService.deleteWalkReview(
+                    token = "Bearer $token",
+                    walkId = walkId,
+                    reviewId = reviewId
+                )
+
+                withContext(Dispatchers.Main) {
+                    if (response.isSuccess) {
+                        Toast.makeText(context, "리뷰가 삭제되었습니다.", Toast.LENGTH_SHORT).show()
+                        val position = reviewList.indexOfFirst { it.reviewId.toInt() == reviewId }
+                        if (position != -1) {
+                            reviewList.removeAt(position)
+                            notifyItemRemoved(position)
+                        }
+                        onReviewDeleted()
+                    } else {
+                        if (response.message?.contains("정지") == true) {
+                            Toast.makeText(context, response.message, Toast.LENGTH_SHORT).show()
+                        } else {
+                            Toast.makeText(
+                                context,
+                                response.message ?: "리뷰 삭제에 실패했습니다.",
+                                Toast.LENGTH_SHORT
+                            ).show()
+                        }
+                    }
+                }
+            } catch (e: Exception) {
+                withContext(Dispatchers.Main) {
+                    val errorMessage = if (e is retrofit2.HttpException && e.code() == 403) {
+                        "권한이 없습니다."
+                    } else {
+                        "오류가 발생했습니다: ${e.message}"
+                    }
+                    Toast.makeText(context, errorMessage, Toast.LENGTH_SHORT).show()
+                }
+            }
+        }
     }
 }

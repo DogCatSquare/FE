@@ -183,53 +183,38 @@ class MapReviewRVAdapter(
     private fun setupEtcButton(etcButton: View, review: MapReview) {
         val isCurrentUserReview = review.nickname == currentUserNickname && currentUserNickname.isNotEmpty()
 
-        Log.d("MapReviewRVAdapter", """
-            리뷰 정보:
-            - 리뷰 닉네임: ${review.nickname}
-            - 현재 사용자 닉네임: $currentUserNickname
-            - isCurrentUserReview: $isCurrentUserReview
-        """.trimIndent())
-
         etcButton.setOnClickListener { view ->
-            val popupView = LayoutInflater.from(view.context)
-                .inflate(
-                    if (isCurrentUserReview) R.layout.popup_menu_my_review
-                    else R.layout.popup_menu_custom,
-                    null
-                )
+            val popup = androidx.appcompat.widget.PopupMenu(view.context, view)
+            popup.menuInflater.inflate(R.menu.menu_review_all, popup.menu)
 
-            val popupWindow = PopupWindow(
-                popupView,
-                ViewGroup.LayoutParams.WRAP_CONTENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT,
-                true
-            ).apply {
-                setBackgroundDrawable(view.context.getDrawable(R.drawable.custom_popup_background))
-                elevation = 10f
-            }
-
-            if (isCurrentUserReview) {
-                // 내가 작성한 리뷰인 경우 - 바로 삭제
-                popupView.setOnClickListener {
-                    deleteReview(view.context, review.googlePlaceId, review.id)
-                    popupWindow.dismiss()
-                }
-            } else {
-                // 다른 사람의 리뷰인 경우 - 신고하기 기능
-                popupView.setOnClickListener {
-                    val activity = view.context as FragmentActivity
-                    val mapReportFragment = MapReportFragment.newInstance(review.id)
-
-                    activity.supportFragmentManager.beginTransaction()
-                        .replace(R.id.main_frm, mapReportFragment)
-                        .addToBackStack(null)
-                        .commit()
-
-                    popupWindow.dismiss()
+            popup.setOnMenuItemClickListener { item ->
+                when (item.itemId) {
+                    R.id.action_delete -> {
+                        if (isCurrentUserReview) {
+                            deleteReview(view.context, review.googlePlaceId, review.id)
+                        } else {
+                            Toast.makeText(view.context, "권한이 없습니다.", Toast.LENGTH_SHORT).show()
+                        }
+                        true
+                    }
+                    R.id.action_report -> {
+                        if (isCurrentUserReview) {
+                            Toast.makeText(view.context, "자신의 후기는 신고할 수 없습니다.", Toast.LENGTH_SHORT).show()
+                        } else {
+                            val activity = view.context as FragmentActivity
+                            val mapReportFragment = MapReportFragment.newInstance(review.id)
+            
+                            activity.supportFragmentManager.beginTransaction()
+                                .replace(R.id.main_frm, mapReportFragment)
+                                .addToBackStack(null)
+                                .commit()
+                        }
+                        true
+                    }
+                    else -> false
                 }
             }
-
-            popupWindow.showAsDropDown(view, 0, 0)
+            popup.show()
         }
     }
 

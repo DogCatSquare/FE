@@ -80,50 +80,48 @@ class WalkingReviewListFragment : Fragment() {
     }
 
     private fun setupRecyclerView() {
-        reviewAdapter = WalkingReviewListAdapter(
-            reviewList = reviewDatas,
-//            currentUserNickname = "",
-//            onReviewDeleted = {
-//                // 리뷰가 삭제되면 현재 페이지부터 다시 로드
-//                currentPage = 0
-//                loadReviews()
-//
-//                // MapDetailFragment도 새로고침
-//                requireActivity().supportFragmentManager.fragments
-//                    .filterIsInstance<WalkingStartViewFragment>()
-//                    .firstOrNull()?.refreshPlaceDetails()
-//            }
-        )
+        lifecycleScope.launch {
+            val nickname = fetchUserNickname()
 
-        binding.reviewRV.apply {
-            adapter = reviewAdapter
-            layoutManager = LinearLayoutManager(context)
+            reviewAdapter = WalkingReviewListAdapter(
+                reviewList = reviewDatas,
+                currentUserNickname = nickname,
+                onReviewDeleted = {
+                    // 리뷰가 삭제되면 현재 페이지부터 다시 로드
+                    currentPage = 0
+                    loadReviews()
 
-            addOnScrollListener(object : RecyclerView.OnScrollListener() {
-                override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
-                    super.onScrolled(recyclerView, dx, dy)
+                    // WalkingStartViewFragment도 새로고침
+                    requireActivity().supportFragmentManager.fragments
+                        .filterIsInstance<WalkingStartViewFragment>()
+                        .firstOrNull()?.refreshPlaceDetails()
+                }
+            )
 
-                    val layoutManager = recyclerView.layoutManager as LinearLayoutManager
-                    val visibleItemCount = layoutManager.childCount
-                    val totalItemCount = layoutManager.itemCount
-                    val firstVisibleItemPosition = layoutManager.findFirstVisibleItemPosition()
+            binding.reviewRV.apply {
+                adapter = reviewAdapter
+                layoutManager = LinearLayoutManager(context)
 
-                    if (!isLoading && !isLastPage) {
-                        if ((visibleItemCount + firstVisibleItemPosition) >= totalItemCount
-                            && firstVisibleItemPosition >= 0
-                        ) {
-                            loadMoreReviews()
+                addOnScrollListener(object : RecyclerView.OnScrollListener() {
+                    override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
+                        super.onScrolled(recyclerView, dx, dy)
+
+                        val layoutManager = recyclerView.layoutManager as LinearLayoutManager
+                        val visibleItemCount = layoutManager.childCount
+                        val totalItemCount = layoutManager.itemCount
+                        val firstVisibleItemPosition = layoutManager.findFirstVisibleItemPosition()
+
+                        if (!isLoading && !isLastPage) {
+                            if ((visibleItemCount + firstVisibleItemPosition) >= totalItemCount
+                                && firstVisibleItemPosition >= 0
+                            ) {
+                                loadMoreReviews()
+                            }
                         }
                     }
-                }
-            })
+                })
+            }
         }
-
-        // 닉네임은 별도로 업데이트
-//        lifecycleScope.launch {
-//            val nickname = fetchUserNickname()
-//            reviewAdapter.updateNickname(nickname) // 어댑터에 닉네임 업데이트 메서드 추가 권장
-//        }
     }
 
     private fun observeViewModel() {
@@ -142,11 +140,12 @@ class WalkingReviewListFragment : Fragment() {
                 } ?: emptyList()
 
                 // 어댑터 내부에 데이터를 교체하는 함수를 만들어서 호출하세요.
-                reviewAdapter.updateReviews(reviews)
-
-                reviewAdapter = WalkingReviewListAdapter(ArrayList(reviews))
-                binding.reviewRV.adapter = reviewAdapter
-                reviewAdapter.notifyDataSetChanged()
+                if (::reviewAdapter.isInitialized) {
+                    reviewAdapter.updateReviews(reviews)
+                } else {
+                    reviewDatas.clear()
+                    reviewDatas.addAll(reviews)
+                }
             }
             isLoading = false
         }
