@@ -482,6 +482,11 @@ class HomeFragment : Fragment() {
     }
 
     private fun setupQuizSection() {
+        binding.tvQuizResultStroke.paint.strokeWidth = 12f
+        binding.tvQuizResultStroke.paint.style = android.graphics.Paint.Style.STROKE
+        binding.tvQuizResultStroke.paint.strokeJoin = android.graphics.Paint.Join.ROUND
+        binding.tvQuizResultStroke.paint.strokeMiter = 10f
+
         getQuiz()
 
         binding.flBtnO.setOnClickListener {
@@ -533,24 +538,24 @@ class HomeFragment : Fragment() {
                     
                     if (result.isCorrect) {
                         binding.tvQuizResult.text = "정답입니다"
-                        binding.tvQuizResult.setTextColor(ContextCompat.getColor(requireContext(), R.color.main_color1))
+                        binding.tvQuizResultStroke.text = "정답입니다"
                     } else {
                         binding.tvQuizResult.text = "오답입니다"
-                        binding.tvQuizResult.setTextColor(ContextCompat.getColor(requireContext(), R.color.red))
+                        binding.tvQuizResultStroke.text = "오답입니다"
                     }
 
-                    if (result.correctAnswer == "O") {
+                    if (selectedAnswer == "O") {
                         binding.flBtnO.setBackgroundResource(R.drawable.bg_quiz_o)
-                        binding.tvBtnO.setTextColor(ContextCompat.getColor(requireContext(), R.color.blue))
+                        binding.ivBtnO.setImageResource(R.drawable.img_quiz_true)
                         
                         binding.flBtnX.setBackgroundResource(R.drawable.bg_quiz_disabled)
-                        binding.tvBtnX.setTextColor(ContextCompat.getColor(requireContext(), R.color.white))
+                        binding.ivBtnX.setImageResource(R.drawable.img_quiz_x_gray)
                     } else {
                         binding.flBtnX.setBackgroundResource(R.drawable.bg_quiz_x)
-                        binding.tvBtnX.setTextColor(ContextCompat.getColor(requireContext(), R.color.orange))
+                        binding.ivBtnX.setImageResource(R.drawable.img_quiz_false)
                         
                         binding.flBtnO.setBackgroundResource(R.drawable.bg_quiz_disabled)
-                        binding.tvBtnO.setTextColor(ContextCompat.getColor(requireContext(), R.color.white))
+                        binding.ivBtnO.setImageResource(R.drawable.img_quiz_o_gray)
                     }
                 } else {
                     binding.flBtnO.isEnabled = true
@@ -574,10 +579,10 @@ class HomeFragment : Fragment() {
         binding.flBtnX.isEnabled = true
         
         binding.flBtnO.setBackgroundResource(R.drawable.bg_quiz_o)
-        binding.tvBtnO.setTextColor(ContextCompat.getColor(requireContext(), R.color.blue))
+        binding.ivBtnO.setImageResource(R.drawable.img_quiz_true)
         
         binding.flBtnX.setBackgroundResource(R.drawable.bg_quiz_x)
-        binding.tvBtnX.setTextColor(ContextCompat.getColor(requireContext(), R.color.orange))
+        binding.ivBtnX.setImageResource(R.drawable.img_quiz_false)
     }
 
     override fun onDestroy() {

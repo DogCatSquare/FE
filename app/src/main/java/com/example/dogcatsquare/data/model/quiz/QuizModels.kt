@@ -1,5 +1,7 @@
 package com.example.dogcatsquare.data.model.quiz
 
+import com.google.gson.annotations.SerializedName
+
 data class GetRandomQuizResponse(
     val isSuccess: Boolean,
     val code: String,
@@ -24,7 +26,8 @@ data class SubmitQuizAnswerResponse(
 )
 
 data class SubmitQuizResult(
-    val isCorrect: Boolean,
-    val correctAnswer: String,
+    @SerializedName("isCorrect", alternate = ["is_correct"]) val isCorrect: Boolean,
+    @SerializedName("correctAnswer", alternate = ["correct_answer"]) val correctAnswer: String?,
+
     val explanation: String
 )

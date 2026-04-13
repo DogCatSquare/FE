@@ -257,7 +257,7 @@
                         android:layout_marginEnd="20dp"
                         android:layout_marginTop="30dp"
                         android:layout_marginBottom="30dp"
-                        android:fontFamily="@font/pretendard_bold"
+                        android:fontFamily="@font/laundrygothic_bold"
                         android:gravity="center"
                         android:text="퀴즈를 불러오는 중입니다..."
                         android:textColor="@color/black"
@@ -281,36 +281,60 @@
                         app:layout_constraintEnd_toEndOf="parent">
 
                         <TextView
+                            android:id="@+id/tv_quiz_result_stroke"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="정답입니다"
+                            android:textColor="@color/white"
+                            android:textSize="20sp"
+                            android:fontFamily="@font/laundrygothic_bold"
+                            android:textStyle="bold"
+                            android:shadowColor="#4D000000"
+                            android:shadowDx="0"
+                            android:shadowDy="5"
+                            android:shadowRadius="5"
+                            app:layout_constraintTop_toTopOf="parent"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintEnd_toEndOf="parent"
+                            app:layout_constraintBottom_toTopOf="@id/sv_quiz_explanation"
+                            app:layout_constraintVertical_chainStyle="packed" />
+
+                        <TextView
                             android:id="@+id/tv_quiz_result"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="정답입니다"
-                            android:textColor="@color/main_color1"
+                            android:textColor="@color/light_orange"
                             android:textSize="20sp"
-                            android:fontFamily="@font/pretendard_bold"
+                            android:fontFamily="@font/laundrygothic_bold"
                             android:textStyle="bold"
-                            app:layout_constraintTop_toTopOf="parent"
-                            app:layout_constraintStart_toStartOf="parent"
-                            app:layout_constraintEnd_toEndOf="parent"
-                            app:layout_constraintBottom_toTopOf="@id/tv_quiz_explanation"
-                            app:layout_constraintVertical_chainStyle="packed" />
+                            app:layout_constraintTop_toTopOf="@id/tv_quiz_result_stroke"
+                            app:layout_constraintBottom_toBottomOf="@id/tv_quiz_result_stroke"
+                            app:layout_constraintStart_toStartOf="@id/tv_quiz_result_stroke"
+                            app:layout_constraintEnd_toEndOf="@id/tv_quiz_result_stroke" />
 
-                        <TextView
-                            android:id="@+id/tv_quiz_explanation"
+                        <ScrollView
+                            android:id="@+id/sv_quiz_explanation"
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="8dp"
                             android:layout_marginStart="20dp"
                             android:layout_marginEnd="20dp"
-                            android:text=""
-                            android:textColor="@color/white"
-                            android:textSize="12sp"
-                            android:gravity="center"
-                            android:lineSpacingExtra="3dp"
+                            app:layout_constrainedHeight="true"
                             app:layout_constraintTop_toBottomOf="@id/tv_quiz_result"
                             app:layout_constraintStart_toStartOf="parent"
                             app:layout_constraintEnd_toEndOf="parent"
-                            app:layout_constraintBottom_toBottomOf="parent"/>
+                            app:layout_constraintBottom_toBottomOf="parent">
+
+                            <TextView
+                                android:id="@+id/tv_quiz_explanation"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:textColor="@color/white"
+                                android:textSize="12sp"
+                                android:gravity="center"
+                                android:lineSpacingExtra="3dp" />
+                        </ScrollView>
 
                         <ImageView
                             android:id="@+id/iv_quiz_next"
@@ -347,16 +371,12 @@
                         android:layout_weight="0.48"
                         android:background="@drawable/bg_quiz_o">
 
-                        <TextView
-                            android:id="@+id/tv_btn_o"
+                        <ImageView
+                            android:id="@+id/iv_btn_o"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_gravity="center"
-                            android:text="O"
-                            android:textColor="@color/blue"
-                            android:textSize="50sp"
-                            android:fontFamily="@font/pretendard_bold"
-                            android:textStyle="bold" />
+                            android:src="@drawable/img_quiz_true" />
                     </FrameLayout>
 
                     <Space
@@ -371,16 +391,12 @@
                         android:layout_weight="0.48"
                         android:background="@drawable/bg_quiz_x">
 
-                        <TextView
-                            android:id="@+id/tv_btn_x"
+                        <ImageView
+                            android:id="@+id/iv_btn_x"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_gravity="center"
-                            android:text="X"
-                            android:textColor="@color/orange"
-                            android:textSize="50sp"
-                            android:fontFamily="@font/pretendard_bold"
-                            android:textStyle="bold" />
+                            android:src="@drawable/img_quiz_false" />
                     </FrameLayout>
 
                 </LinearLayout>
