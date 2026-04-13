@@ -63,7 +63,7 @@ class HomeFragment : Fragment() {
     private var dDayDatas = ArrayList<DDay>()
     private var placeDatas = ArrayList<Place>()
     private var hotPostDatas = ArrayList<com.example.dogcatsquare.data.model.post.Post>()
-    private var eventDatas = ArrayList<Event>()
+    private var currentQuizId: Long? = null
 
     private fun getToken(): String? {
         val sharedPref = activity?.getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
@@ -104,14 +104,7 @@ class HomeFragment : Fragment() {
         setupHotPlaceRecyclerView()
         setupAdViewPager()
         setupHotPostRecyclerView()
-        setupEventRecyclerView()
-
-        binding.homeGoPetEventIv.setOnClickListener {
-            requireActivity().supportFragmentManager.beginTransaction()
-                .replace(R.id.main_frm, EventFragment())
-                .addToBackStack(null)
-                .commitAllowingStateLoss()
-        }
+        setupQuizSection()
 
         return binding.root
     }
@@ -488,62 +481,103 @@ class HomeFragment : Fragment() {
         })
     }
 
-    private fun setupEventRecyclerView() {
-        eventDatas.clear()
+    private fun setupQuizSection() {
+        getQuiz()
 
-        // 이벤트 recycler view
-        val homePetEventRVAdapter = HomePetEventRVAdapter(eventDatas)
-        binding.homePetEventRv.adapter = homePetEventRVAdapter
-        binding.homePetEventRv.layoutManager = LinearLayoutManager(context, LinearLayoutManager.VERTICAL, false)
+        binding.flBtnO.setOnClickListener {
+            submitQuiz("O")
+        }
 
-        getAllEvents(homePetEventRVAdapter)
+        binding.flBtnX.setOnClickListener {
+            submitQuiz("X")
+        }
+        
+        binding.ivQuizNext.setOnClickListener {
+            resetQuizUI()
+            getQuiz()
+        }
+    }
 
-        // 클릭 인터페이스
-        homePetEventRVAdapter.setMyItemClickListener(object : HomePetEventRVAdapter.OnItemClickListener {
-            override fun onItemClick(event: Event) {
-                // event 연결
-                val uri = Uri.parse(event.eventUrl);
-                val it = Intent(Intent.ACTION_VIEW, uri);
-                startActivity(it)
+    private fun getQuiz() {
+        val quizService = RetrofitObj.getRetrofit(requireContext()).create(com.example.dogcatsquare.data.api.QuizRetrofitItf::class.java)
+        quizService.getRandomQuiz().enqueue(object: Callback<com.example.dogcatsquare.data.model.quiz.GetRandomQuizResponse> {
+            override fun onResponse(call: Call<com.example.dogcatsquare.data.model.quiz.GetRandomQuizResponse>, response: Response<com.example.dogcatsquare.data.model.quiz.GetRandomQuizResponse>) {
+                val resp = response.body()
+                if (resp != null && resp.isSuccess) {
+                    currentQuizId = resp.result.quizId
+                    binding.tvQuizQuestion.text = resp.result.question
+                }
+            }
+
+            override fun onFailure(call: Call<com.example.dogcatsquare.data.model.quiz.GetRandomQuizResponse>, t: Throwable) {
+                Log.d("Quiz/FAILURE", t.message.toString())
             }
         })
     }
 
-    private fun getAllEvents(adapter: HomePetEventRVAdapter) {
-        val getAllEventsService = RetrofitObj.getRetrofit(requireContext()).create(EventRetrofitItf::class.java)
-        getAllEventsService.getAllEvents().enqueue(object: Callback<GetAllEventsResponse> {
-            override fun onResponse(call: Call<GetAllEventsResponse>, response: Response<GetAllEventsResponse>) {
-                Log.d("GetEvent/SUCCESS", response.toString())
+    private fun submitQuiz(selectedAnswer: String) {
+        val quizId = currentQuizId ?: return
+
+        // disable buttons
+        binding.flBtnO.isEnabled = false
+        binding.flBtnX.isEnabled = false
+
+        val quizService = RetrofitObj.getRetrofit(requireContext()).create(com.example.dogcatsquare.data.api.QuizRetrofitItf::class.java)
+        quizService.submitQuizAnswer(quizId, com.example.dogcatsquare.data.model.quiz.SubmitQuizAnswerRequest(selectedAnswer)).enqueue(object: Callback<com.example.dogcatsquare.data.model.quiz.SubmitQuizAnswerResponse> {
+            override fun onResponse(call: Call<com.example.dogcatsquare.data.model.quiz.SubmitQuizAnswerResponse>, response: Response<com.example.dogcatsquare.data.model.quiz.SubmitQuizAnswerResponse>) {
                 val resp = response.body()
-
-                if (resp != null) {
-                    if (resp.isSuccess) {
-                        Log.d("GetEvent", "디데이 전체 조회 성공")
-
-                        val events = resp.result.map { event ->
-                            Event (
-                                id = event.id,
-                                title = event.title,
-                                period = event.period,
-                                bannerImageUrl = event.bannerImageUrl,
-                                eventUrl = event.eventUrl
-                            )
-                        }.take(2)
-
-                        eventDatas.addAll(events)
-                        Log.d("EventList", eventDatas.toString())
-                        adapter.notifyDataSetChanged()
+                if (resp != null && resp.isSuccess) {
+                    val result = resp.result
+                    binding.quizOverlay.visibility = View.VISIBLE
+                    binding.tvQuizExplanation.text = result.explanation
+                    
+                    if (result.isCorrect) {
+                        binding.tvQuizResult.text = "정답입니다"
+                        binding.tvQuizResult.setTextColor(ContextCompat.getColor(requireContext(), R.color.main_color1))
+                    } else {
+                        binding.tvQuizResult.text = "오답입니다"
+                        binding.tvQuizResult.setTextColor(ContextCompat.getColor(requireContext(), R.color.red))
                     }
 
+                    if (result.correctAnswer == "O") {
+                        binding.flBtnO.setBackgroundResource(R.drawable.bg_quiz_o)
+                        binding.tvBtnO.setTextColor(ContextCompat.getColor(requireContext(), R.color.blue))
+                        
+                        binding.flBtnX.setBackgroundResource(R.drawable.bg_quiz_disabled)
+                        binding.tvBtnX.setTextColor(ContextCompat.getColor(requireContext(), R.color.white))
+                    } else {
+                        binding.flBtnX.setBackgroundResource(R.drawable.bg_quiz_x)
+                        binding.tvBtnX.setTextColor(ContextCompat.getColor(requireContext(), R.color.orange))
+                        
+                        binding.flBtnO.setBackgroundResource(R.drawable.bg_quiz_disabled)
+                        binding.tvBtnO.setTextColor(ContextCompat.getColor(requireContext(), R.color.white))
+                    }
                 } else {
-                    Log.e("GetEvent/ERROR", "응답 코드: ${response.code()}")
+                    binding.flBtnO.isEnabled = true
+                    binding.flBtnX.isEnabled = true
                 }
             }
 
-            override fun onFailure(call: Call<GetAllEventsResponse>, t: Throwable) {
-                Log.d("RETROFIT/FAILURE", t.message.toString())
+            override fun onFailure(call: Call<com.example.dogcatsquare.data.model.quiz.SubmitQuizAnswerResponse>, t: Throwable) {
+                Log.d("QuizSubmit/FAILURE", t.message.toString())
+                binding.flBtnO.isEnabled = true
+                binding.flBtnX.isEnabled = true
             }
         })
+    }
+
+    private fun resetQuizUI() {
+        binding.quizOverlay.visibility = View.GONE
+        binding.tvQuizQuestion.text = "퀴즈를 불러오는 중입니다..."
+        
+        binding.flBtnO.isEnabled = true
+        binding.flBtnX.isEnabled = true
+        
+        binding.flBtnO.setBackgroundResource(R.drawable.bg_quiz_o)
+        binding.tvBtnO.setTextColor(ContextCompat.getColor(requireContext(), R.color.blue))
+        
+        binding.flBtnX.setBackgroundResource(R.drawable.bg_quiz_x)
+        binding.tvBtnX.setTextColor(ContextCompat.getColor(requireContext(), R.color.orange))
     }
 
     override fun onDestroy() {
