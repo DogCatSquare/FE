@@ -26,7 +26,7 @@ data class SubmitQuizAnswerResponse(
 )
 
 data class SubmitQuizResult(
-    @SerializedName("isCorrect", alternate = ["is_correct"]) val isCorrect: Boolean,
+    @SerializedName("correct", alternate = ["is_correct"]) val isCorrect: Boolean,
     @SerializedName("correctAnswer", alternate = ["correct_answer"]) val correctAnswer: String?,
 
     val explanation: String
