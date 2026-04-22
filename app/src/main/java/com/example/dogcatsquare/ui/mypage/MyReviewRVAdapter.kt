@@ -21,7 +21,8 @@ import retrofit2.Response
 
 class MyReviewRVAdapter(private val myReviewList: ArrayList<ReviewContent>, private val onDeleteReview: (DeleteReviewParams) -> Unit) : RecyclerView.Adapter<MyReviewRVAdapter.MyReviewAdapterViewHolder>() {
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MyReviewAdapterViewHolder {
-        val binding = ItemMyReviewBinding.inflate(LayoutInflater.from(parent.context), parent, false)
+        val binding =
+            ItemMyReviewBinding.inflate(LayoutInflater.from(parent.context), parent, false)
         return MyReviewAdapterViewHolder(binding)
     }
 
@@ -32,7 +33,8 @@ class MyReviewRVAdapter(private val myReviewList: ArrayList<ReviewContent>, priv
 
     override fun getItemCount(): Int = myReviewList.size
 
-    inner class MyReviewAdapterViewHolder(val binding: ItemMyReviewBinding) : RecyclerView.ViewHolder(binding.root) {
+    inner class MyReviewAdapterViewHolder(val binding: ItemMyReviewBinding) :
+        RecyclerView.ViewHolder(binding.root) {
         fun bind(myReview: ReviewContent) {
             binding.placeName.text = myReview.title
             binding.reviewText.text = myReview.content
@@ -44,13 +46,25 @@ class MyReviewRVAdapter(private val myReviewList: ArrayList<ReviewContent>, priv
 
             // 설정 클릭(수정, 삭제)
             binding.settingIv.setOnClickListener {
-                showPopupMenu(it, itemView.context, myReview.id, myReview.walkId, myReview.googlePlaceId)
+                showPopupMenu(
+                    it,
+                    itemView.context,
+                    myReview.id,
+                    myReview.walkId,
+                    myReview.googlePlaceId
+                )
             }
         }
     }
 
-    private fun showPopupMenu(view: View, myReview: Context, id: Int, walkId: Int?, googlePlaceId: String?) {
-        val popup = PopupMenu(myReview, view)
+    private fun showPopupMenu(
+        view: View,
+        myReview: Context,
+        id: Int,
+        walkId: Int?,
+        googlePlaceId: String?
+    ) {
+        val popup = PopupMenu(myReview, view, android.view.Gravity.END, 0, R.style.CustomPopupStyle)
         popup.menuInflater.inflate(R.menu.review_menu, popup.menu)
         popup.setOnMenuItemClickListener { item ->
             when (item.itemId) {
@@ -58,6 +72,7 @@ class MyReviewRVAdapter(private val myReviewList: ArrayList<ReviewContent>, priv
                     onDeleteReview(DeleteReviewParams(id, googlePlaceId, walkId))
                     true
                 }
+
                 else -> false
             }
         }
