@@ -9,7 +9,7 @@
     </style>
 
     <style name="CustomPopupStyle" parent="Widget.AppCompat.PopupMenu">
-        <item name="android:popupBackground">@color/white</item>
+        <item name="android:popupBackground">@drawable/popup_white_bg</item>
     </style>
 
     <style name="Theme.DogCatSquare" parent="Base.Theme.DogCatSquare" />
