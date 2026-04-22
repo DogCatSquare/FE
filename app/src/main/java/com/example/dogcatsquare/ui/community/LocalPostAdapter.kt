@@ -2,6 +2,7 @@ package com.example.dogcatsquare.ui.community
 
 import android.content.Context
 import android.text.TextUtils
+import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -112,7 +113,7 @@ class LocalPostAdapter(
         post: LocalPost,
         position: Int
     ) {
-        val popup = PopupMenu(context, view)
+        val popup = PopupMenu(context, view, Gravity.END, 0, R.style.MyPopupMenu)
         popup.menuInflater.inflate(R.menu.post_menu, popup.menu)
         popup.setOnMenuItemClickListener { item ->
             when (item.itemId) {
