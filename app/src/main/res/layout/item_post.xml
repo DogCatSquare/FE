@@ -1,167 +1,143 @@
+<?xml version="1.0" encoding="utf-8"?>
 <androidx.constraintlayout.widget.ConstraintLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:layout_width="match_parent"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="260dp"
     android:layout_height="wrap_content"
-    android:layout_gravity="center|top"
-    android:background="@color/white"
+    android:layout_marginEnd="12dp"
+    android:background="@android:color/white"
     android:clickable="true"
     android:focusable="true"
-    android:descendantFocusability="blocksDescendants">
+    android:descendantFocusability="blocksDescendants"
+    android:padding="16dp">
 
-    <androidx.constraintlayout.widget.Guideline
-        android:id="@+id/guideline2"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:background="@color/white"
-        android:orientation="vertical"
-        app:layout_constraintGuide_percent="0.75" />
-
-    <!-- 제목 -->
     <TextView
         android:id="@+id/tvTitle"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="15dp"
+        android:layout_marginEnd="12dp"
+        android:ellipsize="end"
         android:fontFamily="@font/pretendard_semibold"
+        android:maxLines="1"
         android:text="2025년! 새해 복 많이 받으세요!!"
-        android:textColor="#0E0E0E"
-        android:textSize="15sp"
-        app:layout_constraintEnd_toStartOf="@id/guideline2"
+        android:textColor="#111111"
+        android:textSize="16sp"
+        app:layout_constraintEnd_toStartOf="@id/ivThumbnail"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent"
+        tools:text="2025년! 새해 복 많이 받으세요!!" />
 
-    <!-- 내용 -->
     <TextView
         android:id="@+id/tvContentPreview"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
+        android:layout_marginEnd="12dp"
         android:ellipsize="end"
-        android:maxLines="2"
-        android:text="우리 호두도 올해로 5살이 됐어요 새해 아침부터 터그놀이 하는 중.. 호두랑 놀아주..."
-        android:textColor="#616161"
-        app:layout_constraintEnd_toStartOf="@+id/guideline2"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/tvTitle" />
-
-    <!-- 날짜 -->
-    <TextView
-        android:id="@+id/tvDate"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
         android:fontFamily="@font/pretendard_regular"
-        android:text="2025.10.06 16:31"
-        android:textColor="#9E9E9E"
-        android:textSize="10sp"
-        app:layout_constraintEnd_toStartOf="@id/guideline2"
-        app:layout_constraintHorizontal_bias="0.0"
+        android:maxLines="2"
+        android:text="우리 호두도 올해로 5살이 됐어요. 새해 아침부터 터그놀이 하는 중.."
+        android:textColor="#666666"
+        android:textSize="13sp"
+        app:layout_constraintEnd_toStartOf="@id/ivThumbnail"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/tvTitle"
+        tools:text="우리 호두도 올해로 5살이 됐어요. 새해 아침부터 터그놀이 하는 중.." />
+
+    <ImageView
+        android:id="@+id/ivThumbnail"
+        android:layout_width="84dp"
+        android:layout_height="84dp"
+        android:background="@drawable/rounded_thumbnail"
+        android:clipToOutline="true"
+        android:scaleType="centerCrop"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:src="@drawable/ic_sample_image" />
+
+    <ImageView
+        android:id="@+id/post_profile_iv"
+        android:layout_width="18dp"
+        android:layout_height="18dp"
+        android:layout_marginTop="12dp"
+        android:src="@drawable/ic_profile_img_default"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/tvContentPreview" />
 
-    <!-- 썸네일 이미지 -->
-    <ImageView
-        android:id="@+id/ivThumbnail"
-        android:layout_width="80dp"
-        android:layout_height="80dp"
-        android:scaleType="centerCrop"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toEndOf="@+id/guideline2"
-        app:layout_constraintTop_toTopOf="@+id/tvTitle" />
-
-    <!-- 닉네임 프로필 -->
-    <ImageView
-        android:id="@+id/post_profile_iv"
-        android:layout_width="20dp"
-        android:layout_height="20dp"
-        android:layout_marginTop="10dp"
-        android:layout_marginBottom="10dp"
-        android:src="@drawable/ic_profile_img_default"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/tvDate" />
-
-    <!-- 닉네임 -->
     <TextView
         android:id="@+id/tvNickname"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="8dp"
-        android:text="닉네임"
-        android:textColor="#0E0E0E"
-        android:textSize="13sp"
+        android:layout_marginStart="6dp"
         android:fontFamily="@font/pretendard_regular"
+        android:text="닉네임"
+        android:textColor="#111111"
+        android:textSize="12sp"
+        app:layout_constraintBottom_toBottomOf="@id/post_profile_iv"
         app:layout_constraintStart_toEndOf="@id/post_profile_iv"
         app:layout_constraintTop_toTopOf="@id/post_profile_iv"
-        app:layout_constraintBottom_toBottomOf="@id/post_profile_iv" />
+        tools:text="닉네임" />
 
-    <!-- 견종 -->
     <TextView
         android:id="@+id/tvDogBreed"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="5dp"
+        android:layout_marginStart="4dp"
+        android:fontFamily="@font/pretendard_regular"
         android:text="포메라니안"
         android:textColor="#9E9E9E"
-        android:textSize="13sp"
-        android:fontFamily="@font/pretendard_regular"
+        android:textSize="12sp"
+        app:layout_constraintBottom_toBottomOf="@id/tvNickname"
         app:layout_constraintStart_toEndOf="@id/tvNickname"
         app:layout_constraintTop_toTopOf="@id/tvNickname"
-        app:layout_constraintBottom_toBottomOf="@id/tvNickname" />
+        tools:text="포메라니안" />
 
-    <!-- 좋아요 아이콘 -->
     <ImageView
         android:id="@+id/ivLike"
-        android:layout_width="15dp"
-        android:layout_height="15dp"
+        android:layout_width="14dp"
+        android:layout_height="14dp"
         android:layout_marginEnd="3dp"
         android:src="@drawable/ic_like"
         app:layout_constraintEnd_toStartOf="@id/tvLikeCount"
         app:layout_constraintTop_toTopOf="@id/post_profile_iv"
         app:layout_constraintBottom_toBottomOf="@id/post_profile_iv" />
 
-    <!-- 좋아요 개수 -->
     <TextView
         android:id="@+id/tvLikeCount"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginEnd="15dp"
+        android:layout_marginEnd="10dp"
+        android:fontFamily="@font/pretendard_regular"
         android:text="6"
         android:textColor="#9E9E9E"
-        android:textSize="10sp"
+        android:textSize="11sp"
         app:layout_constraintEnd_toStartOf="@id/ivComment"
-        app:layout_constraintTop_toTopOf="@id/ivLike"
-        app:layout_constraintBottom_toBottomOf="@id/ivLike" />
+        app:layout_constraintTop_toTopOf="@id/post_profile_iv"
+        app:layout_constraintBottom_toBottomOf="@id/post_profile_iv"
+        tools:text="6" />
 
-    <!-- 댓글 아이콘 -->
     <ImageView
         android:id="@+id/ivComment"
-        android:layout_width="15dp"
-        android:layout_height="15dp"
+        android:layout_width="14dp"
+        android:layout_height="14dp"
         android:layout_marginEnd="3dp"
         android:src="@drawable/ic_comment"
         app:layout_constraintEnd_toStartOf="@id/tvCommentCount"
-        app:layout_constraintTop_toTopOf="@id/ivLike"
-        app:layout_constraintBottom_toBottomOf="@id/ivLike" />
+        app:layout_constraintTop_toTopOf="@id/post_profile_iv"
+        app:layout_constraintBottom_toBottomOf="@id/post_profile_iv" />
 
-    <!-- 댓글 개수 -->
     <TextView
         android:id="@+id/tvCommentCount"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:fontFamily="@font/pretendard_regular"
         android:text="1"
         android:textColor="#9E9E9E"
-        android:textSize="10sp"
+        android:textSize="11sp"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="@id/ivComment"
-        app:layout_constraintBottom_toBottomOf="@id/ivComment" />
+        app:layout_constraintTop_toTopOf="@id/post_profile_iv"
+        app:layout_constraintBottom_toBottomOf="@id/post_profile_iv"
+        tools:text="1" />
 
-    <!-- 구분선 -->
-    <View
-        android:id="@+id/divider"
-        android:layout_width="match_parent"
-        android:layout_height="0.5dp"
-        android:background="#E0E0E0"
-        app:layout_constraintBottom_toBottomOf="parent" />
 </androidx.constraintlayout.widget.ConstraintLayout>
