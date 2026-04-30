@@ -4,6 +4,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
+import android.widget.PopupMenu
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
@@ -64,7 +65,7 @@ class ReviewAdapter(
 
         val isCurrentUserReview = review.createdBy.nickname == currentUserNickname && currentUserNickname.isNotEmpty()
         holder.reviewMenuButton.setOnClickListener { view ->
-            val popup = androidx.appcompat.widget.PopupMenu(view.context, view)
+            val popup = PopupMenu(view.context, view)
             popup.menuInflater.inflate(R.menu.menu_review_all, popup.menu)
 
             popup.setOnMenuItemClickListener { item ->

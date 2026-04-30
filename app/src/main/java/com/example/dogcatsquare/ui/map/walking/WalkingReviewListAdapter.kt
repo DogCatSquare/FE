@@ -7,6 +7,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.LinearLayout
+import android.widget.PopupMenu
 import android.widget.PopupWindow
 import android.widget.Toast
 import androidx.core.content.ContextCompat
@@ -200,7 +201,7 @@ class WalkingReviewListAdapter(
         val isCurrentUserReview = review.createdBy.nickname == currentUserNickname && currentUserNickname.isNotEmpty()
 
         etcButton.setOnClickListener { view ->
-            val popup = androidx.appcompat.widget.PopupMenu(view.context, view)
+            val popup = PopupMenu(view.context, view)
             popup.menuInflater.inflate(R.menu.menu_review_all, popup.menu)
 
             popup.setOnMenuItemClickListener { item ->
