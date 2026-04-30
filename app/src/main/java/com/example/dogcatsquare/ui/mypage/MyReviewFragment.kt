@@ -105,63 +105,35 @@ class MyReviewFragment : Fragment() {
 
     private fun onDeleteReview(reviewId: Int, googlePlaceId: String?, walkId: Int?) {
         val token = getToken()
-        val deleteReviewService = RetrofitObj.getRetrofit(requireContext()).create(ReviewRetrofitItf::class.java)
+        val type = if (walkId != null) "walk" else "place"
+        val deleteReviewService = RetrofitObj.getRetrofit(requireContext()).create(MyPageRetrofitItf::class.java)
 
-        if (walkId == null) {
-            if (googlePlaceId != null) {
-                deleteReviewService.deletePlaceReview("Bearer $token", googlePlaceId, reviewId).enqueue(object : Callback<DeleteReviewResponse> {
-                    override fun onResponse(call: Call<DeleteReviewResponse>, response: Response<DeleteReviewResponse>) {
-                        Log.d("RETROFIT/SUCCESS", response.toString())
+        deleteReviewService.deleteMyReview("Bearer $token", reviewId, type).enqueue(object : Callback<com.example.dogcatsquare.data.model.common.BaseResponse<Void>> {
+            override fun onResponse(call: Call<com.example.dogcatsquare.data.model.common.BaseResponse<Void>>, response: Response<com.example.dogcatsquare.data.model.common.BaseResponse<Void>>) {
+                Log.d("RETROFIT/SUCCESS", response.toString())
 
-                        if (response.isSuccessful) {
-                            response.body()?.let { resp ->
-                                if (resp.isSuccess) {
-                                    Log.d("DeletePlaceReview/SUCCESS", "DeletePlaceReview")
-
-                                    Toast.makeText(context, "리뷰 삭제가 완료되었습니다", Toast.LENGTH_SHORT).show()
-                                } else {
-                                    Log.e(
-                                        "DeletePlaceReview/FAILURE",
-                                        "응답 코드: ${resp.code}, 응답 메시지: ${resp.message}"
-                                    )
-                                    Toast.makeText(context, "오류가 발생했습니다", Toast.LENGTH_SHORT).show()
-                                }
-                            }
+                if (response.isSuccessful) {
+                    response.body()?.let { resp ->
+                        if (resp.isSuccess) {
+                            Log.d("DeleteMyReview/SUCCESS", "DeleteMyReview")
+                            Toast.makeText(context, "리뷰 삭제가 완료되었습니다", Toast.LENGTH_SHORT).show()
+                            
+                            // 목록 갱신
+                            setupMyReviewRecyclerView()
+                        } else {
+                            Log.e("DeleteMyReview/FAILURE", "응답 코드: ${resp.code}, 응답 메시지: ${resp.message}")
+                            Toast.makeText(context, resp.message ?: "오류가 발생했습니다", Toast.LENGTH_SHORT).show()
                         }
                     }
-
-                    override fun onFailure(call: Call<DeleteReviewResponse>, t: Throwable) {
-                        Log.d("RETROFIT/FAILURE", t.message.toString())                }
-
-                })
-            }
-        } else {
-            deleteReviewService.deleteWalkReview("Bearer $token", walkId, reviewId).enqueue(object :
-                Callback<DeleteReviewResponse> {
-                override fun onResponse(call: Call<DeleteReviewResponse>, response: Response<DeleteReviewResponse>) {
-                    Log.d("RETROFIT/SUCCESS", response.toString())
-
-                    if (response.isSuccessful) {
-                        response.body()?.let { resp ->
-                            if (resp.isSuccess) {
-                                Log.d("DeleteWalkReview/SUCCESS", "DeleteWalkReview")
-
-                                Toast.makeText(context, "리뷰 삭제가 완료되었습니다", Toast.LENGTH_SHORT).show()
-                            } else {
-                                Log.e(
-                                    "DeleteWalkReview/FAILURE",
-                                    "응답 코드: ${resp.code}, 응답 메시지: ${resp.message}"
-                                )
-                                Toast.makeText(context, "오류가 발생했습니다", Toast.LENGTH_SHORT).show()
-                            }
-                        }
-                    }
+                } else {
+                    Toast.makeText(context, "오류가 발생했습니다", Toast.LENGTH_SHORT).show()
                 }
+            }
 
-                override fun onFailure(call: Call<DeleteReviewResponse>, t: Throwable) {
-                    Log.d("RETROFIT/FAILURE", t.message.toString())                }
-
-            })
-        }
+            override fun onFailure(call: Call<com.example.dogcatsquare.data.model.common.BaseResponse<Void>>, t: Throwable) {
+                Log.d("RETROFIT/FAILURE", t.message.toString())
+                Toast.makeText(context, "네트워크 오류가 발생했습니다", Toast.LENGTH_SHORT).show()
+            }
+        })
     }
 }

@@ -6,10 +6,19 @@
         <item name="android:windowLightStatusBar">true</item>
         <item name="android:statusBarColor">@color/white</item>
         <item name="popupMenuStyle">@style/CustomPopupStyle</item>
+        <item name="android:popupMenuStyle">@style/CustomPopupStyle</item>
+        <item name="popupTheme">@style/CustomPopupTheme</item>
+        <item name="android:popupTheme">@style/CustomPopupTheme</item>
     </style>
 
     <style name="CustomPopupStyle" parent="Widget.AppCompat.PopupMenu">
         <item name="android:popupBackground">@drawable/popup_white_bg</item>
+    </style>
+
+    <style name="CustomPopupTheme" parent="ThemeOverlay.Material3.Light">
+        <item name="colorSurface">@color/white</item>
+        <item name="colorSurfaceContainer">@color/white</item>
+        <item name="colorSurfaceContainerHigh">@color/white</item>
     </style>
 
     <style name="Theme.DogCatSquare" parent="Base.Theme.DogCatSquare" />
