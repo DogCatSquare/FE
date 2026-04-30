@@ -537,6 +537,9 @@ class HomeFragment : Fragment() {
                 if (resp != null && resp.isSuccess) {
                     val result = resp.result
                     binding.quizOverlay.visibility = View.VISIBLE
+                    binding.tvQuizQuestion.visibility = View.GONE
+                    binding.ivQuizDog.visibility = View.GONE
+                    binding.ivQuizCat.visibility = View.GONE
                     binding.tvQuizExplanation.text = result.explanation
                     
                     if (result.isCorrect) {
@@ -576,6 +579,9 @@ class HomeFragment : Fragment() {
 
     private fun resetQuizUI() {
         binding.quizOverlay.visibility = View.GONE
+        binding.tvQuizQuestion.visibility = View.VISIBLE
+        binding.ivQuizDog.visibility = View.VISIBLE
+        binding.ivQuizCat.visibility = View.VISIBLE
         binding.tvQuizQuestion.text = "퀴즈를 불러오는 중입니다..."
         
         binding.flBtnO.isEnabled = true
