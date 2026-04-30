@@ -30,6 +30,8 @@ import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
 import android.content.SharedPreferences
+import androidx.core.content.ContentProviderCompat.requireContext
+import androidx.core.content.ContextCompat
 import com.example.dogcatsquare.util.DateFmt // ★ 날짜 포맷 유틸 사용
 
 class PostDetailActivity : AppCompatActivity(), CommentActionListener {
@@ -68,6 +70,9 @@ class PostDetailActivity : AppCompatActivity(), CommentActionListener {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        window.statusBarColor = ContextCompat.getColor(this, R.color.light_blue)
+
         binding = ActivityPostDetailBinding.inflate(layoutInflater)
         setContentView(binding.root)
 

@@ -5,6 +5,7 @@ import android.view.View
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
 import com.example.dogcatsquare.R
 
 class LocalPostDetailActivity : AppCompatActivity() {
@@ -22,6 +23,9 @@ class LocalPostDetailActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        window.statusBarColor = ContextCompat.getColor(this, R.color.light_blue)
+
         // item_local_post 레이아웃을 상세 화면으로 사용
         setContentView(R.layout.item_local_post)
 

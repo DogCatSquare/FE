@@ -139,41 +139,41 @@ class HomeFragment : Fragment() {
     }
 
     // auto slide
-    private fun adAutoSlide(adapter: HomeAdVPAdapter) {
-        adTimer?.cancel() // 기존 타이머 중지
-        adTimer = Timer() // 새로운 타이머 생성
+//    private fun adAutoSlide(adapter: HomeAdVPAdapter) {
+//        adTimer?.cancel() // 기존 타이머 중지
+//        adTimer = Timer() // 새로운 타이머 생성
+//
+//        adTimer?.scheduleAtFixedRate(object : TimerTask() {
+//            override fun run() {
+//                handler.post {
+//                    val nextItem = binding.homeAdVp.currentItem + 1
+//                    if (nextItem < adapter.itemCount) {
+//                        binding.homeAdVp.currentItem = nextItem
+//                    } else {
+//                        binding.homeAdVp.currentItem = 0 // 순환
+//                    }
+//                }
+//            }
+//        }, 4500, 4500)
+//    }
 
-        adTimer?.scheduleAtFixedRate(object : TimerTask() {
-            override fun run() {
-                handler.post {
-                    val nextItem = binding.homeAdVp.currentItem + 1
-                    if (nextItem < adapter.itemCount) {
-                        binding.homeAdVp.currentItem = nextItem
-                    } else {
-                        binding.homeAdVp.currentItem = 0 // 순환
-                    }
-                }
-            }
-        }, 4500, 4500)
-    }
-
-    private fun weatherAutoSlide(adapter: HomeWeatherVPAdapter) {
-        weatherTimer?.cancel() // 기존 타이머 중지
-        weatherTimer = Timer() // 새로운 타이머 생성
-
-        weatherTimer?.scheduleAtFixedRate(object : TimerTask() {
-            override fun run() {
-                handler.post {
-                    val nextItem = binding.homeWeatherVp.currentItem + 1
-                    if (nextItem < adapter.itemCount) {
-                        binding.homeWeatherVp.currentItem = nextItem
-                    } else {
-                        binding.homeWeatherVp.currentItem = 0 // 순환
-                    }
-                }
-            }
-        }, 4500, 4500)
-    }
+//    private fun weatherAutoSlide(adapter: HomeWeatherVPAdapter) {
+//        weatherTimer?.cancel() // 기존 타이머 중지
+//        weatherTimer = Timer() // 새로운 타이머 생성
+//
+//        weatherTimer?.scheduleAtFixedRate(object : TimerTask() {
+//            override fun run() {
+//                handler.post {
+//                    val nextItem = binding.homeWeatherVp.currentItem + 1
+//                    if (nextItem < adapter.itemCount) {
+//                        binding.homeWeatherVp.currentItem = nextItem
+//                    } else {
+//                        binding.homeWeatherVp.currentItem = 0 // 순환
+//                    }
+//                }
+//            }
+//        }, 4500, 4500)
+//    }
 
     // weather viewpager
     private fun fetchWeatherData() {
@@ -191,21 +191,24 @@ class HomeFragment : Fragment() {
     private fun setupWeatherViewPager(weatherResult: WeatherResult) {
         // ad view pager
         val homeWeatherAdapter = HomeWeatherVPAdapter(this)
+        homeWeatherAdapter.addFragment(HomeWeatherFragment.newInstance(weatherResult, 0))
+        binding.homeWeatherVp.adapter = homeWeatherAdapter
+        binding.homeWeatherVp.orientation = ViewPager2.ORIENTATION_HORIZONTAL
 
-        if(weatherResult.ddayTitle != null) {
-            homeWeatherAdapter.addFragment(HomeWeatherFragment.newInstance(weatherResult, 0))
-            homeWeatherAdapter.addFragment(HomeWeatherFragment.newInstance(weatherResult, 1))
+//        if(weatherResult.ddayTitle != null) {
+//            homeWeatherAdapter.addFragment(HomeWeatherFragment.newInstance(weatherResult, 0))
+//            homeWeatherAdapter.addFragment(HomeWeatherFragment.newInstance(weatherResult, 1))
 
-            binding.homeWeatherVp.adapter = homeWeatherAdapter
-            binding.homeWeatherVp.orientation = ViewPager2.ORIENTATION_HORIZONTAL
+//            binding.homeWeatherVp.adapter = homeWeatherAdapter
+//            binding.homeWeatherVp.orientation = ViewPager2.ORIENTATION_HORIZONTAL
 
-            weatherAutoSlide(homeWeatherAdapter)
-        } else {
-            homeWeatherAdapter.addFragment(HomeWeatherFragment.newInstance(weatherResult, 0))
-
-            binding.homeWeatherVp.adapter = homeWeatherAdapter
-            binding.homeWeatherVp.orientation = ViewPager2.ORIENTATION_HORIZONTAL
-        }
+//            weatherAutoSlide(homeWeatherAdapter)
+//        } else {
+//            homeWeatherAdapter.addFragment(HomeWeatherFragment.newInstance(weatherResult, 0))
+//
+//            binding.homeWeatherVp.adapter = homeWeatherAdapter
+//            binding.homeWeatherVp.orientation = ViewPager2.ORIENTATION_HORIZONTAL
+//        }
     }
 
     // d_day rv
@@ -403,13 +406,13 @@ class HomeFragment : Fragment() {
         // ad view pager
         val homeAdAdapter = HomeAdVPAdapter(this)
         homeAdAdapter.addFragment(HomeAdFragment(R.drawable.img_home_ad))
-        homeAdAdapter.addFragment(HomeAdFragment(R.drawable.img_home_ad))
+//        homeAdAdapter.addFragment(HomeAdFragment(R.drawable.img_home_ad))
 
         binding.homeAdVp.adapter = homeAdAdapter
         binding.homeAdVp.orientation = ViewPager2.ORIENTATION_HORIZONTAL
 
         // 자동 넘기기
-        adAutoSlide(homeAdAdapter)
+//        adAutoSlide(homeAdAdapter)
     }
 
     // hot post rv
