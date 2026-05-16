@@ -45,6 +45,11 @@ class AlarmFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View {
         binding = FragmentAlarmBinding.inflate(inflater, container, false)
+
+        binding.backBtn.setOnClickListener {
+            parentFragmentManager.popBackStack()
+        }
+        
         return binding.root
     }
 
