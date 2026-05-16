@@ -464,6 +464,7 @@ class MapFragment : Fragment(), OnMapReadyCallback {
                     longitude = latLng.longitude
                 )
                 val response = withContext(Dispatchers.IO) {
+                    Log.d("fetchPlacesFromApiByLatLng", "Request: $request")
                     RetrofitClient.placesApiService.searchPlaces(
                         token = "Bearer $token",
                         page = page,

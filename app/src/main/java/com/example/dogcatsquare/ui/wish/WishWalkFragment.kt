@@ -46,6 +46,13 @@ class WishWalkFragment : Fragment() {
         return sharedPref?.getString("token", null)
     }
 
+    private fun getCurrentLocation(): Pair<Double, Double> {
+        val sharedPref = activity?.getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
+        val lat = sharedPref?.getFloat("current_latitude", 37.5664056f)?.toDouble() ?: 37.5664056
+        val lng = sharedPref?.getFloat("current_longitude", 126.9778222f)?.toDouble() ?: 126.9778222
+        return Pair(lat, lng)
+    }
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -74,11 +81,19 @@ class WishWalkFragment : Fragment() {
         getAllPlaces { places ->
             placeDatas.addAll(places)
             binding.walkRV.adapter?.notifyDataSetChanged()
+
+            if (placeDatas.isEmpty()) {
+                binding.emptyTV.visibility = View.VISIBLE
+                binding.walkRV.visibility = View.GONE
+            } else {
+                binding.emptyTV.visibility = View.GONE
+                binding.walkRV.visibility = View.VISIBLE
+            }
         }
 
         wishWalkAdapter.setMyItemClickListener(object : WishWalkAdapter.OnItemClickListener{
             override fun onItemClick(place: WishPlace) {
-                val (currentLat, currentLng) = MapFragment().getMapCurrentPosition()
+                val (currentLat, currentLng) = getCurrentLocation()
 
                 // 상세 조회 부분
                 val fragment = WalkingMapFragment.newInstance(place.googlePlaceId, currentLat, currentLng)
@@ -93,10 +108,10 @@ class WishWalkFragment : Fragment() {
 
     private fun getAllPlaces(callback: (List<WishPlace>) -> Unit) {
         val token = getToken()
+        val (lat, lng) = getCurrentLocation()
 
         val getMyWishService = RetrofitObj.getRetrofit(requireContext()).create(WishRetrofitObj::class.java)
-        // 위도 경도 기본값 -> 추후 수정
-        getMyWishService.getMyWish("Bearer $token", MyLocation(37.5665, 126.9780)).enqueue(object :
+        getMyWishService.getMyWish("Bearer $token", MyLocation(lat, lng)).enqueue(object :
             Callback<GetMyWishResponse> {
             override fun onResponse(call: Call<GetMyWishResponse>, response: Response<GetMyWishResponse>) {
                 Log.d("GetMyWish/SUCCESS", response.toString())

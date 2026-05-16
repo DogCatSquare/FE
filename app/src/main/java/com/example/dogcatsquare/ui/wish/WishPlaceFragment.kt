@@ -48,6 +48,13 @@ class WishPlaceFragment : Fragment() {
         return sharedPref?.getString("token", null)
     }
 
+    private fun getCurrentLocation(): Pair<Double, Double> {
+        val sharedPref = activity?.getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
+        val lat = sharedPref?.getFloat("current_latitude", 37.5664056f)?.toDouble() ?: 37.5664056
+        val lng = sharedPref?.getFloat("current_longitude", 126.9778222f)?.toDouble() ?: 126.9778222
+        return Pair(lat, lng)
+    }
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -78,7 +85,6 @@ class WishPlaceFragment : Fragment() {
         val mapButtonRVAdapter = MapButtonRVAdapter(buttonDatas, object : MapButtonRVAdapter.OnItemClickListener {
             override fun onItemClick(position: Int, buttonName: String) {
                 getAllPlaces { places ->
-                    placeDatas.clear()
                     placeDatas.addAll(
                         when (buttonName) {
                             "전체" -> places
@@ -90,6 +96,14 @@ class WishPlaceFragment : Fragment() {
                         }
                     )
                     binding.wishPlaceRV.adapter?.notifyDataSetChanged()
+
+                    if (placeDatas.isEmpty()) {
+                        binding.emptyTV.visibility = View.VISIBLE
+                        binding.wishPlaceRV.visibility = View.GONE
+                    } else {
+                        binding.emptyTV.visibility = View.GONE
+                        binding.wishPlaceRV.visibility = View.VISIBLE
+                    }
                 }
             }
         })
@@ -109,11 +123,19 @@ class WishPlaceFragment : Fragment() {
         getAllPlaces { places ->
             placeDatas.addAll(places)
             binding.wishPlaceRV.adapter?.notifyDataSetChanged()
+
+            if (placeDatas.isEmpty()) {
+                binding.emptyTV.visibility = View.VISIBLE
+                binding.wishPlaceRV.visibility = View.GONE
+            } else {
+                binding.emptyTV.visibility = View.GONE
+                binding.wishPlaceRV.visibility = View.VISIBLE
+            }
         }
 
         wishPlaceRVAdapter.setMyItemClickListener(object : WishPlaceRVAdapter.OnItemClickListener{
             override fun onItemClick(place: WishPlace) {
-                val (currentLat, currentLng) = MapFragment().getMapCurrentPosition()
+                val (currentLat, currentLng) = getCurrentLocation()
 
                 // placeType에 따라 다른 Fragment로 전환
                 if (place.category == "병원") {
@@ -136,10 +158,10 @@ class WishPlaceFragment : Fragment() {
 
     private fun getAllPlaces(callback: (List<WishPlace>) -> Unit) {
         val token = getToken()
+        val (lat, lng) = getCurrentLocation()
 
         val getMyWishService = RetrofitObj.getRetrofit(requireContext()).create(WishRetrofitObj::class.java)
-        // 위도 경도 기본값 -> 추후 수정
-        getMyWishService.getMyWish("Bearer $token", MyLocation(37.5665, 126.9780)).enqueue(object : Callback<GetMyWishResponse> {
+        getMyWishService.getMyWish("Bearer $token", MyLocation(lat, lng)).enqueue(object : Callback<GetMyWishResponse> {
             override fun onResponse(call: Call<GetMyWishResponse>, response: Response<GetMyWishResponse>) {
                 Log.d("GetMyWish/SUCCESS", response.toString())
                 val resp: GetMyWishResponse = response.body()!!
