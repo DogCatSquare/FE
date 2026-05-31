@@ -85,6 +85,7 @@ class WishPlaceFragment : Fragment() {
         val mapButtonRVAdapter = MapButtonRVAdapter(buttonDatas, object : MapButtonRVAdapter.OnItemClickListener {
             override fun onItemClick(position: Int, buttonName: String) {
                 getAllPlaces { places ->
+                    placeDatas.clear()
                     placeDatas.addAll(
                         when (buttonName) {
                             "전체" -> places
@@ -111,6 +112,23 @@ class WishPlaceFragment : Fragment() {
         binding.mapButtonRV.apply {
             adapter = mapButtonRVAdapter
             layoutManager = LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false)
+
+            addOnItemTouchListener(object : androidx.recyclerview.widget.RecyclerView.OnItemTouchListener {
+                override fun onInterceptTouchEvent(rv: androidx.recyclerview.widget.RecyclerView, e: android.view.MotionEvent): Boolean {
+                    when (e.action) {
+                        android.view.MotionEvent.ACTION_DOWN -> {
+                            rv.parent.requestDisallowInterceptTouchEvent(true)
+                        }
+                        android.view.MotionEvent.ACTION_UP, android.view.MotionEvent.ACTION_CANCEL -> {
+                            rv.parent.requestDisallowInterceptTouchEvent(false)
+                        }
+                    }
+                    return false
+                }
+
+                override fun onTouchEvent(rv: androidx.recyclerview.widget.RecyclerView, e: android.view.MotionEvent) {}
+                override fun onRequestDisallowInterceptTouchEvent(disallowIntercept: Boolean) {}
+            })
         }
 
         val wishPlaceRVAdapter = WishPlaceRVAdapter(requireContext(), placeDatas, getToken())

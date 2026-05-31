@@ -60,6 +60,23 @@ class CommunityHomeFragment : Fragment(R.layout.fragment_community_home) {
             adapter = hotPostRVAdapter
             layoutManager = LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false)
             setHasFixedSize(true)
+
+            addOnItemTouchListener(object : androidx.recyclerview.widget.RecyclerView.OnItemTouchListener {
+                override fun onInterceptTouchEvent(rv: androidx.recyclerview.widget.RecyclerView, e: android.view.MotionEvent): Boolean {
+                    when (e.action) {
+                        android.view.MotionEvent.ACTION_DOWN -> {
+                            rv.parent.requestDisallowInterceptTouchEvent(true)
+                        }
+                        android.view.MotionEvent.ACTION_UP, android.view.MotionEvent.ACTION_CANCEL -> {
+                            rv.parent.requestDisallowInterceptTouchEvent(false)
+                        }
+                    }
+                    return false
+                }
+
+                override fun onTouchEvent(rv: androidx.recyclerview.widget.RecyclerView, e: android.view.MotionEvent) {}
+                override fun onRequestDisallowInterceptTouchEvent(disallowIntercept: Boolean) {}
+            })
         }
 
         hotPostRVAdapter.setMyItemClickListener(object : PostAdapter.OnItemClickListener {
@@ -168,7 +185,8 @@ class CommunityHomeFragment : Fragment(R.layout.fragment_community_home) {
 
                 val resp = response.body()
                 if (response.isSuccessful && resp?.isSuccess == true) {
-                    adapter.submitList(resp.result)
+                    val sortedList = resp.result.sortedByDescending { it.id }
+                    adapter.submitList(sortedList)
                 } else {
                     Log.w("AllPost", "fail code=${response.code()} body=$resp")
                 }

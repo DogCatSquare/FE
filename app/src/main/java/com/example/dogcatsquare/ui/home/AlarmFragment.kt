@@ -49,7 +49,7 @@ class AlarmFragment : Fragment() {
         binding.backBtn.setOnClickListener {
             parentFragmentManager.popBackStack()
         }
-        
+
         return binding.root
     }
 

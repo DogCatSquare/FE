@@ -238,7 +238,8 @@ class WalkingReviewFragment : Fragment(), OnMapReadyCallback {
                 for (i in 0 until clipData.itemCount) {
                     if (selectedBitmaps.size < 5) {
                         val uri = clipData.getItemAt(i).uri
-                        val bitmap = MediaStore.Images.Media.getBitmap(requireContext().contentResolver, uri)
+                        val originalBitmap = MediaStore.Images.Media.getBitmap(requireContext().contentResolver, uri)
+                        val bitmap = com.example.dogcatsquare.utils.ImageUtils.getRotatedBitmap(requireContext(), uri, originalBitmap)
                         selectedBitmaps.add(bitmap)
                     }
                 }
@@ -246,7 +247,8 @@ class WalkingReviewFragment : Fragment(), OnMapReadyCallback {
                 // 한 장 선택 처리
                 data.data?.let { uri ->
                     if (selectedBitmaps.size < 5) {
-                        val bitmap = MediaStore.Images.Media.getBitmap(requireContext().contentResolver, uri)
+                        val originalBitmap = MediaStore.Images.Media.getBitmap(requireContext().contentResolver, uri)
+                        val bitmap = com.example.dogcatsquare.utils.ImageUtils.getRotatedBitmap(requireContext(), uri, originalBitmap)
                         selectedBitmaps.add(bitmap)
                     }
                 }

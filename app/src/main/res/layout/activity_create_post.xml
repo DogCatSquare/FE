@@ -69,7 +69,7 @@
             android:background="@android:color/transparent"
             android:gravity="top|start"
             android:hint="내용을 입력해주세요"
-            android:inputType="text"
+            android:inputType="textMultiLine"
             android:maxLength="300"
             android:padding="16dp"
             android:textSize="14sp" />

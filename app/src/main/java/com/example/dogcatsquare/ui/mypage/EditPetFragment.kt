@@ -242,10 +242,14 @@ class EditPetFragment : Fragment() {
 
     // 이미지 압축 함수
     private fun getCompressedImageUri(uri: Uri): Uri {
-        val bitmap = MediaStore.Images.Media.getBitmap(requireContext().contentResolver, uri)
+        val originalBitmap = MediaStore.Images.Media.getBitmap(requireContext().contentResolver, uri)
+        val rotatedBitmap = com.example.dogcatsquare.utils.ImageUtils.getRotatedBitmap(requireContext(), uri, originalBitmap)
 
         // 이미지 크기를 줄이기 위한 비율 설정 (50%로 설정)
-        val scaledBitmap = Bitmap.createScaledBitmap(bitmap, bitmap.width / 2, bitmap.height / 2, true)
+        val scaledBitmap = Bitmap.createScaledBitmap(rotatedBitmap, rotatedBitmap.width / 2, rotatedBitmap.height / 2, true)
+        if (scaledBitmap != rotatedBitmap) {
+            rotatedBitmap.recycle()
+        }
 
         // 압축된 이미지 파일을 저장할 임시 파일 생성
         val compressedFile = File(requireContext().cacheDir, "compressed_image.jpg")
@@ -255,6 +259,7 @@ class EditPetFragment : Fragment() {
         scaledBitmap.compress(Bitmap.CompressFormat.JPEG, 85, outputStream)
         outputStream.flush()
         outputStream.close()
+        scaledBitmap.recycle()
 
         return Uri.fromFile(compressedFile)
     }

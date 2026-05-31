@@ -98,7 +98,7 @@ class CreatePostActivity : AppCompatActivity() {
         override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
         override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
             if (etContent.hasFocus()) {
-                findViewById<TextView>(R.id.char_count).text = "${s?.length ?: 0}/20"
+                findViewById<TextView>(R.id.char_count).text = "${s?.length ?: 0}/300"
             }
         }
     }
@@ -157,12 +157,14 @@ class CreatePostActivity : AppCompatActivity() {
     }
 
     private fun getCompressedImageFile(uri: Uri): File {
-        val bitmap = MediaStore.Images.Media.getBitmap(contentResolver, uri)
+        val originalBitmap = MediaStore.Images.Media.getBitmap(contentResolver, uri)
+        val bitmap = com.example.dogcatsquare.utils.ImageUtils.getRotatedBitmap(this, uri, originalBitmap)
         val compressedFile = File(cacheDir, "compressed_${System.currentTimeMillis()}.jpg")
         FileOutputStream(compressedFile).use { out ->
             bitmap.compress(Bitmap.CompressFormat.JPEG, 85, out)
             out.flush()
         }
+        bitmap.recycle()
         return compressedFile
     }
 

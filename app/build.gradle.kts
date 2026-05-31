@@ -163,4 +163,10 @@ dependencies {
 
     // event source
     implementation ("com.launchdarkly:okhttp-eventsource:2.7.1")
+
+    // Fragment 및 activityViewModels 사용을 위해 필요
+    implementation ("androidx.fragment:fragment-ktx:1.8.5") // 최신 안정 버전 사용 권장
+
+    // RecyclerView 및 LinearLayoutManager 사용을 위해 필요
+    implementation ("androidx.recyclerview:recyclerview:1.3.2")
 }

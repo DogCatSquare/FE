@@ -90,12 +90,13 @@ class MapAddReviewFragment : Fragment() {
                 break
             }
             try {
-                val bitmap = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                val originalBitmap = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
                     val source = ImageDecoder.createSource(requireContext().contentResolver, uri)
                     ImageDecoder.decodeBitmap(source)
                 } else {
                     MediaStore.Images.Media.getBitmap(requireContext().contentResolver, uri)
                 }
+                val bitmap = com.example.dogcatsquare.utils.ImageUtils.getRotatedBitmap(requireContext(), uri, originalBitmap)
                 selectedBitmaps.add(bitmap)
             } catch (e: Exception) {
                 Log.e("MapAddReview", "이미지 변환 실패: ${e.message}")

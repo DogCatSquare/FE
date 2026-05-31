@@ -99,7 +99,9 @@ class EditPostActivity : AppCompatActivity() {
         boardTypeFromIntent = intent.getStringExtra("boardType") ?: "자유게시판"
 
         etTitle.setText(intent.getStringExtra("title"))
-        etContent.setText(intent.getStringExtra("content"))
+        val contentText = intent.getStringExtra("content") ?: ""
+        etContent.setText(contentText)
+        findViewById<android.widget.TextView>(R.id.char_count).text = "${contentText.length}/300"
 
         // 링크(비디오) 원본 값 보관 + 표시
         originalVideoUrl = intent.getStringExtra("videoUrl")
@@ -131,7 +133,11 @@ class EditPostActivity : AppCompatActivity() {
         val watcher = object : TextWatcher {
             override fun afterTextChanged(s: Editable?) = updateButtonState()
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
-            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+                if (etContent.hasFocus()) {
+                    findViewById<android.widget.TextView>(R.id.char_count).text = "${s?.length ?: 0}/300"
+                }
+            }
         }
         etTitle.addTextChangedListener(watcher)
         etContent.addTextChangedListener(watcher)
@@ -226,12 +232,14 @@ class EditPostActivity : AppCompatActivity() {
     }
 
     private fun getCompressedImageFile(uri: Uri): File {
-        val bitmap: Bitmap = MediaStore.Images.Media.getBitmap(contentResolver, uri)
+        val originalBitmap: Bitmap = MediaStore.Images.Media.getBitmap(contentResolver, uri)
+        val bitmap = com.example.dogcatsquare.utils.ImageUtils.getRotatedBitmap(this, uri, originalBitmap)
         val out = File(cacheDir, "compressed_${System.currentTimeMillis()}.jpg")
         FileOutputStream(out).use { fos ->
             bitmap.compress(Bitmap.CompressFormat.JPEG, 85, fos)
             fos.flush()
         }
+        bitmap.recycle()
         return out
     }
 
