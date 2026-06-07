@@ -56,51 +56,80 @@ class AlarmFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         setupAlarmRecyclerView()
-        observeSSEEvents() // SSE 이벤트 관찰 시작
     }
 
     override fun onStart() {
         super.onStart()
-
-        // SSE 관리는 이제 MainActivity에서 하므로, 별도 시작 로직이 없습니다.
-        // 알림 목록 화면으로 들어왔을 때 전체 읽음 처리
     }
 
     private fun setupAlarmRecyclerView() {
         binding.alarmRv.layoutManager = LinearLayoutManager(requireContext())
         val adapter = AlarmRVAdapter(alarmDatas) { alarmId ->
-            // RV Adapter의 클릭 리스너를 통해 알림 ID를 받아 개별 읽음 처리 API 호출
+            Log.d("AlarmFragment", "Item clicked! alarmId = $alarmId")
+            val clickedAlarm = alarmDatas.find { it.id == alarmId }
+            Log.d("AlarmFragment", "Found clickedAlarm = $clickedAlarm")
+            clickedAlarm?.let { alarm ->
+                navigateToDetail(alarm)
+            }
             markAlarmAsRead(alarmId)
         }
         binding.alarmRv.adapter = adapter
-    }
 
-    private fun observeSSEEvents() {
-        // lifecycleScope를 사용하여 Fragment의 생명주기에 맞게 코루틴 실행
         val mainActivity = requireActivity() as com.example.dogcatsquare.MainActivity
-        viewLifecycleOwner.lifecycleScope.launch {
-            mainActivity.sseClient.sseEvents.collectLatest { sseAlarm ->
-                handleNewSSEAlarm(sseAlarm)
-            }
+        mainActivity.alarmList.observe(viewLifecycleOwner) { alarms ->
+            Log.d("AlarmFragment", "Received alarmList update: size = ${alarms.size}")
+            alarmDatas.clear()
+            alarmDatas.addAll(alarms)
+            adapter.notifyDataSetChanged()
         }
     }
 
-    private fun handleNewSSEAlarm(sseAlarm: SSEAlarmResponse) {
-        // SSEAlarmResponse를 Alarm 데이터 모델로 변환
-        val formattedDate = com.example.dogcatsquare.util.DateFmt.format(sseAlarm.createdAt).replace(".", "-")
-        val newAlarm = Alarm(
-            id = sseAlarm.id,
-            name = sseAlarm.type ?: "새로운 알림",
-            content = sseAlarm.content,
-            date = formattedDate
-        )
+    private fun navigateToDetail(alarm: Alarm) {
+        val type = alarm.type?.uppercase()
+        val targetId = alarm.targetId
+        Log.d("AlarmFragment", "navigateToDetail: type = $type, targetId = $targetId")
 
-        // UI 업데이트는 Main Dispatcher에서 처리
-        lifecycleScope.launch(Dispatchers.Main) {
-            // 새 알림을 목록의 맨 앞에 추가
-            alarmDatas.add(0, newAlarm)
-            binding.alarmRv.adapter?.notifyItemInserted(0)
-            binding.alarmRv.scrollToPosition(0) // 맨 위로 스크롤
+        android.widget.Toast.makeText(
+            requireContext(),
+            "알림 클릭: type=$type, targetId=$targetId",
+            android.widget.Toast.LENGTH_SHORT
+        ).show()
+
+        if (type == null) {
+            Log.w("AlarmFragment", "Cannot navigate: type is null!")
+            return
+        }
+
+        when (type) {
+            "NOTICE" -> {
+                if (targetId != null) {
+                    Log.d("AlarmFragment", "Navigating to AnnouncementDetailFragment with noticeId = $targetId")
+                    val fragment = com.example.dogcatsquare.ui.mypage.AnnouncementDetailFragment.newInstance(targetId)
+                    parentFragmentManager.beginTransaction()
+                        .replace(com.example.dogcatsquare.R.id.main_frm, fragment)
+                        .addToBackStack(null)
+                        .commitAllowingStateLoss()
+                } else {
+                    Log.w("AlarmFragment", "Cannot navigate: targetId is null for NOTICE")
+                }
+            }
+            "COMMENT", "LIKE" -> {
+                if (targetId != null) {
+                    Log.d("AlarmFragment", "Navigating to PostDetailActivity with postId = $targetId")
+                    val intent = android.content.Intent(requireContext(), com.example.dogcatsquare.ui.community.PostDetailActivity::class.java).apply {
+                        putExtra("postId", targetId.toInt())
+                    }
+                    startActivity(intent)
+                } else {
+                    Log.w("AlarmFragment", "Cannot navigate: targetId is null for $type")
+                }
+            }
+            "DDAY", "TEST" -> {
+                Log.d("AlarmFragment", "No navigation for $type")
+            }
+            else -> {
+                Log.w("AlarmFragment", "Unknown alarm type: $type")
+            }
         }
     }
 
@@ -121,7 +150,17 @@ class AlarmFragment : Fragment() {
                     lifecycleScope.launch(Dispatchers.Main) {
                         Log.d("AlarmFragment", "알림 읽음 처리 성공 (ID: ${alarmIds.joinToString()})")
                         Toast.makeText(requireContext(), "알림을 읽음 처리했습니다.", Toast.LENGTH_SHORT).show()
-                        // TODO: UI에서 해당 알림을 "읽음" 상태로 업데이트하는 로직 추가
+                        
+                        val mainActivity = requireActivity() as? com.example.dogcatsquare.MainActivity
+                        mainActivity?.let { activity ->
+                            val currentCount = activity.unreadCount.value ?: 0
+                            val reduction = alarmIds.size
+                            activity.unreadCount.value = (currentCount - reduction).coerceAtLeast(0)
+
+                            val currentList = activity.alarmList.value.orEmpty().toMutableList()
+                            currentList.removeAll { it.id in alarmIds }
+                            activity.alarmList.value = currentList
+                        }
                     }
                 } else {
                     Log.e("AlarmFragment", "알림 읽음 처리 실패: ${response.code()} ${response.errorBody()?.string()}")

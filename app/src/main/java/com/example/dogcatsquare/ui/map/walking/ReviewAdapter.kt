@@ -123,13 +123,9 @@ class ReviewAdapter(
                         onReviewDeleted()
                     } else {
                         if (response.message?.contains("정지") == true) {
-                            android.widget.Toast.makeText(context, response.message, android.widget.Toast.LENGTH_SHORT).show()
+                            android.widget.Toast.makeText(context, "정지된 사용자 계정입니다.", android.widget.Toast.LENGTH_SHORT).show()
                         } else {
-                            android.widget.Toast.makeText(
-                                context,
-                                response.message ?: "리뷰 삭제에 실패했습니다.",
-                                android.widget.Toast.LENGTH_SHORT
-                            ).show()
+                            android.widget.Toast.makeText(context, "리뷰 삭제에 실패했습니다.", android.widget.Toast.LENGTH_SHORT).show()
                         }
                     }
                 }
@@ -138,7 +134,7 @@ class ReviewAdapter(
                     val errorMessage = if (e is retrofit2.HttpException && e.code() == 403) {
                         "권한이 없습니다."
                     } else {
-                        "오류가 발생했습니다: ${e.message}"
+                        "오류가 발생했습니다."
                     }
                     android.widget.Toast.makeText(context, errorMessage, android.widget.Toast.LENGTH_SHORT).show()
                 }

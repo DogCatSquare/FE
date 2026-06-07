@@ -269,7 +269,7 @@ class WalkingStartViewFragment : Fragment(), OnMapReadyCallback {
                             wishBt.setImageResource(R.drawable.ic_wish_check)
                             android.widget.Toast.makeText(requireContext(), "산책로가 위시리스트에 추가되었습니다.", android.widget.Toast.LENGTH_SHORT).show()
                         } else {
-                            android.widget.Toast.makeText(requireContext(), "추가 실패: ${response.message()}", android.widget.Toast.LENGTH_SHORT).show()
+                            android.widget.Toast.makeText(requireContext(), "추가에 실패했습니다.", android.widget.Toast.LENGTH_SHORT).show()
                         }
                     }
 
@@ -286,7 +286,7 @@ class WalkingStartViewFragment : Fragment(), OnMapReadyCallback {
                             wishBt.setImageResource(R.drawable.ic_wish)
                             android.widget.Toast.makeText(requireContext(), "산책로 위시가 해제되었습니다.", android.widget.Toast.LENGTH_SHORT).show()
                         } else {
-                            android.widget.Toast.makeText(requireContext(), "해제 실패: ${response.message()}", android.widget.Toast.LENGTH_SHORT).show()
+                            android.widget.Toast.makeText(requireContext(), "해제에 실패했습니다.", android.widget.Toast.LENGTH_SHORT).show()
                         }
                     }
 

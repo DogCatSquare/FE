@@ -246,20 +246,12 @@ class MapReviewRVAdapter(
                         }
                         onReviewDeleted()
                     } else {
-                        Toast.makeText(
-                            context,
-                            response.message ?: "리뷰 삭제에 실패했습니다.",
-                            Toast.LENGTH_SHORT
-                        ).show()
+                        Toast.makeText(context, "리뷰 삭제에 실패했습니다.", Toast.LENGTH_SHORT).show()
                     }
                 }
             } catch (e: Exception) {
                 withContext(Dispatchers.Main) {
-                    Toast.makeText(
-                        context,
-                        "오류가 발생했습니다: ${e.message}",
-                        Toast.LENGTH_SHORT
-                    ).show()
+                    Toast.makeText(context, "오류가 발생했습니다.", Toast.LENGTH_SHORT).show()
                 }
             }
         }

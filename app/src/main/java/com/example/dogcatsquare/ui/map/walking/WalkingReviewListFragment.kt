@@ -234,11 +234,11 @@ class WalkingReviewListFragment : Fragment() {
                     401 -> "로그인이 필요합니다."
                     403 -> "권한이 없습니다."
                     404 -> "데이터를 찾을 수 없습니다."
-                    else -> "서버 오류가 발생했습니다. (${e.code()})"
+                    else -> "서버 오류가 발생했습니다."
                 }
             }
             is java.io.IOException -> "네트워크 연결을 확인해주세요."
-            else -> "알 수 없는 오류가 발생했습니다: ${e.message}"
+            else -> "알 수 없는 오류가 발생했습니다."
         }
         Toast.makeText(requireContext(), errorMessage, Toast.LENGTH_SHORT).show()
     }

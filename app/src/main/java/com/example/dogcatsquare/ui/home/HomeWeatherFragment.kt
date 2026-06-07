@@ -12,6 +12,7 @@ import com.bumptech.glide.Glide
 import com.example.dogcatsquare.R
 import com.example.dogcatsquare.data.model.home.WeatherResult
 import com.example.dogcatsquare.databinding.FragmentHomeWeatherBinding
+import com.example.dogcatsquare.MainActivity
 
 class HomeWeatherFragment : Fragment() {
     lateinit var binding: FragmentHomeWeatherBinding
@@ -28,6 +29,16 @@ class HomeWeatherFragment : Fragment() {
                 .replace(R.id.main_frm, AlarmFragment())
                 .addToBackStack(null)
                 .commitAllowingStateLoss()
+        }
+
+        // 알림 뱃지 관찰 및 UI 업데이트
+        (requireActivity() as? MainActivity)?.unreadCount?.observe(viewLifecycleOwner) { count ->
+            if (count != null && count > 0) {
+                binding.homeBellBadgeTv.text = count.toString()
+                binding.homeBellBadgeTv.visibility = android.view.View.VISIBLE
+            } else {
+                binding.homeBellBadgeTv.visibility = android.view.View.GONE
+            }
         }
 
         arguments?.let {

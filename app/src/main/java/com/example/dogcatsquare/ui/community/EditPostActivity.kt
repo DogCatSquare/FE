@@ -330,7 +330,7 @@ class EditPostActivity : AppCompatActivity() {
 
             override fun onFailure(call: Call<ApiResponse<Unit>>, t: Throwable) {
                 Log.e("EditPostActivity", "네트워크 오류: ${t.message}", t)
-                Toast.makeText(this@EditPostActivity, "네트워크 오류: ${t.message}", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this@EditPostActivity, "네트워크 오류가 발생했습니다.", Toast.LENGTH_SHORT).show()
             }
         })
     }

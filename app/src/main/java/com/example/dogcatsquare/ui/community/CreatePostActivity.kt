@@ -230,16 +230,12 @@ class CreatePostActivity : AppCompatActivity() {
                         setResult(Activity.RESULT_OK)
                         finish()
                     } else {
-                        Toast.makeText(
-                            this@CreatePostActivity,
-                            "등록 실패: http=${response.code()} msg=${body?.message ?: response.errorBody()?.string()}",
-                            Toast.LENGTH_SHORT
-                        ).show()
+                        Toast.makeText(this@CreatePostActivity, "등록에 실패했습니다.", Toast.LENGTH_SHORT).show()
                     }
                 }
 
                 override fun onFailure(call: Call<ApiResponse<PostResponse>>, t: Throwable) {
-                    Toast.makeText(this@CreatePostActivity, "네트워크 오류: ${t.message}", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this@CreatePostActivity, "네트워크 오류가 발생했습니다.", Toast.LENGTH_SHORT).show()
                 }
             })
     }

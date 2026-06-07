@@ -76,7 +76,10 @@ class LoginSplashActivity : AppCompatActivity() {
     }
 
     private fun moveToMain() {
-        val intent = Intent(this, MainActivity::class.java)
+        val intent = Intent(this, MainActivity::class.java).apply {
+            putExtra("notification_type", getIntent().getStringExtra("notification_type"))
+            putExtra("notification_target_id", getIntent().getLongExtra("notification_target_id", -1L))
+        }
         startActivity(intent)
         finish()
     }

@@ -168,7 +168,7 @@ class WishPlaceRVAdapter(private val context: Context, private val placeList: Ar
                         Log.d("WishPlaceRVAdapter", "위시 삭제 성공: ${place.name}")
                     }
                 } else {
-                    android.widget.Toast.makeText(context, response.message ?: "위시 해제 실패", android.widget.Toast.LENGTH_SHORT).show()
+                    android.widget.Toast.makeText(context, "위시 해제에 실패했습니다.", android.widget.Toast.LENGTH_SHORT).show()
                 }
             } catch (e: Exception) {
                 Log.e("WishPlaceRVAdapter", "위시 변경 에러", e)

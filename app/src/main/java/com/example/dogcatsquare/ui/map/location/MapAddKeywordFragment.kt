@@ -225,11 +225,7 @@ class MapAddKeywordFragment : Fragment() {
 
                         requireActivity().supportFragmentManager.popBackStack()
                     } else {
-                        Toast.makeText(
-                            requireContext(),
-                            response.message ?: "업데이트 실패",
-                            Toast.LENGTH_SHORT
-                        ).show()
+                        Toast.makeText(requireContext(), "업데이트에 실패했습니다.", Toast.LENGTH_SHORT).show()
                     }
                 } catch (e: Exception) {
                     Toast.makeText(

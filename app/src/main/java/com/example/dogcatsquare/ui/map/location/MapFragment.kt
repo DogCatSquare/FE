@@ -281,7 +281,7 @@ class MapFragment : Fragment(), OnMapReadyCallback {
             }
         } catch (e: Exception) {
             withContext(Dispatchers.Main) {
-                Toast.makeText(requireContext(), "주소 저장 실패: ${e.message}", Toast.LENGTH_SHORT).show()
+                Toast.makeText(requireContext(), "주소 저장에 실패했습니다.", Toast.LENGTH_SHORT).show()
             }
         }
     }

@@ -20,7 +20,10 @@ class SplashActivity : AppCompatActivity() {
         Handler(Looper.getMainLooper()).postDelayed({
 
             // 일정 시간이 지나면 LoginActivity로 이동
-            val intent = Intent(this, LoginSplashActivity::class.java)
+            val intent = Intent(this, LoginSplashActivity::class.java).apply {
+                putExtra("notification_type", getIntent().getStringExtra("notification_type"))
+                putExtra("notification_target_id", getIntent().getLongExtra("notification_target_id", -1L))
+            }
             startActivity(intent)
 
             // 이전 키를 눌렀을 때 스플래스 스크린 화면으로 이동을 방지하기 위해

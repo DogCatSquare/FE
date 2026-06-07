@@ -192,27 +192,15 @@ class PostDetailActivity : AppCompatActivity(), CommentActionListener {
                             Toast.makeText(this@PostDetailActivity, "게시글이 삭제되었습니다.", Toast.LENGTH_SHORT).show()
                             finish() // 현재 화면 종료 → 목록으로 복귀
                         } else {
-                            Toast.makeText(
-                                this@PostDetailActivity,
-                                body?.message ?: "삭제 실패 (${response.code()})",
-                                Toast.LENGTH_SHORT
-                            ).show()
+                            Toast.makeText(this@PostDetailActivity, "삭제에 실패했습니다.", Toast.LENGTH_SHORT).show()
                         }
                     } else {
-                        Toast.makeText(
-                            this@PostDetailActivity,
-                            "삭제 실패: ${response.code()}",
-                            Toast.LENGTH_SHORT
-                        ).show()
+                        Toast.makeText(this@PostDetailActivity, "삭제에 실패했습니다.", Toast.LENGTH_SHORT).show()
                     }
                 }
 
                 override fun onFailure(call: Call<ApiResponse<Unit>>, t: Throwable) {
-                    Toast.makeText(
-                        this@PostDetailActivity,
-                        "네트워크 오류: ${t.message}",
-                        Toast.LENGTH_SHORT
-                    ).show()
+                    Toast.makeText(this@PostDetailActivity, "네트워크 오류가 발생했습니다.", Toast.LENGTH_SHORT).show()
                 }
             })
     }
@@ -248,7 +236,7 @@ class PostDetailActivity : AppCompatActivity(), CommentActionListener {
                 }
 
                 override fun onFailure(call: Call<ApiResponse<List<Comment>>>, t: Throwable) {
-                    Toast.makeText(this@PostDetailActivity, "네트워크 오류: ${t.message}", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this@PostDetailActivity, "네트워크 오류가 발생했습니다.", Toast.LENGTH_SHORT).show()
                     Log.d("RETROFIT/FAILURE", t.message.toString())
                 }
             })
@@ -272,7 +260,7 @@ class PostDetailActivity : AppCompatActivity(), CommentActionListener {
                     response: Response<ApiResponse<Comment>>
                 ) {
                     if (!response.isSuccessful) {
-                        Toast.makeText(this@PostDetailActivity, "댓글 등록 실패: ${response.code()}", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(this@PostDetailActivity, "댓글 등록에 실패했습니다.", Toast.LENGTH_SHORT).show()
                         return
                     }
                     val body = response.body()
@@ -284,12 +272,12 @@ class PostDetailActivity : AppCompatActivity(), CommentActionListener {
                         binding.etComment.text.clear()
                         Toast.makeText(this@PostDetailActivity, "댓글 등록 성공", Toast.LENGTH_SHORT).show()
                     } else {
-                        Toast.makeText(this@PostDetailActivity, body?.message ?: "댓글 등록 실패", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(this@PostDetailActivity, "댓글 등록에 실패했습니다.", Toast.LENGTH_SHORT).show()
                     }
                 }
 
                 override fun onFailure(call: Call<ApiResponse<Comment>>, t: Throwable) {
-                    Toast.makeText(this@PostDetailActivity, "네트워크 오류: ${t.message}", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this@PostDetailActivity, "네트워크 오류가 발생했습니다.", Toast.LENGTH_SHORT).show()
                     Log.d("RETROFIT/FAILURE", t.message.toString())
                 }
             })
@@ -325,7 +313,7 @@ class PostDetailActivity : AppCompatActivity(), CommentActionListener {
                 }
 
                 override fun onFailure(call: Call<ApiResponse<Unit>>, t: Throwable) {
-                    Toast.makeText(this@PostDetailActivity, "네트워크 오류: ${t.message}", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this@PostDetailActivity, "네트워크 오류가 발생했습니다.", Toast.LENGTH_SHORT).show()
                 }
             })
     }
@@ -393,7 +381,7 @@ class PostDetailActivity : AppCompatActivity(), CommentActionListener {
                 ) {
                     Log.d("PostDetailActivity", "API Response Code: ${response.code()}")
                     if (!response.isSuccessful) {
-                        Toast.makeText(this@PostDetailActivity, "게시글 조회 실패: ${response.code()}", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(this@PostDetailActivity, "정보를 불러오는데 실패했습니다.", Toast.LENGTH_SHORT).show()
                         binding.ivPostMenu.visibility = View.GONE
                         return
                     }
@@ -401,7 +389,7 @@ class PostDetailActivity : AppCompatActivity(), CommentActionListener {
                     val body = response.body()
                     val postDetail = body?.result
                     if (body?.isSuccess != true || postDetail == null) {
-                        Toast.makeText(this@PostDetailActivity, body?.message ?: "게시글 정보가 없습니다.", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(this@PostDetailActivity, "정보를 불러오는데 실패했습니다.", Toast.LENGTH_SHORT).show()
                         binding.ivPostMenu.visibility = View.GONE
                         return
                     }
@@ -483,7 +471,7 @@ class PostDetailActivity : AppCompatActivity(), CommentActionListener {
 
                 override fun onFailure(call: Call<ApiResponse<PostDetail>>, t: Throwable) {
                     Log.e("PostDetailActivity", "API 호출 실패", t)
-                    Toast.makeText(this@PostDetailActivity, "네트워크 오류: ${t.message}", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this@PostDetailActivity, "네트워크 오류가 발생했습니다.", Toast.LENGTH_SHORT).show()
                     binding.ivPostMenu.visibility = View.GONE
                 }
             })
@@ -532,7 +520,7 @@ class PostDetailActivity : AppCompatActivity(), CommentActionListener {
                 }
 
                 override fun onFailure(call: Call<LikeResponse>, t: Throwable) {
-                    Toast.makeText(this@PostDetailActivity, "좋아요 실패: ${t.message}", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this@PostDetailActivity, "네트워크 오류가 발생했습니다.", Toast.LENGTH_SHORT).show()
                 }
             })
     }

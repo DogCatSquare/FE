@@ -263,13 +263,9 @@ class WalkingReviewListAdapter(
                         onReviewDeleted()
                     } else {
                         if (response.message?.contains("정지") == true) {
-                            Toast.makeText(context, response.message, Toast.LENGTH_SHORT).show()
+                            Toast.makeText(context, "리뷰 삭제에 실패했습니다.", Toast.LENGTH_SHORT).show()
                         } else {
-                            Toast.makeText(
-                                context,
-                                response.message ?: "리뷰 삭제에 실패했습니다.",
-                                Toast.LENGTH_SHORT
-                            ).show()
+                            Toast.makeText(context, "리뷰 삭제에 실패했습니다.", Toast.LENGTH_SHORT).show()
                         }
                     }
                 }
@@ -278,7 +274,7 @@ class WalkingReviewListAdapter(
                     val errorMessage = if (e is retrofit2.HttpException && e.code() == 403) {
                         "권한이 없습니다."
                     } else {
-                        "오류가 발생했습니다: ${e.message}"
+                        "오류가 발생했습니다."
                     }
                     Toast.makeText(context, errorMessage, Toast.LENGTH_SHORT).show()
                 }

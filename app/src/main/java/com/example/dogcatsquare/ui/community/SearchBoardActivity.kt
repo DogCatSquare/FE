@@ -85,21 +85,13 @@ class SearchBoardActivity : AppCompatActivity() {
                         boardAdapter.submitList(boardList) // RecyclerView 업데이트
                         Log.d("SearchBoardActivity", "모든 게시판 조회 완료: ${boardList.size}개")
                     } else {
-                        Toast.makeText(
-                            this@SearchBoardActivity,
-                            "게시판 조회 실패: ${response.message()}",
-                            Toast.LENGTH_SHORT
-                        ).show()
+                        Toast.makeText(this@SearchBoardActivity, "정보를 불러오는데 실패했습니다.", Toast.LENGTH_SHORT).show()
                     }
                 }
 
                 override fun onFailure(call: Call<com.example.dogcatsquare.data.model.community.BoardSearchResponseDto>, t: Throwable) {
                     Log.e("SearchBoardActivity", "서버 연결 실패", t)
-                    Toast.makeText(
-                        this@SearchBoardActivity,
-                        "서버 연결 실패: ${t.message}",
-                        Toast.LENGTH_SHORT
-                    ).show()
+                    Toast.makeText(this@SearchBoardActivity, "서버 연결에 실패했습니다.", Toast.LENGTH_SHORT).show()
                 }
             })
     }
@@ -136,21 +128,13 @@ class SearchBoardActivity : AppCompatActivity() {
                         boardAdapter.submitList(sortedList) // RecyclerView 업데이트
                         Log.d("SearchBoardActivity", "검색 결과 업데이트 완료: ${sortedList.size}개")
                     } else {
-                        Toast.makeText(
-                            this@SearchBoardActivity,
-                            "검색 실패: ${response.message()}",
-                            Toast.LENGTH_SHORT
-                        ).show()
+                        Toast.makeText(this@SearchBoardActivity, "검색에 실패했습니다.", Toast.LENGTH_SHORT).show()
                     }
                 }
 
                 override fun onFailure(call: Call<com.example.dogcatsquare.data.model.community.BoardSearchResponseDto>, t: Throwable) {
                     Log.e("SearchBoardActivity", "서버 연결 실패", t)
-                    Toast.makeText(
-                        this@SearchBoardActivity,
-                        "서버 연결 실패: ${t.message}",
-                        Toast.LENGTH_SHORT
-                    ).show()
+                    Toast.makeText(this@SearchBoardActivity, "서버 연결에 실패했습니다.", Toast.LENGTH_SHORT).show()
                 }
             })
     }

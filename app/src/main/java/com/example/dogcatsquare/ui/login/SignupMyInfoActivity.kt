@@ -119,6 +119,31 @@ class SignupMyInfoActivity : AppCompatActivity() {
 
     // 내 정보 확인 후 메인 화면으로 넘어가기
     private fun chechMyInfo() {
+        if (!locCheck || !this::doName.isInitialized || !this::si.isInitialized || !this::gu.isInitialized) {
+            Toast.makeText(this, "지역을 선택해주세요.", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        if (si.contains("전체") || gu.contains("전체")) {
+            Toast.makeText(this, "상세 지역을 선택해주세요.", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        if (!this::foodDate.isInitialized) {
+            Toast.makeText(this, "마지막 사료 구매 날짜를 설정해주세요.", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        if (!this::padDate.isInitialized) {
+            Toast.makeText(this, "마지막 패드 구매 날짜를 설정해주세요.", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        if (!this::hospitalDate.isInitialized) {
+            Toast.makeText(this, "다음 병원 방문 날짜를 설정해주세요.", Toast.LENGTH_SHORT).show()
+            return
+        }
+
         if (locCheck) {
             val signupService = RetrofitObj.getRetrofit(this).create(UserRetrofitItf::class.java)
 
@@ -338,7 +363,9 @@ class SignupMyInfoActivity : AppCompatActivity() {
         val thirdColumn: ListView = view.findViewById(R.id.region3_column)
         val confirmBtn: Button = view.findViewById(R.id.confirm_button)
 
-        val regions = RegionData.regions
+        val regions = RegionData.regions.map { region ->
+            region.copy(subRegions = region.subRegions.filter { !it.name.contains("전체") })
+        }
 
         // 선택된 항목 변수 초기화
         var selectedFirst: Int = -1
@@ -388,25 +415,27 @@ class SignupMyInfoActivity : AppCompatActivity() {
 
         // 완료 버튼 클릭
         confirmBtn.setOnClickListener {
-            doName = regions[selectedFirst].name
-            si = if (selectedSecond != -1) {
-                regions[selectedFirst].subRegions[selectedSecond].name
-            } else {
-                "" // 선택되지 않은 경우 빈 문자열
-            }
-            gu = if (selectedThird != -1) {
-                regions[selectedFirst].subRegions[selectedSecond].districts[selectedThird]
-            } else {
-                "" // 선택되지 않은 경우 빈 문자열
+            if (selectedFirst == -1 || selectedSecond == -1 || selectedThird == -1) {
+                Toast.makeText(this@SignupMyInfoActivity, "상세 지역을 선택해주세요.", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
             }
 
-            locCheck = true
-            if (selectedFirst != -1 && selectedSecond != -1 && selectedThird != -1) {
-                val selectedRegion = "${regions[selectedFirst].name} " +
-                        "${regions[selectedFirst].subRegions[selectedSecond].name} " +
-                        "${regions[selectedFirst].subRegions[selectedSecond].districts[selectedThird]}"
-                onRegionSelected(selectedRegion)
+            val tempDoName = regions[selectedFirst].name
+            val tempSi = regions[selectedFirst].subRegions[selectedSecond].name
+            val tempGu = regions[selectedFirst].subRegions[selectedSecond].districts[selectedThird]
+
+            if (tempSi.contains("전체") || tempGu.contains("전체")) {
+                Toast.makeText(this@SignupMyInfoActivity, "상세 지역을 선택해주세요.", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
             }
+
+            doName = tempDoName
+            si = tempSi
+            gu = tempGu
+            locCheck = true
+
+            val selectedRegion = "$doName $si $gu"
+            onRegionSelected(selectedRegion)
             bottomSheetDialog.dismiss()
         }
 

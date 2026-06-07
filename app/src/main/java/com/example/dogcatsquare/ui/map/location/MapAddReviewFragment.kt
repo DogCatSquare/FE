@@ -178,7 +178,7 @@ class MapAddReviewFragment : Fragment() {
                     Toast.makeText(requireContext(), "리뷰가 등록되었습니다.", Toast.LENGTH_SHORT).show()
                     goBackWithRefresh()
                 } else {
-                    Toast.makeText(requireContext(), response.message ?: "등록 실패", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(requireContext(), "등록에 실패했습니다.", Toast.LENGTH_SHORT).show()
                 }
             } catch (e: Exception) {
                 handleError(e)

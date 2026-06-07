@@ -19,6 +19,8 @@ import android.app.PendingIntent
 import android.media.RingtoneManager
 import androidx.core.app.NotificationCompat
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.MutableLiveData
+import com.example.dogcatsquare.data.model.home.Alarm
 import com.example.dogcatsquare.data.api.SseAlarmService
 import com.example.dogcatsquare.data.sse.SSEClient
 import kotlinx.coroutines.flow.collectLatest
@@ -28,6 +30,10 @@ import okhttp3.OkHttpClient
 class MainActivity : AppCompatActivity() {
     lateinit var binding: ActivityMainBinding
     private val locationViewModel: LocationViewModel by viewModels()
+
+    val unreadCount = MutableLiveData<Int>(0)
+    val alarmList = MutableLiveData<List<Alarm>>(emptyList())
+    private var isInitialConnection = false
 
     val sseClient: SSEClient by lazy {
         SseAlarmService(OkHttpClient.Builder().build())
@@ -44,29 +50,92 @@ class MainActivity : AppCompatActivity() {
         initBottomNavigation()
 
         setupSseConnection()
+        fetchUnreadCount()
+
+        handleNotificationIntent(intent)
+    }
+
+    override fun onResume() {
+        super.onResume()
+        fetchUnreadCount()
+    }
+
+    private fun fetchUnreadCount() {
+        val sp = getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
+        val token = sp.getString("token", null)
+        if (!token.isNullOrBlank()) {
+            val alarmApiService = com.example.dogcatsquare.data.network.RetrofitObj.getRetrofit(this)
+                .create(com.example.dogcatsquare.data.api.AlarmApiService::class.java)
+            lifecycleScope.launch {
+                try {
+                    val response = alarmApiService.getUnreadCount()
+                    if (response.isSuccessful) {
+                        val body = response.body()
+                        if (body?.isSuccess == true) {
+                            unreadCount.value = body.result ?: 0
+                            android.util.Log.d("MainActivity", "미읽음 알림 수: ${unreadCount.value}")
+                        }
+                    }
+                } catch (e: Exception) {
+                    android.util.Log.e("MainActivity", "미읽음 알림 수 조회 실패: ${e.message}")
+                }
+            }
+        }
     }
 
     private fun setupSseConnection() {
         val sp = getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
         val token = sp.getString("token", null)
         if (!token.isNullOrBlank()) {
+            isInitialConnection = true
+            android.os.Handler(android.os.Looper.getMainLooper()).postDelayed({
+                isInitialConnection = false
+            }, 2000)
+
             sseClient.startListening(token)
             lifecycleScope.launch {
                 sseClient.sseEvents.collectLatest { sseAlarm ->
-                    showSseNotification(sseAlarm.type ?: "새로운 알림", sseAlarm.content)
+                    val formattedDate = try {
+                        com.example.dogcatsquare.util.DateFmt.format(sseAlarm.createdAt).replace(".", "-")
+                    } catch (e: Exception) {
+                        sseAlarm.createdAt
+                    }
+                    val newAlarm = Alarm(
+                        id = sseAlarm.id,
+                        name = sseAlarm.type ?: "새로운 알림",
+                        content = sseAlarm.content,
+                        date = formattedDate,
+                        type = sseAlarm.type,
+                        targetId = sseAlarm.targetId
+                    )
+
+                    val currentList = alarmList.value.orEmpty().toMutableList()
+                    if (currentList.none { it.id == newAlarm.id }) {
+                        currentList.add(newAlarm)
+                        currentList.sortByDescending { it.id }
+                        alarmList.value = currentList
+
+                        if (!isInitialConnection) {
+                            unreadCount.value = (unreadCount.value ?: 0) + 1
+                            showSseNotification(sseAlarm.type ?: "새로운 알림", sseAlarm.content, sseAlarm.type, sseAlarm.targetId)
+                        }
+                    }
                 }
             }
         }
     }
 
-    private fun showSseNotification(title: String, messageBody: String) {
+    private fun showSseNotification(title: String, messageBody: String, type: String?, targetId: Long?) {
         val channelId = "sse_channel"
         val intent = Intent(this, MainActivity::class.java).apply {
-            addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
+            addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP)
+            putExtra("notification_type", type)
+            putExtra("notification_target_id", targetId)
         }
+        val requestCode = System.currentTimeMillis().toInt()
         val pendingIntent = PendingIntent.getActivity(
-            this, 0, intent,
-            PendingIntent.FLAG_ONE_SHOT or PendingIntent.FLAG_IMMUTABLE
+            this, requestCode, intent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
 
         val defaultSoundUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION)
@@ -95,6 +164,43 @@ class MainActivity : AppCompatActivity() {
     override fun onDestroy() {
         super.onDestroy()
         sseClient.stopListening()
+    }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        setIntent(intent)
+        handleNotificationIntent(intent)
+    }
+
+    private fun handleNotificationIntent(intent: Intent?) {
+        if (intent == null) return
+        val type = intent.getStringExtra("notification_type")?.uppercase()
+        val targetId = intent.getLongExtra("notification_target_id", -1L).takeIf { it != -1L }
+
+        if (type != null) {
+            when (type) {
+                "NOTICE" -> {
+                    if (targetId != null) {
+                        val fragment = com.example.dogcatsquare.ui.mypage.AnnouncementDetailFragment.newInstance(targetId)
+                        supportFragmentManager.beginTransaction()
+                            .replace(R.id.main_frm, fragment)
+                            .addToBackStack(null)
+                            .commitAllowingStateLoss()
+                    }
+                }
+                "COMMENT", "LIKE" -> {
+                    if (targetId != null) {
+                        val detailIntent = Intent(this, com.example.dogcatsquare.ui.community.PostDetailActivity::class.java).apply {
+                            putExtra("postId", targetId.toInt())
+                        }
+                        startActivity(detailIntent)
+                    }
+                }
+                "DDAY", "TEST" -> {
+                    // No navigation
+                }
+            }
+        }
     }
 
     // 바텀네비게이션 아이콘 선택 시 각 프래그먼트로 이동하는 함수

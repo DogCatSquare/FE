@@ -194,9 +194,9 @@ class WalkReviewReportFragment : Fragment() {
                     } else if (errorMessage.contains("자신의 후기")) {
                         Toast.makeText(context, "자신의 후기는 신고할 수 없습니다.", Toast.LENGTH_SHORT).show()
                     } else if (!response.isSuccess && response.message?.contains("정지") == true) {
-                        Toast.makeText(context, response.message, Toast.LENGTH_SHORT).show()
+                        Toast.makeText(context, "정지된 사용자 계정입니다.", Toast.LENGTH_SHORT).show()
                     } else {
-                        Toast.makeText(context, errorMessage, Toast.LENGTH_SHORT).show()
+                        Toast.makeText(context, "신고 처리에 실패했습니다.", Toast.LENGTH_SHORT).show()
                     }
                 }
             } catch (e: Exception) {
@@ -221,7 +221,7 @@ class WalkReviewReportFragment : Fragment() {
                             Toast.makeText(context, "이미 신고한 산책로입니다.", Toast.LENGTH_SHORT).show()
                             return
                         } else if (errorResponse.message.contains("정지")) {
-                            Toast.makeText(context, errorResponse.message, Toast.LENGTH_SHORT).show()
+                            Toast.makeText(context, "정지된 사용자 계정입니다.", Toast.LENGTH_SHORT).show()
                             return
                         } else if (errorResponse.message.contains("자신의 후기")) {
                             Toast.makeText(context, "자신의 후기는 신고할 수 없습니다.", Toast.LENGTH_SHORT).show()
@@ -238,7 +238,7 @@ class WalkReviewReportFragment : Fragment() {
                 401 -> "로그인이 필요합니다."
                 403 -> "권한이 없습니다."
                 404 -> "존재하지 않는 리뷰입니다."
-                else -> "서버 오류가 발생했습니다. (${e.code()})"
+                else -> "서버 오류가 발생했습니다."
             }
             Toast.makeText(context, errorMessage, Toast.LENGTH_SHORT).show()
         } else {

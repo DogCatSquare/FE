@@ -30,18 +30,24 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
 
         val title = message.notification?.title ?: message.data["title"] ?: "새로운 알림"
         val body = message.notification?.body ?: message.data["body"] ?: ""
+        val type = message.data["type"]
+        val targetIdString = message.data["targetId"]
+        val targetId = targetIdString?.toLongOrNull()
 
-        sendNotification(title, body)
+        sendNotification(title, body, type, targetId)
     }
 
-    private fun sendNotification(title: String, messageBody: String) {
+    private fun sendNotification(title: String, messageBody: String, type: String?, targetId: Long?) {
         val channelId = "default_fcm_channel"
         val intent = android.content.Intent(this, com.example.dogcatsquare.SplashActivity::class.java).apply {
             addFlags(android.content.Intent.FLAG_ACTIVITY_CLEAR_TOP)
+            putExtra("notification_type", type)
+            putExtra("notification_target_id", targetId)
         }
+        val requestCode = System.currentTimeMillis().toInt()
         val pendingIntent = android.app.PendingIntent.getActivity(
-            this, 0, intent,
-            android.app.PendingIntent.FLAG_ONE_SHOT or android.app.PendingIntent.FLAG_IMMUTABLE
+            this, requestCode, intent,
+            android.app.PendingIntent.FLAG_UPDATE_CURRENT or android.app.PendingIntent.FLAG_IMMUTABLE
         )
 
         val defaultSoundUri = android.media.RingtoneManager.getDefaultUri(android.media.RingtoneManager.TYPE_NOTIFICATION)

@@ -69,7 +69,7 @@ class WalkingReviewTypeFragment : Fragment() {
                 parentFragmentManager.popBackStack()
 
             } else {
-                Toast.makeText(requireContext(), "등록 실패: ${response.message}", Toast.LENGTH_SHORT).show()
+                Toast.makeText(requireContext(), "등록에 실패했습니다.", Toast.LENGTH_SHORT).show()
             }
         }
     }

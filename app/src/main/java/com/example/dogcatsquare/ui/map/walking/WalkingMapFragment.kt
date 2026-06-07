@@ -294,11 +294,7 @@ class WalkingMapFragment : Fragment(), OnMapReadyCallback {
                         }
                     }
                 } else {
-                    Toast.makeText(
-                        requireContext(),
-                        response.message ?: "상세 정보를 불러오는데 실패했습니다.",
-                        Toast.LENGTH_SHORT
-                    ).show()
+                    Toast.makeText(requireContext(), "상세 정보를 불러오는데 실패했습니다.", Toast.LENGTH_SHORT).show()
                 }
             } catch (e: Exception) {
                 Log.e("WalkingMapFragment", "💥 예외 발생: ${e.message}", e)
@@ -337,11 +333,7 @@ class WalkingMapFragment : Fragment(), OnMapReadyCallback {
                         Toast.LENGTH_SHORT
                     ).show()
                 } else {
-                    Toast.makeText(
-                        requireContext(),
-                        response.message ?: "오류가 발생했습니다.",
-                        Toast.LENGTH_SHORT
-                    ).show()
+                    Toast.makeText(requireContext(), "오류가 발생했습니다.", Toast.LENGTH_SHORT).show()
                 }
             } catch (e: Exception) {
                 handleError(e)
@@ -369,11 +361,7 @@ class WalkingMapFragment : Fragment(), OnMapReadyCallback {
                     Toast.makeText(requireContext(), "산책로가 삭제되었습니다.", Toast.LENGTH_SHORT).show()
                     loadPlaceDetails(googlePlaceId)
                 } else {
-                    Toast.makeText(
-                        requireContext(),
-                        response.message ?: "산책로 삭제에 실패했습니다.",
-                        Toast.LENGTH_SHORT
-                    ).show()
+                    Toast.makeText(requireContext(), "산책로 삭제에 실패했습니다.", Toast.LENGTH_SHORT).show()
                 }
             } catch (e: Exception) {
                 handleError(e)
@@ -401,11 +389,11 @@ class WalkingMapFragment : Fragment(), OnMapReadyCallback {
                     )
                 }
 
-                Toast.makeText(
-                    requireContext(),
-                    response.message ?: "산책로가 신고되었습니다.",
-                    Toast.LENGTH_SHORT
-                ).show()
+                if (response.isSuccess) {
+                    Toast.makeText(requireContext(), "산책로가 신고되었습니다.", Toast.LENGTH_SHORT).show()
+                } else {
+                    Toast.makeText(requireContext(), "신고 처리에 실패했습니다.", Toast.LENGTH_SHORT).show()
+                }
             } catch (e: Exception) {
                 handleError(e)
             }
@@ -476,7 +464,10 @@ class WalkingMapFragment : Fragment(), OnMapReadyCallback {
 
             when {
                 !resultMessage.isNullOrBlank() -> resultMessage
-                !errorResponse.message.isNullOrBlank() -> errorResponse.message
+                !errorResponse.message.isNullOrBlank() -> {
+                    if (errorResponse.message.contains("정지")) "정지된 사용자 계정입니다."
+                    else errorResponse.message
+                }
                 else -> null
             }
         } catch (ex: Exception) {
@@ -488,15 +479,15 @@ class WalkingMapFragment : Fragment(), OnMapReadyCallback {
     private fun handleError(e: Exception) {
         val errorMessage = when (e) {
             is retrofit2.HttpException -> {
-                parseErrorMessage(e) ?: when (e.code()) {
+                when (e.code()) {    
                     401 -> "잘못된 토큰입니다."
                     403 -> "권한이 없습니다."
                     404 -> "데이터를 찾을 수 없습니다."
-                    else -> "서버 오류가 발생했습니다. (${e.code()})"
+                    else -> "서버 오류가 발생했습니다."
                 }
             }
             is java.io.IOException -> "네트워크 연결을 확인해주세요."
-            else -> "알 수 없는 오류가 발생했습니다: ${e.message}"
+            else -> "알 수 없는 오류가 발생했습니다."
         }
 
         Toast.makeText(requireContext(), errorMessage, Toast.LENGTH_SHORT).show()

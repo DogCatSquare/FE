@@ -14,7 +14,8 @@ data class SSEAlarmResponse(
     val id: Long,
     val userId: Long,
     val type: String,      // 알림 유형 (LIKE, DDAY 등)
+    val targetId: Long?,   // 신규 추가된 targetId
     val content: String,   // 사용자에게 보여줄 메시지 내용 (content 사용)
     val createdAt: String, // 알림 생성 시간
-    val read: Boolean
+    @SerializedName("isRead") val isRead: Boolean
 )
