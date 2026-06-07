@@ -68,7 +68,7 @@ class SearchResultFragment : Fragment() {
         searchQuery = arguments?.getString("searchQuery")
         latitude = arguments?.getDouble("latitude", 37.5665) ?: 37.5665
         longitude = arguments?.getDouble("longitude", 126.9780) ?: 126.9780
-        loadingDialog = LoadingDialog(requireContext())
+        loadingDialog = LoadingDialog(requireContext(), false)
     }
 
     override fun onCreateView(

@@ -22,6 +22,7 @@ import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.example.dogcatsquare.LoadingDialog
 import com.example.dogcatsquare.R
 import com.example.dogcatsquare.data.model.map.DetailImg
 import com.example.dogcatsquare.data.model.map.MapPrice
@@ -60,6 +61,7 @@ class MapDetailFragment : Fragment(), OnMapReadyCallback {
     private var actualPlaceLatitude: Double? = null
     private var actualPlaceLongitude: Double? = null
     private var isWished = false
+    private lateinit var loadingDialog: LoadingDialog
 
 
     override fun onCreateView(
@@ -73,6 +75,8 @@ class MapDetailFragment : Fragment(), OnMapReadyCallback {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        loadingDialog = LoadingDialog(requireContext(), false)
 
         // 위치 정보 저장
         placeLatitude = arguments?.getDouble("latitude") ?: 37.5665
@@ -103,6 +107,7 @@ class MapDetailFragment : Fragment(), OnMapReadyCallback {
     private fun loadPlaceDetails(googlePlaceId: String) {
         lifecycleScope.launch {
             try {
+                loadingDialog.show()
                 val token = getToken()
                 if (token == null) {
                     Toast.makeText(requireContext(), "로그인이 필요합니다.", Toast.LENGTH_SHORT).show()
@@ -344,6 +349,8 @@ class MapDetailFragment : Fragment(), OnMapReadyCallback {
                 }
             } catch (e: Exception) {
                 handleError(e)
+            } finally {
+                loadingDialog.dismiss()
             }
         }
     }
@@ -1012,6 +1019,13 @@ class MapDetailFragment : Fragment(), OnMapReadyCallback {
                     .commit()
             }
         _binding = null
+    }
+
+    override fun onStop() {
+        super.onStop()
+        if (::loadingDialog.isInitialized && loadingDialog.isDialogShowing) {
+            loadingDialog.dismiss()
+        }
     }
 
     fun refreshPlaceDetails() {
