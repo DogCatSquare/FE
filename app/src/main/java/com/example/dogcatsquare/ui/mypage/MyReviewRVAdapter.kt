@@ -19,7 +19,11 @@ import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
 
-class MyReviewRVAdapter(private val myReviewList: ArrayList<ReviewContent>, private val onDeleteReview: (DeleteReviewParams) -> Unit) : RecyclerView.Adapter<MyReviewRVAdapter.MyReviewAdapterViewHolder>() {
+class MyReviewRVAdapter(
+    private val myReviewList: ArrayList<ReviewContent>,
+    private val onDeleteReview: (DeleteReviewParams) -> Unit,
+    private val onItemClick: (ReviewContent) -> Unit
+) : RecyclerView.Adapter<MyReviewRVAdapter.MyReviewAdapterViewHolder>() {
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MyReviewAdapterViewHolder {
         val binding =
             ItemMyReviewBinding.inflate(LayoutInflater.from(parent.context), parent, false)
@@ -43,6 +47,10 @@ class MyReviewRVAdapter(private val myReviewList: ArrayList<ReviewContent>, priv
                 .load(myReview.imageUrls)
                 .placeholder(R.drawable.ic_profile_default)
                 .into(binding.reviewImg)
+
+            itemView.setOnClickListener {
+                onItemClick(myReview)
+            }
 
             // 설정 클릭(수정, 삭제)
             binding.settingIv.setOnClickListener {

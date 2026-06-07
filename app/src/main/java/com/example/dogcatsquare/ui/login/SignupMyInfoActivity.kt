@@ -364,7 +364,12 @@ class SignupMyInfoActivity : AppCompatActivity() {
         val confirmBtn: Button = view.findViewById(R.id.confirm_button)
 
         val regions = RegionData.regions.map { region ->
-            region.copy(subRegions = region.subRegions.filter { !it.name.contains("전체") })
+            region.copy(subRegions = region.subRegions
+                .filter { !it.name.contains("전체") }
+                .map { subRegion ->
+                    subRegion.copy(districts = subRegion.districts.filter { !it.contains("전체") })
+                }
+            )
         }
 
         // 선택된 항목 변수 초기화

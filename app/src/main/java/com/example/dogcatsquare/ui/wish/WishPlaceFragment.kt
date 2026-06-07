@@ -68,6 +68,10 @@ class WishPlaceFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         setupRecyclerView()
+
+        binding.swipeRefresh.setOnRefreshListener {
+            setupRecyclerView()
+        }
     }
 
     private fun setupRecyclerView() {
@@ -173,7 +177,6 @@ class WishPlaceFragment : Fragment() {
 
         })
     }
-
     private fun getAllPlaces(callback: (List<WishPlace>) -> Unit) {
         val token = getToken()
         val (lat, lng) = getCurrentLocation()
@@ -181,6 +184,7 @@ class WishPlaceFragment : Fragment() {
         val getMyWishService = RetrofitObj.getRetrofit(requireContext()).create(WishRetrofitObj::class.java)
         getMyWishService.getMyWish("Bearer $token", MyLocation(lat, lng)).enqueue(object : Callback<GetMyWishResponse> {
             override fun onResponse(call: Call<GetMyWishResponse>, response: Response<GetMyWishResponse>) {
+                binding.swipeRefresh.isRefreshing = false
                 Log.d("GetMyWish/SUCCESS", response.toString())
                 val resp: GetMyWishResponse = response.body()!!
 
@@ -215,9 +219,10 @@ class WishPlaceFragment : Fragment() {
             }
 
             override fun onFailure(call: Call<GetMyWishResponse>, t: Throwable) {
+                binding.swipeRefresh.isRefreshing = false
                 Log.d("RETROFIT/FAILURE", t.message.toString())
+                callback(emptyList())
             }
-
         })
     }
 

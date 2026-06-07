@@ -11,7 +11,7 @@ import android.widget.FrameLayout
 import androidx.fragment.app.FragmentActivity
 import com.example.dogcatsquare.databinding.DialogLoadingBinding
 
-class LoadingDialog(private val context: Context, private val isTransparentBackground: Boolean = false) {
+class LoadingDialog(private val context: Context, private val isTransparentBackground: Boolean = true) {
     private lateinit var binding: DialogLoadingBinding
     private val handler = Handler(Looper.getMainLooper())
     private var currentDots = 0

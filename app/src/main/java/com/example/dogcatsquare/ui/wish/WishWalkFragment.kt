@@ -66,6 +66,10 @@ class WishWalkFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         setupRecyclerView()
+
+        binding.swipeRefresh.setOnRefreshListener {
+            setupRecyclerView()
+        }
     }
 
     private fun setupRecyclerView() {
@@ -114,6 +118,7 @@ class WishWalkFragment : Fragment() {
         getMyWishService.getMyWish("Bearer $token", MyLocation(lat, lng)).enqueue(object :
             Callback<GetMyWishResponse> {
             override fun onResponse(call: Call<GetMyWishResponse>, response: Response<GetMyWishResponse>) {
+                binding.swipeRefresh.isRefreshing = false
                 Log.d("GetMyWish/SUCCESS", response.toString())
                 val resp: GetMyWishResponse = response.body()!!
 
@@ -148,7 +153,9 @@ class WishWalkFragment : Fragment() {
             }
 
             override fun onFailure(call: Call<GetMyWishResponse>, t: Throwable) {
+                binding.swipeRefresh.isRefreshing = false
                 Log.d("RETROFIT/FAILURE", t.message.toString())
+                callback(emptyList())
             }
 
         })

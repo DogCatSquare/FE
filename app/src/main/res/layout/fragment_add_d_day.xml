@@ -33,13 +33,14 @@
 
     <ImageView
         android:id="@+id/back_btn"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="10dp"
-        android:layout_marginTop="25dp"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:layout_marginStart="0dp"
+        android:layout_marginTop="13dp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:srcCompat="@drawable/ic_back" />
+        app:srcCompat="@drawable/ic_back" 
+        android:scaleType="centerInside" />
 
     <TextView
         android:id="@+id/textView17"

@@ -531,7 +531,7 @@ class MapDetailFragment : Fragment(), OnMapReadyCallback {
         googleMap.moveCamera(
             CameraUpdateFactory.newLatLngZoom(
                 location,
-                15.0f
+                17.0f
             )
         )
 

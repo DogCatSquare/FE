@@ -17,13 +17,14 @@
 
     <ImageView
         android:id="@+id/back_btn"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="10dp"
-        android:layout_marginTop="25dp"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:layout_marginStart="0dp"
+        android:layout_marginTop="13dp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:srcCompat="@drawable/ic_back" />
+        app:srcCompat="@drawable/ic_back" 
+        android:scaleType="centerInside" />
 
     <TextView
         android:id="@+id/textView17"
@@ -37,13 +38,20 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="@+id/back_btn" />
 
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/my_review_rv"
+    <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+        android:id="@+id/swipe_refresh"
         android:layout_width="0dp"
         android:layout_height="0dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/bar" />
+        app:layout_constraintTop_toBottomOf="@+id/bar">
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/my_review_rv"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+
+    </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

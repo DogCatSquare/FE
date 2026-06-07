@@ -64,6 +64,7 @@ class HomeFragment : Fragment() {
     private var placeDatas = ArrayList<Place>()
     private var hotPostDatas = ArrayList<com.example.dogcatsquare.data.model.post.Post>()
     private var currentQuizId: Long? = null
+    private var refreshCount = 0
 
     private fun getToken(): String? {
         val sharedPref = activity?.getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
@@ -106,7 +107,32 @@ class HomeFragment : Fragment() {
         setupHotPostRecyclerView()
         setupQuizSection()
 
+        binding.swipeRefresh.setOnRefreshListener {
+            refreshData()
+        }
+
         return binding.root
+    }
+
+    private fun refreshData() {
+        refreshCount = 4
+        getCurrentLocation()
+        viewModel.getWeatherData(forceRefresh = true)
+        setupDDayRecyclerView()
+        setupHotPlaceRecyclerView()
+        setupAdViewPager()
+        setupHotPostRecyclerView()
+        resetQuizUI()
+        getQuiz()
+    }
+
+    private fun decrementRefreshCount() {
+        if (refreshCount > 0) {
+            refreshCount--
+            if (refreshCount == 0) {
+                binding.swipeRefresh.isRefreshing = false
+            }
+        }
     }
 
     private fun getCurrentLocation() {
@@ -270,6 +296,7 @@ class HomeFragment : Fragment() {
         val getAllDDayService = RetrofitObj.getRetrofit(requireContext()).create(DDayRetrofitItf::class.java)
         getAllDDayService.getAllDDays("Bearer $BEARER_TOKEN").enqueue(object: Callback<GetAllDDayResponse> {
             override fun onResponse(call: Call<GetAllDDayResponse>, response: Response<GetAllDDayResponse>) {
+                decrementRefreshCount()
                 Log.d("GetDDay/SUCCESS", response.toString())
                 val resp = response.body()
 
@@ -301,6 +328,7 @@ class HomeFragment : Fragment() {
             }
 
             override fun onFailure(call: Call<GetAllDDayResponse>, t: Throwable) {
+                decrementRefreshCount()
                 Log.d("RETROFIT/FAILURE", t.message.toString())
             }
         })
@@ -361,6 +389,7 @@ class HomeFragment : Fragment() {
         val getPopularPlaceService = RetrofitObj.getRetrofit(requireContext()).create(PlacesApiService::class.java)
         getPopularPlaceService.getHotPlace("Bearer $token", cityId, GetHotPlaceRequest(currentLat, currentLng)).enqueue(object : Callback<GetHotPlaceResponse> {
             override fun onResponse(call: Call<GetHotPlaceResponse>, response: Response<GetHotPlaceResponse>) {
+                decrementRefreshCount()
                 Log.d("GetHotPlace/SUCCESS", response.toString())
                 val resp = response.body()
 
@@ -395,6 +424,7 @@ class HomeFragment : Fragment() {
             }
 
             override fun onFailure(call: Call<GetHotPlaceResponse>, t: Throwable) {
+                decrementRefreshCount()
                 Log.d("RETROFIT/FAILURE", t.message.toString())
             }
 
@@ -443,6 +473,7 @@ class HomeFragment : Fragment() {
         val getPopularPostService = RetrofitObj.getRetrofit(requireContext()).create(BoardApiService::class.java)
         getPopularPostService.getPopularPost("Bearer $token").enqueue(object : Callback<PopularPostResponse> {
             override fun onResponse(call: Call<PopularPostResponse>, response: Response<PopularPostResponse>) {
+                decrementRefreshCount()
                 Log.d("PopularPost/SUCCESS", response.toString())
                 val resp = response.body()
 
@@ -478,6 +509,7 @@ class HomeFragment : Fragment() {
             }
 
             override fun onFailure(call: Call<PopularPostResponse>, t: Throwable) {
+                decrementRefreshCount()
                 Log.d("RETROFIT/FAILURE", t.message.toString())
             }
 
@@ -510,6 +542,7 @@ class HomeFragment : Fragment() {
         val quizService = RetrofitObj.getRetrofit(requireContext()).create(com.example.dogcatsquare.data.api.QuizRetrofitItf::class.java)
         quizService.getRandomQuiz().enqueue(object: Callback<com.example.dogcatsquare.data.model.quiz.GetRandomQuizResponse> {
             override fun onResponse(call: Call<com.example.dogcatsquare.data.model.quiz.GetRandomQuizResponse>, response: Response<com.example.dogcatsquare.data.model.quiz.GetRandomQuizResponse>) {
+                decrementRefreshCount()
                 val resp = response.body()
                 if (resp != null && resp.isSuccess) {
                     currentQuizId = resp.result.quizId
@@ -518,6 +551,7 @@ class HomeFragment : Fragment() {
             }
 
             override fun onFailure(call: Call<com.example.dogcatsquare.data.model.quiz.GetRandomQuizResponse>, t: Throwable) {
+                decrementRefreshCount()
                 Log.d("Quiz/FAILURE", t.message.toString())
             }
         })

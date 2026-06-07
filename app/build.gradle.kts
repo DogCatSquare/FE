@@ -169,4 +169,7 @@ dependencies {
 
     // RecyclerView 및 LinearLayoutManager 사용을 위해 필요
     implementation ("androidx.recyclerview:recyclerview:1.3.2")
+
+    // SwipeRefreshLayout
+    implementation("androidx.swiperefreshlayout:swiperefreshlayout:1.1.0")
 }

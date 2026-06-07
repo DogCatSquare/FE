@@ -14,12 +14,13 @@
 
         <ImageView
             android:id="@+id/ivBack"
-            android:layout_width="12dp"
-            android:layout_height="12dp"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
             android:layout_centerVertical="true"
-            android:layout_marginStart="10dp"
+            android:layout_marginStart="0dp"
             android:src="@drawable/ic_back"
-            android:contentDescription="뒤로가기 버튼" />
+            android:contentDescription="뒤로가기 버튼" 
+        android:scaleType="centerInside" />
 
         <TextView
             android:id="@+id/title"
