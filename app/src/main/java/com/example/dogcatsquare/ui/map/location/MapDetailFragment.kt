@@ -751,6 +751,7 @@ class MapDetailFragment : Fragment(), OnMapReadyCallback {
     }
 
     private fun formatBusinessHours(businessHours: String): String {
+        val cleanHours = businessHours.replace("[", "").replace("]", "")
         val calendar = Calendar.getInstance(TimeZone.getTimeZone("Asia/Seoul"))
         val dayOfWeek = calendar.get(Calendar.DAY_OF_WEEK)
 
@@ -765,7 +766,7 @@ class MapDetailFragment : Fragment(), OnMapReadyCallback {
             else -> return "영업시간 정보 없음"
         }
 
-        return businessHours.split(", ")
+        return cleanHours.split(", ")
             .find { it.startsWith(koreanDayName) }
             ?.substringAfter(": ")
             ?.let { hours ->
@@ -804,6 +805,7 @@ class MapDetailFragment : Fragment(), OnMapReadyCallback {
     }
 
     private fun isCurrentlyOpen(businessHours: String): Boolean {
+        val cleanHours = businessHours.replace("[", "").replace("]", "")
         // 한국 시간대 설정
         val koreaTimeZone = TimeZone.getTimeZone("Asia/Seoul")
         val calendar = Calendar.getInstance(koreaTimeZone)
@@ -827,7 +829,7 @@ class MapDetailFragment : Fragment(), OnMapReadyCallback {
             else -> return false
         }
 
-        val todayHours = businessHours.split(", ")
+        val todayHours = cleanHours.split(", ")
             .find { it.startsWith(koreanDayName) }
             ?.substringAfter(": ")
             ?: return false

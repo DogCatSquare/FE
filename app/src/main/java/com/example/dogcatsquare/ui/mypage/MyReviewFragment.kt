@@ -112,31 +112,35 @@ class MyReviewFragment : Fragment() {
             override fun onResponse(call: Call<GetMyReviewResponse>, response: Response<GetMyReviewResponse>) {
                 binding.swipeRefresh.isRefreshing = false
                 Log.d("RETROFIT/SUCCESS", response.toString())
-                val resp: GetMyReviewResponse = response.body()!!
-                if (resp != null) {
-                    if (resp.isSuccess) { // 응답 성공 시
+                if (response.isSuccessful) {
+                    val resp = response.body()
+                    if (resp != null && resp.isSuccess) { // 응답 성공 시
                         Log.d("GetMyReview/SUCCESS", "레시피 목록 조회 성공")
 
-                        // 서버에서 받은 댓글 데이터를 mycommentDatas에 추가
-                        val reviews = resp.result.content.map { review ->
-                            ReviewContent(
-                                id = review.id,
-                                title = review.title,
-                                content = review.content,
-                                createdAt = com.example.dogcatsquare.util.DateFmt.format(review.createdAt).replace(".", "-"),
-                                imageUrls = review.imageUrls,
-                                googlePlaceId = review.googlePlaceId,
-                                walkId = review.walkId
-                            )
+                        val contentList = resp.result?.content
+                        if (contentList != null) {
+                            // 서버에서 받은 댓글 데이터를 mycommentDatas에 추가
+                            val reviews = contentList.map { review ->
+                                ReviewContent(
+                                    id = review.id,
+                                    title = review.title,
+                                    content = review.content,
+                                    createdAt = com.example.dogcatsquare.util.DateFmt.format(review.createdAt).replace(".", "-"),
+                                    imageUrls = review.imageUrls,
+                                    googlePlaceId = review.googlePlaceId,
+                                    walkId = review.walkId
+                                )
+                            }
+
+                            // 리스트에 새 데이터 추가
+                            myReviewDatas.addAll(reviews)
+                            adapter.notifyDataSetChanged() // 데이터 변경 알림
                         }
-
-                        // 리스트에 새 데이터 추가
-                        myReviewDatas.addAll(reviews)
-                        adapter.notifyDataSetChanged() // 데이터 변경 알림
-
                     } else {
-                        Log.e("GetMyReview/FAILURE", "응답 코드: ${resp.code}, 응답메시지: ${resp.message}")
+                        Log.e("GetMyReview/FAILURE", "응답 실패: ${resp?.message}")
                     }
+                } else {
+                    Log.e("GetMyReview/ERROR", "응답 코드 실패: ${response.code()}")
                 }
             }
 
