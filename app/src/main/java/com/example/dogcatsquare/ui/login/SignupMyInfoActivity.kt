@@ -30,6 +30,7 @@ import com.example.dogcatsquare.data.model.login.SignUpRequest
 import com.example.dogcatsquare.data.model.login.SignUpResponse
 import com.example.dogcatsquare.databinding.ActivitySignupMyInfoBinding
 import com.google.android.gms.common.config.GservicesValue.isInitialized
+import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.button.MaterialButton
 import com.google.firebase.messaging.FirebaseMessaging
@@ -445,6 +446,8 @@ class SignupMyInfoActivity : AppCompatActivity() {
         }
 
         bottomSheetDialog.show()
+        bottomSheetDialog.behavior.state = BottomSheetBehavior.STATE_EXPANDED
+        bottomSheetDialog.behavior.skipCollapsed = true
     }
 
     // 캘린더 뷰 바텀시트

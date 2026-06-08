@@ -6,11 +6,11 @@ data class GetMyReviewResponse(
     @SerializedName("isSuccess") val isSuccess: Boolean,
     @SerializedName("code") val code: String,
     @SerializedName("message") val message: String,
-    @SerializedName("result") val result: MyReviewResult
+    @SerializedName("result") val result: MyReviewResult?
 )
 
 data class MyReviewResult(
-    @SerializedName("content") val content: List<PostContent>,
+    @SerializedName("content") val content: List<PostContent>?,
     @SerializedName("totalPages") val totalPages: Int,
     @SerializedName("totalElements") val totalElements: Int,
     @SerializedName("last") val last: Boolean,

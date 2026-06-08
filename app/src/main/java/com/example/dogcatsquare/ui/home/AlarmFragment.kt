@@ -89,11 +89,7 @@ class AlarmFragment : Fragment() {
         val targetId = alarm.targetId
         Log.d("AlarmFragment", "navigateToDetail: type = $type, targetId = $targetId")
 
-        android.widget.Toast.makeText(
-            requireContext(),
-            "알림 클릭: type=$type, targetId=$targetId",
-            android.widget.Toast.LENGTH_SHORT
-        ).show()
+
 
         if (type == null) {
             Log.w("AlarmFragment", "Cannot navigate: type is null!")

@@ -67,36 +67,38 @@ class MyCommunityFragment : Fragment() {
         getMyPostService.getMyPost("Bearer $token", userId).enqueue(object : Callback<GetMyPostResponse> {
             override fun onResponse(call: Call<GetMyPostResponse>, response: Response<GetMyPostResponse>) {
                 Log.d("GetMyPost/SUCCESS", response.toString())
-                val resp: GetMyPostResponse = response.body()!!
-
-                if (resp != null) {
-                    if (resp.isSuccess) {
+                if (response.isSuccessful) {
+                    val resp = response.body()
+                    if (resp != null && resp.isSuccess) {
                         Log.d("GetMyPost", "내 게시물 전체 조회 성공")
 
-                        val myPost = resp.result.map { post ->
-                            com.example.dogcatsquare.data.model.post.Post (
-                                id = post.id,
-                                board = post.board,
-                                title = post.title,
-                                username = post.username,
-                                content = post.content,
-                                like_count = post.likeCount,
-                                comment_count = post.commentCount,
-                                video_URL = post.videoUrl,
-                                thumbnail_URL = post.thumbnailUrl,
-                                images = post.images,
-                                createdAt = com.example.dogcatsquare.util.DateFmt.format(post.createdAt).replace(".", "-"),
-                                profileImage_URL = post.profileImageUrl
-                            )
-                        }.toList()
-
-                        communityDatas.addAll(myPost)
-                        Log.d("GetMyPost", communityDatas.toString())
-                        adapter.notifyDataSetChanged()
+                        val resultList = resp.result
+                        if (resultList != null) {
+                            val myPost = resultList.map { post ->
+                                com.example.dogcatsquare.data.model.post.Post(
+                                    id = post.id,
+                                    board = post.board,
+                                    title = post.title,
+                                    username = post.username,
+                                    content = post.content,
+                                    like_count = post.likeCount,
+                                    comment_count = post.commentCount,
+                                    video_URL = post.videoUrl,
+                                    thumbnail_URL = post.thumbnailUrl,
+                                    images = post.images,
+                                    createdAt = com.example.dogcatsquare.util.DateFmt.format(post.createdAt).replace(".", "-"),
+                                    profileImage_URL = post.profileImageUrl
+                                )
+                            }
+                            communityDatas.addAll(myPost)
+                            Log.d("GetMyPost", communityDatas.toString())
+                            adapter.notifyDataSetChanged()
+                        }
+                    } else {
+                        Log.e("GetMyPost/ERROR", "응답 실패: ${resp?.message}")
                     }
-
                 } else {
-                    Log.e("GetMyPost/ERROR", "응답 코드: ${response.code()}")
+                    Log.e("GetMyPost/ERROR", "응답 코드 실패: ${response.code()}")
                 }
             }
 

@@ -164,10 +164,9 @@ class MypageFragment : Fragment() {
                 response: Response<GetUserResponse>
             ) {
                 Log.d("RETROFIT/SUCCESS", response.toString())
-                val resp: GetUserResponse = response.body()!!
-                if (resp != null){
-                    if(resp.isSuccess){ // 응답 성공 시
-
+                if (response.isSuccessful) {
+                    val resp = response.body()
+                    if (resp != null && resp.isSuccess) { // 응답 성공 시
                         Log.d("MYPAGE/SUCCESS", response.toString())
 
                         // UI 적용
@@ -182,12 +181,11 @@ class MypageFragment : Fragment() {
                         name = resp.result.nickname
                         phone = resp.result.phoneNumber
                         profileImg = resp.result.profileImageUrl.toString()
-
                     } else {
-                        Log.e("MYPAGE/FAILURE", "응답 코드: ${resp.code}, 응답메시지: ${resp.message}")
+                        Log.e("MYPAGE/FAILURE", "응답 실패: ${resp?.message}")
                     }
                 } else {
-                    Log.d("MYPAGE/FAILURE", "Response body is null")
+                    Log.e("MYPAGE/FAILURE", "응답 코드 실패: ${response.code()}")
                 }
             }
 

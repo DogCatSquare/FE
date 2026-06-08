@@ -6,7 +6,7 @@ data class GetMyPostResponse(
     @SerializedName("isSuccess") val isSuccess: Boolean,
     @SerializedName("code") val code: String,
     @SerializedName("message") val message: String,
-    @SerializedName("result") val result: List<MyPostResult>
+    @SerializedName("result") val result: List<MyPostResult>?
 )
 data class MyPostResult(
     @SerializedName("id") val id: Int,
