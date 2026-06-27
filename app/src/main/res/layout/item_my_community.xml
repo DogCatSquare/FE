@@ -40,8 +40,9 @@
         <!-- 메뉴 아이콘 -->
         <ImageView
             android:id="@+id/ivPostMenu"
-            android:layout_width="20dp"
-            android:layout_height="20dp"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:padding="14dp"
             android:contentDescription="메뉴"
             android:src="@drawable/icon_etc_button" />
     </LinearLayout>

@@ -27,6 +27,8 @@ import com.example.dogcatsquare.data.api.EventRetrofitItf
 import com.example.dogcatsquare.data.api.PlacesApiService
 import com.example.dogcatsquare.data.model.map.GetHotPlaceRequest
 import com.example.dogcatsquare.data.model.map.GetHotPlaceResponse
+import com.example.dogcatsquare.data.model.map.RecommendPlaceRequest
+import com.example.dogcatsquare.data.model.map.RecommendPlaceResponse
 import com.example.dogcatsquare.data.model.map.Place
 import com.example.dogcatsquare.data.model.home.DDay
 import com.example.dogcatsquare.data.model.home.Event
@@ -77,6 +79,7 @@ class HomeFragment : Fragment() {
     }
 
     private val categoryMap = mapOf(
+        "PARK" to "산책로",
         "HOSPITAL" to "동물병원",
         "CAFE" to "카페",
         "RESTAURANT" to "식당",
@@ -356,7 +359,7 @@ class HomeFragment : Fragment() {
         binding.homeHotPlaceRv.adapter = homeHotPlaceRVAdapter
         binding.homeHotPlaceRv.layoutManager = LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false)
 
-        getHotPlace(homeHotPlaceRVAdapter)
+        getRecommendedPlaces(homeHotPlaceRVAdapter)
 
         // 클릭 인터페이스
         homeHotPlaceRVAdapter.setMyItemClickListener(object : HomeHotPlaceRVAdapter.OnItemClickListener {
@@ -364,7 +367,7 @@ class HomeFragment : Fragment() {
                 val (currentLat, currentLng) = MapFragment().getMapCurrentPosition()
 
                 // placeType에 따라 다른 Fragment로 전환
-                if (place.category == "PARK") {
+                if (place.category == "PARK" || place.category == "산책로") {
                     val fragment = WalkingMapFragment.newInstance(place.googlePlaceId, currentLat, currentLng)
                     requireActivity().supportFragmentManager.beginTransaction()
                         .replace(R.id.main_frm, fragment)
@@ -381,21 +384,19 @@ class HomeFragment : Fragment() {
         })
     }
 
-    private fun getHotPlace(adapter: HomeHotPlaceRVAdapter) {
-        val token = getToken()
-        val cityId = getCityId()
+    private fun getRecommendedPlaces(adapter: HomeHotPlaceRVAdapter) {
         val (currentLat, currentLng) = MapFragment().getMapCurrentPosition()
 
-        val getPopularPlaceService = RetrofitObj.getRetrofit(requireContext()).create(PlacesApiService::class.java)
-        getPopularPlaceService.getHotPlace("Bearer $token", cityId, GetHotPlaceRequest(currentLat, currentLng)).enqueue(object : Callback<GetHotPlaceResponse> {
-            override fun onResponse(call: Call<GetHotPlaceResponse>, response: Response<GetHotPlaceResponse>) {
+        val getRecommendPlaceService = RetrofitObj.getRetrofit(requireContext()).create(PlacesApiService::class.java)
+        getRecommendPlaceService.getRecommendedPlaces(RecommendPlaceRequest(currentLat, currentLng)).enqueue(object : Callback<RecommendPlaceResponse> {
+            override fun onResponse(call: Call<RecommendPlaceResponse>, response: Response<RecommendPlaceResponse>) {
                 decrementRefreshCount()
-                Log.d("GetHotPlace/SUCCESS", response.toString())
+                Log.d("GetRecommendedPlace/SUCCESS", response.toString())
                 val resp = response.body()
 
                 if (resp != null) {
                     if (resp.isSuccess) {
-                        Log.d("GetHotPlace", "핫플 전체 조회 성공")
+                        Log.d("GetRecommendedPlace", "추천 장소 조회 성공")
 
                         val places = resp.result.map { place ->
                             Place (
@@ -411,19 +412,19 @@ class HomeFragment : Fragment() {
                                 imgUrl = place.imgUrl,
                                 reviewCount = place.reviewCount
                             )
-                        }.take(5)
+                        }
 
                         placeDatas.addAll(places)
-                        Log.d("HotPlaceList", placeDatas.toString())
+                        Log.d("RecommendPlaceList", placeDatas.toString())
                         adapter.notifyDataSetChanged()
                     }
 
                 } else {
-                    Log.e("GetHotPlace/ERROR", "응답 코드: ${response.code()}")
+                    Log.e("GetRecommendedPlace/ERROR", "응답 코드: ${response.code()}")
                 }
             }
 
-            override fun onFailure(call: Call<GetHotPlaceResponse>, t: Throwable) {
+            override fun onFailure(call: Call<RecommendPlaceResponse>, t: Throwable) {
                 decrementRefreshCount()
                 Log.d("RETROFIT/FAILURE", t.message.toString())
             }

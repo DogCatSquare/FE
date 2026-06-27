@@ -48,6 +48,10 @@ class MyBoardFragment : Fragment() {
         val boardName = arguments?.getString("board_name") ?: "마이게시판"
         boardId = arguments?.getInt("board_id") ?: -1
 
+        binding.swipeRefresh.setOnRefreshListener {
+            setupBoardPostRecyclerView(boardId)
+        }
+
         setupBoardPostRecyclerView(boardId)
 
         binding.ivCreatePost.setOnClickListener {
@@ -101,6 +105,7 @@ class MyBoardFragment : Fragment() {
         val getBoardPostService = RetrofitObj.getRetrofit(requireContext()).create(PostApiService::class.java)
         getBoardPostService.getBoardPost("Bearer $token", id).enqueue(object : Callback<com.example.dogcatsquare.data.model.community.BoardPost> {
             override fun onResponse(call: Call<com.example.dogcatsquare.data.model.community.BoardPost>, response: Response<com.example.dogcatsquare.data.model.community.BoardPost>) {
+                binding.swipeRefresh.isRefreshing = false
                 if (response.isSuccessful) {
                     // 응답 본문이 null일 수도 있으므로 `?.let`을 사용해 예외 처리
                     response.body()?.let { resp ->
@@ -143,6 +148,7 @@ class MyBoardFragment : Fragment() {
             }
 
             override fun onFailure(call: Call<com.example.dogcatsquare.data.model.community.BoardPost>, t: Throwable) {
+                binding.swipeRefresh.isRefreshing = false
                 Log.d("RETROFIT/FAILURE", "네트워크 오류: ${t.message}")
             }
         })

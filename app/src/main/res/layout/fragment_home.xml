@@ -119,7 +119,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="35dp"
                     android:fontFamily="@font/pretendard_bold"
-                    android:text="우리 동네 HOT Place"
+                    android:text="우리 동네 추천 장소"
                     android:textColor="@color/black"
                     android:textSize="23sp"
                     app:layout_constraintStart_toStartOf="@id/guideline3"

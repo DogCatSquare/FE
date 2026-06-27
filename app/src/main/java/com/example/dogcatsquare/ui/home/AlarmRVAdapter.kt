@@ -24,7 +24,8 @@ class AlarmRVAdapter(
 
     inner class AlarmAdapterViewHolder(val binding: ItemAlarmBinding) : RecyclerView.ViewHolder(binding.root) {
         fun bind(alarm : Alarm) {
-            binding.alarmNameTv.text = alarm.name
+            val cleanedName = alarm.name.replace(Regex("\\s*\\(postId:\\s*[^)]+\\)", RegexOption.IGNORE_CASE), "")
+            binding.alarmNameTv.text = cleanedName
             binding.alarmContentTv.text = alarm.content
             binding.alarmDateTv.text = alarm.date
 

@@ -145,7 +145,6 @@ class AlarmFragment : Fragment() {
                     // UI 업데이트는 Main Dispatcher에서 처리
                     lifecycleScope.launch(Dispatchers.Main) {
                         Log.d("AlarmFragment", "알림 읽음 처리 성공 (ID: ${alarmIds.joinToString()})")
-                        Toast.makeText(requireContext(), "알림을 읽음 처리했습니다.", Toast.LENGTH_SHORT).show()
                         
                         val mainActivity = requireActivity() as? com.example.dogcatsquare.MainActivity
                         mainActivity?.let { activity ->

@@ -54,8 +54,9 @@
         <!-- 메뉴 아이콘 -->
         <ImageView
             android:id="@+id/ivReplyMenu"
-            android:layout_width="20dp"
-            android:layout_height="20dp"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:padding="14dp"
             android:src="@drawable/ic_reply_menu"
             android:contentDescription="Menu" />
     </LinearLayout>

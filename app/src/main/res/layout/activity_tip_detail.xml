@@ -123,8 +123,9 @@
                 <!-- 메뉴 아이콘 -->
                 <ImageView
                     android:id="@+id/ivPostMenu"
-                    android:layout_width="20dp"
-                    android:layout_height="20dp"
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:padding="14dp"
                     android:src="@drawable/ic_post_menu"
                     android:contentDescription="게시글 메뉴" />
             </LinearLayout>

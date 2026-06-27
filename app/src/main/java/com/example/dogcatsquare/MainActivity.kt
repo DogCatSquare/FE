@@ -100,12 +100,13 @@ class MainActivity : AppCompatActivity() {
                     } catch (e: Exception) {
                         sseAlarm.createdAt
                     }
+                    val cleanedType = sseAlarm.type?.replace(Regex("\\s*\\(postId:\\s*[^)]+\\)", RegexOption.IGNORE_CASE), "")
                     val newAlarm = Alarm(
                         id = sseAlarm.id,
-                        name = sseAlarm.type ?: "새로운 알림",
+                        name = cleanedType ?: "새로운 알림",
                         content = sseAlarm.content,
                         date = formattedDate,
-                        type = sseAlarm.type,
+                        type = cleanedType,
                         targetId = sseAlarm.targetId
                     )
 
@@ -117,7 +118,7 @@ class MainActivity : AppCompatActivity() {
 
                         if (!isInitialConnection) {
                             unreadCount.value = (unreadCount.value ?: 0) + 1
-                            showSseNotification(sseAlarm.type ?: "새로운 알림", sseAlarm.content, sseAlarm.type, sseAlarm.targetId)
+                            showSseNotification(cleanedType ?: "새로운 알림", sseAlarm.content, cleanedType, sseAlarm.targetId)
                         }
                     }
                 }

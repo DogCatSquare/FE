@@ -4,6 +4,9 @@ import com.example.dogcatsquare.FilterPlacesRequest
 import com.example.dogcatsquare.data.model.map.BaseResponse
 import com.example.dogcatsquare.data.model.map.GetHotPlaceRequest
 import com.example.dogcatsquare.data.model.map.GetHotPlaceResponse
+import com.example.dogcatsquare.data.model.map.RecommendPlaceRequest
+import com.example.dogcatsquare.data.model.map.RecommendPlaceResponse
+import retrofit2.http.Headers
 import com.example.dogcatsquare.data.model.map.MapReview
 import com.example.dogcatsquare.data.model.map.PageResponse
 import com.example.dogcatsquare.data.model.map.PlaceDetailRequest
@@ -57,6 +60,10 @@ interface PlacesApiService {
 
     @POST("api/places/hot/{cityId}")
     fun getHotPlace(@Header("Authorization") token: String, @Path("cityId") cityId: Long?, @Body hotPlaceRequest: GetHotPlaceRequest): Call<GetHotPlaceResponse>
+
+    @Headers("No-Auth: true")
+    @POST("api/places/recommend")
+    fun getRecommendedPlaces(@Body request: RecommendPlaceRequest): Call<RecommendPlaceResponse>
 
     @POST("api/walks")
     suspend fun getWalkList(

@@ -81,7 +81,7 @@ class PostDetailActivity : AppCompatActivity(), CommentActionListener {
         // postId 로드 & 검증
         postId = intent.getIntExtra("postId", -1)
         if (postId == -1) {
-            Toast.makeText(this, "게시글 ID가 전달되지 않았습니다.", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, "게시글을 불러올 수 없습니다. 다시 시도해 주세요.", Toast.LENGTH_SHORT).show()
             finish()
             return
         }
@@ -148,15 +148,17 @@ class PostDetailActivity : AppCompatActivity(), CommentActionListener {
                             true
                         }
                         R.id.menu_delete -> {
-                            AlertDialog.Builder(this@PostDetailActivity)
+                            val dialog = AlertDialog.Builder(this@PostDetailActivity)
                                 .setTitle("게시글 삭제")
                                 .setMessage("정말 이 게시글을 삭제하시겠습니까?")
                                 .setPositiveButton("삭제") { _, _ ->
                                     deletePost(postId)
                                 }
                                 .setNegativeButton("취소", null)
-                                .show()
-                            Toast.makeText(this@PostDetailActivity, "게시글 삭제", Toast.LENGTH_SHORT).show()
+                                .create()
+                            dialog.show()
+                            dialog.getButton(AlertDialog.BUTTON_POSITIVE)?.setTextColor(ContextCompat.getColor(this@PostDetailActivity, R.color.main_color1))
+                            dialog.getButton(AlertDialog.BUTTON_NEGATIVE)?.setTextColor(ContextCompat.getColor(this@PostDetailActivity, R.color.main_color1))
                             true
                         }
                         else -> false

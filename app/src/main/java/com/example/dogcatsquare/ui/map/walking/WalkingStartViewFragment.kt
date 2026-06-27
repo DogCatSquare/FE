@@ -59,6 +59,7 @@ class WalkingStartViewFragment : Fragment(), OnMapReadyCallback {
     private var currentMarker: com.google.android.gms.maps.model.Marker? = null
     private var actualPlaceLatitude: Double? = null
     private var actualPlaceLongitude: Double? = null
+    private var walkDetailData: WalkDetail? = null
     private lateinit var loadingDialog: LoadingDialog
 
     val apiService: WalkingApiService by lazy {
@@ -94,10 +95,14 @@ class WalkingStartViewFragment : Fragment(), OnMapReadyCallback {
             isZoomGesturesEnabled = false
         }
 
-        val latitude = actualPlaceLatitude ?: placeLatitude
-        val longitude = actualPlaceLongitude ?: placeLongitude
-
-        updateMapLocation(latitude, longitude)
+        val detail = walkDetailData
+        if (detail != null) {
+            drawWalkRoute(detail)
+        } else {
+            val latitude = actualPlaceLatitude ?: placeLatitude
+            val longitude = actualPlaceLongitude ?: placeLongitude
+            updateMapLocation(latitude, longitude)
+        }
     }
 
     private fun updateMapLocation(lat: Double, lng: Double) {
@@ -120,6 +125,96 @@ class WalkingStartViewFragment : Fragment(), OnMapReadyCallback {
                 .position(location)
                 .icon(markerIcon)
         )
+    }
+
+    private fun drawWalkRoute(walkDetail: WalkDetail) {
+        if (!::googleMap.isInitialized) return
+
+        googleMap.clear()
+
+        val startCoords = walkDetail.startCoordinates
+        val endCoords = walkDetail.endCoordinates
+
+        val boundsBuilder = com.google.android.gms.maps.model.LatLngBounds.Builder()
+        val polylineOptions = com.google.android.gms.maps.model.PolylineOptions()
+            .width(10f)
+            .color(android.graphics.Color.parseColor("#FFB200"))
+        var hasPoints = false
+
+        val allCoords = mutableListOf<com.example.dogcatsquare.ui.map.walking.data.Response.Coordinate>()
+        startCoords?.let { allCoords.addAll(it) }
+        endCoords?.let { allCoords.addAll(it) }
+
+        val validCoords = allCoords.filter { it.latitude != 0.0 || it.longitude != 0.0 }
+
+        validCoords.forEach { coord ->
+            val latLng = com.google.android.gms.maps.model.LatLng(coord.latitude, coord.longitude)
+            polylineOptions.add(latLng)
+            boundsBuilder.include(latLng)
+            hasPoints = true
+        }
+
+        if (hasPoints) {
+            googleMap.addPolyline(polylineOptions)
+
+            // 시작 마커 (유효한 첫 좌표)
+            val first = validCoords.first()
+            val startLatLng = com.google.android.gms.maps.model.LatLng(first.latitude, first.longitude)
+            bitmapDescriptorFromVector(requireContext(), R.drawable.ic_start_marker)?.let { icon ->
+                googleMap.addMarker(
+                    MarkerOptions()
+                        .position(startLatLng)
+                        .icon(icon)
+                )
+            }
+
+            // 종료 마커 (유효한 마지막 좌표)
+            val last = validCoords.last()
+            val endLatLng = com.google.android.gms.maps.model.LatLng(last.latitude, last.longitude)
+            bitmapDescriptorFromVector(requireContext(), R.drawable.ic_end_marker)?.let { icon ->
+                googleMap.addMarker(
+                    MarkerOptions()
+                        .position(endLatLng)
+                        .icon(icon)
+                )
+            }
+
+            try {
+                val bounds = boundsBuilder.build()
+                googleMap.setOnMapLoadedCallback {
+                    val distance = FloatArray(1)
+                    android.location.Location.distanceBetween(
+                        bounds.northeast.latitude, bounds.northeast.longitude,
+                        bounds.southwest.latitude, bounds.southwest.longitude,
+                        distance
+                    )
+                    if (distance[0] < 10.0f) {
+                        googleMap.moveCamera(
+                            CameraUpdateFactory.newLatLngZoom(bounds.center, 14.5f)
+                        )
+                    } else {
+                        val padding = dpToPx(30f)
+                        googleMap.moveCamera(
+                            CameraUpdateFactory.newLatLngBounds(bounds, padding)
+                        )
+                    }
+                }
+            } catch (e: Exception) {
+                Log.e("WalkingStartView", "Bounds 렌더링 에러", e)
+            }
+        } else {
+            val latitude = actualPlaceLatitude ?: placeLatitude
+            val longitude = actualPlaceLongitude ?: placeLongitude
+            updateMapLocation(latitude, longitude)
+        }
+    }
+
+    private fun dpToPx(dp: Float): Int {
+        return android.util.TypedValue.applyDimension(
+            android.util.TypedValue.COMPLEX_UNIT_DIP,
+            dp,
+            resources.displayMetrics
+        ).toInt()
     }
 
     private fun bitmapDescriptorFromVector(context: Context, vectorResId: Int): BitmapDescriptor? {
@@ -222,17 +317,10 @@ class WalkingStartViewFragment : Fragment(), OnMapReadyCallback {
                     // UI 텍스트 및 이미지 업데이트 (이미 만들어두신 updateUI 호출)
                     updateUI(walkDetail)
 
-                    // 지도 관련 로직: 시작 좌표가 있으면 지도를 이동시키고 마커를 찍음
-                    val startCoord = walkDetail.startCoordinates?.firstOrNull()
-                    if (startCoord != null) {
-                        // 구글맵이 준비된 상태인지 확인 후 업데이트
-                        if (::googleMap.isInitialized) {
-                            updateMapLocation(startCoord.latitude, startCoord.longitude)
-                        } else {
-                            // 구글맵이 아직 준비 안됐다면 좌표만 저장해둠 (onMapReady에서 사용)
-                            actualPlaceLatitude = startCoord.latitude
-                            actualPlaceLongitude = startCoord.longitude
-                        }
+                    // 지도 관련 로직: 산책로 전체 경로를 그리고 지도 맞춤
+                    walkDetailData = walkDetail
+                    if (::googleMap.isInitialized) {
+                        drawWalkRoute(walkDetail)
                     }
                 }
                 is WalkDetailState.Error -> {
@@ -469,17 +557,10 @@ class WalkingStartViewFragment : Fragment(), OnMapReadyCallback {
                         // UI 텍스트 및 이미지 업데이트 (이미 만들어두신 updateUI 호출)
                         updateUI(walkDetail)
 
-                        // 지도 관련 로직: 시작 좌표가 있으면 지도를 이동시키고 마커를 찍음
-                        val startCoord = walkDetail.startCoordinates?.firstOrNull()
-                        if (startCoord != null) {
-                            // 구글맵이 준비된 상태인지 확인 후 업데이트
-                            if (::googleMap.isInitialized) {
-                                updateMapLocation(startCoord.latitude, startCoord.longitude)
-                            } else {
-                                // 구글맵이 아직 준비 안됐다면 좌표만 저장해둠 (onMapReady에서 사용)
-                                actualPlaceLatitude = startCoord.latitude
-                                actualPlaceLongitude = startCoord.longitude
-                            }
+                        // 지도 관련 로직: 산책로 전체 경로를 그리고 지도 맞춤
+                        walkDetailData = walkDetail
+                        if (::googleMap.isInitialized) {
+                            drawWalkRoute(walkDetail)
                         }
                     }
 

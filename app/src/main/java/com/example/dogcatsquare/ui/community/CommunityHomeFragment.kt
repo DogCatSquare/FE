@@ -39,8 +39,21 @@ class CommunityHomeFragment : Fragment(R.layout.fragment_community_home) {
         super.onViewCreated(view, savedInstanceState)
         _binding = FragmentCommunityHomeBinding.bind(view)
 
+        binding.swipeRefresh.setOnRefreshListener {
+            refreshData()
+        }
+
         setupHotPostRecyclerView()
         setupTipPostRecyclerView()
+    }
+
+    private fun refreshData() {
+        (binding.rvPopularPosts.adapter as? PostAdapter)?.let { adapter ->
+            getPopularPost(adapter)
+        }
+        (binding.rvTips.adapter as? GetAllPostAdapter)?.let { adapter ->
+            getTipPost(adapter)
+        }
     }
 
     override fun onDestroyView() {
@@ -103,6 +116,7 @@ class CommunityHomeFragment : Fragment(R.layout.fragment_community_home) {
         popularCall = svc.getPopularPost("Bearer $token")
         popularCall?.enqueue(object : Callback<PopularPostResponse> {
             override fun onResponse(call: Call<PopularPostResponse>, response: Response<PopularPostResponse>) {
+                _binding?.swipeRefresh?.isRefreshing = false
                 // 화면 분리/파괴되었으면 종료
                 if (!isAdded || _binding == null) return
 
@@ -138,6 +152,7 @@ class CommunityHomeFragment : Fragment(R.layout.fragment_community_home) {
             }
 
             override fun onFailure(call: Call<PopularPostResponse>, t: Throwable) {
+                _binding?.swipeRefresh?.isRefreshing = false
                 if (!isAdded) return
                 Log.e("PopularPost", "error", t)
             }
@@ -181,6 +196,7 @@ class CommunityHomeFragment : Fragment(R.layout.fragment_community_home) {
                 call: Call<com.example.dogcatsquare.data.model.community.GetAllPostResponse>,
                 response: Response<com.example.dogcatsquare.data.model.community.GetAllPostResponse>
             ) {
+                _binding?.swipeRefresh?.isRefreshing = false
                 if (!isAdded || _binding == null) return
 
                 val resp = response.body()
@@ -196,6 +212,7 @@ class CommunityHomeFragment : Fragment(R.layout.fragment_community_home) {
                 call: Call<com.example.dogcatsquare.data.model.community.GetAllPostResponse>,
                 t: Throwable
             ) {
+                _binding?.swipeRefresh?.isRefreshing = false
                 if (!isAdded) return
                 Log.e("AllPost", "error", t)
             }

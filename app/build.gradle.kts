@@ -43,6 +43,15 @@ android {
             keyAlias = "androiddebugkey"
             keyPassword = "android"
         }
+
+        create("release") {
+            // QA 단계에서는 임시로 프로젝트의 debug.keystore를 같이 써도 무방합니다.
+            // (단, 실제 구글 플레이스토어 출시 때는 정식 .jks 키 파일로 교체하셔야 합니다!)
+            storeFile = file("debug.keystore")
+            storePassword = "android"
+            keyAlias = "androiddebugkey"
+            keyPassword = "android"
+        }
     }
 
     buildTypes {
@@ -56,6 +65,7 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+            signingConfig = signingConfigs.getByName("release")
         }
     }
 

@@ -29,7 +29,7 @@ enum class PlaceType(val value: String, @DrawableRes val defaultImage: Int) {
 
     companion object {
         fun fromString(value: String?): PlaceType {
-            return values().find { it.value == value } ?: UNKNOWN
+            return values().find { it.name == value || it.value == value } ?: UNKNOWN
         }
     }
 }

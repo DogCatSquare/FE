@@ -10,16 +10,11 @@ import com.example.dogcatsquare.R
 import com.example.dogcatsquare.databinding.ItemMyCommunityBinding
 import com.example.dogcatsquare.ui.community.PostDetailActivity
 
-class MyCommunityRVAdapter(private val myPostList: ArrayList<com.example.dogcatsquare.data.model.post.Post>) : RecyclerView.Adapter<MyCommunityRVAdapter.MyCommunityAdapterViewHolder>(){
-    interface OnItemClickListener {
-        fun onItemClick(myPost: com.example.dogcatsquare.data.model.post.Post)
-    }
-
-    private lateinit var mItemClickListener: OnItemClickListener
-
-    fun setMyItemClickListener(itemClickListener: OnItemClickListener) {
-        mItemClickListener = itemClickListener
-    }
+class MyCommunityRVAdapter(
+    private val myPostList: ArrayList<com.example.dogcatsquare.data.model.post.Post>,
+    private val onEditPost: (com.example.dogcatsquare.data.model.post.Post) -> Unit,
+    private val onDeletePost: (com.example.dogcatsquare.data.model.post.Post) -> Unit
+) : RecyclerView.Adapter<MyCommunityRVAdapter.MyCommunityAdapterViewHolder>(){
 
     override fun onCreateViewHolder(
         parent: ViewGroup,
@@ -31,9 +26,6 @@ class MyCommunityRVAdapter(private val myPostList: ArrayList<com.example.dogcats
 
     override fun onBindViewHolder(holder: MyCommunityRVAdapter.MyCommunityAdapterViewHolder, position: Int) {
         val myPost = myPostList[position]
-        holder.itemView.setOnClickListener {
-            mItemClickListener.onItemClick(myPostList[position])
-        }
         holder.bind(myPost)
     }
 
@@ -78,6 +70,25 @@ class MyCommunityRVAdapter(private val myPostList: ArrayList<com.example.dogcats
                 binding.ivPostImage5.visibility = View.GONE
             }
 
+
+            binding.ivPostMenu.setOnClickListener { view ->
+                val popup = android.widget.PopupMenu(itemView.context, view)
+                popup.menuInflater.inflate(R.menu.post_menu, popup.menu)
+                popup.setOnMenuItemClickListener { menuItem ->
+                    when (menuItem.itemId) {
+                        R.id.menu_edit -> {
+                            onEditPost(myPost)
+                            true
+                        }
+                        R.id.menu_delete -> {
+                            onDeletePost(myPost)
+                            true
+                        }
+                        else -> false
+                    }
+                }
+                popup.show()
+            }
 
             itemView.setOnClickListener {
                 val intent = Intent(itemView.context, PostDetailActivity::class.java).apply {

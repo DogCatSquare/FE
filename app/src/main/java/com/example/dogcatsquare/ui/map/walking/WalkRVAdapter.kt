@@ -1,5 +1,8 @@
 package com.example.dogcatsquare.ui.map.walking
 
+import android.content.Context
+import android.graphics.Bitmap
+import android.graphics.Canvas
 import android.graphics.Color
 import android.util.Log
 import android.util.TypedValue
@@ -9,9 +12,13 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.LinearLayout
 import androidx.cardview.widget.CardView
+import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.example.dogcatsquare.R
+import com.google.android.gms.maps.model.BitmapDescriptor
+import com.google.android.gms.maps.model.BitmapDescriptorFactory
+import com.google.android.gms.maps.model.MarkerOptions
 import com.example.dogcatsquare.data.model.walk.Walk
 import com.example.dogcatsquare.databinding.ItemMapwalkingBinding
 import com.google.android.gms.maps.CameraUpdateFactory
@@ -97,13 +104,15 @@ class WalkRVAdapter(
 
                     googleMap.clear()
 
-                    if (!walk.coordinates.isNullOrEmpty()) {
+                    val validCoords = walk.coordinates?.filter { it.latitude != 0.0 || it.longitude != 0.0 } ?: emptyList()
+
+                    if (validCoords.isNotEmpty()) {
                         val boundsBuilder = LatLngBounds.Builder()
                         val polylineOptions = PolylineOptions()
                             .width(10f)
                             .color(Color.parseColor("#FFB200"))
 
-                        walk.coordinates.forEach { coord ->
+                        validCoords.forEach { coord ->
                             val latLng = LatLng(coord.latitude, coord.longitude)
                             polylineOptions.add(latLng)
                             boundsBuilder.include(latLng)
@@ -111,13 +120,39 @@ class WalkRVAdapter(
 
                         googleMap.addPolyline(polylineOptions)
 
+                        // 시작 마커 (유효한 첫 좌표)
+                        val first = validCoords.first()
+                        val startLatLng = LatLng(first.latitude, first.longitude)
+                        getMarkerIcon(root.context, R.drawable.ic_start_marker)?.let { icon ->
+                            googleMap.addMarker(MarkerOptions().position(startLatLng).icon(icon))
+                        }
+
+                        // 종료 마커 (유효한 마지막 좌표)
+                        val last = validCoords.last()
+                        val endLatLng = LatLng(last.latitude, last.longitude)
+                        getMarkerIcon(root.context, R.drawable.ic_end_marker)?.let { icon ->
+                            googleMap.addMarker(MarkerOptions().position(endLatLng).icon(icon))
+                        }
+
                         try {
                             val bounds = boundsBuilder.build()
                             val padding = dpToPx(30f)
                             googleMap.setOnMapLoadedCallback {
-                                googleMap.moveCamera(
-                                    CameraUpdateFactory.newLatLngBounds(bounds, padding)
+                                val distance = FloatArray(1)
+                                android.location.Location.distanceBetween(
+                                    bounds.northeast.latitude, bounds.northeast.longitude,
+                                    bounds.southwest.latitude, bounds.southwest.longitude,
+                                    distance
                                 )
+                                if (distance[0] < 10.0f) {
+                                    googleMap.moveCamera(
+                                        CameraUpdateFactory.newLatLngZoom(bounds.center, 14.5f)
+                                    )
+                                } else {
+                                    googleMap.moveCamera(
+                                        CameraUpdateFactory.newLatLngBounds(bounds, padding)
+                                    )
+                                }
                             }
                         } catch (e: Exception) {
                             Log.e("WalkRVAdapter", "Bounds 렌더링 에러", e)
@@ -170,6 +205,15 @@ class WalkRVAdapter(
 
             cardView.addView(iv)
             binding.imageContainer.addView(cardView)
+        }
+
+        private fun getMarkerIcon(context: Context, resId: Int): BitmapDescriptor? {
+            val vectorDrawable = ContextCompat.getDrawable(context, resId) ?: return null
+            vectorDrawable.setBounds(0, 0, vectorDrawable.intrinsicWidth, vectorDrawable.intrinsicHeight)
+            val bitmap = Bitmap.createBitmap(vectorDrawable.intrinsicWidth, vectorDrawable.intrinsicHeight, Bitmap.Config.ARGB_8888)
+            val canvas = Canvas(bitmap)
+            vectorDrawable.draw(canvas)
+            return BitmapDescriptorFactory.fromBitmap(bitmap)
         }
     }
 
