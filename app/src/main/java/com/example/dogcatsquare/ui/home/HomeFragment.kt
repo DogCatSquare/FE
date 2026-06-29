@@ -46,6 +46,9 @@ import com.example.dogcatsquare.ui.map.walking.WalkingMapFragment
 import com.example.dogcatsquare.ui.mypage.HorizontalSpacingItemDecoration
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
+import com.google.android.gms.location.LocationRequest
+import com.google.android.gms.location.LocationCallback
+import com.google.android.gms.location.LocationResult
 import com.naver.maps.geometry.LatLng
 import retrofit2.Call
 import retrofit2.Callback
@@ -148,12 +151,60 @@ class HomeFragment : Fragment() {
         fusedLocationClient.lastLocation.addOnSuccessListener { location: Location? ->
             if (location != null) {
                 currentLocation = LatLng(location.latitude, location.longitude)
-                Log.d("HomeFragment", "현재 위치: ${currentLocation?.latitude}, ${currentLocation?.longitude}")
+                Log.d("HomeFragment", "현재 위치 (lastLocation): ${currentLocation?.latitude}, ${currentLocation?.longitude}")
 
                 // SharedPreferences에 저장
                 saveCurrentLocation(location.latitude, location.longitude)
+
+                // 위치가 갱신되었으므로 추천 장소 목록을 다시 가져옴
+                (binding.homeHotPlaceRv.adapter as? HomeHotPlaceRVAdapter)?.let { adapter ->
+                    getRecommendedPlaces(adapter)
+                }
             } else {
-                Log.e("HomeFragment", "현재 위치를 가져올 수 없습니다.")
+                Log.e("HomeFragment", "현재 위치가 null입니다. 위치 업데이트를 요청합니다.")
+                requestLocationUpdate()
+            }
+        }
+    }
+
+    private fun requestLocationUpdate() {
+        if (ActivityCompat.checkSelfPermission(requireContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
+            ActivityCompat.checkSelfPermission(requireContext(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            return
+        }
+        val locationRequest = LocationRequest.create().apply {
+            priority = LocationRequest.PRIORITY_HIGH_ACCURACY
+            interval = 5000
+            fastestInterval = 2000
+            numUpdates = 1
+        }
+        val callback = object : LocationCallback() {
+            override fun onLocationResult(locationResult: LocationResult) {
+                val location = locationResult.lastLocation
+                if (location != null) {
+                    currentLocation = LatLng(location.latitude, location.longitude)
+                    Log.d("HomeFragment", "현재 위치 (LocationCallback): ${currentLocation?.latitude}, ${currentLocation?.longitude}")
+                    saveCurrentLocation(location.latitude, location.longitude)
+                    
+                    (binding.homeHotPlaceRv.adapter as? HomeHotPlaceRVAdapter)?.let { adapter ->
+                        getRecommendedPlaces(adapter)
+                    }
+                }
+                fusedLocationClient.removeLocationUpdates(this)
+            }
+        }
+        fusedLocationClient.requestLocationUpdates(locationRequest, callback, android.os.Looper.getMainLooper())
+    }
+
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray
+    ) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        if (requestCode == 1001) {
+            if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                getCurrentLocation()
             }
         }
     }
@@ -364,7 +415,9 @@ class HomeFragment : Fragment() {
         // 클릭 인터페이스
         homeHotPlaceRVAdapter.setMyItemClickListener(object : HomeHotPlaceRVAdapter.OnItemClickListener {
             override fun onItemClick(place: Place) {
-                val (currentLat, currentLng) = MapFragment().getMapCurrentPosition()
+                val savedLoc = getSavedLocation()
+                val currentLat = currentLocation?.latitude ?: savedLoc?.first ?: 37.5665
+                val currentLng = currentLocation?.longitude ?: savedLoc?.second ?: 126.9780
 
                 // placeType에 따라 다른 Fragment로 전환
                 if (place.category == "PARK" || place.category == "산책로") {
@@ -385,7 +438,9 @@ class HomeFragment : Fragment() {
     }
 
     private fun getRecommendedPlaces(adapter: HomeHotPlaceRVAdapter) {
-        val (currentLat, currentLng) = MapFragment().getMapCurrentPosition()
+        val savedLoc = getSavedLocation()
+        val currentLat = currentLocation?.latitude ?: savedLoc?.first ?: 37.5665
+        val currentLng = currentLocation?.longitude ?: savedLoc?.second ?: 126.9780
 
         val getRecommendPlaceService = RetrofitObj.getRetrofit(requireContext()).create(PlacesApiService::class.java)
         getRecommendPlaceService.getRecommendedPlaces(RecommendPlaceRequest(currentLat, currentLng)).enqueue(object : Callback<RecommendPlaceResponse> {
@@ -414,6 +469,7 @@ class HomeFragment : Fragment() {
                             )
                         }
 
+                        placeDatas.clear()
                         placeDatas.addAll(places)
                         Log.d("RecommendPlaceList", placeDatas.toString())
                         adapter.notifyDataSetChanged()

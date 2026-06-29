@@ -44,14 +44,17 @@
 
         <TextView
             android:id="@+id/hot_place_tv"
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginTop="10dp"
             android:fontFamily="@font/pretendard_semibold"
             android:text="얌얌트레이"
             android:textColor="@color/black"
             android:textSize="15sp"
+            android:maxLines="1"
+            android:ellipsize="end"
             app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/hot_place_iv" />
 
         <ImageView

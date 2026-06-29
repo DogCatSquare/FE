@@ -1,3 +1,5 @@
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
@@ -11,6 +13,15 @@ android {
     namespace = "com.example.dogcatsquare"
     compileSdk = 35
 
+    val localProperties = Properties().apply {
+        val localPropertiesFile = rootProject.file("local.properties")
+        if (localPropertiesFile.exists()) {
+            localPropertiesFile.inputStream().use { stream ->
+                load(stream)
+            }
+        }
+    }
+
     defaultConfig {
         applicationId = "com.example.dogcatsquare"
         minSdk = 24
@@ -23,6 +34,11 @@ android {
 
         buildConfigField("String", "NAVER_CLIENT_ID", "\"${project.findProperty("naver.client.id") ?: ""}\"")
         buildConfigField("String", "NAVER_CLIENT_SECRET", "\"${project.findProperty("naver.client.secret") ?: ""}\"")
+
+        val mapsApiKey = (localProperties.getProperty("GOOGLE_MAPS_API_KEY") 
+            ?: System.getenv("GOOGLE_MAPS_API_KEY") 
+            ?: "AIzaSyDSoiITfQiLLNsXzAxg6aqMg91oqiZPiF4")
+        resValue("string", "google_maps_api_key", mapsApiKey)
     }
 
     buildTypes {

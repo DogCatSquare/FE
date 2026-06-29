@@ -82,6 +82,7 @@ class MapFragment : Fragment(), OnMapReadyCallback {
     private var userAddress: String = ""
 
     private val mapMarkers = mutableListOf<Marker>()
+    private var lastLoadedLatLng: LatLng? = null
 
     // 필터 옵션 상태 저장을 위한 데이터 클래스
     private data class FilterOptions(
@@ -212,6 +213,14 @@ class MapFragment : Fragment(), OnMapReadyCallback {
         // 필터 버튼 클릭 리스너 추가
         binding.filter.setOnClickListener {
             showSearchOptions()
+        }
+
+        // 새로고침 버튼 클릭 리스너 추가
+        binding.researchButton.setOnClickListener {
+            googleMap?.let { map ->
+                val center = map.cameraPosition.target
+                resetAndLoadPlaces(center)
+            }
         }
     }
 
@@ -374,6 +383,7 @@ class MapFragment : Fragment(), OnMapReadyCallback {
 
     // 데이터를 로드하기 전에 페이징 및 리스트 상태를 초기화하는 함수
     private fun resetAndLoadPlaces(latLng: LatLng, page: Int = 0) {
+        lastLoadedLatLng = latLng
         currentPage = page
         isLastPage = false
         if (page == 0) {
