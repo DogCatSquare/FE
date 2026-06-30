@@ -31,6 +31,18 @@ class HomeWeatherFragment : Fragment() {
                 .commitAllowingStateLoss()
         }
 
+        binding.homeSettingIv.setOnClickListener {
+
+            requireActivity().supportFragmentManager.beginTransaction()
+
+                .replace(R.id.main_frm, HomeSettingFragment())
+
+                .addToBackStack(null)
+
+                .commitAllowingStateLoss()
+
+        }
+
         // 알림 뱃지 관찰 및 UI 업데이트
         (requireActivity() as? MainActivity)?.unreadCount?.observe(viewLifecycleOwner) { count ->
             if (count != null && count > 0) {
