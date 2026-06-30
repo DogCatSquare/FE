@@ -1,12 +1,11 @@
 package com.example.dogcatsquare.ui.home
 
-import android.content.Intent
-import android.net.Uri
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
+import com.example.dogcatsquare.R
 import com.example.dogcatsquare.databinding.FragmentHomeSettingBinding
 
 class HomeSettingFragment : Fragment() {
@@ -35,19 +34,31 @@ class HomeSettingFragment : Fragment() {
 
         // 서비스 이용약관
         binding.serviceTermLayout.setOnClickListener {
-            openUrl("서비스 이용약관 URL")
+            parentFragmentManager.beginTransaction()
+                .replace(
+                    R.id.main_frm,
+                    TermsFragment.newInstance(
+                        "서비스 이용약관",
+                        TermsFragment.TYPE_SERVICE
+                    )
+                )
+                .addToBackStack(null)
+                .commit()
         }
 
         // 개인정보 처리방침
         binding.privacyPolicyLayout.setOnClickListener {
-            openUrl("개인정보 처리방침 URL")
+            parentFragmentManager.beginTransaction()
+                .replace(
+                    R.id.main_frm,
+                    TermsFragment.newInstance(
+                        "개인정보 처리방침",
+                        TermsFragment.TYPE_PRIVACY
+                    )
+                )
+                .addToBackStack(null)
+                .commit()
         }
-    }
-
-    private fun openUrl(url: String) {
-        startActivity(
-            Intent(Intent.ACTION_VIEW, Uri.parse(url))
-        )
     }
 
     override fun onDestroyView() {
