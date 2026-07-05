@@ -180,10 +180,7 @@ class WalkingReviewFragment : Fragment(), OnMapReadyCallback {
                 Toast.makeText(requireContext(), "리뷰는 20자 이상 작성해주세요.", Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
-            if (selectedBitmaps.isEmpty()) {
-                Toast.makeText(requireContext(), "최소 1장의 사진을 추가해주세요.", Toast.LENGTH_SHORT).show()
-                return@setOnClickListener
-            }
+
 
             if (!loadingDialog.isDialogShowing) {
                 loadingDialog.show()
