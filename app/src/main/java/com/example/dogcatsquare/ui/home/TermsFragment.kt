@@ -4,8 +4,8 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.webkit.WebViewClient
 import androidx.fragment.app.Fragment
-import com.example.dogcatsquare.R
 import com.example.dogcatsquare.databinding.FragmentTermsBinding
 
 class TermsFragment : Fragment() {
@@ -25,9 +25,23 @@ class TermsFragment : Fragment() {
 
         binding.titleTv.text = title
 
+        binding.webView.webViewClient = WebViewClient()
+
+        binding.webView.settings.apply {
+            javaScriptEnabled = false
+            builtInZoomControls = false
+            displayZoomControls = false
+            setSupportZoom(false)
+            loadWithOverviewMode = true
+            useWideViewPort = true
+        }
+
         when (type) {
-            TYPE_SERVICE -> binding.contentTv.setText(R.string.service_terms)
-            TYPE_PRIVACY -> binding.contentTv.setText(R.string.privacy_policy)
+            TYPE_SERVICE ->
+                binding.webView.loadUrl("file:///android_asset/terms.html")
+
+            TYPE_PRIVACY ->
+                binding.webView.loadUrl("file:///android_asset/privacy_policy.html")
         }
 
         binding.backBtn.setOnClickListener {
