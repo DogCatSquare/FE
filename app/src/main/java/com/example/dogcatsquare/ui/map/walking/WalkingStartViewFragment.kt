@@ -379,6 +379,38 @@ class WalkingStartViewFragment : Fragment(), OnMapReadyCallback {
         // 산책로 위시 버튼 설정
         val wishBt: ImageButton = binding.wishBt
         var isChecked = false
+
+        // 위시 상태 불러오기
+        val token = activity?.getSharedPreferences("app_prefs", Context.MODE_PRIVATE)?.getString("token", null)
+        if (token != null && walkId != null) {
+            val wishService = retrofit.create(com.example.dogcatsquare.data.api.WishRetrofitObj::class.java)
+            wishService.getMyWalkWish("Bearer $token").enqueue(object : retrofit2.Callback<com.example.dogcatsquare.data.model.wish.GetMyWalkWishResponse> {
+                override fun onResponse(
+                    call: retrofit2.Call<com.example.dogcatsquare.data.model.wish.GetMyWalkWishResponse>,
+                    response: retrofit2.Response<com.example.dogcatsquare.data.model.wish.GetMyWalkWishResponse>
+                ) {
+                    if (response.isSuccessful) {
+                        val wishWalks = response.body()?.result?.walks
+                        val isWish = wishWalks?.any { it.walkId == walkId.toInt() } ?: false
+                        if (isWish) {
+                            isChecked = true
+                            wishBt.setImageResource(R.drawable.ic_wish_check)
+                        } else {
+                            isChecked = false
+                            wishBt.setImageResource(R.drawable.ic_wish)
+                        }
+                    }
+                }
+
+                override fun onFailure(
+                    call: retrofit2.Call<com.example.dogcatsquare.data.model.wish.GetMyWalkWishResponse>,
+                    t: Throwable
+                ) {
+                    Log.e("WalkingStartView", "Failed to fetch wish walks", t)
+                }
+            })
+        }
+
         wishBt.setOnClickListener {
             val token = activity?.getSharedPreferences("app_prefs", Context.MODE_PRIVATE)?.getString("token", null)
             if (token == null) {

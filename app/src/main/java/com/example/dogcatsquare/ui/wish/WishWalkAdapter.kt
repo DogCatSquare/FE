@@ -85,7 +85,7 @@ class WishWalkAdapter(
 
             // Child Adapter
             if (!place.walks.isNullOrEmpty()) {
-                val detailAdapter = WishWalkDetailAdapter(bearer_token, context) { removedWalk ->
+                val detailAdapter = WishWalkDetailAdapter(bearer_token, context, place.googlePlaceId) { removedWalk ->
                     // Remove the walk from the list and update UI
                     val updatedWalks = place.walks!!.filter { it.walkId != removedWalk.walkId }
                     place.walks = updatedWalks

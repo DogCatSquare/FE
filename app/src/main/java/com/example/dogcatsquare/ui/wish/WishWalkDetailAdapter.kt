@@ -34,6 +34,7 @@ import android.util.TypedValue
 class WishWalkDetailAdapter(
     private val token: String?,
     private val context: Context,
+    private val googlePlaceId: String?,
     private val onWalkRemoved: (MyWishWalkContent) -> Unit
 ) : RecyclerView.Adapter<WishWalkDetailAdapter.DetailViewHolder>() {
     private var details = mutableListOf<MyWishWalkContent>()
@@ -49,7 +50,7 @@ class WishWalkDetailAdapter(
                 if (activity != null) {
                     val fragment = com.example.dogcatsquare.ui.map.walking.WalkingStartViewFragment.newInstance(
                         item.walkId.toInt(),
-                        null, // googlePlaceId
+                        googlePlaceId, // googlePlaceId
                         resolvedCoords
                     )
                     activity.supportFragmentManager.beginTransaction()
