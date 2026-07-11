@@ -16,6 +16,7 @@ import com.example.dogcatsquare.R
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
+import androidx.appcompat.app.AppCompatActivity
 
 import android.graphics.Color
 import android.graphics.Bitmap
@@ -41,9 +42,30 @@ class WishWalkDetailAdapter(
         RecyclerView.ViewHolder(binding.root) {
 
         fun bind(item: MyWishWalkContent, position: Int) {
+            var resolvedCoords: ArrayList<LatLng>? = null
+
+            val navigateToDetail = {
+                val activity = context as? AppCompatActivity
+                if (activity != null) {
+                    val fragment = com.example.dogcatsquare.ui.map.walking.WalkingStartViewFragment.newInstance(
+                        item.walkId.toInt(),
+                        null, // googlePlaceId
+                        resolvedCoords
+                    )
+                    activity.supportFragmentManager.beginTransaction()
+                        .replace(R.id.main_frm, fragment)
+                        .addToBackStack(null)
+                        .commit()
+                }
+            }
+
             binding.apply {
                 // View 태그 설정하여 재사용 뷰 불일치 방지
                 root.tag = item.walkId
+
+                root.setOnClickListener {
+                    navigateToDetail()
+                }
                 
                 // 기존 데이터 혹은 기본 데이터 세팅
                 tvWalkHeaderText.text = item.title
@@ -157,11 +179,14 @@ class WishWalkDetailAdapter(
                 // --------- 지도(MapView) 표시 로직 --------- //
                 mapView.onCreate(null)
                 mapView.onResume() // liteMode에서는 onResume 호출로 즉시 렌더링 시작
-
+ 
                 mapView.getMapAsync { googleMap ->
                     googleMap.uiSettings.apply {
                         isMapToolbarEnabled = false
                         setAllGesturesEnabled(false)
+                    }
+                    googleMap.setOnMapClickListener {
+                        navigateToDetail()
                     }
                     googleMap.clear()
 
@@ -176,7 +201,6 @@ class WishWalkDetailAdapter(
                                     
                                     val boundsBuilder = LatLngBounds.Builder()
                                     val polylineOptions = PolylineOptions().width(10f).color(Color.parseColor("#FFB200"))
-                                    var hasPoints = false
 
                                     // 임시로 startCoordinates와 endCoordinates를 모두 이어그리는 로직 적용
                                     val allCoords = mutableListOf<com.example.dogcatsquare.ui.map.walking.data.Response.Coordinate>()
@@ -186,32 +210,25 @@ class WishWalkDetailAdapter(
                                     // (0.0, 0.0)처럼 백엔드에서 잘못 넘어온 더미/빈 좌표 필터링
                                     val validCoords = allCoords.filter { it.latitude != 0.0 || it.longitude != 0.0 }
 
-                                    validCoords.forEach { coord ->
-                                        val latLng = LatLng(coord.latitude, coord.longitude)
-                                        polylineOptions.add(latLng)
-                                        boundsBuilder.include(latLng)
-                                        hasPoints = true
-                                    }
-
-                                    if (hasPoints) {
-                                        googleMap.addPolyline(polylineOptions)
+                                    val drawRoute = { coords: List<com.example.dogcatsquare.ui.map.walking.data.Response.Coordinate>, polyOpt: PolylineOptions, bBuilder: LatLngBounds.Builder ->
+                                        googleMap.addPolyline(polyOpt)
 
                                         // 시작 마커 (유효한 첫 좌표)
-                                        val first = validCoords.first()
+                                        val first = coords.first()
                                         val startLatLng = LatLng(first.latitude, first.longitude)
                                         getMarkerIcon(context, R.drawable.ic_start_marker)?.let { icon ->
                                             googleMap.addMarker(MarkerOptions().position(startLatLng).icon(icon))
                                         }
 
                                         // 종료 마커 (유효한 마지막 좌표)
-                                        val last = validCoords.last()
+                                        val last = coords.last()
                                         val endLatLng = LatLng(last.latitude, last.longitude)
                                         getMarkerIcon(context, R.drawable.ic_end_marker)?.let { icon ->
                                             googleMap.addMarker(MarkerOptions().position(endLatLng).icon(icon))
                                         }
 
                                         try {
-                                            val bounds = boundsBuilder.build()
+                                            val bounds = bBuilder.build()
                                             googleMap.setOnMapLoadedCallback {
                                                 // start와 end가 같거나 아주 가까운 경우 Bounds 확장이 어려우므로,
                                                 // 14.5f 정도의 고정 줌으로 예쁘게 포커싱합니다.
@@ -220,6 +237,40 @@ class WishWalkDetailAdapter(
                                         } catch (e: Exception) {
                                             // 좌표 범위 오류 무시
                                         }
+                                    }
+
+                                    if (validCoords.isNotEmpty()) {
+                                        resolvedCoords = ArrayList(validCoords.map { LatLng(it.latitude, it.longitude) })
+                                        validCoords.forEach { coord ->
+                                            val latLng = LatLng(coord.latitude, coord.longitude)
+                                            polylineOptions.add(latLng)
+                                            boundsBuilder.include(latLng)
+                                        }
+                                        drawRoute(validCoords, polylineOptions, boundsBuilder)
+                                    } else {
+                                        // Fallback: search for coordinates by title
+                                        walkService.searchWalksCall(detail.title).enqueue(object : Callback<com.example.dogcatsquare.data.model.walk.WalkSearchResponse> {
+                                            override fun onResponse(call: Call<com.example.dogcatsquare.data.model.walk.WalkSearchResponse>, response: Response<com.example.dogcatsquare.data.model.walk.WalkSearchResponse>) {
+                                                if (response.isSuccessful && root.tag == item.walkId) {
+                                                    val foundWalk = response.body()?.walks?.find { it.walkId == item.walkId.toInt() }
+                                                    if (foundWalk != null && !foundWalk.coordinates.isNullOrEmpty()) {
+                                                        val gmsCoords = ArrayList(foundWalk.coordinates.map { LatLng(it.latitude, it.longitude) })
+                                                        resolvedCoords = gmsCoords
+                                                        
+                                                        val searchBoundsBuilder = LatLngBounds.Builder()
+                                                        val searchPolylineOptions = PolylineOptions().width(10f).color(Color.parseColor("#FFB200"))
+                                                        val searchCoords = foundWalk.coordinates.map { com.example.dogcatsquare.ui.map.walking.data.Response.Coordinate(it.latitude, it.longitude, it.sequence) }
+                                                        searchCoords.forEach { coord ->
+                                                            val latLng = LatLng(coord.latitude, coord.longitude)
+                                                            searchPolylineOptions.add(latLng)
+                                                            searchBoundsBuilder.include(latLng)
+                                                        }
+                                                        drawRoute(searchCoords, searchPolylineOptions, searchBoundsBuilder)
+                                                    }
+                                                }
+                                            }
+                                            override fun onFailure(call: Call<com.example.dogcatsquare.data.model.walk.WalkSearchResponse>, t: Throwable) {}
+                                        })
                                     }
                                 }
                             }

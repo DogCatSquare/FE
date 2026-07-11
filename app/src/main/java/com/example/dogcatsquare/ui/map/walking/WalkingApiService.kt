@@ -32,6 +32,12 @@ interface WalkingApiService {
     @GET("/api/walks/{walkId}")
     fun getWalkDetail(@Path("walkId") walkId: Int): Call<WalkDetailResponse>
 
+    // 산책로 검색 (Callback 기반)
+    @GET("/api/walks/search")
+    fun searchWalksCall(
+        @Query("title") title: String
+    ): Call<com.example.dogcatsquare.data.model.walk.WalkSearchResponse>
+
     //산책로 후기 조회
     @GET("/api/walks/{walkId}/reviews")
     fun getWalkReview(@Path("walkId") walkId: Int): Call<WalkReviewResponse>

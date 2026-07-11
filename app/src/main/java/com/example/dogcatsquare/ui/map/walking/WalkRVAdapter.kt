@@ -29,7 +29,7 @@ import java.text.SimpleDateFormat
 import java.util.Locale
 
 class WalkRVAdapter(
-    private val onItemClick: (Int) -> Unit,
+    private val onItemClick: (Int, ArrayList<LatLng>?) -> Unit,
     private val onMenuClick: (Walk, View) -> Unit,
     private var walkList: ArrayList<Walk>
 ) : RecyclerView.Adapter<WalkRVAdapter.ViewHolder>() {
@@ -179,7 +179,10 @@ class WalkRVAdapter(
                 profileIv.setImageResource(profileDrawable)
 
                 root.setOnClickListener {
-                    onItemClick(walk.walkId)
+                    val gmsCoords = walk.coordinates?.let { coords ->
+                        ArrayList(coords.map { LatLng(it.latitude, it.longitude) })
+                    }
+                    onItemClick(walk.walkId, gmsCoords)
                 }
 
                 ivMenu.setOnClickListener { view ->

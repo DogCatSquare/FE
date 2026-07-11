@@ -21,10 +21,10 @@
     <!-- 스크롤 가능 영역 -->
     <ScrollView
         android:layout_width="0dp"
-        android:layout_height="match_parent"
-        android:layout_marginTop="?attr/actionBarSize"
+        android:layout_height="0dp"
         android:backgroundTint="@color/white"
         android:scrollbars="none"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/walking_start_toolbar">
@@ -332,29 +332,49 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"
-                android:gravity="start"
+                android:gravity="center_vertical"
                 android:orientation="horizontal"
                 android:paddingStart="16dp">
 
-                <ImageView
+                <TextView
                     android:id="@+id/filter1"
                     android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
+                    android:layout_height="24dp"
                     android:layout_marginEnd="8dp"
-                    android:src="@drawable/ic_normal" />
+                    android:background="@drawable/bg_walk_tag"
+                    android:gravity="center"
+                    android:paddingHorizontal="8dp"
+                    android:text="보통"
+                    android:textColor="#3E7C43"
+                    android:textSize="11sp"
+                    android:textStyle="bold" />
 
-                <ImageView
+                <TextView
                     android:id="@+id/filter2"
                     android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
+                    android:layout_height="24dp"
                     android:layout_marginEnd="8dp"
-                    android:src="@drawable/ic_garbage" />
+                    android:background="@drawable/bg_walk_tag"
+                    android:drawablePadding="4dp"
+                    android:drawableTint="#3E7C43"
+                    android:gravity="center"
+                    android:paddingHorizontal="8dp"
+                    android:textColor="#3E7C43"
+                    android:textSize="11sp"
+                    android:textStyle="bold" />
 
-                <ImageView
+                <TextView
                     android:id="@+id/filter3"
                     android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:src="@drawable/ic__water" />
+                    android:layout_height="24dp"
+                    android:background="@drawable/bg_walk_tag"
+                    android:drawablePadding="4dp"
+                    android:drawableTint="#3E7C43"
+                    android:gravity="center"
+                    android:paddingHorizontal="8dp"
+                    android:textColor="#3E7C43"
+                    android:textSize="11sp"
+                    android:textStyle="bold" />
 
             </LinearLayout>
 
@@ -367,6 +387,7 @@
             <!-- 사진-->
 
             <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/photo_layout"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content">
 

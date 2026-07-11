@@ -82,8 +82,8 @@ class WalkingListFragment : Fragment() {
 
     private fun setupRecyclerView() {
         reviewAdapter = WalkRVAdapter(
-            onItemClick = { walkId ->
-                val fragment = WalkingStartViewFragment.newInstance(walkId, googlePlaceId)
+            onItemClick = { walkId, coords ->
+                val fragment = WalkingStartViewFragment.newInstance(walkId, googlePlaceId, coords)
                 parentFragmentManager.beginTransaction()
                     .replace(R.id.main_frm, fragment)
                     .addToBackStack(null)

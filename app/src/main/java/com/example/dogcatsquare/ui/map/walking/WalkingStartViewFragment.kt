@@ -48,7 +48,7 @@ class WalkingStartViewFragment : Fragment(), OnMapReadyCallback {
     private val walkReviewViewModel: WalkReviewViewModel by viewModels()
     private var walkId: String? = null
     private var googlePlaceId: String? = null
-    private val coords = mutableListOf<LatLng>()
+    private var routeCoords: ArrayList<com.google.android.gms.maps.model.LatLng>? = null
     private var walk: Walk? = null
     private var lat : Double? = null
     private var lon : Double? = null
@@ -67,12 +67,19 @@ class WalkingStartViewFragment : Fragment(), OnMapReadyCallback {
     }
 
     companion object {
-        fun newInstance(walkId: Int, googlePlaceId: String? = null): WalkingStartViewFragment {
+        fun newInstance(
+            walkId: Int,
+            googlePlaceId: String? = null,
+            routeCoords: ArrayList<com.google.android.gms.maps.model.LatLng>? = null
+        ): WalkingStartViewFragment {
             val fragment = WalkingStartViewFragment()
             val args = Bundle()
             args.putInt("walkId", walkId)
             if (googlePlaceId != null) {
                 args.putString("googlePlaceId", googlePlaceId)
+            }
+            if (routeCoords != null) {
+                args.putParcelableArrayList("routeCoords", routeCoords)
             }
             fragment.arguments = args
             return fragment
@@ -132,49 +139,45 @@ class WalkingStartViewFragment : Fragment(), OnMapReadyCallback {
 
         googleMap.clear()
 
-        val startCoords = walkDetail.startCoordinates
-        val endCoords = walkDetail.endCoordinates
-
         val boundsBuilder = com.google.android.gms.maps.model.LatLngBounds.Builder()
         val polylineOptions = com.google.android.gms.maps.model.PolylineOptions()
             .width(10f)
             .color(android.graphics.Color.parseColor("#FFB200"))
         var hasPoints = false
 
-        val allCoords = mutableListOf<com.example.dogcatsquare.ui.map.walking.data.Response.Coordinate>()
-        startCoords?.let { allCoords.addAll(it) }
-        endCoords?.let { allCoords.addAll(it) }
+        val currentRoute = routeCoords
 
-        val validCoords = allCoords.filter { it.latitude != 0.0 || it.longitude != 0.0 }
-
-        validCoords.forEach { coord ->
-            val latLng = com.google.android.gms.maps.model.LatLng(coord.latitude, coord.longitude)
-            polylineOptions.add(latLng)
-            boundsBuilder.include(latLng)
-            hasPoints = true
+        if (currentRoute != null && currentRoute.isNotEmpty()) {
+            currentRoute.forEach { latLng ->
+                polylineOptions.add(latLng)
+                boundsBuilder.include(latLng)
+                hasPoints = true
+            }
+        } else {
+            // Fallback: If no coordinates were passed, try to fetch them from searchWalksCall
+            fetchCoordinatesFromSearch(walkDetail)
+            return
         }
 
         if (hasPoints) {
             googleMap.addPolyline(polylineOptions)
 
             // 시작 마커 (유효한 첫 좌표)
-            val first = validCoords.first()
-            val startLatLng = com.google.android.gms.maps.model.LatLng(first.latitude, first.longitude)
+            val first = currentRoute.first()
             bitmapDescriptorFromVector(requireContext(), R.drawable.ic_start_marker)?.let { icon ->
                 googleMap.addMarker(
                     MarkerOptions()
-                        .position(startLatLng)
+                        .position(first)
                         .icon(icon)
                 )
             }
 
             // 종료 마커 (유효한 마지막 좌표)
-            val last = validCoords.last()
-            val endLatLng = com.google.android.gms.maps.model.LatLng(last.latitude, last.longitude)
+            val last = currentRoute.last()
             bitmapDescriptorFromVector(requireContext(), R.drawable.ic_end_marker)?.let { icon ->
                 googleMap.addMarker(
                     MarkerOptions()
-                        .position(endLatLng)
+                        .position(last)
                         .icon(icon)
                 )
             }
@@ -207,6 +210,46 @@ class WalkingStartViewFragment : Fragment(), OnMapReadyCallback {
             val longitude = actualPlaceLongitude ?: placeLongitude
             updateMapLocation(latitude, longitude)
         }
+    }
+
+    private fun fetchCoordinatesFromSearch(walkDetail: WalkDetail) {
+        apiService.searchWalksCall(walkDetail.title).enqueue(object : retrofit2.Callback<com.example.dogcatsquare.data.model.walk.WalkSearchResponse> {
+            override fun onResponse(
+                call: retrofit2.Call<com.example.dogcatsquare.data.model.walk.WalkSearchResponse>,
+                response: retrofit2.Response<com.example.dogcatsquare.data.model.walk.WalkSearchResponse>
+            ) {
+                if (response.isSuccessful) {
+                    val foundWalk = response.body()?.walks?.find { it.walkId == walkId?.toIntOrNull() }
+                    if (foundWalk != null && !foundWalk.coordinates.isNullOrEmpty()) {
+                        val gmsCoords = ArrayList(foundWalk.coordinates.map {
+                            com.google.android.gms.maps.model.LatLng(it.latitude, it.longitude)
+                        })
+                        routeCoords = gmsCoords
+                        drawWalkRoute(walkDetail)
+                    } else {
+                        Log.e("WalkingStartView", "No coordinates found in search fallback")
+                        val latitude = actualPlaceLatitude ?: placeLatitude
+                        val longitude = actualPlaceLongitude ?: placeLongitude
+                        updateMapLocation(latitude, longitude)
+                    }
+                } else {
+                    Log.e("WalkingStartView", "Search fallback failed: ${response.message()}")
+                    val latitude = actualPlaceLatitude ?: placeLatitude
+                    val longitude = actualPlaceLongitude ?: placeLongitude
+                    updateMapLocation(latitude, longitude)
+                }
+            }
+
+            override fun onFailure(
+                call: retrofit2.Call<com.example.dogcatsquare.data.model.walk.WalkSearchResponse>,
+                t: Throwable
+            ) {
+                Log.e("WalkingStartView", "Search fallback error", t)
+                val latitude = actualPlaceLatitude ?: placeLatitude
+                val longitude = actualPlaceLongitude ?: placeLongitude
+                updateMapLocation(latitude, longitude)
+            }
+        })
     }
 
     private fun dpToPx(dp: Float): Int {
@@ -284,7 +327,8 @@ class WalkingStartViewFragment : Fragment(), OnMapReadyCallback {
 
         walkId = arguments?.getInt("walkId")?.toString()
         googlePlaceId = arguments?.getString("googlePlaceId")
-        Log.d("WalkingStartViewFragment", "Received walkId: $walkId, googlePlaceId: $googlePlaceId")
+        routeCoords = arguments?.getParcelableArrayList("routeCoords")
+        Log.d("WalkingStartViewFragment", "Received walkId: $walkId, googlePlaceId: $googlePlaceId, routeCoords size: ${routeCoords?.size ?: 0}")
 
         val address = arguments?.getString("address", "서대문 안산지락길")
         val walkId = walkId?.toIntOrNull()
@@ -459,49 +503,42 @@ class WalkingStartViewFragment : Fragment(), OnMapReadyCallback {
         profileNameTv.text = walkDetail.createdBy.nickname
         profileTv.text = walkDetail.createdBy.breed ?: ""
 
-        // 난이도에 따라 이미지 변경
-        val difficultyResId = when (walkDetail.difficulty) {
-            "LOW" -> R.drawable.ic_easy
-            "HIGH" -> R.drawable.ic_difficulty
-            else -> R.drawable.ic_normal
+        // 1. 난이도(Difficulty) 텍스트 설정
+        val difficultyText = when (walkDetail.difficulty) {
+            "LOW" -> "쉬움"
+            "HIGH" -> "어려움"
+            else -> "보통"
         }
+        binding.filter1.text = difficultyText
+        binding.filter1.visibility = View.VISIBLE
 
-        // 2. 편의시설(Special) 이미지 설정
-        // walkDetail.special 이 List<String> 형태라고 가정합니다.
-        val filter1 = binding.filter1 // XML에 ID 추가 필요
-        filter1.setImageResource(difficultyResId)
-
-        val filter2 = binding.filter2     // XML에 ID 추가 필요
+        // 2. 편의시설(Special) 텍스트 및 아이콘 설정
+        val filter2 = binding.filter2
         val filter3 = binding.filter3
 
-        // 초기에는 안 보이게 설정하거나 기본값 세팅
+        // 초기화
         filter2.visibility = View.GONE
         filter3.visibility = View.GONE
+        filter2.setCompoundDrawablesWithIntrinsicBounds(0, 0, 0, 0)
+        filter3.setCompoundDrawablesWithIntrinsicBounds(0, 0, 0, 0)
 
         walkDetail.special?.take(2)?.forEachIndexed { index, type ->
-            // 인덱스에 따라 어떤 ImageView에 넣을지 결정합니다.
-            val targetImageView = if (index == 0) filter2 else filter3
+            val targetTextView = if (index == 0) filter2 else filter3
 
-            when (type.type) {
-                "WASTEBASKET" -> {
-                    targetImageView.visibility = View.VISIBLE
-                    targetImageView.setImageResource(R.drawable.ic_garbage)
-                }
-                "WATER" -> {
-                    targetImageView.visibility = View.VISIBLE
-                    targetImageView.setImageResource(R.drawable.ic__water)
-                }
-                "TOILET" -> {
-                    targetImageView.visibility = View.VISIBLE
-                    targetImageView.setImageResource(R.drawable.ic_toilet)
-                }
-                "PARKING" -> {
-                    targetImageView.visibility = View.VISIBLE
-                    targetImageView.setImageResource(R.drawable.ic_park)
-                }
-                "STAIRS" -> {
-                    targetImageView.visibility = View.VISIBLE
-                    targetImageView.setImageResource(R.drawable.ic_stairs)
+            val (text, iconResId) = when (type.type) {
+                "WASTEBASKET" -> Pair("쓰레기통", R.drawable.ic_trash)
+                "WATER" -> Pair("음수대", R.drawable.ic_water)
+                "TOILET" -> Pair("화장실", R.drawable.ic_washroom)
+                "PARKING" -> Pair("주차장", R.drawable.ic_parking)
+                "STAIRS" -> Pair("계단", R.drawable.ic_stair)
+                else -> Pair(null, 0)
+            }
+
+            if (text != null) {
+                targetTextView.visibility = View.VISIBLE
+                targetTextView.text = text
+                if (iconResId != 0) {
+                    targetTextView.setCompoundDrawablesWithIntrinsicBounds(iconResId, 0, 0, 0)
                 }
             }
         }
@@ -517,13 +554,18 @@ class WalkingStartViewFragment : Fragment(), OnMapReadyCallback {
         // 모든 버튼 초기화 (숨기기)
         imageButtons.forEach { it.visibility = View.GONE }
 
-        // 데이터 로드 (최대 5개)
-        walkDetail.walkImageUrl?.take(5)?.forEachIndexed { index, url ->
-            val button = imageButtons[index]
-            button.visibility = View.VISIBLE
-            Glide.with(requireContext())
-                .load(url)
-                .into(button)
+        if (walkDetail.walkImageUrl.isNullOrEmpty()) {
+            binding.photoLayout.visibility = View.GONE
+        } else {
+            binding.photoLayout.visibility = View.VISIBLE
+            // 데이터 로드 (최대 5개)
+            walkDetail.walkImageUrl.take(5).forEachIndexed { index, url ->
+                val button = imageButtons[index]
+                button.visibility = View.VISIBLE
+                Glide.with(requireContext())
+                    .load(url)
+                    .into(button)
+            }
         }
 
         // 리스트가 비어있지 않은지 확인 후 첫 번째 좌표 가져오기
