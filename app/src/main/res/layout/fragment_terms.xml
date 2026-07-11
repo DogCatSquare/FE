@@ -12,14 +12,14 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        app:layout_constraintGuide_percent="0.05"/>
+        app:layout_constraintGuide_percent="0.05" />
 
     <androidx.constraintlayout.widget.Guideline
         android:id="@+id/guideline_end"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        app:layout_constraintGuide_percent="0.95"/>
+        app:layout_constraintGuide_percent="0.95" />
 
     <!-- 뒤로가기 -->
     <ImageView
@@ -28,23 +28,23 @@
         android:layout_height="48dp"
         android:layout_marginTop="12dp"
         android:scaleType="centerInside"
-        app:srcCompat="@drawable/ic_back"
+        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintStart_toStartOf="parent"/>
+        app:srcCompat="@drawable/ic_back" />
 
     <!-- 제목 -->
     <TextView
         android:id="@+id/title_tv"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:fontFamily="@font/pretendard_bold"
         android:text="제목"
         android:textColor="@color/black"
         android:textSize="20sp"
-        android:fontFamily="@font/pretendard_bold"
-        app:layout_constraintTop_toTopOf="@id/back_btn"
         app:layout_constraintBottom_toBottomOf="@id/back_btn"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"/>
+        app:layout_constraintTop_toTopOf="@id/back_btn" />
 
     <!-- 상단 구분선 -->
     <View
@@ -53,31 +53,19 @@
         android:layout_height="1dp"
         android:layout_marginTop="12dp"
         android:background="@color/gray1"
-        app:layout_constraintTop_toBottomOf="@id/back_btn"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"/>
+        app:layout_constraintTop_toBottomOf="@id/back_btn" />
 
     <!-- 약관 내용 -->
-    <ScrollView
-        android:id="@+id/scroll_view"
+    <WebView
+        android:id="@+id/web_view"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:fillViewport="true"
+        android:background="@android:color/transparent"
         app:layout_constraintTop_toBottomOf="@id/top_divider"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="@id/guideline_start"
-        app:layout_constraintEnd_toStartOf="@id/guideline_end">
-
-        <TextView
-            android:id="@+id/content_tv"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:paddingTop="20dp"
-            android:paddingBottom="24dp"
-            android:textColor="@color/black"
-            android:textSize="14sp"
-            android:fontFamily="@font/pretendard_regular"
-            android:lineSpacingExtra="8dp"/>
-    </ScrollView>
+        app:layout_constraintEnd_toStartOf="@id/guideline_end" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
