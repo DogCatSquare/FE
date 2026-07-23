@@ -11,8 +11,10 @@ import android.view.View
 import android.view.inputmethod.InputMethodManager
 import android.widget.Button
 import android.widget.CheckBox
+import android.widget.ImageView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import com.example.dogcatsquare.ui.home.TermsActivity
 import androidx.core.content.ContextCompat
 import androidx.core.widget.addTextChangedListener
 import com.example.dogcatsquare.R
@@ -109,8 +111,27 @@ class SignupActivity : AppCompatActivity() {
         val checkBoxAll = view.findViewById<CheckBox>(R.id.checkBox_all)
         val checkBox1 = view.findViewById<CheckBox>(R.id.checkBox1)
         val checkBox2 = view.findViewById<CheckBox>(R.id.checkBox2)
-        val checkBox3 = view.findViewById<CheckBox>(R.id.checkBox3)
         val doneButton = view.findViewById<Button>(R.id.signup_done_btn)
+
+        // 약관 상세 버튼 초기화 및 클릭 리스너 설정
+        val termsOfUseBtn = view.findViewById<ImageView>(R.id.terms_of_use_btn)
+        val personalInfoBtn = view.findViewById<ImageView>(R.id.personal_info_btn)
+
+        termsOfUseBtn.setOnClickListener {
+            val intent = Intent(this, TermsActivity::class.java).apply {
+                putExtra(TermsActivity.EXTRA_TITLE, "서비스 이용약관")
+                putExtra(TermsActivity.EXTRA_TYPE, TermsActivity.TYPE_SERVICE)
+            }
+            startActivity(intent)
+        }
+
+        personalInfoBtn.setOnClickListener {
+            val intent = Intent(this, TermsActivity::class.java).apply {
+                putExtra(TermsActivity.EXTRA_TITLE, "개인정보 처리방침")
+                putExtra(TermsActivity.EXTRA_TYPE, TermsActivity.TYPE_PRIVACY)
+            }
+            startActivity(intent)
+        }
 
         // 버튼 초기 상태 비활성화
         updateButtonState(checkBox1, checkBox2, doneButton)
@@ -119,12 +140,11 @@ class SignupActivity : AppCompatActivity() {
         checkBoxAll.setOnCheckedChangeListener { _, isChecked ->
             checkBox1.isChecked = isChecked
             checkBox2.isChecked = isChecked
-            checkBox3.isChecked = isChecked
             updateButtonState(checkBox1, checkBox2, doneButton)
         }
 
         // 각 개별 체크박스 클릭 리스너
-        val individualCheckBoxes = listOf(checkBox1, checkBox2, checkBox3)
+        val individualCheckBoxes = listOf(checkBox1, checkBox2)
         individualCheckBoxes.forEach { checkBox ->
             checkBox.setOnCheckedChangeListener { _, _ ->
                 // 전체 동의 체크박스 업데이트
@@ -137,7 +157,8 @@ class SignupActivity : AppCompatActivity() {
 
         // 완료 버튼 클릭 이벤트
         doneButton.setOnClickListener {
-            adAgree = true
+            adAgree = false
+            bottomSheetDialog.dismiss()
             checkSignup()
         }
 
@@ -159,6 +180,7 @@ class SignupActivity : AppCompatActivity() {
         } else {
             doneButton.setBackgroundColor(ContextCompat.getColor(this, R.color.gray1)) // 비활성화 색상
             doneButton.setTextColor(ContextCompat.getColor(this, R.color.gray4)) // 텍스트 색상
+            checkbox_check = false
         }
     }
 
@@ -335,7 +357,7 @@ class SignupActivity : AppCompatActivity() {
 
 
     private fun checkSignup() {
-        val canSignup = nickname_check && pw_check && checkbox_check && phone_check && adAgree && email_verify_check
+        val canSignup = nickname_check && pw_check && checkbox_check && phone_check && email_verify_check
 
         if (canSignup) {
             val bundle = Bundle().apply {

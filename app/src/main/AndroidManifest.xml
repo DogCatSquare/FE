@@ -80,6 +80,9 @@
         <activity android:name=".MainActivity"
             android:exported="false" />
 
+        <activity android:name=".ui.home.TermsActivity"
+            android:exported="false" />
+
         <service
             android:name=".LocationService"
             android:enabled="true"

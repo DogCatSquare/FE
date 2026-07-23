@@ -94,27 +94,6 @@
         app:layout_constraintStart_toEndOf="@+id/checkBox2"
         app:layout_constraintTop_toTopOf="@+id/checkBox2" />
 
-    <CheckBox
-        android:id="@+id/checkBox3"
-        android:layout_width="15dp"
-        android:layout_height="15dp"
-        android:layout_marginTop="10dp"
-        android:background="@drawable/custom_checkbox_bg"
-        android:button="@null"
-        app:layout_constraintStart_toStartOf="@+id/guideline1"
-        app:layout_constraintTop_toBottomOf="@+id/checkBox2_tv" />
-
-    <TextView
-        android:id="@+id/checkBox3_tv"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="10dp"
-        android:text="개인정보 마케팅 활용에 동의합니다. (선택)"
-        android:textSize="13sp"
-        app:layout_constraintBottom_toBottomOf="@+id/checkBox3"
-        app:layout_constraintStart_toEndOf="@+id/checkBox3"
-        app:layout_constraintTop_toTopOf="@+id/checkBox3" />
-
     <com.google.android.material.button.MaterialButton
         android:id="@+id/signup_done_btn"
         android:layout_width="0dp"
@@ -129,7 +108,7 @@
         app:layout_constraintEnd_toStartOf="@+id/guideline2"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="@+id/guideline1"
-        app:layout_constraintTop_toBottomOf="@+id/checkBox3_tv"
+        app:layout_constraintTop_toBottomOf="@+id/checkBox2_tv"
         app:layout_constraintVertical_bias="0.0" />
 
     <ImageView
@@ -154,18 +133,6 @@
         app:layout_constraintHorizontal_bias="1.0"
         app:layout_constraintStart_toEndOf="@+id/checkBox2_tv"
         app:layout_constraintTop_toBottomOf="@+id/checkBox1_tv"
-        app:srcCompat="@drawable/img_arrow_right" />
-
-    <ImageView
-        android:id="@+id/personal_info_marketing_btn"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="10dp"
-        android:layout_marginEnd="10dp"
-        app:layout_constraintEnd_toStartOf="@+id/guideline2"
-        app:layout_constraintHorizontal_bias="1.0"
-        app:layout_constraintStart_toEndOf="@+id/checkBox3_tv"
-        app:layout_constraintTop_toBottomOf="@+id/checkBox2_tv"
         app:srcCompat="@drawable/img_arrow_right" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
