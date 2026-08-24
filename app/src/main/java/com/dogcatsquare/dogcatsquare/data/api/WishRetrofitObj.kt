@@ -1,0 +1,35 @@
+package com.dogcatsquare.dogcatsquare.data.api
+
+import com.dogcatsquare.dogcatsquare.data.model.map.MyLocation
+import com.dogcatsquare.dogcatsquare.data.model.wish.DeleteWalkWishResponse
+import com.dogcatsquare.dogcatsquare.data.model.wish.FetchMyWishPlaceResponse
+import com.dogcatsquare.dogcatsquare.data.model.wish.GetMyWalkWishResponse
+import com.dogcatsquare.dogcatsquare.data.model.wish.GetMyWishResponse
+import retrofit2.Call
+import retrofit2.http.Body
+import retrofit2.http.DELETE
+import retrofit2.http.GET
+import retrofit2.http.Header
+import retrofit2.http.POST
+import retrofit2.http.Path
+import retrofit2.http.Query
+
+interface WishRetrofitObj {
+    @POST("api/places/wishlist")
+    fun getMyWish(@Header("Authorization") token: String, @Body myLocation: MyLocation): Call<GetMyWishResponse>
+
+    fun fetchMyWishPlaceList(@Header("Authorization") token: String, @Path("googlePlaceId") googlePlaceId: String): Call<FetchMyWishPlaceResponse>
+
+    @GET("api/wishlist/walks")
+    fun getMyWalkWish(@Header("Authorization") token: String): Call<GetMyWalkWishResponse>
+
+    @DELETE("api/wishlist/walks/{walkId}/cancel")
+    fun deleteWalkWish(@Header("Authorization") token: String, @Path("walkId") walkId: Int): Call<DeleteWalkWishResponse>
+
+    @POST("api/wishlist/walks/{walkId}")
+    fun addWalkWish(
+        @Header("Authorization") token: String,
+        @Path("walkId") walkId: Long,
+        @Query("googlePlaceId") googlePlaceId: String
+    ): Call<com.dogcatsquare.dogcatsquare.data.model.wish.PostWalkWishResponse>
+}

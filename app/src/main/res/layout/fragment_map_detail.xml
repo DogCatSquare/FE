@@ -4,8 +4,8 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".ui.map.location.MapDetailFragment"
-    android:background="@color/white">
+    android:background="@color/white"
+    tools:context=".ui.map.location.MapDetailFragment">
 
     <androidx.constraintlayout.widget.Guideline
         android:id="@+id/guideline_start"
@@ -73,13 +73,13 @@
         android:id="@+id/backButton"
         android:layout_width="48dp"
         android:layout_height="48dp"
+        android:scaleType="centerInside"
         android:src="@drawable/ic_back_button"
         app:layout_constraintBottom_toBottomOf="@+id/searchBox"
         app:layout_constraintEnd_toStartOf="@+id/guideline_start"
         app:layout_constraintHorizontal_bias="1.0"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="@+id/searchBox" 
-        android:scaleType="centerInside" />
+        app:layout_constraintStart_toStartOf="@id/guideline_start"
+        app:layout_constraintTop_toTopOf="@+id/searchBox" />
 
     <ScrollView
         android:id="@+id/scrollView3"
@@ -458,10 +458,10 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"
                 app:cardCornerRadius="8dp"
+                app:cardElevation="0dp"
                 app:layout_constraintEnd_toEndOf="@id/guideline2"
                 app:layout_constraintStart_toStartOf="@id/guideline1"
-                app:layout_constraintTop_toBottomOf="@+id/textView32"
-                app:cardElevation="0dp">
+                app:layout_constraintTop_toBottomOf="@+id/textView32">
 
                 <androidx.constraintlayout.widget.ConstraintLayout
                     android:layout_width="match_parent"
@@ -609,11 +609,11 @@
                     android:layout_width="48dp"
                     android:layout_height="48dp"
                     android:rotationY="180"
+                    android:scaleType="centerInside"
                     android:src="@drawable/ic_back"
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintTop_toTopOf="parent" 
-        android:scaleType="centerInside" />
+                    app:layout_constraintTop_toTopOf="parent" />
             </androidx.constraintlayout.widget.ConstraintLayout>
 
         </androidx.constraintlayout.widget.ConstraintLayout>

@@ -126,7 +126,7 @@
             android:text="기타"
             android:fontFamily="@font/pretendard_bold" />
 
-        <com.example.dogcatsquare.ui.map.location.CustomEditText
+        <com.dogcatsquare.dogcatsquare.ui.map.location.CustomEditText
             android:id="@+id/etOtherReason"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"

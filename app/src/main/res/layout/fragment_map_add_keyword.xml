@@ -135,7 +135,7 @@
         app:layout_constraintStart_toStartOf="@+id/guideline_start"
         app:layout_constraintTop_toBottomOf="@+id/flexboxLayout" />
 
-    <com.example.dogcatsquare.ui.map.location.CustomEditText
+    <com.dogcatsquare.dogcatsquare.ui.map.location.CustomEditText
         android:id="@+id/etKeyword"
         android:layout_width="0dp"
         android:layout_height="wrap_content"

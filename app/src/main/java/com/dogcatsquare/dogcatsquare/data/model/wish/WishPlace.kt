@@ -1,0 +1,18 @@
+package com.dogcatsquare.dogcatsquare.data.model.wish
+
+data class WishPlace(
+    val googlePlaceId: String,
+    val name: String,
+    val address: String,
+    val category: String,
+    val phoneNumber: String?,
+    val longitude: Double,
+    val latitude: Double,
+    val distance: Double,
+    val open: Boolean?,
+    val imgUrl: String?,
+    val reviewCount: Int,
+    val keywords: List<String>?,
+    var isWish: Boolean,
+    var walks: List<MyWishWalkContent>? = null
+)

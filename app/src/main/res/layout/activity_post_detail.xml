@@ -31,7 +31,7 @@
             android:layout_centerInParent="true" />
     </RelativeLayout>
 
-    <!-- com.example.dogcatsquare.data.community.Post Content -->
+    <!-- com.dogcatsquare.dogcatsquare.data.community.Post Content -->
     <ScrollView
         android:id="@+id/scrollView"
         android:layout_width="match_parent"

@@ -1,0 +1,101 @@
+package com.dogcatsquare.dogcatsquare.ui.mypage
+
+import android.content.Intent
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
+import androidx.recyclerview.widget.RecyclerView
+import com.bumptech.glide.Glide
+import com.dogcatsquare.dogcatsquare.R
+import com.dogcatsquare.dogcatsquare.databinding.ItemMyCommunityBinding
+import com.dogcatsquare.dogcatsquare.ui.community.PostDetailActivity
+
+class MyCommunityRVAdapter(
+    private val myPostList: ArrayList<com.dogcatsquare.dogcatsquare.data.model.post.Post>,
+    private val onEditPost: (com.dogcatsquare.dogcatsquare.data.model.post.Post) -> Unit,
+    private val onDeletePost: (com.dogcatsquare.dogcatsquare.data.model.post.Post) -> Unit
+) : RecyclerView.Adapter<MyCommunityRVAdapter.MyCommunityAdapterViewHolder>(){
+
+    override fun onCreateViewHolder(
+        parent: ViewGroup,
+        viewType: Int
+    ): MyCommunityRVAdapter.MyCommunityAdapterViewHolder {
+        val binding = ItemMyCommunityBinding.inflate(LayoutInflater.from(parent.context), parent, false)
+        return MyCommunityAdapterViewHolder(binding)
+    }
+
+    override fun onBindViewHolder(holder: MyCommunityRVAdapter.MyCommunityAdapterViewHolder, position: Int) {
+        val myPost = myPostList[position]
+        holder.bind(myPost)
+    }
+
+    override fun getItemCount(): Int = myPostList.size
+
+    inner class MyCommunityAdapterViewHolder(val binding: ItemMyCommunityBinding) :RecyclerView.ViewHolder(binding.root) {
+        fun bind(myPost: com.dogcatsquare.dogcatsquare.data.model.post.Post) {
+            binding.tvTitle.text = myPost.title
+            binding.tvContent.text = myPost.content
+            binding.tvLikeCount.text = myPost.like_count.toString()
+            binding.tvCommentCount.text = myPost.comment_count.toString()
+            binding.tvDate.text = myPost.createdAt
+
+            // 이미지가 존재하는 경우 표시, 없으면 GONE 처리
+            if (!myPost.images.isNullOrEmpty()) {
+                val imageViews = listOf(
+                    binding.ivPostImage1,
+                    binding.ivPostImage2,
+                    binding.ivPostImage3,
+                    binding.ivPostImage4,
+                    binding.ivPostImage5
+                )
+
+                // 이미지 최대 5개까지 표시
+                for (i in imageViews.indices) {
+                    if (i < myPost.images.size) {
+                        imageViews[i].visibility = View.VISIBLE
+                        Glide.with(itemView.context)
+                            .load(myPost.images[i])
+                            .placeholder(R.drawable.ic_placeholder)
+                            .into(imageViews[i])
+                    } else {
+                        imageViews[i].visibility = View.GONE
+                    }
+                }
+            } else {
+                // 이미지가 없으면 모든 ImageView 숨기기
+                binding.ivPostImage1.visibility = View.GONE
+                binding.ivPostImage2.visibility = View.GONE
+                binding.ivPostImage3.visibility = View.GONE
+                binding.ivPostImage4.visibility = View.GONE
+                binding.ivPostImage5.visibility = View.GONE
+            }
+
+
+            binding.ivPostMenu.setOnClickListener { view ->
+                val popup = android.widget.PopupMenu(itemView.context, view)
+                popup.menuInflater.inflate(R.menu.post_menu, popup.menu)
+                popup.setOnMenuItemClickListener { menuItem ->
+                    when (menuItem.itemId) {
+                        R.id.menu_edit -> {
+                            onEditPost(myPost)
+                            true
+                        }
+                        R.id.menu_delete -> {
+                            onDeletePost(myPost)
+                            true
+                        }
+                        else -> false
+                    }
+                }
+                popup.show()
+            }
+
+            itemView.setOnClickListener {
+                val intent = Intent(itemView.context, PostDetailActivity::class.java).apply {
+                    putExtra("postId", myPost.id) // ✅ postId 전달
+                }
+                itemView.context.startActivity(intent)
+            }
+        }
+    }
+}

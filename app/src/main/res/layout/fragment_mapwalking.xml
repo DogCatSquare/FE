@@ -73,13 +73,13 @@
         android:id="@+id/backButton"
         android:layout_width="48dp"
         android:layout_height="48dp"
+        android:scaleType="centerInside"
         android:src="@drawable/ic_back_button"
         app:layout_constraintBottom_toBottomOf="@+id/searchBox"
         app:layout_constraintEnd_toStartOf="@+id/guideline_start"
         app:layout_constraintHorizontal_bias="1.0"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="@+id/searchBox" 
-        android:scaleType="centerInside" />
+        app:layout_constraintStart_toStartOf="@id/guideline_start"
+        app:layout_constraintTop_toTopOf="@+id/searchBox" />
 
     <ScrollView
         android:id="@+id/scrollView3"

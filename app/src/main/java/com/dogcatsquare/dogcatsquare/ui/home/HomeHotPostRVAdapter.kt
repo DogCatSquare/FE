@@ -1,0 +1,65 @@
+package com.dogcatsquare.dogcatsquare.ui.home
+
+import android.view.LayoutInflater
+import android.view.ViewGroup
+import androidx.recyclerview.widget.RecyclerView
+import com.bumptech.glide.Glide
+import com.dogcatsquare.dogcatsquare.R
+import com.dogcatsquare.dogcatsquare.data.model.community.Post
+import com.dogcatsquare.dogcatsquare.databinding.ItemHomeHotPostBinding
+
+class HomeHotPostRVAdapter(private val hotPostList: ArrayList<com.dogcatsquare.dogcatsquare.data.model.post.Post>) : RecyclerView.Adapter<HomeHotPostRVAdapter.HomeHotPostAdapterViewHolder>() {
+//    private var d_days: List<DDay> = listOf()
+    interface OnItemClickListener {
+        fun onItemClick(post: com.dogcatsquare.dogcatsquare.data.model.post.Post)
+    }
+
+    private lateinit var mItemClickListener: OnItemClickListener
+
+    fun setMyItemClickListener(itemClickListener: OnItemClickListener) {
+        mItemClickListener = itemClickListener
+    }
+
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): HomeHotPostRVAdapter.HomeHotPostAdapterViewHolder {
+        val binding = ItemHomeHotPostBinding.inflate(LayoutInflater.from(parent.context), parent, false)
+        return HomeHotPostAdapterViewHolder(binding)
+    }
+
+    override fun onBindViewHolder(holder: HomeHotPostRVAdapter.HomeHotPostAdapterViewHolder, position: Int) {
+        val hotPost = hotPostList[position]
+        holder.itemView.setOnClickListener {
+            mItemClickListener.onItemClick(hotPostList[position])
+        }
+        holder.bind(hotPost)
+    }
+
+    override fun getItemCount(): Int = hotPostList.size
+
+    inner class HomeHotPostAdapterViewHolder(val binding: ItemHomeHotPostBinding) : RecyclerView.ViewHolder(binding.root) {
+        fun bind(hotPost: com.dogcatsquare.dogcatsquare.data.model.post.Post) {
+            binding.postTitleTv.text = hotPost.title
+            binding.postContentTv.text = hotPost.content
+            binding.postNicknameTv.text = hotPost.username
+            binding.postLikeCountTv.text = hotPost.like_count.toString()
+            binding.postCommentCountTv.text = hotPost.comment_count.toString()
+            Glide.with(itemView.context)
+                .load(hotPost.profileImage_URL)
+                .placeholder(R.drawable.ic_profile_img_default)
+                .into(binding.postProfileIv)
+
+            // 썸넬 이미지 null 수정
+            val imageUrl = hotPost.images?.firstOrNull()
+
+            if (imageUrl != null) {
+                Glide.with(itemView.context)
+                    .load(imageUrl)
+                    .into(binding.imageView11)
+            } else {
+                Glide.with(itemView.context)
+                    .load(R.drawable.ic_profile_default)
+                    .into(binding.imageView11)
+            }
+
+        }
+    }
+}

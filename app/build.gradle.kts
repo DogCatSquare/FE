@@ -10,8 +10,8 @@ plugins {
 }
 
 android {
-    namespace = "com.example.dogcatsquare"
-    compileSdk = 35
+    namespace = "com.dogcatsquare.dogcatsquare"
+    compileSdk = 36
 
     val localProperties = Properties().apply {
         val localPropertiesFile = rootProject.file("local.properties")
@@ -23,11 +23,11 @@ android {
     }
 
     defaultConfig {
-        applicationId = "com.example.dogcatsquare"
+        applicationId = "com.dogcatsquare.dogcatsquare"
         minSdk = 24
-        targetSdk = 34
-        versionCode = 1
-        versionName = "1.0"
+        targetSdk = 36
+        versionCode = 5
+        versionName = "1.0.2"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables.useSupportLibrary = true

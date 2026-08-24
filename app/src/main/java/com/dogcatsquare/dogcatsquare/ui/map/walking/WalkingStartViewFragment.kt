@@ -1,0 +1,678 @@
+package com.dogcatsquare.dogcatsquare.ui.map.walking
+
+import android.content.Context
+import android.graphics.Bitmap
+import android.graphics.Canvas
+import android.os.Bundle
+import android.util.Log
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
+import android.widget.ImageButton
+import android.widget.ImageView
+import android.widget.TextView
+import androidx.appcompat.widget.Toolbar
+import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
+import androidx.fragment.app.Fragment
+import androidx.fragment.app.viewModels
+import androidx.lifecycle.lifecycleScope
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
+import com.bumptech.glide.Glide
+import com.dogcatsquare.dogcatsquare.R
+import com.dogcatsquare.dogcatsquare.LoadingDialog
+import com.dogcatsquare.dogcatsquare.data.network.RetrofitClient.retrofit
+import com.dogcatsquare.dogcatsquare.databinding.FragmentMapwalkingStartviewBinding
+import com.dogcatsquare.dogcatsquare.ui.map.walking.data.Response.Walk
+import com.dogcatsquare.dogcatsquare.ui.map.walking.data.Response.WalkDetail
+import com.dogcatsquare.dogcatsquare.ui.map.walking.data.Response.WalkReview
+import com.dogcatsquare.dogcatsquare.ui.map.walking.data.ViewModel.WalkDetailState
+import com.dogcatsquare.dogcatsquare.ui.map.walking.data.ViewModel.WalkDetailViewModel
+import com.dogcatsquare.dogcatsquare.ui.map.walking.data.ViewModel.WalkReviewViewModel
+import com.google.android.gms.maps.CameraUpdateFactory
+import com.google.android.gms.maps.GoogleMap
+import com.google.android.gms.maps.SupportMapFragment
+import com.google.android.gms.maps.model.MarkerOptions
+import com.naver.maps.geometry.LatLng
+import com.google.android.gms.maps.OnMapReadyCallback
+import com.google.android.gms.maps.model.BitmapDescriptor
+import kotlinx.coroutines.launch
+
+class WalkingStartViewFragment : Fragment(), OnMapReadyCallback {
+    private var _binding: FragmentMapwalkingStartviewBinding? = null
+    private val binding get() = _binding!!
+
+    private lateinit var reviewAdapter: ReviewAdapter
+    private val walkDetailViewModel: WalkDetailViewModel by viewModels()
+    private val walkReviewViewModel: WalkReviewViewModel by viewModels()
+    private var walkId: String? = null
+    private var googlePlaceId: String? = null
+    private var routeCoords: ArrayList<com.google.android.gms.maps.model.LatLng>? = null
+    private var walk: Walk? = null
+    private var lat : Double? = null
+    private var lon : Double? = null
+
+    private lateinit var googleMap: GoogleMap
+    private var placeLatitude: Double = 0.0
+    private var placeLongitude: Double = 0.0
+    private var currentMarker: com.google.android.gms.maps.model.Marker? = null
+    private var actualPlaceLatitude: Double? = null
+    private var actualPlaceLongitude: Double? = null
+    private var walkDetailData: WalkDetail? = null
+    private lateinit var loadingDialog: LoadingDialog
+
+    val apiService: WalkingApiService by lazy {
+        retrofit.create(WalkingApiService::class.java)
+    }
+
+    companion object {
+        fun newInstance(
+            walkId: Int,
+            googlePlaceId: String? = null,
+            routeCoords: ArrayList<com.google.android.gms.maps.model.LatLng>? = null
+        ): WalkingStartViewFragment {
+            val fragment = WalkingStartViewFragment()
+            val args = Bundle()
+            args.putInt("walkId", walkId)
+            if (googlePlaceId != null) {
+                args.putString("googlePlaceId", googlePlaceId)
+            }
+            if (routeCoords != null) {
+                args.putParcelableArrayList("routeCoords", routeCoords)
+            }
+            fragment.arguments = args
+            return fragment
+        }
+    }
+    private fun setupGoogleMap() {
+        val mapFragment =
+            childFragmentManager.findFragmentById(R.id.map_fragment) as SupportMapFragment
+        mapFragment.getMapAsync(this)
+    }
+
+    override fun onMapReady(map: GoogleMap) {
+        googleMap = map
+
+        googleMap.uiSettings.apply {
+            isZoomControlsEnabled = false
+            isScrollGesturesEnabled = false
+            isRotateGesturesEnabled = false
+            isTiltGesturesEnabled = false
+            isZoomGesturesEnabled = false
+        }
+
+        val detail = walkDetailData
+        if (detail != null) {
+            drawWalkRoute(detail)
+        } else {
+            val latitude = actualPlaceLatitude ?: placeLatitude
+            val longitude = actualPlaceLongitude ?: placeLongitude
+            updateMapLocation(latitude, longitude)
+        }
+    }
+
+    private fun updateMapLocation(lat: Double, lng: Double) {
+        val location = com.google.android.gms.maps.model.LatLng(lat, lng)
+        Log.d("MapDetailFragment", "Updating map location to: lat=$lat, lng=$lng")
+
+        currentMarker?.remove()
+
+        googleMap.moveCamera(
+            CameraUpdateFactory.newLatLngZoom(
+                location,
+                15.0f
+            )
+        )
+
+        val markerIcon = bitmapDescriptorFromVector(requireContext(), R.drawable.ic_marker)
+
+        currentMarker = googleMap.addMarker(
+            MarkerOptions()
+                .position(location)
+                .icon(markerIcon)
+        )
+    }
+
+    private fun drawWalkRoute(walkDetail: WalkDetail) {
+        if (!::googleMap.isInitialized) return
+
+        googleMap.clear()
+
+        val boundsBuilder = com.google.android.gms.maps.model.LatLngBounds.Builder()
+        val polylineOptions = com.google.android.gms.maps.model.PolylineOptions()
+            .width(10f)
+            .color(android.graphics.Color.parseColor("#FFB200"))
+        var hasPoints = false
+
+        val currentRoute = routeCoords
+
+        if (currentRoute != null && currentRoute.isNotEmpty()) {
+            currentRoute.forEach { latLng ->
+                polylineOptions.add(latLng)
+                boundsBuilder.include(latLng)
+                hasPoints = true
+            }
+        } else {
+            // Fallback: If no coordinates were passed, try to fetch them from searchWalksCall
+            fetchCoordinatesFromSearch(walkDetail)
+            return
+        }
+
+        if (hasPoints) {
+            googleMap.addPolyline(polylineOptions)
+
+            // 시작 마커 (유효한 첫 좌표)
+            val first = currentRoute.first()
+            bitmapDescriptorFromVector(requireContext(), R.drawable.ic_start_marker)?.let { icon ->
+                googleMap.addMarker(
+                    MarkerOptions()
+                        .position(first)
+                        .icon(icon)
+                )
+            }
+
+            // 종료 마커 (유효한 마지막 좌표)
+            val last = currentRoute.last()
+            bitmapDescriptorFromVector(requireContext(), R.drawable.ic_end_marker)?.let { icon ->
+                googleMap.addMarker(
+                    MarkerOptions()
+                        .position(last)
+                        .icon(icon)
+                )
+            }
+
+            try {
+                val bounds = boundsBuilder.build()
+                googleMap.setOnMapLoadedCallback {
+                    val distance = FloatArray(1)
+                    android.location.Location.distanceBetween(
+                        bounds.northeast.latitude, bounds.northeast.longitude,
+                        bounds.southwest.latitude, bounds.southwest.longitude,
+                        distance
+                    )
+                    if (distance[0] < 10.0f) {
+                        googleMap.moveCamera(
+                            CameraUpdateFactory.newLatLngZoom(bounds.center, 14.5f)
+                        )
+                    } else {
+                        val padding = dpToPx(30f)
+                        googleMap.moveCamera(
+                            CameraUpdateFactory.newLatLngBounds(bounds, padding)
+                        )
+                    }
+                }
+            } catch (e: Exception) {
+                Log.e("WalkingStartView", "Bounds 렌더링 에러", e)
+            }
+        } else {
+            val latitude = actualPlaceLatitude ?: placeLatitude
+            val longitude = actualPlaceLongitude ?: placeLongitude
+            updateMapLocation(latitude, longitude)
+        }
+    }
+
+    private fun fetchCoordinatesFromSearch(walkDetail: WalkDetail) {
+        apiService.searchWalksCall(walkDetail.title).enqueue(object : retrofit2.Callback<com.dogcatsquare.dogcatsquare.data.model.walk.WalkSearchResponse> {
+            override fun onResponse(
+                call: retrofit2.Call<com.dogcatsquare.dogcatsquare.data.model.walk.WalkSearchResponse>,
+                response: retrofit2.Response<com.dogcatsquare.dogcatsquare.data.model.walk.WalkSearchResponse>
+            ) {
+                if (response.isSuccessful) {
+                    val foundWalk = response.body()?.walks?.find { it.walkId == walkId?.toIntOrNull() }
+                    if (foundWalk != null && !foundWalk.coordinates.isNullOrEmpty()) {
+                        val gmsCoords = ArrayList(foundWalk.coordinates.map {
+                            com.google.android.gms.maps.model.LatLng(it.latitude, it.longitude)
+                        })
+                        routeCoords = gmsCoords
+                        drawWalkRoute(walkDetail)
+                    } else {
+                        Log.e("WalkingStartView", "No coordinates found in search fallback")
+                        val latitude = actualPlaceLatitude ?: placeLatitude
+                        val longitude = actualPlaceLongitude ?: placeLongitude
+                        updateMapLocation(latitude, longitude)
+                    }
+                } else {
+                    Log.e("WalkingStartView", "Search fallback failed: ${response.message()}")
+                    val latitude = actualPlaceLatitude ?: placeLatitude
+                    val longitude = actualPlaceLongitude ?: placeLongitude
+                    updateMapLocation(latitude, longitude)
+                }
+            }
+
+            override fun onFailure(
+                call: retrofit2.Call<com.dogcatsquare.dogcatsquare.data.model.walk.WalkSearchResponse>,
+                t: Throwable
+            ) {
+                Log.e("WalkingStartView", "Search fallback error", t)
+                val latitude = actualPlaceLatitude ?: placeLatitude
+                val longitude = actualPlaceLongitude ?: placeLongitude
+                updateMapLocation(latitude, longitude)
+            }
+        })
+    }
+
+    private fun dpToPx(dp: Float): Int {
+        return android.util.TypedValue.applyDimension(
+            android.util.TypedValue.COMPLEX_UNIT_DIP,
+            dp,
+            resources.displayMetrics
+        ).toInt()
+    }
+
+    private fun bitmapDescriptorFromVector(context: Context, vectorResId: Int): BitmapDescriptor? {
+        val vectorDrawable = ContextCompat.getDrawable(context, vectorResId)
+        vectorDrawable!!.setBounds(0, 0, vectorDrawable.intrinsicWidth, vectorDrawable.intrinsicHeight)
+        val bitmap = Bitmap.createBitmap(vectorDrawable.intrinsicWidth, vectorDrawable.intrinsicHeight, Bitmap.Config.ARGB_8888)
+        val canvas = Canvas(bitmap)
+        vectorDrawable.draw(canvas)
+        return com.google.android.gms.maps.model.BitmapDescriptorFactory.fromBitmap(bitmap)
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
+        setupGoogleMap()
+        setupButtons()
+        setupRecyclerView()
+    }
+
+    private fun setupRecyclerView() {
+        // 리사이클러뷰 설정
+        val recyclerView: RecyclerView = binding.reviewRecyclerView
+        recyclerView.layoutManager = LinearLayoutManager(context)
+
+        viewLifecycleOwner.lifecycleScope.launch {
+            val nickname = fetchUserNickname()
+
+            reviewAdapter = ReviewAdapter(emptyList(), nickname)
+            recyclerView.adapter = reviewAdapter
+
+            // 산책로 후기
+            walkReviewViewModel.reviewResponse.observe(viewLifecycleOwner) { response ->
+                if (response != null) {
+                    val reviews = response.result?.walkReviews?.map { walkReview ->
+                        WalkReview(
+                            reviewId = walkReview.reviewId,
+                            walkId = walkReview.walkId,
+                            content = walkReview.content,
+                            walkReviewImageUrl = walkReview.walkReviewImageUrl,
+                            createdAt = walkReview.createdAt,
+                            updatedAt = walkReview.updatedAt,
+                            createdBy = walkReview.createdBy
+                        )
+                    } ?: emptyList()
+
+                    reviewAdapter = ReviewAdapter(reviews, nickname, onReviewDeleted = {
+                        walkId?.toIntOrNull()?.let { id -> walkReviewViewModel.getWalkReviews(id) }
+                    })
+                    recyclerView.adapter = reviewAdapter
+                    reviewAdapter.notifyDataSetChanged()
+
+                    val reviewSubtitle: TextView = binding.reviewSubtitle
+                    reviewSubtitle.text = "${reviews.size}"
+                } else {
+                    Log.e("WalkingStartView", "Failed to load reviews.")
+                }
+            }
+        }
+    }
+
+    override fun onCreateView(
+        inflater: LayoutInflater, container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View? {
+        _binding = FragmentMapwalkingStartviewBinding.inflate(inflater, container, false)
+        loadingDialog = LoadingDialog(requireContext())
+
+        walkId = arguments?.getInt("walkId")?.toString()
+        googlePlaceId = arguments?.getString("googlePlaceId")
+        routeCoords = arguments?.getParcelableArrayList("routeCoords")
+        Log.d("WalkingStartViewFragment", "Received walkId: $walkId, googlePlaceId: $googlePlaceId, routeCoords size: ${routeCoords?.size ?: 0}")
+
+        val address = arguments?.getString("address", "서대문 안산지락길")
+        val walkId = walkId?.toIntOrNull()
+
+        // Toolbar 설정
+        (activity as? AppCompatActivity)?.apply {
+            val toolbar: Toolbar = binding.walkingStartToolbar
+            setSupportActionBar(toolbar)
+            supportActionBar?.title = address
+            supportActionBar?.setDisplayHomeAsUpEnabled(true)
+            toolbar.setNavigationOnClickListener {
+                parentFragmentManager.popBackStack()
+            }
+        }
+
+        // MapFragment 설정
+        walkDetailViewModel.walkDetailState.observe(viewLifecycleOwner) { state ->
+            when (state) {
+                is WalkDetailState.Loading -> {
+                    if (!loadingDialog.isDialogShowing) {
+                        loadingDialog.show()
+                    }
+                }
+                is WalkDetailState.Success -> {
+                    if (loadingDialog.isDialogShowing) {
+                        loadingDialog.dismiss()
+                    }
+                    val walkDetail = state.walkDetail
+
+                    // UI 텍스트 및 이미지 업데이트 (이미 만들어두신 updateUI 호출)
+                    updateUI(walkDetail)
+
+                    // 지도 관련 로직: 산책로 전체 경로를 그리고 지도 맞춤
+                    walkDetailData = walkDetail
+                    if (::googleMap.isInitialized) {
+                        drawWalkRoute(walkDetail)
+                    }
+                }
+                is WalkDetailState.Error -> {
+                    if (loadingDialog.isDialogShowing) {
+                        loadingDialog.dismiss()
+                    }
+                    Log.e("WalkingStartView", "상세 정보 로드 실패: ${state.message}")
+                }
+            }
+        }
+
+        // 산책로 위시 버튼 설정
+        val wishBt: ImageButton = binding.wishBt
+        var isChecked = false
+
+        // 위시 상태 불러오기
+        val token = activity?.getSharedPreferences("app_prefs", Context.MODE_PRIVATE)?.getString("token", null)
+        if (token != null && walkId != null) {
+            val wishService = retrofit.create(com.dogcatsquare.dogcatsquare.data.api.WishRetrofitObj::class.java)
+            wishService.getMyWalkWish("Bearer $token").enqueue(object : retrofit2.Callback<com.dogcatsquare.dogcatsquare.data.model.wish.GetMyWalkWishResponse> {
+                override fun onResponse(
+                    call: retrofit2.Call<com.dogcatsquare.dogcatsquare.data.model.wish.GetMyWalkWishResponse>,
+                    response: retrofit2.Response<com.dogcatsquare.dogcatsquare.data.model.wish.GetMyWalkWishResponse>
+                ) {
+                    if (response.isSuccessful) {
+                        val wishWalks = response.body()?.result?.walks
+                        val isWish = wishWalks?.any { it.walkId == walkId.toInt() } ?: false
+                        if (isWish) {
+                            isChecked = true
+                            wishBt.setImageResource(R.drawable.ic_wish_check)
+                        } else {
+                            isChecked = false
+                            wishBt.setImageResource(R.drawable.ic_wish)
+                        }
+                    }
+                }
+
+                override fun onFailure(
+                    call: retrofit2.Call<com.dogcatsquare.dogcatsquare.data.model.wish.GetMyWalkWishResponse>,
+                    t: Throwable
+                ) {
+                    Log.e("WalkingStartView", "Failed to fetch wish walks", t)
+                }
+            })
+        }
+
+        wishBt.setOnClickListener {
+            val token = activity?.getSharedPreferences("app_prefs", Context.MODE_PRIVATE)?.getString("token", null)
+            if (token == null) {
+                android.widget.Toast.makeText(requireContext(), "로그인이 필요합니다.", android.widget.Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+            if (walkId == null || googlePlaceId == null) {
+                android.widget.Toast.makeText(requireContext(), "산책로 정보를 확인할 수 없습니다.", android.widget.Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+
+            val wishService = retrofit.create(com.dogcatsquare.dogcatsquare.data.api.WishRetrofitObj::class.java)
+
+            if (!isChecked) {
+                // 저장 안됨 -> 저장 (추가)
+                wishService.addWalkWish("Bearer $token", walkId!!.toLong(), googlePlaceId!!).enqueue(object : retrofit2.Callback<com.dogcatsquare.dogcatsquare.data.model.wish.PostWalkWishResponse> {
+                    override fun onResponse(call: retrofit2.Call<com.dogcatsquare.dogcatsquare.data.model.wish.PostWalkWishResponse>, response: retrofit2.Response<com.dogcatsquare.dogcatsquare.data.model.wish.PostWalkWishResponse>) {
+                        if (response.isSuccessful && response.body()?.isSuccess == true) {
+                            isChecked = true
+                            wishBt.setImageResource(R.drawable.ic_wish_check)
+                            android.widget.Toast.makeText(requireContext(), "산책로가 위시리스트에 추가되었습니다.", android.widget.Toast.LENGTH_SHORT).show()
+                        } else {
+                            android.widget.Toast.makeText(requireContext(), "추가에 실패했습니다.", android.widget.Toast.LENGTH_SHORT).show()
+                        }
+                    }
+
+                    override fun onFailure(call: retrofit2.Call<com.dogcatsquare.dogcatsquare.data.model.wish.PostWalkWishResponse>, t: Throwable) {
+                        android.widget.Toast.makeText(requireContext(), "네트워크 오류 발생", android.widget.Toast.LENGTH_SHORT).show()
+                    }
+                })
+            } else {
+                // 저장 됨 -> 해제 (삭제)
+                wishService.deleteWalkWish("Bearer $token", walkId!!.toInt()).enqueue(object : retrofit2.Callback<com.dogcatsquare.dogcatsquare.data.model.wish.DeleteWalkWishResponse> {
+                    override fun onResponse(call: retrofit2.Call<com.dogcatsquare.dogcatsquare.data.model.wish.DeleteWalkWishResponse>, response: retrofit2.Response<com.dogcatsquare.dogcatsquare.data.model.wish.DeleteWalkWishResponse>) {
+                        if (response.isSuccessful && response.body()?.isSuccess == true) {
+                            isChecked = false
+                            wishBt.setImageResource(R.drawable.ic_wish)
+                            android.widget.Toast.makeText(requireContext(), "산책로 위시가 해제되었습니다.", android.widget.Toast.LENGTH_SHORT).show()
+                        } else {
+                            android.widget.Toast.makeText(requireContext(), "해제에 실패했습니다.", android.widget.Toast.LENGTH_SHORT).show()
+                        }
+                    }
+
+                    override fun onFailure(call: retrofit2.Call<com.dogcatsquare.dogcatsquare.data.model.wish.DeleteWalkWishResponse>, t: Throwable) {
+                        android.widget.Toast.makeText(requireContext(), "네트워크 오류 발생", android.widget.Toast.LENGTH_SHORT).show()
+                    }
+                })
+            }
+        }
+
+        // API 호출
+        walkId?.let {
+            walkDetailViewModel.fetchWalkDetail(it)
+            walkReviewViewModel.getWalkReviews(it)
+            Log.d("WalkingStartView", it.toString())
+        }
+
+        return binding.root
+    }
+
+    private fun setupButtons() {
+        binding.apply {
+            // 후기 목록 버튼
+            val reviewButton = binding.reviewButton
+            reviewButton.setOnClickListener {
+                val fragment = WalkingReviewListFragment().apply {
+                    arguments = Bundle().apply {
+                        putInt("walkId", walkId?.toInt() ?: -1)
+                    }
+                }
+                parentFragmentManager.beginTransaction()
+                    .setCustomAnimations(
+                        R.anim.slide_in_right,
+                        R.anim.slide_out_left,
+                        R.anim.slide_in_left,
+                        R.anim.slide_out_right
+                    )
+                    .hide(this@WalkingStartViewFragment)
+                    .replace(R.id.main_frm, fragment)
+                    .addToBackStack(null)
+                    .commit()
+            }
+
+            // 후기 작성 버튼
+            val reviewListBtn = binding.reviewBt
+            reviewListBtn.setOnClickListener {
+                val fragment = WalkingReviewAddFragment().apply {
+                    arguments = Bundle().apply {
+                        putInt("walkId", walkId?.toInt() ?: -1)
+                    }
+                }
+                parentFragmentManager.beginTransaction()
+                    .replace(R.id.main_frm, fragment)
+                    .addToBackStack(null)
+                    .commit()
+            }
+        }
+    }
+
+    private fun updateUI(walkDetail: WalkDetail) {
+        val descriptionTextView: TextView = binding.reviewTv
+        val lengthTextView: TextView = binding.lengthTv
+        val timeTextView: TextView = binding.timeTv
+        val profileIg: ImageView = binding.profileIg
+        val profileNameTv: TextView = binding.profileNameTv
+        val profileTv: TextView = binding.profileTv
+        val startTv: TextView = binding.startTv
+        val endTv: TextView = binding.endTv
+        val toolbar: Toolbar = binding.walkingStartToolbar
+
+        toolbar.title = walkDetail.title // API 응답의 title로 변경
+        descriptionTextView.text = walkDetail.description
+        lengthTextView.text = "${walkDetail.distance} km"
+        timeTextView.text = "${walkDetail.time} 분"
+        startTv.text = "${walkDetail.startAddress}"
+        endTv.text = "${walkDetail.endAddress}"
+
+        Glide.with(requireContext())
+            .load(walkDetail.createdBy.profileImageUrl)
+            .into(profileIg)
+
+        profileNameTv.text = walkDetail.createdBy.nickname
+        profileTv.text = walkDetail.createdBy.breed ?: ""
+
+        // 1. 난이도(Difficulty) 텍스트 설정
+        val difficultyText = when (walkDetail.difficulty) {
+            "LOW" -> "쉬움"
+            "HIGH" -> "어려움"
+            else -> "보통"
+        }
+        binding.filter1.text = difficultyText
+        binding.filter1.visibility = View.VISIBLE
+
+        // 2. 편의시설(Special) 텍스트 및 아이콘 설정
+        val filter2 = binding.filter2
+        val filter3 = binding.filter3
+
+        // 초기화
+        filter2.visibility = View.GONE
+        filter3.visibility = View.GONE
+        filter2.setCompoundDrawablesWithIntrinsicBounds(0, 0, 0, 0)
+        filter3.setCompoundDrawablesWithIntrinsicBounds(0, 0, 0, 0)
+
+        walkDetail.special?.take(2)?.forEachIndexed { index, type ->
+            val targetTextView = if (index == 0) filter2 else filter3
+
+            val (text, iconResId) = when (type.type) {
+                "WASTEBASKET" -> Pair("쓰레기통", R.drawable.ic_trash)
+                "WATER" -> Pair("음수대", R.drawable.ic_water)
+                "TOILET" -> Pair("화장실", R.drawable.ic_washroom)
+                "PARKING" -> Pair("주차장", R.drawable.ic_parking)
+                "STAIRS" -> Pair("계단", R.drawable.ic_stair)
+                else -> Pair(null, 0)
+            }
+
+            if (text != null) {
+                targetTextView.visibility = View.VISIBLE
+                targetTextView.text = text
+                if (iconResId != 0) {
+                    targetTextView.setCompoundDrawablesWithIntrinsicBounds(iconResId, 0, 0, 0)
+                }
+            }
+        }
+
+        val imageButtons = listOf(
+            binding.walkImg1,
+            binding.walkImg2,
+            binding.walkImg3,
+            binding.walkImg4,
+            binding.walkImg5,
+        )
+
+        // 모든 버튼 초기화 (숨기기)
+        imageButtons.forEach { it.visibility = View.GONE }
+
+        if (walkDetail.walkImageUrl.isNullOrEmpty()) {
+            binding.photoLayout.visibility = View.GONE
+        } else {
+            binding.photoLayout.visibility = View.VISIBLE
+            // 데이터 로드 (최대 5개)
+            walkDetail.walkImageUrl.take(5).forEachIndexed { index, url ->
+                val button = imageButtons[index]
+                button.visibility = View.VISIBLE
+                Glide.with(requireContext())
+                    .load(url)
+                    .into(button)
+            }
+        }
+
+        // 리스트가 비어있지 않은지 확인 후 첫 번째 좌표 가져오기
+//        val startCoordinate = walkDetail.startCoordinates?.firstOrNull()
+//        val endCoordinate = walkDetail.endCoordinates?.firstOrNull()
+
+//        if (startCoordinate != null && endCoordinate != null) {
+//            setInitialMarker(startCoordinate, endCoordinate)
+//        } else {
+//            Log.e("WalkingStartView", "좌표가 유효하지 않습니다: 시작 좌표나 끝 좌표가 없음.")
+//        }
+    }
+
+    fun refreshPlaceDetails() {
+        arguments?.getInt("walkId")?.let { id ->
+            // MapFragment 설정
+            walkDetailViewModel.walkDetailState.observe(viewLifecycleOwner) { state ->
+                when (state) {
+                    is WalkDetailState.Loading -> {
+                        if (!loadingDialog.isDialogShowing) {
+                            loadingDialog.show()
+                        }
+                    }
+
+                    is WalkDetailState.Success -> {
+                        if (loadingDialog.isDialogShowing) {
+                            loadingDialog.dismiss()
+                        }
+                        val walkDetail = state.walkDetail
+
+                        // UI 텍스트 및 이미지 업데이트 (이미 만들어두신 updateUI 호출)
+                        updateUI(walkDetail)
+
+                        // 지도 관련 로직: 산책로 전체 경로를 그리고 지도 맞춤
+                        walkDetailData = walkDetail
+                        if (::googleMap.isInitialized) {
+                            drawWalkRoute(walkDetail)
+                        }
+                    }
+
+                    is WalkDetailState.Error -> {
+                        if (loadingDialog.isDialogShowing) {
+                            loadingDialog.dismiss()
+                        }
+                        Log.e("WalkingStartView", "상세 정보 로드 실패: ${state.message}")
+                    }
+                }
+            }
+        }
+    }
+
+    override fun onStop() {
+        super.onStop()
+        if (::loadingDialog.isInitialized && loadingDialog.isDialogShowing) {
+            loadingDialog.dismiss()
+        }
+    }
+
+    private suspend fun fetchUserNickname(): String {
+        try {
+            val token = activity?.getSharedPreferences("app_prefs", Context.MODE_PRIVATE)?.getString("token", null) ?: return ""
+
+            val response = kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
+                com.dogcatsquare.dogcatsquare.data.network.RetrofitClient.userApiService.getUser("Bearer $token").execute()
+            }
+
+            if (response.isSuccessful) {
+                val userResponse = response.body()
+                if (userResponse != null && userResponse.isSuccess) {
+                    return userResponse.result?.nickname ?: ""
+                }
+            }
+        } catch (e: Exception) {
+            Log.e("WalkingStartView", "사용자 정보 가져오기 중 예외 발생", e)
+        }
+        return ""
+    }
+}
